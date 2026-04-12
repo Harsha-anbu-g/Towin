@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/towin
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:0000}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10

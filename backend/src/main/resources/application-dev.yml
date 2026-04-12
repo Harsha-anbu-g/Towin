@@ -1,7 +1,7 @@
 spring:
   datasource:
     username: postgres
-    password: postgres
+    password: 0000
   jpa:
     show-sql: true
 
