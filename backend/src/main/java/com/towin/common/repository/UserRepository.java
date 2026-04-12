@@ -1,4 +1,4 @@
-package com.towin.auth.repository;
+package com.towin.common.repository;
 
 import com.towin.common.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
