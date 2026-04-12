@@ -1,9 +1,13 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/towin
-    username: postgres
-    password: postgres
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -17,8 +21,8 @@ spring:
 
 app:
   jwt:
-    secret: your-256-bit-secret-change-this-in-production-must-be-long
-    expiration-ms: 86400000
+    secret: ${JWT_SECRET:your-256-bit-secret-change-this-in-production-must-be-long}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 server:
   port: 8080
