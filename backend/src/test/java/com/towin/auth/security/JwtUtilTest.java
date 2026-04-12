@@ -19,17 +19,18 @@ class JwtUtilTest {
 
         assertThat(token).isNotBlank();
         assertThat(jwtUtil.isTokenValid(token)).isTrue();
-        assertThat(jwtUtil.extractUserId(token)).isEqualTo(userId);
+        assertThat(jwtUtil.extractUserId(token)).contains(userId);
     }
 
     @Test
     void shouldReturnFalseForInvalidToken() {
         assertThat(jwtUtil.isTokenValid("invalid.token.here")).isFalse();
+        assertThat(jwtUtil.extractUserId("invalid.token.here")).isEmpty();
     }
 
     @Test
     void shouldExtractEmailFromToken() {
         String token = jwtUtil.generateToken("user-id-123", "hello@test.com");
-        assertThat(jwtUtil.extractEmail(token)).isEqualTo("hello@test.com");
+        assertThat(jwtUtil.extractEmail(token)).contains("hello@test.com");
     }
 }
