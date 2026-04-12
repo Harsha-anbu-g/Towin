@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    username: postgres
+    password: postgres
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    com.towin: DEBUG
