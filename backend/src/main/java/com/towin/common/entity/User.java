@@ -1,5 +1,7 @@
 package com.towin.common.entity;
 
+import com.towin.common.enums.UserRole;
+import com.towin.common.enums.VerificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -24,18 +26,18 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "user_role")
+    @Builder.Default
     private UserRole role = UserRole.ELDER;
 
-    @Builder.Default
     @Column(name = "trust_score")
+    @Builder.Default
     private Integer trustScore = 0;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status", columnDefinition = "verification_status")
+    @Builder.Default
     private VerificationStatus verificationStatus = VerificationStatus.NONE;
 
     @Column(name = "id_document_url")
@@ -49,26 +51,27 @@ public class User {
 
     private String city;
 
-    @Builder.Default
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean isActive = true;
 
     @Column(name = "last_seen_at")
     private LocalDateTime lastSeenAt;
 
-    @Builder.Default
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
-    @Builder.Default
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    public enum UserRole { ELDER, HELPER, BOTH }
-    public enum VerificationStatus { NONE, PENDING, VERIFIED, REJECTED }
 }
