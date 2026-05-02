@@ -1,16 +1,22 @@
 package com.towin.auth.security;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
 class JwtUtilTest {
 
-    @Autowired
     private JwtUtil jwtUtil;
+
+    @BeforeEach
+    void setUp() {
+        jwtUtil = new JwtUtil();
+        ReflectionTestUtils.setField(jwtUtil, "secret", "test-secret-key-must-be-at-least-32-characters-long");
+        ReflectionTestUtils.setField(jwtUtil, "expirationMs", 3600000L);
+        jwtUtil.init();
+    }
 
     @Test
     void shouldGenerateAndValidateToken() {
