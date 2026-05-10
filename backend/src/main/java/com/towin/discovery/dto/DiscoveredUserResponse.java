@@ -1,0 +1,21 @@
+package com.towin.discovery.dto;
+
+import lombok.Builder;
+import lombok.Data;
+import java.util.List;
+import java.util.UUID;
+
+@Data
+@Builder
+public class DiscoveredUserResponse {
+    private UUID userId;
+    private String name;
+    private Integer age;
+    private String photoUrl;
+    private String bio;
+    private List<String> interests;
+    private List<String> languages;
+    private String city;
+    private Integer trustScore;
+    private double distanceKm;
+}
