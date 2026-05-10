@@ -5,6 +5,7 @@ import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.ConnectionType;
 import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
+import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.dto.ConnectionRequest;
 import com.towin.connection.dto.ConnectionResponse;
@@ -35,6 +36,7 @@ class ConnectionServiceTest {
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
+    @Mock ConnectionEventProducer eventProducer;
     @InjectMocks ConnectionService connectionService;
 
     private User sender;

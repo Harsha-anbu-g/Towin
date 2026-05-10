@@ -9,6 +9,7 @@ import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -26,6 +27,7 @@ public class DiscoveryService {
     private final HelperProfileRepository helperProfileRepository;
     private final UserRepository userRepository;
 
+    @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         double lat = resolvedLat(filter, requester);
@@ -50,6 +52,7 @@ public class DiscoveryService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverHelpers(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         double lat = resolvedLat(filter, requester);
