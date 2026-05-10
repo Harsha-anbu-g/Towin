@@ -10,6 +10,7 @@ import com.towin.trust.dto.TrustActionRequest;
 import com.towin.trust.dto.TrustStatusResponse;
 import com.towin.trust.entity.TrustProgressionLog;
 import com.towin.trust.repository.TrustProgressionLogRepository;
+import com.towin.emergency.service.SosService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class TrustService {
     private final ConnectionRepository connectionRepository;
     private final TrustProgressionLogRepository trustLogRepository;
     private final UserRepository userRepository;
+    private final SosService sosService;
 
     @Transactional
     public TrustStatusResponse confirmTrustLevel(UUID userId, UUID connectionId, TrustActionRequest request) {
@@ -63,7 +65,10 @@ public class TrustService {
             trustLogRepository.save(logEntry);
 
             if (to == TrustLevel.FIRST_MEET) {
-                log.info("Connection {} reached FIRST_MEET — emergency contacts would be notified (Twilio, Plan 4)", connectionId);
+                UUID elderId = connection.getUserA().getRole().name().equals("ELDER")
+                        ? connection.getUserA().getId()
+                        : connection.getUserB().getId();
+                sosService.notifyFirstMeet(elderId, connectionId);
             }
         }
 
