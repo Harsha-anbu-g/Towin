@@ -53,5 +53,10 @@ app:
     secret: ${JWT_SECRET:your-256-bit-secret-change-this-in-production-must-be-long}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  from-number: ${TWILIO_FROM_NUMBER:}
+
 server:
   port: 8080
