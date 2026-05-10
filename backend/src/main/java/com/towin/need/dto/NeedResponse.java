@@ -1,0 +1,23 @@
+package com.towin.need.dto;
+
+import com.towin.common.enums.*;
+import lombok.Builder;
+import lombok.Data;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Data
+@Builder
+public class NeedResponse {
+    private UUID id;
+    private UUID elderId;
+    private String elderName;
+    private String title;
+    private NeedCategory category;
+    private String description;
+    private NeedSchedule schedule;
+    private NeedUrgency urgency;
+    private NeedStatus status;
+    private Double distanceKm;
+    private LocalDateTime createdAt;
+}

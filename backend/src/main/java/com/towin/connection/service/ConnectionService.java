@@ -2,6 +2,8 @@ package com.towin.connection.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.messaging.ConnectionEvent;
+import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.dto.ConnectionRequest;
 import com.towin.connection.dto.ConnectionResponse;
@@ -32,6 +34,7 @@ public class ConnectionService {
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
+    private final ConnectionEventProducer eventProducer;
 
     @Transactional
     public ConnectionResponse sendRequest(UUID senderId, ConnectionRequest request) {
@@ -62,7 +65,14 @@ public class ConnectionService {
 
         connection.setConfirmedByUser(senderId, true);
 
-        return toResponse(connectionRepository.save(connection), senderId);
+        Connection saved = connectionRepository.save(connection);
+        eventProducer.send(ConnectionEvent.builder()
+                .type(ConnectionEvent.Type.REQUEST_SENT)
+                .connectionId(saved.getId())
+                .senderId(senderId)
+                .recipientId(target.getId())
+                .build());
+        return toResponse(saved, senderId);
     }
 
     @Transactional
@@ -79,14 +89,24 @@ public class ConnectionService {
             throw new IllegalArgumentException("Connection is not pending");
         }
 
+        ConnectionEvent.Type eventType;
         if (Boolean.TRUE.equals(request.getAccept())) {
             connection.setConfirmedByUser(responderId, true);
             connection.setStatus(ConnectionStatus.ACTIVE);
+            eventType = ConnectionEvent.Type.REQUEST_ACCEPTED;
         } else {
             connection.setStatus(ConnectionStatus.DECLINED);
+            eventType = ConnectionEvent.Type.REQUEST_DECLINED;
         }
 
-        return toResponse(connectionRepository.save(connection), responderId);
+        Connection saved = connectionRepository.save(connection);
+        eventProducer.send(ConnectionEvent.builder()
+                .type(eventType)
+                .connectionId(saved.getId())
+                .senderId(responderId)
+                .recipientId(connection.getInitiatedBy().getId())
+                .build());
+        return toResponse(saved, responderId);
     }
 
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status) {
