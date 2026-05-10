@@ -11,6 +11,7 @@ import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.trust.dto.TrustStatusResponse;
 import com.towin.trust.entity.TrustProgressionLog;
+import com.towin.emergency.service.SosService;
 import com.towin.trust.repository.TrustProgressionLogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ class TrustServiceTest {
     @Mock ConnectionRepository connectionRepository;
     @Mock TrustProgressionLogRepository trustLogRepository;
     @Mock UserRepository userRepository;
+    @Mock SosService sosService;
     @InjectMocks TrustService trustService;
 
     private User userA;
