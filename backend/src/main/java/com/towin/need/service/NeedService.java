@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.ApplicationStatus;
 import com.towin.common.enums.NeedStatus;
 import com.towin.common.repository.UserRepository;
+import com.towin.need.dto.ApplicantDto;
 import com.towin.need.dto.ApplyRequest;
 import com.towin.need.dto.NeedRequest;
 import com.towin.need.dto.NeedResponse;
@@ -12,6 +13,7 @@ import com.towin.need.entity.NeedApplication;
 import com.towin.need.repository.NeedApplicationRepository;
 import com.towin.need.repository.NeedRepository;
 import com.towin.profile.repository.ElderProfileRepository;
+import com.towin.profile.repository.HelperProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +33,7 @@ public class NeedService {
     private final NeedApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
+    private final HelperProfileRepository helperProfileRepository;
 
     @Transactional
     public NeedResponse postNeed(UUID elderId, NeedRequest request) {
@@ -86,7 +89,7 @@ public class NeedService {
 
     public Page<NeedResponse> getMyNeeds(UUID elderId, int page, int size) {
         return needRepository.findByElderIdOrderByCreatedAtDesc(elderId, PageRequest.of(page, size))
-                .map(n -> toResponse(n, null));
+                .map(n -> toResponse(n, null, true));
     }
 
     @Transactional
@@ -149,9 +152,30 @@ public class NeedService {
     }
 
     private NeedResponse toResponse(Need need, Double distanceKm) {
+        return toResponse(need, distanceKm, false);
+    }
+
+    private NeedResponse toResponse(Need need, Double distanceKm, boolean includeApplicants) {
         String elderName = elderProfileRepository.findByUserId(need.getElder().getId())
                 .map(p -> p.getName())
                 .orElse(need.getElder().getEmail());
+
+        List<ApplicantDto> applications = null;
+        if (includeApplicants) {
+            applications = applicationRepository.findByNeedId(need.getId()).stream()
+                    .map(a -> {
+                        String helperName = helperProfileRepository.findByUserId(a.getHelper().getId())
+                                .map(p -> p.getName())
+                                .orElse(a.getHelper().getEmail());
+                        return ApplicantDto.builder()
+                                .helperId(a.getHelper().getId())
+                                .helperName(helperName)
+                                .message(a.getMessage())
+                                .status(a.getStatus())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+        }
 
         return NeedResponse.builder()
                 .id(need.getId())
@@ -165,6 +189,7 @@ public class NeedService {
                 .status(need.getStatus())
                 .distanceKm(distanceKm != null ? Math.round(distanceKm * 10.0) / 10.0 : null)
                 .createdAt(need.getCreatedAt())
+                .applications(applications)
                 .build();
     }
 

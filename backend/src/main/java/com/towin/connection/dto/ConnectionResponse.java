@@ -19,6 +19,7 @@ public class ConnectionResponse {
     private ConnectionStatus status;
     private TrustLevel currentTrustLevel;
     private boolean confirmedByMe;
+    private boolean initiatedByMe;
     private String requestMessage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
