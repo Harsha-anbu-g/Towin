@@ -5,6 +5,8 @@ import com.towin.common.enums.MessageType;
 import com.towin.connection.entity.Connection;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,7 +31,8 @@ public class Message {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(nullable = false, columnDefinition = "message_type")
     @Builder.Default
     private MessageType type = MessageType.TEXT;
 

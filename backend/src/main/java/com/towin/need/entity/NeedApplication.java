@@ -3,6 +3,8 @@ package com.towin.need.entity;
 import com.towin.common.entity.User;
 import com.towin.common.enums.ApplicationStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,6 +30,7 @@ public class NeedApplication {
     private String message;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "application_status")
     @Builder.Default
     private ApplicationStatus status = ApplicationStatus.PENDING;

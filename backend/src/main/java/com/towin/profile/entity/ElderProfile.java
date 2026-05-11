@@ -42,6 +42,7 @@ public class ElderProfile {
     private String[] languages;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "looking_for", columnDefinition = "looking_for_type")
     @Builder.Default
     private LookingForType lookingFor = LookingForType.BOTH;
