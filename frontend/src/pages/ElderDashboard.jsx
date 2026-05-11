@@ -13,6 +13,8 @@ export default function ElderDashboard() {
   const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
+  const [location, setLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('idle'); // idle | asking | granted | denied
 
   async function loadNeeds() {
     try {
@@ -29,14 +31,29 @@ export default function ElderDashboard() {
 
   useEffect(() => {
     if (tab === 'needs') loadNeeds();
+    if (tab === 'post' && locationStatus === 'idle') requestLocation();
   }, [tab]);
+
+  function requestLocation() {
+    if (!navigator.geolocation) { setLocationStatus('denied'); return; }
+    setLocationStatus('asking');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus('granted');
+      },
+      () => setLocationStatus('denied')
+    );
+  }
 
   async function postNeed(e) {
     e.preventDefault();
     setPosting(true);
     setPostMsg('');
     try {
-      await api.post('/needs', needForm);
+      const body = { ...needForm };
+      if (location) { body.locationLat = location.lat; body.locationLng = location.lng; }
+      await api.post('/needs', body);
       setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
       setPostMsg('Request posted!');
       await loadNeeds();
@@ -200,6 +217,16 @@ export default function ElderDashboard() {
                     <option value="URGENT">Urgent</option>
                   </select>
                 </div>
+              </div>
+              <div className="text-xs text-gray-400">
+                {locationStatus === 'asking' && '📍 Getting your location...'}
+                {locationStatus === 'granted' && '📍 Location captured — helpers nearby will see this first'}
+                {locationStatus === 'denied' && '📍 Location not available — request will still be posted'}
+                {locationStatus === 'idle' && (
+                  <button type="button" onClick={requestLocation} className="text-indigo-500 underline">
+                    Allow location so nearby helpers find you faster
+                  </button>
+                )}
               </div>
               {postMsg && <p className={`text-sm ${postMsg.includes('!') ? 'text-green-600' : 'text-red-500'}`}>{postMsg}</p>}
               <button type="submit" disabled={posting}
