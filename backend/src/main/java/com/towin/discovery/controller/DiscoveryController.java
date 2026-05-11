@@ -5,8 +5,7 @@ import com.towin.discovery.dto.DiscoveryFilter;
 import com.towin.discovery.service.DiscoveryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,17 +20,17 @@ public class DiscoveryController {
 
     @GetMapping("/elders")
     public ResponseEntity<List<DiscoveredUserResponse>> discoverElders(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @ModelAttribute DiscoveryFilter filter) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(discoveryService.discoverElders(userId, filter));
     }
 
     @GetMapping("/helpers")
     public ResponseEntity<List<DiscoveredUserResponse>> discoverHelpers(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @ModelAttribute DiscoveryFilter filter) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(discoveryService.discoverHelpers(userId, filter));
     }
 }

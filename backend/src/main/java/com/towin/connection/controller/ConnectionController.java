@@ -8,8 +8,7 @@ import com.towin.connection.service.ConnectionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,26 +23,26 @@ public class ConnectionController {
 
     @PostMapping("/request")
     public ResponseEntity<ConnectionResponse> sendRequest(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @Valid @RequestBody ConnectionRequest request) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(connectionService.sendRequest(userId, request));
     }
 
     @PostMapping("/{connectionId}/respond")
     public ResponseEntity<ConnectionResponse> respond(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @PathVariable UUID connectionId,
             @Valid @RequestBody RespondToConnectionRequest request) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(connectionService.respond(userId, connectionId, request));
     }
 
     @GetMapping
     public ResponseEntity<List<ConnectionResponse>> getMyConnections(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @RequestParam(required = false) ConnectionStatus status) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(connectionService.getMyConnections(userId, status));
     }
 }
