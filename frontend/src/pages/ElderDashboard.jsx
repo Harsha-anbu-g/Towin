@@ -14,24 +14,35 @@ export default function ElderDashboard() {
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
 
+  async function loadNeeds() {
+    try {
+      const res = await api.get('/needs/mine');
+      setMyNeeds(res.data.content ?? []);
+    } catch {}
+  }
+
   useEffect(() => {
     api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
     api.get('/connections').then(r => setConnections(r.data)).catch(() => {});
-    api.get('/needs/mine').then(r => setMyNeeds(r.data.content ?? [])).catch(() => {});
+    loadNeeds();
   }, []);
+
+  useEffect(() => {
+    if (tab === 'needs') loadNeeds();
+  }, [tab]);
 
   async function postNeed(e) {
     e.preventDefault();
     setPosting(true);
     setPostMsg('');
     try {
-      const res = await api.post('/needs', needForm);
-      setMyNeeds(prev => [res.data, ...prev]);
+      await api.post('/needs', needForm);
       setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
       setPostMsg('Request posted!');
+      await loadNeeds();
       setTab('needs');
-    } catch {
-      setPostMsg('Failed to post. Try again.');
+    } catch (err) {
+      setPostMsg(err?.response?.data?.message || 'Failed to post. Try again.');
     } finally {
       setPosting(false);
     }
@@ -40,8 +51,7 @@ export default function ElderDashboard() {
   async function completeNeed(needId) {
     try {
       await api.post(`/needs/${needId}/complete`);
-      const res = await api.get('/needs/mine');
-      setMyNeeds(res.data.content ?? []);
+      await loadNeeds();
     } catch { alert('Could not mark complete.'); }
   }
 
