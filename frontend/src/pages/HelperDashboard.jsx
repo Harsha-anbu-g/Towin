@@ -8,11 +8,16 @@ export default function HelperDashboard() {
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
+  const [elders, setElders] = useState([]);
   const [tab, setTab] = useState('connections');
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
+  const [connectingTo, setConnectingTo] = useState(null);
+  const [connectMsg, setConnectMsg] = useState({});
+  const [respondingConn, setRespondingConn] = useState(null);
+  const [confirmingTrust, setConfirmingTrust] = useState(null);
   const [location, setLocation] = useState(null);
-  const [locationStatus, setLocationStatus] = useState('idle'); // idle | asking | granted | denied
+  const [locationStatus, setLocationStatus] = useState('idle');
   const [radiusKm, setRadiusKm] = useState(25);
 
   async function loadNeeds(loc) {
@@ -21,11 +26,24 @@ export default function HelperDashboard() {
       let res;
       if (coords) {
         res = await api.get(`/needs/nearby?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`);
-        setNeeds(res.data);
       } else {
         res = await api.get('/needs/open');
-        setNeeds(res.data);
       }
+      setNeeds(res.data);
+    } catch {}
+  }
+
+  async function loadConnections() {
+    try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
+  }
+
+  async function loadElders(loc) {
+    try {
+      const coords = loc ?? location;
+      let url = '/discover/elders';
+      if (coords) url += `?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`;
+      const r = await api.get(url);
+      setElders(r.data);
     } catch {}
   }
 
@@ -45,12 +63,14 @@ export default function HelperDashboard() {
 
   useEffect(() => {
     api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
-    api.get('/connections').then(r => setConnections(r.data)).catch(() => {});
+    loadConnections();
     requestLocation();
   }, []);
 
   useEffect(() => {
     if (tab === 'browse') loadNeeds();
+    if (tab === 'connections') loadConnections();
+    if (tab === 'discover') loadElders();
   }, [tab, radiusKm]);
 
   async function apply(needId) {
@@ -67,6 +87,40 @@ export default function HelperDashboard() {
     }
   }
 
+  async function connectToElder(elderId) {
+    setConnectingTo(elderId);
+    try {
+      await api.post('/connections/request', { targetUserId: elderId });
+      setConnectMsg(prev => ({...prev, [elderId]: 'Request sent!'}));
+      await loadConnections();
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Could not connect.';
+      setConnectMsg(prev => ({...prev, [elderId]: msg}));
+    } finally {
+      setConnectingTo(null);
+    }
+  }
+
+  async function respondToConnection(connId, accept) {
+    setRespondingConn(connId);
+    try {
+      await api.post(`/connections/${connId}/respond`, { accept });
+      await loadConnections();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Could not respond.');
+    } finally { setRespondingConn(null); }
+  }
+
+  async function confirmTrust(connId) {
+    setConfirmingTrust(connId);
+    try {
+      await api.post(`/trust/${connId}/confirm`);
+      await loadConnections();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Could not confirm trust.');
+    } finally { setConfirmingTrust(null); }
+  }
+
   const trustLabel = (level) => {
     const map = {
       DISCOVERED: 'Discovered', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Call',
@@ -75,7 +129,14 @@ export default function HelperDashboard() {
     return map[level] || level;
   };
 
-  const tabs = [['connections', '🤝 Connections'], ['browse', '🔎 Browse Needs']];
+  const connectedElderIds = new Set(connections.map(c => c.otherUserId));
+  const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+
+  const tabs = [
+    ['connections', `🤝 Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
+    ['browse', '🔎 Browse Needs'],
+    ['discover', '🧭 Discover Elders'],
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,10 +153,10 @@ export default function HelperDashboard() {
           </div>
         )}
 
-        <div className="flex gap-2 border-b">
+        <div className="flex gap-2 border-b overflow-x-auto">
           {tabs.map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
               {label}
             </button>
           ))}
@@ -106,32 +167,66 @@ export default function HelperDashboard() {
             {connections.length === 0 && (
               <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-400">
                 <p className="text-4xl mb-2">🤝</p>
-                <p>No connections yet. Browse needs and help elders to get started.</p>
+                <p>No connections yet. Discover elders and send a request.</p>
               </div>
             )}
             {connections.map(conn => (
-              <div key={conn.id} className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg">👴</div>
-                  <div>
-                    <p className="font-medium text-gray-800">{conn.otherUserName || 'Elder'}</p>
-                    <p className="text-xs text-gray-500">{trustLabel(conn.currentTrustLevel)}</p>
+              <div key={conn.id} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg">👴</div>
+                    <div>
+                      <p className="font-medium text-gray-800">{conn.otherUserName || 'Elder'}</p>
+                      <p className="text-xs text-gray-500">{trustLabel(conn.currentTrustLevel)}</p>
+                      {conn.requestMessage && (
+                        <p className="text-xs text-gray-400 italic mt-0.5">"{conn.requestMessage}"</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {conn.status === 'ACTIVE' && conn.currentTrustLevel !== 'DISCOVERED' && (
-                    <button
-                      onClick={() => navigate(`/messages/${conn.id}`)}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700">
-                      Message
-                    </button>
-                  )}
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    conn.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
-                    conn.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-500'}`}>
-                    {conn.status}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    {conn.status === 'ACTIVE' && (
+                      <>
+                        {!conn.confirmedByMe && (
+                          <button
+                            onClick={() => confirmTrust(conn.id)}
+                            disabled={confirmingTrust === conn.id}
+                            className="text-xs bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 disabled:opacity-50">
+                            {confirmingTrust === conn.id ? '...' : 'Confirm Trust →'}
+                          </button>
+                        )}
+                        {conn.confirmedByMe && (
+                          <span className="text-xs text-purple-500">✓ Confirmed</span>
+                        )}
+                        <button
+                          onClick={() => navigate(`/messages/${conn.id}`)}
+                          className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700">
+                          Message
+                        </button>
+                      </>
+                    )}
+                    {conn.status === 'PENDING' && !conn.initiatedByMe && (
+                      <>
+                        <button
+                          onClick={() => respondToConnection(conn.id, true)}
+                          disabled={respondingConn === conn.id}
+                          className="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 disabled:opacity-50">
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => respondToConnection(conn.id, false)}
+                          disabled={respondingConn === conn.id}
+                          className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200 disabled:opacity-50">
+                          Decline
+                        </button>
+                      </>
+                    )}
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      conn.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                      conn.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-500'}`}>
+                      {conn.status === 'PENDING' && conn.initiatedByMe ? 'Waiting' : conn.status}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -140,7 +235,6 @@ export default function HelperDashboard() {
 
         {tab === 'browse' && (
           <div className="space-y-4">
-            {/* Location + radius bar */}
             <div className="bg-white rounded-xl shadow-sm px-4 py-3 flex items-center justify-between gap-4">
               <div className="text-sm text-gray-600">
                 {locationStatus === 'asking' && '📍 Getting your location...'}
@@ -205,6 +299,78 @@ export default function HelperDashboard() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'discover' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm px-4 py-3 flex items-center justify-between gap-4">
+              <div className="text-sm text-gray-600">
+                {locationStatus === 'granted' && `📍 Showing elders within ${radiusKm} km`}
+                {locationStatus !== 'granted' && '📍 Enable location to find elders near you'}
+              </div>
+              {locationStatus === 'granted' && (
+                <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
+                  className="border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                  <option value={5}>5 km</option>
+                  <option value={10}>10 km</option>
+                  <option value={25}>25 km</option>
+                  <option value={50}>50 km</option>
+                  <option value={100}>100 km</option>
+                </select>
+              )}
+            </div>
+
+            {elders.length === 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-400">
+                <p className="text-4xl mb-2">👴</p>
+                <p>No elders found nearby. Try a larger radius or check back later.</p>
+              </div>
+            )}
+            {elders.map(elder => {
+              const alreadyConnected = connectedElderIds.has(elder.userId);
+              const sent = connectMsg[elder.userId];
+              return (
+                <div key={elder.userId} className="bg-white rounded-xl shadow-sm p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-2xl shrink-0">👴</div>
+                      <div>
+                        <p className="font-semibold text-gray-800">{elder.name || 'Elder'}</p>
+                        {elder.city && <p className="text-xs text-gray-500">{elder.city}</p>}
+                        {elder.distanceKm != null && (
+                          <p className="text-xs text-gray-400">{Math.round(elder.distanceKm * 10) / 10} km away</p>
+                        )}
+                        {elder.bio && <p className="text-sm text-gray-600 mt-1">{elder.bio}</p>}
+                        {elder.interests?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {elder.interests.map(i => (
+                              <span key={i} className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">{i}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      {alreadyConnected ? (
+                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">Connected</span>
+                      ) : sent ? (
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${sent.includes('!') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                          {sent}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => connectToElder(elder.userId)}
+                          disabled={connectingTo === elder.userId}
+                          className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+                          {connectingTo === elder.userId ? 'Sending...' : 'Connect'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

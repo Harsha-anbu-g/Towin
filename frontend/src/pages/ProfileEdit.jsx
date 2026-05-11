@@ -3,6 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import api from '../api/axios';
 
+function Stars({ rating }) {
+  return (
+    <span className="text-yellow-400">
+      {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+    </span>
+  );
+}
+
 const INPUT = 'w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300';
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1';
 
@@ -17,8 +25,10 @@ export default function ProfileEdit() {
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
+    api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
     api.get('/profile/me').then(r => {
       const p = r.data;
       setForm({
@@ -146,6 +156,38 @@ export default function ProfileEdit() {
               {saving ? 'Saving...' : 'Save Profile'}
             </button>
           </form>
+        </div>
+      </div>
+
+      {/* Reviews received */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-4">
+          ⭐ Reviews Received ({reviews.length})
+        </h2>
+        {reviews.length === 0 && (
+          <p className="text-sm text-gray-400">No reviews yet. Complete a service to receive your first review.</p>
+        )}
+        <div className="space-y-4">
+          {reviews.map(r => (
+            <div key={r.id} className="border rounded-xl p-4 space-y-1">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-800">{r.reviewerName}</p>
+                <Stars rating={r.rating} />
+              </div>
+              {r.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {r.tags.map(t => (
+                    <span key={t} className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">{t}</span>
+                  ))}
+                </div>
+              )}
+              {r.comment && <p className="text-sm text-gray-600 mt-1">{r.comment}</p>}
+              {r.safetyConcern && (
+                <p className="text-xs text-red-500 mt-1">⚠ Safety concern reported</p>
+              )}
+              <p className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

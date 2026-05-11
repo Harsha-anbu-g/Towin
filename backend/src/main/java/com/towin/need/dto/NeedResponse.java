@@ -4,6 +4,7 @@ import com.towin.common.enums.*;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -20,4 +21,5 @@ public class NeedResponse {
     private NeedStatus status;
     private Double distanceKm;
     private LocalDateTime createdAt;
+    private List<ApplicantDto> applications;
 }

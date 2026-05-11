@@ -1,0 +1,236 @@
+HOW TO USE TOWIN — Simple Guide
+=================================
+Written for someone testing the app for the first time.
+No technical knowledge needed.
+
+The app is running at: http://localhost:5173
+Open that link in your browser (Chrome, Safari, etc.)
+
+
+===========================================================
+WHAT IS TOWIN?
+===========================================================
+ToWin connects elderly people (called "Elders") with volunteers
+(called "Helpers") who can assist them with everyday tasks like
+grocery shopping, companionship, transportation, and more.
+
+There are two types of users:
+  - ELDER  → posts requests for help, accepts helpers, manages contacts
+  - HELPER → browses requests, applies to help, discovers elders nearby
+
+
+===========================================================
+HOW TO TEST THE APP — STEP BY STEP
+===========================================================
+
+STEP 1 — Create TWO accounts
+------------------------------
+You need two accounts to see the full app working.
+Open http://localhost:5173/register in two different browsers
+(e.g. Chrome for Elder, and Chrome Incognito for Helper).
+
+Account 1 — the Elder:
+  Email:    elder@test.com
+  Phone:    +15550000001
+  Password: Test1234!
+  Role:     ELDER
+
+Account 2 — the Helper:
+  Email:    helper@test.com
+  Phone:    +15550000002
+  Password: Test1234!
+  Role:     HELPER
+
+Click "Register" for each one.
+After registering you'll be taken to the dashboard automatically.
+
+
+STEP 2 — Set up your profiles
+------------------------------
+After logging in, click "Profile" in the top nav bar.
+
+For the Elder account:
+  - Enter a name (e.g. "Margaret")
+  - Enter an age (must be 50 or above)
+  - Write a short bio (optional)
+  - Add some interests like "Reading, Gardening"
+  - Click "Save Profile"
+
+For the Helper account:
+  - Enter a name (e.g. "James")
+  - Enter an age (must be 18 or above)
+  - Write a short bio (optional)
+  - Add skills like "Driving, Cooking"
+  - Click "Save Profile"
+
+
+STEP 3 — Elder posts a help request
+-------------------------------------
+Log in as the Elder.
+On the dashboard, click the "Post Request" tab.
+
+Fill in:
+  - What do you need: "Help with grocery shopping"
+  - Description: "Need someone to pick up groceries on Tuesday"
+  - Category: Errands
+  - Urgency: Normal
+  - Allow location if prompted (so nearby helpers see it first)
+
+Click "Post Request".
+You'll be taken to "My Requests" and see it with status OPEN.
+
+
+STEP 4 — Helper connects with the Elder
+-----------------------------------------
+Log in as the Helper.
+Click the "Discover Elders" tab on the dashboard.
+
+You'll see a list of elder profiles nearby.
+Find Margaret and click "Connect".
+The button changes to "Request sent!" — done.
+
+Back on the Elder account:
+  - Open the "Connections" tab
+  - You'll see a new request from James with Accept / Decline buttons
+  - Click "Accept"
+  - The connection becomes ACTIVE
+
+
+STEP 5 — Helper applies to the Elder's request
+------------------------------------------------
+Log in as the Helper.
+Click the "Browse Needs" tab.
+You'll see Margaret's request listed.
+Click "Apply" on it — the button changes to "Applied!"
+
+
+STEP 6 — Elder accepts the Helper
+------------------------------------
+Log in as the Elder.
+Click the "My Requests" tab.
+Under the request you'll see "1 Applicant" with James's name.
+Click "Accept" next to James.
+The request status changes to ASSIGNED.
+
+
+STEP 7 — Build trust together
+--------------------------------
+Both users can confirm trust to advance their relationship level.
+The trust ladder goes:
+  Discovered → Messaging → Phone Call → Video Call → Verified → First Meet → Trusted
+
+In the Connections tab, each person sees a purple "Confirm Trust →" button.
+When BOTH sides click it, the trust level goes up one step.
+
+Once trust reaches "Messaging" or above, the "Message" button appears.
+
+
+STEP 8 — Send a Message
+--------------------------
+After the connection is ACTIVE and trust is at least "Messaging":
+  - Go to the "Connections" tab
+  - Click the blue "Message" button next to the person's name
+  - Type your message and click Send
+  - Messages refresh automatically every 5 seconds
+
+
+STEP 9 — Mark the need as Complete
+-------------------------------------
+Once James has helped Margaret with groceries:
+  - Log in as the Elder
+  - Go to "My Requests"
+  - The request will show status ASSIGNED
+  - Click "Mark as Complete"
+  - The status changes to COMPLETED
+
+
+STEP 10 — Add Emergency Contacts (Elder only)
+-----------------------------------------------
+Log in as the Elder.
+Click "Emergency Contacts" in the top nav bar.
+
+Fill in:
+  - Name: "Sarah (daughter)"
+  - Phone: +15550000099
+  - Relationship: Daughter
+  - Alert after: 5 (days of no activity before alert is sent)
+
+Click "Add Contact".
+You can add up to 3 contacts.
+
+The red "Trigger SOS" button sends an SMS alert to all contacts
+immediately (SMS only works if Twilio is configured).
+
+
+===========================================================
+WHAT EACH PAGE DOES — QUICK REFERENCE
+===========================================================
+
+/dashboard
+  Elder:
+    - Connections tab — see all connections, accept/decline requests,
+      confirm trust, open messages
+    - My Requests tab — see your posted needs, view applicants, accept
+      a helper, mark complete
+    - Post Request tab — post a new help request (with optional location)
+
+  Helper:
+    - Connections tab — see all connections, accept/decline requests,
+      confirm trust, open messages
+    - Browse Needs tab — see open help requests nearby, apply to them
+    - Discover Elders tab — browse elder profiles, send connection requests
+
+/profile
+  Edit your name, bio, age, skills, interests, languages
+
+/emergency-contacts  (Elder only)
+  Add up to 3 people to contact in an emergency.
+  Trigger SOS button sends them an alert immediately.
+
+/messages/:id
+  Chat window with a connected user.
+  Opened from the Message button in Connections tab.
+
+
+===========================================================
+TRUST LEVELS EXPLAINED
+===========================================================
+Every connection starts at "Discovered" (lowest trust).
+Both people must click "Confirm Trust →" to advance to the next level.
+
+  Discovered   → just connected, no messaging yet
+  Messaging    → can send messages in the app
+  Phone Call   → ready to share phone numbers
+  Video Call   → ready to video chat
+  Verified     → identity confirmed
+  First Meet   → met in person
+  Trusted      → highest trust level
+
+The "Message" button appears once trust reaches Messaging or above.
+
+
+===========================================================
+COMMON ISSUES
+===========================================================
+
+"Something went wrong" on login or register
+  → Make sure the backend server is running (ask the developer)
+
+Page goes back to /login when you refresh
+  → You're logged out. Log in again — this is expected in dev mode
+
+"Failed to post" error on a request
+  → Check that both the backend (port 8080) and frontend (port 5173) are running
+
+Can't see Browse Needs / Discover Elders tabs
+  → Make sure you registered with Role = HELPER
+
+Can't see Emergency Contacts in the nav
+  → Make sure you registered with Role = ELDER
+
+The Discover Elders tab shows no one
+  → Allow location in the browser, or try a larger radius using the dropdown
+
+The Message button doesn't appear on a connection
+  → Trust level must be at least "Messaging" — both sides need to click
+     "Confirm Trust →" once to get there

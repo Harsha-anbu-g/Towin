@@ -13,8 +13,19 @@ export default function ElderDashboard() {
   const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
+  const [accepting, setAccepting] = useState(null);
+  const [respondingConn, setRespondingConn] = useState(null);
+  const [confirmingTrust, setConfirmingTrust] = useState(null);
+  const [reviewingNeed, setReviewingNeed] = useState(null); // needId being reviewed
+  const [reviewForm, setReviewForm] = useState({ rating: 5, tags: [], comment: '', safetyConcern: false });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewedNeeds, setReviewedNeeds] = useState(new Set());
   const [location, setLocation] = useState(null);
-  const [locationStatus, setLocationStatus] = useState('idle'); // idle | asking | granted | denied
+  const [locationStatus, setLocationStatus] = useState('idle');
+
+  async function loadConnections() {
+    try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
+  }
 
   async function loadNeeds() {
     try {
@@ -25,12 +36,13 @@ export default function ElderDashboard() {
 
   useEffect(() => {
     api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
-    api.get('/connections').then(r => setConnections(r.data)).catch(() => {});
+    loadConnections();
     loadNeeds();
   }, []);
 
   useEffect(() => {
     if (tab === 'needs') loadNeeds();
+    if (tab === 'connections') loadConnections();
     if (tab === 'post' && locationStatus === 'idle') requestLocation();
   }, [tab]);
 
@@ -44,6 +56,26 @@ export default function ElderDashboard() {
       },
       () => setLocationStatus('denied')
     );
+  }
+
+  async function respondToConnection(connId, accept) {
+    setRespondingConn(connId);
+    try {
+      await api.post(`/connections/${connId}/respond`, { accept });
+      await loadConnections();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Could not respond.');
+    } finally { setRespondingConn(null); }
+  }
+
+  async function confirmTrust(connId) {
+    setConfirmingTrust(connId);
+    try {
+      await api.post(`/trust/${connId}/confirm`);
+      await loadConnections();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Could not confirm trust.');
+    } finally { setConfirmingTrust(null); }
   }
 
   async function postNeed(e) {
@@ -72,6 +104,47 @@ export default function ElderDashboard() {
     } catch { alert('Could not mark complete.'); }
   }
 
+  const REVIEW_TAGS = ['Friendly', 'Punctual', 'Respectful', 'Helpful', 'Patient'];
+
+  function toggleTag(tag) {
+    setReviewForm(f => ({
+      ...f,
+      tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag]
+    }));
+  }
+
+  async function submitReview(need) {
+    const accepted = need.applications?.find(a => a.status === 'ACCEPTED');
+    if (!accepted) return;
+    setSubmittingReview(true);
+    try {
+      await api.post('/reviews', {
+        revieweeId: accepted.helperId,
+        needId: need.id,
+        rating: reviewForm.rating,
+        tags: reviewForm.tags,
+        comment: reviewForm.comment,
+        safetyConcern: reviewForm.safetyConcern,
+      });
+      setReviewedNeeds(prev => new Set([...prev, need.id]));
+      setReviewingNeed(null);
+      setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Could not submit review.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  }
+
+  async function acceptHelper(needId, helperId) {
+    setAccepting(`${needId}-${helperId}`);
+    try {
+      await api.post(`/needs/${needId}/accept/${helperId}`);
+      await loadNeeds();
+    } catch { alert('Could not accept helper.'); }
+    finally { setAccepting(null); }
+  }
+
   const trustLabel = (level) => {
     const map = {
       DISCOVERED: 'Discovered', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Call',
@@ -80,7 +153,12 @@ export default function ElderDashboard() {
     return map[level] || level;
   };
 
-  const tabs = [['connections', '🤝 Connections'], ['needs', '📋 My Requests'], ['post', '➕ Post Request']];
+  const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+  const tabs = [
+    ['connections', `🤝 Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
+    ['needs', '📋 My Requests'],
+    ['post', '➕ Post Request']
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,10 +175,10 @@ export default function ElderDashboard() {
           </div>
         )}
 
-        <div className="flex gap-2 border-b">
+        <div className="flex gap-2 border-b overflow-x-auto">
           {tabs.map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
               {label}
             </button>
           ))}
@@ -115,28 +193,62 @@ export default function ElderDashboard() {
               </div>
             )}
             {connections.map(conn => (
-              <div key={conn.id} className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg">🙋</div>
-                  <div>
-                    <p className="font-medium text-gray-800">{conn.otherUserName || 'User'}</p>
-                    <p className="text-xs text-gray-500">{trustLabel(conn.currentTrustLevel)}</p>
+              <div key={conn.id} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-lg">🙋</div>
+                    <div>
+                      <p className="font-medium text-gray-800">{conn.otherUserName || 'User'}</p>
+                      <p className="text-xs text-gray-500">{trustLabel(conn.currentTrustLevel)}</p>
+                      {conn.requestMessage && (
+                        <p className="text-xs text-gray-400 italic mt-0.5">"{conn.requestMessage}"</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {conn.status === 'ACTIVE' && conn.currentTrustLevel !== 'DISCOVERED' && (
-                    <button
-                      onClick={() => navigate(`/messages/${conn.id}`)}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700">
-                      Message
-                    </button>
-                  )}
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    conn.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
-                    conn.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-500'}`}>
-                    {conn.status}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    {conn.status === 'ACTIVE' && (
+                      <>
+                        {!conn.confirmedByMe && (
+                          <button
+                            onClick={() => confirmTrust(conn.id)}
+                            disabled={confirmingTrust === conn.id}
+                            className="text-xs bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 disabled:opacity-50">
+                            {confirmingTrust === conn.id ? '...' : 'Confirm Trust →'}
+                          </button>
+                        )}
+                        {conn.confirmedByMe && (
+                          <span className="text-xs text-purple-500">✓ Confirmed</span>
+                        )}
+                        <button
+                          onClick={() => navigate(`/messages/${conn.id}`)}
+                          className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700">
+                          Message
+                        </button>
+                      </>
+                    )}
+                    {conn.status === 'PENDING' && !conn.initiatedByMe && (
+                      <>
+                        <button
+                          onClick={() => respondToConnection(conn.id, true)}
+                          disabled={respondingConn === conn.id}
+                          className="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 disabled:opacity-50">
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => respondToConnection(conn.id, false)}
+                          disabled={respondingConn === conn.id}
+                          className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200 disabled:opacity-50">
+                          Decline
+                        </button>
+                      </>
+                    )}
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      conn.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                      conn.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-500'}`}>
+                      {conn.status === 'PENDING' && conn.initiatedByMe ? 'Waiting' : conn.status}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -167,6 +279,30 @@ export default function ElderDashboard() {
                     {need.status}
                   </span>
                 </div>
+                {need.status === 'OPEN' && need.applications?.length > 0 && (
+                  <div className="border-t pt-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      {need.applications.length} Applicant{need.applications.length !== 1 ? 's' : ''}
+                    </p>
+                    {need.applications.map(app => (
+                      <div key={app.helperId} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{app.helperName}</p>
+                          {app.message && <p className="text-xs text-gray-500 mt-0.5">{app.message}</p>}
+                        </div>
+                        <button
+                          onClick={() => acceptHelper(need.id, app.helperId)}
+                          disabled={accepting === `${need.id}-${app.helperId}`}
+                          className="text-xs bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 disabled:opacity-50 ml-3 shrink-0">
+                          {accepting === `${need.id}-${app.helperId}` ? 'Accepting...' : 'Accept'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {need.status === 'OPEN' && (!need.applications || need.applications.length === 0) && (
+                  <p className="text-xs text-gray-400 border-t pt-3">No applicants yet</p>
+                )}
                 {need.status === 'ASSIGNED' && (
                   <div className="border-t pt-3">
                     <button onClick={() => completeNeed(need.id)}
@@ -174,6 +310,66 @@ export default function ElderDashboard() {
                       Mark as Complete
                     </button>
                   </div>
+                )}
+                {need.status === 'COMPLETED' && !reviewedNeeds.has(need.id) && need.applications?.some(a => a.status === 'ACCEPTED') && (
+                  <div className="border-t pt-3">
+                    {reviewingNeed === need.id ? (
+                      <div className="space-y-3">
+                        <p className="text-xs font-medium text-gray-700">Rate your helper</p>
+                        {/* Star rating */}
+                        <div className="flex gap-1">
+                          {[1,2,3,4,5].map(s => (
+                            <button key={s} type="button" onClick={() => setReviewForm(f => ({...f, rating: s}))}
+                              className={`text-2xl ${s <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'}`}>
+                              ★
+                            </button>
+                          ))}
+                        </div>
+                        {/* Tag chips */}
+                        <div className="flex flex-wrap gap-2">
+                          {REVIEW_TAGS.map(tag => (
+                            <button key={tag} type="button" onClick={() => toggleTag(tag)}
+                              className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                                reviewForm.tags.includes(tag)
+                                  ? 'bg-indigo-600 text-white border-indigo-600'
+                                  : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
+                              }`}>
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          value={reviewForm.comment}
+                          onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
+                          placeholder="Add a comment (optional)"
+                          rows={2}
+                          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                        <label className="flex items-center gap-2 text-sm text-red-600 cursor-pointer">
+                          <input type="checkbox" checked={reviewForm.safetyConcern}
+                            onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
+                          Flag a safety concern
+                        </label>
+                        <div className="flex gap-2">
+                          <button onClick={() => submitReview(need)} disabled={submittingReview}
+                            className="flex-1 bg-indigo-600 text-white text-sm py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+                            {submittingReview ? 'Submitting...' : 'Submit Review'}
+                          </button>
+                          <button onClick={() => setReviewingNeed(null)}
+                            className="px-4 text-sm text-gray-500 border rounded-lg hover:bg-gray-50">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => setReviewingNeed(need.id)}
+                        className="w-full bg-yellow-500 text-white text-sm py-2 rounded-lg hover:bg-yellow-600">
+                        ⭐ Leave a Review
+                      </button>
+                    )}
+                  </div>
+                )}
+                {need.status === 'COMPLETED' && reviewedNeeds.has(need.id) && (
+                  <p className="text-xs text-green-600 border-t pt-3">✓ Review submitted</p>
                 )}
               </div>
             ))}

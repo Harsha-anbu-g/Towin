@@ -131,6 +131,7 @@ public class ConnectionService {
                 .status(connection.getStatus())
                 .currentTrustLevel(connection.getCurrentTrustLevel())
                 .confirmedByMe(connection.isConfirmedByUser(viewerUserId))
+                .initiatedByMe(connection.getInitiatedBy().getId().equals(viewerUserId))
                 .requestMessage(connection.getRequestMessage())
                 .createdAt(connection.getCreatedAt())
                 .updatedAt(connection.getUpdatedAt())

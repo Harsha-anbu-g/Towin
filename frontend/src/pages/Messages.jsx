@@ -11,12 +11,20 @@ export default function Messages() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [otherName, setOtherName] = useState('');
+  const [otherUserId, setOtherUserId] = useState(null);
+  const [showReport, setShowReport] = useState(false);
+  const [reportForm, setReportForm] = useState({ reason: 'Inappropriate Behavior', description: '' });
+  const [reporting, setReporting] = useState(false);
+  const [reportMsg, setReportMsg] = useState('');
   const bottomRef = useRef(null);
 
   useEffect(() => {
     api.get('/connections').then(r => {
       const conn = r.data.find(c => c.id === connectionId);
-      if (conn) setOtherName(conn.otherUserName || 'User');
+      if (conn) {
+        setOtherName(conn.otherUserName || 'User');
+        setOtherUserId(conn.otherUserId);
+      }
     }).catch(() => {});
 
     loadMessages();
@@ -51,6 +59,22 @@ export default function Messages() {
     }
   }
 
+  async function submitReport(e) {
+    e.preventDefault();
+    if (!otherUserId) return;
+    setReporting(true);
+    setReportMsg('');
+    try {
+      await api.post('/reports', { reportedUserId: otherUserId, ...reportForm });
+      setReportMsg('Report submitted. Thank you.');
+      setReportForm({ reason: 'Inappropriate Behavior', description: '' });
+    } catch (err) {
+      setReportMsg(err?.response?.data?.message || 'Could not submit report.');
+    } finally {
+      setReporting(false);
+    }
+  }
+
   const fmtTime = (iso) => {
     const d = new Date(iso);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -61,8 +85,46 @@ export default function Messages() {
       <header className="bg-white border-b px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-gray-700 text-lg">←</button>
         <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-sm">💬</div>
-        <p className="font-medium text-gray-800">{otherName || 'Conversation'}</p>
+        <p className="font-medium text-gray-800 flex-1">{otherName || 'Conversation'}</p>
+        <button onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
+          className="text-xs text-red-400 hover:text-red-600 px-2 py-1 border border-red-200 rounded-lg">
+          ⚑ Report
+        </button>
       </header>
+
+      {showReport && (
+        <div className="bg-red-50 border-b border-red-100 px-4 py-4">
+          <p className="text-sm font-medium text-red-700 mb-3">Report {otherName}</p>
+          <form onSubmit={submitReport} className="space-y-2">
+            <select
+              value={reportForm.reason}
+              onChange={e => setReportForm(f => ({...f, reason: e.target.value}))}
+              className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-300">
+              <option>Inappropriate Behavior</option>
+              <option>Spam</option>
+              <option>Safety Concern</option>
+              <option>Other</option>
+            </select>
+            <textarea
+              value={reportForm.description}
+              onChange={e => setReportForm(f => ({...f, description: e.target.value}))}
+              placeholder="Describe what happened (optional)..."
+              rows={2}
+              className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-300" />
+            {reportMsg && <p className={`text-xs ${reportMsg.includes('Thank') ? 'text-green-600' : 'text-red-500'}`}>{reportMsg}</p>}
+            <div className="flex gap-2">
+              <button type="submit" disabled={reporting}
+                className="bg-red-600 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-red-700 disabled:opacity-50">
+                {reporting ? 'Submitting...' : 'Submit Report'}
+              </button>
+              <button type="button" onClick={() => setShowReport(false)}
+                className="text-xs text-gray-500 px-3 py-1.5 border rounded-lg hover:bg-gray-50">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {messages.length === 0 && (
