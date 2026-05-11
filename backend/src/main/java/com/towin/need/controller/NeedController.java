@@ -8,8 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,57 +23,57 @@ public class NeedController {
 
     @PostMapping
     public ResponseEntity<NeedResponse> postNeed(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @Valid @RequestBody NeedRequest request) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(needService.postNeed(userId, request));
     }
 
     @GetMapping("/nearby")
     public ResponseEntity<List<NeedResponse>> browseNearby(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lng,
             @RequestParam(defaultValue = "10.0") Double radiusKm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(needService.browseNearby(userId, lat, lng, radiusKm, page, size));
     }
 
     @GetMapping("/mine")
     public ResponseEntity<Page<NeedResponse>> getMyNeeds(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(needService.getMyNeeds(userId, page, size));
     }
 
     @PostMapping("/{needId}/apply")
     public ResponseEntity<Void> apply(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @PathVariable UUID needId,
             @RequestBody(required = false) ApplyRequest request) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         needService.apply(userId, needId, request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{needId}/accept/{helperId}")
     public ResponseEntity<NeedResponse> acceptHelper(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @PathVariable UUID needId,
             @PathVariable UUID helperId) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(needService.acceptHelper(userId, needId, helperId));
     }
 
     @PostMapping("/{needId}/complete")
     public ResponseEntity<NeedResponse> complete(
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication auth,
             @PathVariable UUID needId) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(needService.complete(userId, needId));
     }
 }
