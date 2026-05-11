@@ -16,4 +16,6 @@ public interface NeedRepository extends JpaRepository<Need, UUID> {
 
     @Query("SELECT n FROM Need n WHERE n.status = :status AND n.locationLat IS NOT NULL ORDER BY n.createdAt DESC")
     List<Need> findOpenNeedsWithLocation(@Param("status") NeedStatus status);
+
+    List<Need> findByStatusOrderByCreatedAtDesc(NeedStatus status);
 }

@@ -12,19 +12,29 @@ export default function HelperDashboard() {
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
 
+  async function loadNeeds() {
+    try {
+      const res = await api.get('/needs/open');
+      setNeeds(res.data);
+    } catch {}
+  }
+
   useEffect(() => {
     api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
     api.get('/connections').then(r => setConnections(r.data)).catch(() => {});
-    api.get('/needs/nearby?radiusKm=999999').then(r => setNeeds(r.data)).catch(() => {});
+    loadNeeds();
   }, []);
+
+  useEffect(() => {
+    if (tab === 'browse') loadNeeds();
+  }, [tab]);
 
   async function apply(needId) {
     setApplying(needId);
     try {
       await api.post(`/needs/${needId}/apply`);
       setApplyMsg(prev => ({...prev, [needId]: 'Applied!'}));
-      const res = await api.get('/needs/nearby?radiusKm=999999');
-      setNeeds(res.data);
+      await loadNeeds();
     } catch (err) {
       const msg = err?.response?.data?.message || 'Could not apply.';
       setApplyMsg(prev => ({...prev, [needId]: msg}));
