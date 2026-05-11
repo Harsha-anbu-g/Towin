@@ -57,6 +57,13 @@ public class NeedService {
         return toResponse(needRepository.save(need), null);
     }
 
+    public List<NeedResponse> getAllOpen(UUID helperId) {
+        return needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN)
+                .stream()
+                .map(n -> toResponse(n, null))
+                .collect(Collectors.toList());
+    }
+
     public List<NeedResponse> browseNearby(UUID helperId, Double lat, Double lng, Double radiusKm, int page, int size) {
         User helper = getUser(helperId);
         double helperLat = lat != null ? lat : (helper.getLocationLat() != null ? helper.getLocationLat().doubleValue() : 0);
