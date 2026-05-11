@@ -29,6 +29,12 @@ public class NeedController {
         return ResponseEntity.ok(needService.postNeed(userId, request));
     }
 
+    @GetMapping("/open")
+    public ResponseEntity<List<NeedResponse>> getAllOpen(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(needService.getAllOpen(userId));
+    }
+
     @GetMapping("/nearby")
     public ResponseEntity<List<NeedResponse>> browseNearby(
             Authentication auth,
