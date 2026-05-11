@@ -3,6 +3,8 @@ package com.towin.need.entity;
 import com.towin.common.entity.User;
 import com.towin.common.enums.*;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +27,7 @@ public class Need {
     private String title;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "need_category", nullable = false)
     private NeedCategory category;
 
@@ -32,16 +35,19 @@ public class Need {
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "need_schedule")
     @Builder.Default
     private NeedSchedule schedule = NeedSchedule.ONE_TIME;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "need_urgency")
     @Builder.Default
     private NeedUrgency urgency = NeedUrgency.NORMAL;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "need_status")
     @Builder.Default
     private NeedStatus status = NeedStatus.OPEN;

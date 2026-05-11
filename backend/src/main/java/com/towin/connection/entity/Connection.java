@@ -5,6 +5,8 @@ import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.ConnectionType;
 import com.towin.common.enums.TrustLevel;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,11 +29,13 @@ public class Connection {
     private User userB;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "connection_type")
     @Builder.Default
     private ConnectionType type = ConnectionType.SOCIAL;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "connection_status")
     @Builder.Default
     private ConnectionStatus status = ConnectionStatus.PENDING;
