@@ -11,23 +11,47 @@ export default function HelperDashboard() {
   const [tab, setTab] = useState('connections');
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
+  const [location, setLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('idle'); // idle | asking | granted | denied
+  const [radiusKm, setRadiusKm] = useState(25);
 
-  async function loadNeeds() {
+  async function loadNeeds(loc) {
     try {
-      const res = await api.get('/needs/open');
-      setNeeds(res.data);
+      const coords = loc ?? location;
+      let res;
+      if (coords) {
+        res = await api.get(`/needs/nearby?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`);
+        setNeeds(res.data);
+      } else {
+        res = await api.get('/needs/open');
+        setNeeds(res.data);
+      }
     } catch {}
+  }
+
+  function requestLocation() {
+    if (!navigator.geolocation) { setLocationStatus('denied'); loadNeeds(); return; }
+    setLocationStatus('asking');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setLocation(loc);
+        setLocationStatus('granted');
+        loadNeeds(loc);
+      },
+      () => { setLocationStatus('denied'); loadNeeds(); }
+    );
   }
 
   useEffect(() => {
     api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
     api.get('/connections').then(r => setConnections(r.data)).catch(() => {});
-    loadNeeds();
+    requestLocation();
   }, []);
 
   useEffect(() => {
     if (tab === 'browse') loadNeeds();
-  }, [tab]);
+  }, [tab, radiusKm]);
 
   async function apply(needId) {
     setApplying(needId);
@@ -116,10 +140,34 @@ export default function HelperDashboard() {
 
         {tab === 'browse' && (
           <div className="space-y-4">
-            {needs.length === 0 && (
+            {/* Location + radius bar */}
+            <div className="bg-white rounded-xl shadow-sm px-4 py-3 flex items-center justify-between gap-4">
+              <div className="text-sm text-gray-600">
+                {locationStatus === 'asking' && '📍 Getting your location...'}
+                {locationStatus === 'granted' && `📍 Showing needs within ${radiusKm} km`}
+                {locationStatus === 'denied' && (
+                  <span>📍 Location denied — showing all needs &nbsp;
+                    <button onClick={requestLocation} className="text-indigo-500 underline text-xs">Try again</button>
+                  </span>
+                )}
+                {locationStatus === 'idle' && '📍 Detecting location...'}
+              </div>
+              {locationStatus === 'granted' && (
+                <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
+                  className="border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                  <option value={5}>5 km</option>
+                  <option value={10}>10 km</option>
+                  <option value={25}>25 km</option>
+                  <option value={50}>50 km</option>
+                  <option value={100}>100 km</option>
+                </select>
+              )}
+            </div>
+
+            {needs.length === 0 && locationStatus !== 'asking' && (
               <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-400">
                 <p className="text-4xl mb-2">📋</p>
-                <p>No open requests right now. Check back later.</p>
+                <p>{locationStatus === 'granted' ? `No open requests within ${radiusKm} km. Try a larger radius.` : 'No open requests right now.'}</p>
               </div>
             )}
             {needs.map(need => (
