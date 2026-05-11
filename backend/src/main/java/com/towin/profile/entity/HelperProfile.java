@@ -50,6 +50,7 @@ public class HelperProfile {
     private String[] availabilityTimes;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "background_check_status", columnDefinition = "background_check_status_type")
     @Builder.Default
     private BackgroundCheckStatus backgroundCheckStatus = BackgroundCheckStatus.NONE;

@@ -4,6 +4,8 @@ import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,6 +29,7 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "user_role")
     @Builder.Default
     private UserRole role = UserRole.ELDER;
@@ -36,6 +39,7 @@ public class User {
     private Integer trustScore = 0;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "verification_status", columnDefinition = "verification_status")
     @Builder.Default
     private VerificationStatus verificationStatus = VerificationStatus.NONE;
