@@ -59,6 +59,15 @@ public class User {
     @Builder.Default
     private boolean phoneVerified = false;
 
+    @Column(name = "phone_otp")
+    private String phoneOtp;
+
+    @Column(name = "phone_otp_expires_at")
+    private LocalDateTime phoneOtpExpiresAt;
+
+    @Column(name = "inactivity_alerted_at")
+    private LocalDateTime inactivityAlertedAt;
+
     @Column(name = "is_active")
     @Builder.Default
     private Boolean isActive = true;
