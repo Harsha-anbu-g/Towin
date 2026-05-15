@@ -43,6 +43,18 @@ public class SosService {
         log.info("FIRST_MEET notification sent to {} contacts for elder {}", contacts.size(), elderId);
     }
 
+    private static final int INACTIVITY_DAYS = 5;
+
+    public void sendSmsPublic(String toNumber, String body) {
+        sendSms(toNumber, body);
+    }
+
+    public void sendInactivityAlert(String toPhone, com.towin.common.entity.User elder) {
+        sendSms(toPhone,
+            "Your contact on ToWin has not been active for " + INACTIVITY_DAYS +
+            " days. Please check in on them.");
+    }
+
     private void sendSms(String toNumber, String body) {
         if (accountSid.isBlank() || authToken.isBlank() || fromNumber.isBlank()) {
             log.info("Twilio not configured — would send SMS to {}: {}", toNumber, body);
