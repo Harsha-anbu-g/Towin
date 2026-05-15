@@ -23,4 +23,7 @@ public interface ConnectionRepository extends JpaRepository<Connection, UUID> {
 
     @Query("SELECT COUNT(c) FROM Connection c WHERE c.initiatedBy.id = :userId AND c.createdAt >= :since")
     long countRequestsSince(@Param("userId") UUID userId, @Param("since") LocalDateTime since);
+
+    @Query("SELECT COUNT(c) FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) AND c.currentTrustLevel = com.towin.common.enums.TrustLevel.TRUSTED AND c.status = com.towin.common.enums.ConnectionStatus.ACTIVE")
+    long countTrustedByUser(@Param("userId") UUID userId);
 }

@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.ApplicationStatus;
 import com.towin.common.enums.NeedStatus;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.TrustScoreService;
 import com.towin.need.dto.ApplicantDto;
 import com.towin.need.dto.ApplyRequest;
 import com.towin.need.dto.NeedRequest;
@@ -34,6 +35,7 @@ public class NeedService {
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
+    private final TrustScoreService trustScoreService;
 
     @Transactional
     public NeedResponse postNeed(UUID elderId, NeedRequest request) {
@@ -148,7 +150,14 @@ public class NeedService {
             throw new IllegalArgumentException("Need must be assigned before it can be completed");
         }
         need.setStatus(NeedStatus.COMPLETED);
-        return toResponse(needRepository.save(need), null);
+        NeedResponse response = toResponse(needRepository.save(need), null);
+
+        applicationRepository.findByNeedId(needId).stream()
+                .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
+                .findFirst()
+                .ifPresent(a -> trustScoreService.recalculate(a.getHelper().getId()));
+
+        return response;
     }
 
     private NeedResponse toResponse(Need need, Double distanceKm) {

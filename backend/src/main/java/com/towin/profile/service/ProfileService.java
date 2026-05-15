@@ -2,6 +2,7 @@ package com.towin.profile.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.TrustScoreService;
 import com.towin.profile.dto.*;
 import com.towin.profile.entity.*;
 import com.towin.profile.repository.*;
@@ -72,10 +73,12 @@ public class ProfileService {
     }
 
     private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper) {
+        int score = user.getTrustScore() != null ? user.getTrustScore() : 0;
         ProfileResponse.ProfileResponseBuilder builder = ProfileResponse.builder()
                 .userId(user.getId())
                 .role(user.getRole().name())
-                .trustScore(user.getTrustScore())
+                .trustScore(score)
+                .trustTier(TrustScoreService.tierFor(score))
                 .verificationStatus(user.getVerificationStatus().name())
                 .city(user.getCity());
 
