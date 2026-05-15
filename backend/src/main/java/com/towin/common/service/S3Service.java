@@ -23,6 +23,22 @@ public class S3Service {
     @Value("${aws.region:us-east-1}")
     private String region;
 
+    public String uploadDocument(UUID userId, MultipartFile file) {
+        String extension = getExtension(file.getOriginalFilename());
+        String key = "documents/" + userId + "/" + UUID.randomUUID() + extension;
+        try {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucket).key(key)
+                    .contentType(file.getContentType())
+                    .contentLength(file.getSize())
+                    .build();
+            s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to upload document", e);
+        }
+        return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+    }
+
     public String uploadPhoto(UUID userId, MultipartFile file) {
         String extension = getExtension(file.getOriginalFilename());
         String key = "photos/" + userId + "/" + UUID.randomUUID() + extension;
