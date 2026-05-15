@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
+import TrustBadge from '../components/TrustBadge';
 import api from '../api/axios';
 
 function Stars({ rating }) {
@@ -26,11 +27,13 @@ export default function ProfileEdit() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
   const [reviews, setReviews] = useState([]);
+  const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
     api.get('/profile/me').then(r => {
       const p = r.data;
+      setProfileData(p);
       setForm({
         name: p.name || '',
         age: p.age || '',
@@ -82,9 +85,14 @@ export default function ProfileEdit() {
       <NavBar />
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-lg font-semibold text-gray-800 mb-6">
-            {isElder ? '👴 Elder Profile' : '🙋 Helper Profile'}
-          </h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-lg font-semibold text-gray-800">
+              {isElder ? '👴 Elder Profile' : '🙋 Helper Profile'}
+            </h1>
+            {profileData && (
+              <TrustBadge tier={profileData.trustTier} score={profileData.trustScore} />
+            )}
+          </div>
           <form onSubmit={save} className="space-y-4">
 
             <div className="grid grid-cols-2 gap-4">

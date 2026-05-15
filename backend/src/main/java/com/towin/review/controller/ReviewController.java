@@ -37,4 +37,10 @@ public class ReviewController {
     public ResponseEntity<List<ReviewResponse>> getReviewsForUser(@PathVariable UUID userId) {
         return ResponseEntity.ok(reviewService.getReviewsForUser(userId));
     }
+
+    @GetMapping("/given")
+    public ResponseEntity<List<ReviewResponse>> getReviewsGiven(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(reviewService.getReviewsGiven(userId));
+    }
 }

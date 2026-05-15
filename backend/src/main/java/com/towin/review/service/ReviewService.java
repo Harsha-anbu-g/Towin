@@ -2,6 +2,7 @@ package com.towin.review.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.TrustScoreService;
 import com.towin.need.entity.Need;
 import com.towin.need.repository.NeedRepository;
 import com.towin.profile.repository.ElderProfileRepository;
@@ -27,6 +28,7 @@ public class ReviewService {
     private final NeedRepository needRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
+    private final TrustScoreService trustScoreService;
 
     @Transactional
     public ReviewResponse submitReview(UUID reviewerId, ReviewRequest request) {
@@ -59,7 +61,7 @@ public class ReviewService {
                 .build();
 
         Review saved = reviewRepository.save(review);
-        updateTrustScore(reviewee);
+        trustScoreService.recalculate(reviewee.getId());
 
         return toResponse(saved);
     }
@@ -75,27 +77,11 @@ public class ReviewService {
         return getReviewsForUser(userId);
     }
 
-    private void updateTrustScore(User reviewee) {
-        List<Review> allReviews = reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(reviewee.getId());
-
-        int score = 0;
-
-        // +3 per review received, max +15
-        int servicePoints = Math.min(allReviews.size() * 3, 15);
-        score += servicePoints;
-
-        // rating bonus/penalty per review
-        for (Review r : allReviews) {
-            if (r.getRating() == 5) score += 2;
-            else if (r.getRating() == 4) score += 1;
-            else if (r.getRating() <= 2) score -= 1;
-
-            // safety concern penalty
-            if (Boolean.TRUE.equals(r.getSafetyConcern())) score -= 15;
-        }
-
-        reviewee.setTrustScore(Math.max(0, Math.min(100, score)));
-        userRepository.save(reviewee);
+    public List<ReviewResponse> getReviewsGiven(UUID reviewerId) {
+        return reviewRepository.findByReviewerIdOrderByCreatedAtDesc(reviewerId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     private ReviewResponse toResponse(Review review) {

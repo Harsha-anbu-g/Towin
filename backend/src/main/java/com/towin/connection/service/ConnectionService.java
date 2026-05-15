@@ -2,6 +2,7 @@ package com.towin.connection.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.TrustLevel;
 import com.towin.common.messaging.ConnectionEvent;
 import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
@@ -54,6 +55,11 @@ public class ConnectionService {
             throw new IllegalArgumentException("Daily connection request limit reached");
         }
 
+        int senderScore = sender.getTrustScore() != null ? sender.getTrustScore() : 0;
+        TrustLevel startLevel = TrustLevel.DISCOVERED;
+        if (senderScore >= 71) startLevel = TrustLevel.VERIFIED;
+        else if (senderScore >= 51) startLevel = TrustLevel.PHONE_CALL;
+
         Connection connection = Connection.builder()
                 .userA(sender)
                 .userB(target)
@@ -61,6 +67,7 @@ public class ConnectionService {
                 .status(ConnectionStatus.PENDING)
                 .initiatedBy(sender)
                 .requestMessage(request.getRequestMessage())
+                .currentTrustLevel(startLevel)
                 .build();
 
         connection.setConfirmedByUser(senderId, true);

@@ -16,6 +16,7 @@ public class ProfileResponse {
     private String[] languages;
     private String role;
     private Integer trustScore;
+    private String trustTier;
     private String verificationStatus;
     private String city;
     private String lookingFor;

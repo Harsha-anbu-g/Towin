@@ -2,6 +2,7 @@ package com.towin.report.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.TrustScoreService;
 import com.towin.report.dto.ReportRequest;
 import com.towin.report.entity.Report;
 import com.towin.report.repository.ReportRepository;
@@ -17,6 +18,7 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
+    private final TrustScoreService trustScoreService;
 
     @Transactional
     public void submitReport(UUID reporterId, ReportRequest request) {
@@ -35,6 +37,7 @@ public class ReportService {
                 .build();
 
         reportRepository.save(report);
+        trustScoreService.recalculate(reported.getId());
     }
 
     private User getUser(UUID userId) {

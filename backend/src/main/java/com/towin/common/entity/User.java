@@ -55,6 +55,10 @@ public class User {
 
     private String city;
 
+    @Column(name = "phone_verified")
+    @Builder.Default
+    private boolean phoneVerified = false;
+
     @Column(name = "is_active")
     @Builder.Default
     private Boolean isActive = true;
