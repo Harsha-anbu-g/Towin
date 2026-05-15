@@ -29,6 +29,14 @@ export default function ProfileEdit() {
   const [reviews, setReviews] = useState([]);
   const [profileData, setProfileData] = useState(null);
 
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpMsg, setOtpMsg] = useState('');
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  const [idFile, setIdFile] = useState(null);
+  const [uploadingId, setUploadingId] = useState(false);
+  const [idMsg, setIdMsg] = useState('');
+
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
     api.get('/profile/me').then(r => {
@@ -50,6 +58,44 @@ export default function ProfileEdit() {
 
   const f = (key) => ({ value: form[key], onChange: e => setForm(p => ({...p, [key]: e.target.value})) });
   const toArr = (val) => val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  async function requestOtp() {
+    setVerifyingPhone(true);
+    try {
+      await api.post('/auth/verify-phone/request');
+      setPhoneOtpSent(true);
+      setOtpMsg('Code sent to your phone.');
+    } catch (err) {
+      setOtpMsg(err?.response?.data?.message || 'Could not send code.');
+    } finally { setVerifyingPhone(false); }
+  }
+
+  async function confirmOtp() {
+    setVerifyingPhone(true);
+    try {
+      await api.post('/auth/verify-phone/confirm', { otp });
+      setOtpMsg('Phone verified! Trust score updated.');
+      setPhoneOtpSent(false);
+      setOtp('');
+      const r = await api.get('/profile/me');
+      setProfileData(r.data);
+    } catch (err) {
+      setOtpMsg(err?.response?.data?.message || 'Invalid code.');
+    } finally { setVerifyingPhone(false); }
+  }
+
+  async function uploadId() {
+    if (!idFile) return;
+    setUploadingId(true);
+    const form = new FormData();
+    form.append('file', idFile);
+    try {
+      await api.post('/auth/verify-id', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setIdMsg('ID uploaded. Verification pending review.');
+    } catch (err) {
+      setIdMsg(err?.response?.data?.message || 'Upload failed.');
+    } finally { setUploadingId(false); }
+  }
 
   async function save(e) {
     e.preventDefault();
@@ -164,6 +210,68 @@ export default function ProfileEdit() {
               {saving ? 'Saving...' : 'Save Profile'}
             </button>
           </form>
+        </div>
+      </div>
+
+      {/* Verification */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mt-6 space-y-4">
+        <h2 className="text-base font-semibold text-gray-800">🔐 Verification</h2>
+
+        {/* Phone */}
+        <div className="border rounded-xl p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">Phone Number</p>
+            {profileData?.phoneVerified
+              ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✓ Verified (+10 pts)</span>
+              : <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Not verified</span>
+            }
+          </div>
+          {!profileData?.phoneVerified && (
+            !phoneOtpSent ? (
+              <button onClick={requestOtp} disabled={verifyingPhone}
+                className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+                {verifyingPhone ? 'Sending...' : 'Send Verification Code'}
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <input value={otp} onChange={e => setOtp(e.target.value)}
+                  placeholder="Enter 6-digit code"
+                  className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                <button onClick={confirmOtp} disabled={verifyingPhone || otp.length < 6}
+                  className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 disabled:opacity-50">
+                  Confirm
+                </button>
+              </div>
+            )
+          )}
+          {otpMsg && <p className={`text-xs ${otpMsg.includes('verified') ? 'text-green-600' : 'text-red-500'}`}>{otpMsg}</p>}
+        </div>
+
+        {/* ID */}
+        <div className="border rounded-xl p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">ID Document</p>
+            {profileData?.verificationStatus === 'VERIFIED'
+              ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✓ Verified (+20 pts)</span>
+              : profileData?.verificationStatus === 'PENDING'
+              ? <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Under review</span>
+              : <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Not submitted</span>
+            }
+          </div>
+          {(profileData?.verificationStatus === 'NONE' || !profileData?.verificationStatus) && (
+            <div className="flex gap-2 items-center">
+              <input type="file" accept="image/*,.pdf"
+                onChange={e => setIdFile(e.target.files[0])}
+                className="text-xs text-gray-600" />
+              {idFile && (
+                <button onClick={uploadId} disabled={uploadingId}
+                  className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+                  {uploadingId ? 'Uploading...' : 'Upload'}
+                </button>
+              )}
+            </div>
+          )}
+          {idMsg && <p className={`text-xs ${idMsg.includes('pending') ? 'text-yellow-600' : 'text-red-500'}`}>{idMsg}</p>}
         </div>
       </div>
 
