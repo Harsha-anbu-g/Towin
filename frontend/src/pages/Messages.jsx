@@ -12,6 +12,7 @@ export default function Messages() {
   const [sending, setSending] = useState(false);
   const [otherName, setOtherName] = useState('');
   const [otherUserId, setOtherUserId] = useState(null);
+  const [trustLevel, setTrustLevel] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [reportForm, setReportForm] = useState({ reason: 'Inappropriate Behavior', description: '' });
   const [reporting, setReporting] = useState(false);
@@ -24,6 +25,7 @@ export default function Messages() {
       if (conn) {
         setOtherName(conn.otherUserName || 'User');
         setOtherUserId(conn.otherUserId);
+        setTrustLevel(conn.currentTrustLevel);
       }
     }).catch(() => {});
 
@@ -80,6 +82,14 @@ export default function Messages() {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const TRUST_BANNERS = {
+    PHONE_CALL: { icon: '📞', text: 'Ready for a phone call? Share your number when comfortable.' },
+    VIDEO_CALL: { icon: '🎥', text: 'Time for a video call? Exchange details when ready.' },
+    VERIFIED:   { icon: '✅', text: 'Both of you are verified. Trust is growing!' },
+    FIRST_MEET: { icon: '🤝', text: 'Planning your first meet? Choose a public place and tell your emergency contacts.' },
+    TRUSTED:    { icon: '⭐', text: 'Fully trusted connection. Enjoy your friendship!' },
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b px-4 py-3 flex items-center gap-3">
@@ -91,6 +101,13 @@ export default function Messages() {
           ⚑ Report
         </button>
       </header>
+
+      {trustLevel && TRUST_BANNERS[trustLevel] && (
+        <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2 flex items-center gap-2">
+          <span>{TRUST_BANNERS[trustLevel].icon}</span>
+          <p className="text-xs text-indigo-700">{TRUST_BANNERS[trustLevel].text}</p>
+        </div>
+      )}
 
       {showReport && (
         <div className="bg-red-50 border-b border-red-100 px-4 py-4">
