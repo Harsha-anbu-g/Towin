@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import TrustBadge from '../components/TrustBadge';
 import api from '../api/axios';
 
 export default function ElderDashboard() {
@@ -170,7 +171,10 @@ export default function ElderDashboard() {
             <div className="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-2xl">👴</div>
             <div>
               <p className="font-semibold text-gray-800">{profile.name || 'Set up your profile'}</p>
-              <p className="text-sm text-gray-500">{profile.city || 'No city set'} · Trust score: {profile.trustScore ?? 0}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-500">{profile.city || 'No city set'}</p>
+                <TrustBadge tier={profile.trustTier} score={profile.trustScore} />
+              </div>
             </div>
           </div>
         )}

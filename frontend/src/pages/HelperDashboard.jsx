@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import TrustBadge from '../components/TrustBadge';
 import api from '../api/axios';
 
 export default function HelperDashboard() {
@@ -16,6 +17,10 @@ export default function HelperDashboard() {
   const [connectMsg, setConnectMsg] = useState({});
   const [respondingConn, setRespondingConn] = useState(null);
   const [confirmingTrust, setConfirmingTrust] = useState(null);
+  const [reviewingConn, setReviewingConn] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, tags: [], comment: '', safetyConcern: false });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewedConns, setReviewedConns] = useState(new Set());
   const [location, setLocation] = useState(null);
   const [locationStatus, setLocationStatus] = useState('idle');
   const [radiusKm, setRadiusKm] = useState(25);
@@ -121,6 +126,28 @@ export default function HelperDashboard() {
     } finally { setConfirmingTrust(null); }
   }
 
+  const REVIEW_TAGS = ['Friendly', 'Punctual', 'Respectful', 'Helpful', 'Patient'];
+
+  async function submitElderReview(conn) {
+    setSubmittingReview(true);
+    try {
+      await api.post('/reviews', {
+        revieweeId: conn.otherUserId,
+        rating: reviewForm.rating,
+        tags: reviewForm.tags,
+        comment: reviewForm.comment || null,
+        safetyConcern: reviewForm.safetyConcern,
+      });
+      setReviewedConns(prev => new Set([...prev, conn.id]));
+      setReviewingConn(null);
+      setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Could not submit review.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  }
+
   const trustLabel = (level) => {
     const map = {
       DISCOVERED: 'Discovered', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Call',
@@ -148,7 +175,10 @@ export default function HelperDashboard() {
             <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-2xl">🙋</div>
             <div>
               <p className="font-semibold text-gray-800">{profile.name || 'Set up your profile'}</p>
-              <p className="text-sm text-gray-500">{profile.city || 'No city set'} · Trust score: {profile.trustScore ?? 0}</p>
+              <div className="flex items-center gap-2">
+              <p className="text-sm text-gray-500">{profile.city || 'No city set'}</p>
+              <TrustBadge tier={profile.trustTier} score={profile.trustScore} />
+            </div>
             </div>
           </div>
         )}
@@ -177,7 +207,9 @@ export default function HelperDashboard() {
                     <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg">👴</div>
                     <div>
                       <p className="font-medium text-gray-800">{conn.otherUserName || 'Elder'}</p>
-                      <p className="text-xs text-gray-500">{trustLabel(conn.currentTrustLevel)}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs text-gray-500">{trustLabel(conn.currentTrustLevel)}</p>
+                      </div>
                       {conn.requestMessage && (
                         <p className="text-xs text-gray-400 italic mt-0.5">"{conn.requestMessage}"</p>
                       )}
@@ -202,6 +234,16 @@ export default function HelperDashboard() {
                           className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700">
                           Message
                         </button>
+                        {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
+                          <button
+                            onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)}
+                            className="text-xs bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600">
+                            ⭐ Review Elder
+                          </button>
+                        )}
+                        {reviewedConns.has(conn.id) && (
+                          <span className="text-xs text-green-600 font-medium">✓ Reviewed</span>
+                        )}
                       </>
                     )}
                     {conn.status === 'PENDING' && !conn.initiatedByMe && (
@@ -228,6 +270,50 @@ export default function HelperDashboard() {
                     </span>
                   </div>
                 </div>
+                {reviewingConn === conn.id && (
+                  <div className="border-t pt-3 space-y-3">
+                    <p className="text-sm font-medium text-gray-700">Rate {conn.otherUserName || 'this elder'}</p>
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map(s => (
+                        <button key={s} onClick={() => setReviewForm(f => ({...f, rating: s}))}
+                          className={`text-2xl transition-transform hover:scale-110 ${s <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</button>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {REVIEW_TAGS.map(t => (
+                        <button key={t} onClick={() => setReviewForm(f => ({
+                          ...f, tags: f.tags.includes(t) ? f.tags.filter(x => x !== t) : [...f.tags, t]
+                        }))}
+                          className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                            reviewForm.tags.includes(t)
+                              ? 'bg-indigo-600 text-white border-indigo-600'
+                              : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
+                          }`}>{t}</button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={reviewForm.comment}
+                      onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
+                      placeholder="Any comments? (optional)"
+                      rows={2}
+                      className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                    <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={reviewForm.safetyConcern}
+                        onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
+                      Report a safety concern
+                    </label>
+                    <div className="flex gap-2">
+                      <button onClick={() => submitElderReview(conn)} disabled={submittingReview}
+                        className="text-xs bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+                        {submittingReview ? 'Submitting...' : 'Submit Review'}
+                      </button>
+                      <button onClick={() => setReviewingConn(null)}
+                        className="text-xs text-gray-500 px-3 py-1.5 border rounded-lg hover:bg-gray-50">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -336,7 +422,10 @@ export default function HelperDashboard() {
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-2xl shrink-0">👴</div>
                       <div>
-                        <p className="font-semibold text-gray-800">{elder.name || 'Elder'}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-gray-800">{elder.name || 'Elder'}</p>
+                          <TrustBadge tier={elder.trustTier} score={elder.trustScore} />
+                        </div>
                         {elder.city && <p className="text-xs text-gray-500">{elder.city}</p>}
                         {elder.distanceKm != null && (
                           <p className="text-xs text-gray-400">{Math.round(elder.distanceKm * 10) / 10} km away</p>
