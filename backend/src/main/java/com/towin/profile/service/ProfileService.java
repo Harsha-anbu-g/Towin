@@ -80,6 +80,7 @@ public class ProfileService {
                 .trustScore(score)
                 .trustTier(TrustScoreService.tierFor(score))
                 .verificationStatus(user.getVerificationStatus().name())
+                .phoneVerified(user.isPhoneVerified())
                 .city(user.getCity());
 
         if (elder != null) {
