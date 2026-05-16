@@ -1,6 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import api from '../api/axios';
+
+const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+const TRUST_BANNERS = {
+  PHONE_CALL: { text: 'Ready for a phone call? Share your number when comfortable.', bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
+  VIDEO_CALL:  { text: 'Time for a video call? Exchange details when ready.',         bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d' },
+  VERIFIED:    { text: 'Both of you are verified. Trust is growing.',                  bg: '#faf5ff', border: '#e9d5ff', color: '#7c3aed' },
+  FIRST_MEET:  { text: 'Planning your first meet? Choose a public place.',             bg: '#fff7ed', border: '#fed7aa', color: '#c2410c' },
+  TRUSTED:     { text: 'Fully trusted connection. Enjoy your friendship.',             bg: '#f0fdf4', border: '#86efac', color: '#166534' },
+};
+
+const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
 export default function Messages() {
   const { connectionId } = useParams();
@@ -19,6 +33,16 @@ export default function Messages() {
   const [reportMsg, setReportMsg] = useState('');
   const bottomRef = useRef(null);
 
+  /* Pick a deterministic avatar photo from the other user's id (no real photo) */
+  const AVATAR_PHOTOS = [
+    'photo-1544005313-94ddf0286df2',
+    'photo-1507679799987-c73779587ccf',
+    'photo-1559839734-2b71ea197ec2',
+    'photo-1438761681033-6461ffad8d80',
+    'photo-1534528741775-53994a69daeb',
+  ];
+  const avatarId = AVATAR_PHOTOS[connectionId?.charCodeAt(0) % AVATAR_PHOTOS.length] ?? AVATAR_PHOTOS[0];
+
   useEffect(() => {
     api.get('/connections').then(r => {
       const conn = r.data.find(c => c.id === connectionId);
@@ -28,7 +52,6 @@ export default function Messages() {
         setTrustLevel(conn.currentTrustLevel);
       }
     }).catch(() => {});
-
     loadMessages();
     const interval = setInterval(loadMessages, 5000);
     return () => clearInterval(interval);
@@ -73,71 +96,81 @@ export default function Messages() {
     } finally { setReporting(false); }
   }
 
-  const fmtTime = (iso) => {
-    const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const TRUST_BANNERS = {
-    PHONE_CALL: 'Ready for a phone call? Share your number when comfortable.',
-    VIDEO_CALL:  'Time for a video call? Exchange details when ready.',
-    VERIFIED:    'Both of you are verified. Trust is growing.',
-    FIRST_MEET:  'Planning your first meet? Choose a public place.',
-    TRUSTED:     'Fully trusted connection. Enjoy your friendship.',
-  };
+  const fmtTime = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const banner = trustLevel ? TRUST_BANNERS[trustLevel] : null;
 
   return (
-    <div style={{ minHeight: '100svh', background: '#f5f5f7', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface)', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
       <header style={{
-        background: '#fff',
-        borderBottom: '1px solid #d2d2d7',
-        padding: '12px 16px',
+        background: 'var(--canvas)',
+        borderBottom: '1px solid var(--border)',
+        padding: '10px 16px',
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
+        position: 'sticky', top: 0, zIndex: 10,
       }}>
-        <button onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: '#6e6e73', lineHeight: 1, padding: '0 4px' }}>
-          ←
-        </button>
-        <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#d6e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 600, color: '#0066cc', flexShrink: 0 }}>
-          {otherName ? otherName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
+        <button onClick={() => navigate(-1)} style={{
+          background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-2)',
+          fontSize: '22px', lineHeight: 1, padding: '0 4px', display: 'flex', alignItems: 'center',
+        }}>←</button>
+
+        {/* Avatar with photo */}
+        <div style={{ width: '38px', height: '38px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid var(--border)' }}>
+          <LazyLoadImage
+            src={unsplash(avatarId, 76, 76)}
+            alt={otherName}
+            effect="blur"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+          />
         </div>
-        <p style={{ fontWeight: 500, fontSize: '17px', color: '#1d1d1f', flex: 1 }}>{otherName || 'Conversation'}</p>
+
+        <div style={{ flex: 1 }}>
+          <p style={{ fontWeight: 600, fontSize: '15px', color: 'var(--ink)' }}>{otherName || 'Conversation'}</p>
+          {trustLevel && <p style={{ fontSize: '12px', color: 'var(--ink-3)' }}>{trustLevel.replace(/_/g, ' ')}</p>}
+        </div>
+
         <button onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
-          style={{ fontSize: '13px', color: '#ff3b30', background: 'none', border: '1px solid #ffcdd2', borderRadius: '9999px', padding: '4px 12px', cursor: 'pointer' }}>
+          style={{
+            fontSize: '12px', color: 'var(--red)', background: 'rgba(239,68,68,0.08)',
+            border: '1px solid rgba(239,68,68,0.2)', borderRadius: '9999px', padding: '5px 12px', cursor: 'pointer',
+            fontFamily: 'var(--font-body)', fontWeight: 600,
+          }}>
           Report
         </button>
       </header>
 
-      {trustLevel && TRUST_BANNERS[trustLevel] && (
-        <div style={{ background: '#d6e8ff', borderBottom: '1px solid #b3d1ff', padding: '8px 16px' }}>
-          <p style={{ fontSize: '13px', color: '#004499' }}>{TRUST_BANNERS[trustLevel]}</p>
+      {/* Trust level banner */}
+      {banner && (
+        <div style={{ background: banner.bg, borderBottom: `1px solid ${banner.border}`, padding: '10px 20px' }}>
+          <p style={{ fontSize: '13px', color: banner.color, fontWeight: 500 }}>{banner.text}</p>
         </div>
       )}
 
+      {/* Report panel */}
       {showReport && (
-        <div style={{ background: '#fff2f2', borderBottom: '1px solid #ffcdd2', padding: '16px' }}>
-          <p style={{ fontSize: '14px', fontWeight: 500, color: '#c62828', marginBottom: '12px' }}>Report {otherName}</p>
+        <div style={{ background: '#fff5f5', borderBottom: '1px solid #fecaca', padding: '16px 20px' }}>
+          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--red)', marginBottom: '12px' }}>Report {otherName}</p>
           <form onSubmit={submitReport} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <select value={reportForm.reason} onChange={e => setReportForm(f => ({...f, reason: e.target.value}))}
-              style={{ border: '1px solid #ffcdd2', borderRadius: '10px', padding: '8px 12px', fontSize: '14px', outline: 'none', background: '#fff' }}>
+            <select value={reportForm.reason} onChange={e => setReportForm(f => ({ ...f, reason: e.target.value }))}
+              className="field" style={{ borderColor: '#fecaca' }}>
               <option>Inappropriate Behavior</option>
               <option>Spam</option>
               <option>Safety Concern</option>
               <option>Other</option>
             </select>
-            <textarea value={reportForm.description} onChange={e => setReportForm(f => ({...f, description: e.target.value}))}
+            <textarea value={reportForm.description} onChange={e => setReportForm(f => ({ ...f, description: e.target.value }))}
               placeholder="Describe what happened (optional)..." rows={2}
-              style={{ border: '1px solid #ffcdd2', borderRadius: '10px', padding: '8px 12px', fontSize: '14px', outline: 'none', fontFamily: 'inherit' }} />
-            {reportMsg && <p style={{ fontSize: '13px', color: reportMsg.includes('Thank') ? '#155724' : '#c62828' }}>{reportMsg}</p>}
+              className="field" style={{ borderColor: '#fecaca', resize: 'none' }} />
+            {reportMsg && <p style={{ fontSize: '13px', color: reportMsg.includes('Thank') ? 'var(--green)' : 'var(--red)' }}>{reportMsg}</p>}
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button type="submit" disabled={reporting}
-                style={{ background: '#c62828', color: '#fff', border: 'none', borderRadius: '9999px', padding: '7px 16px', fontSize: '13px', cursor: 'pointer' }}>
+              <button type="submit" disabled={reporting} className="primary-btn"
+                style={{ background: 'var(--red)', fontSize: '13px', padding: '7px 16px' }}>
                 {reporting ? 'Submitting...' : 'Submit Report'}
               </button>
-              <button type="button" onClick={() => setShowReport(false)}
-                style={{ background: '#fff', color: '#6e6e73', border: '1px solid #d2d2d7', borderRadius: '9999px', padding: '7px 16px', fontSize: '13px', cursor: 'pointer' }}>
+              <button type="button" onClick={() => setShowReport(false)} className="ghost-btn">
                 Cancel
               </button>
             </div>
@@ -145,26 +178,50 @@ export default function Messages() {
         </div>
       )}
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* Messages list */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {messages.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#86868b', fontSize: '14px', marginTop: '32px' }}>No messages yet. Say hello!</p>
+          <div style={{ textAlign: 'center', marginTop: '48px' }}>
+            <div style={{ width: '72px', height: '72px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 16px', border: '3px solid var(--border)' }}>
+              <LazyLoadImage
+                src={unsplash(avatarId, 144, 144)}
+                alt={otherName}
+                effect="blur"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+              />
+            </div>
+            <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', marginBottom: '4px' }}>{otherName}</p>
+            <p style={{ fontSize: '14px', color: 'var(--ink-3)' }}>No messages yet. Say hello!</p>
+          </div>
         )}
         {messages.map(m => {
           const isMe = m.senderId === myUserId;
           return (
-            <div key={m.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
+            <div key={m.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '8px' }}>
+              {!isMe && (
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+                  <LazyLoadImage
+                    src={unsplash(avatarId, 56, 56)}
+                    alt=""
+                    effect="blur"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+                  />
+                </div>
+              )}
               <div style={{
-                maxWidth: '70%',
+                maxWidth: '68%',
                 padding: '10px 14px',
                 borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                background: isMe ? '#0066cc' : '#fff',
-                border: isMe ? 'none' : '1px solid #d2d2d7',
-                color: isMe ? '#fff' : '#1d1d1f',
+                background: isMe ? 'var(--blue)' : 'var(--canvas)',
+                border: isMe ? 'none' : '1px solid var(--border)',
+                color: isMe ? '#fff' : 'var(--ink)',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
               }}>
-                <p style={{ fontSize: '15px', lineHeight: 1.4 }}>{m.content}</p>
-                <p style={{ fontSize: '11px', marginTop: '4px', color: isMe ? 'rgba(255,255,255,0.6)' : '#86868b' }}>
-                  {fmtTime(m.createdAt)}
-                  {isMe && m.seenAt && ' · Seen'}
+                <p style={{ fontSize: '15px', lineHeight: 1.45 }}>{m.content}</p>
+                <p style={{ fontSize: '11px', marginTop: '4px', color: isMe ? 'rgba(255,255,255,0.55)' : 'var(--ink-3)' }}>
+                  {fmtTime(m.createdAt)}{isMe && m.seenAt && ' · Seen'}
                 </p>
               </div>
             </div>
@@ -173,42 +230,37 @@ export default function Messages() {
         <div ref={bottomRef} />
       </div>
 
+      {/* Input bar */}
       <form onSubmit={send} style={{
-        background: '#fff',
-        borderTop: '1px solid #d2d2d7',
+        background: 'var(--canvas)',
+        borderTop: '1px solid var(--border)',
         padding: '12px 16px',
         display: 'flex',
-        gap: '8px',
+        gap: '10px',
         alignItems: 'center',
       }}>
         <input
           value={text}
           onChange={e => setText(e.target.value)}
-          placeholder="Message..."
-          style={{
-            flex: 1,
-            border: '1px solid #d2d2d7',
-            borderRadius: '9999px',
-            padding: '9px 16px',
-            fontSize: '15px',
-            outline: 'none',
-            background: '#f5f5f7',
-            color: '#1d1d1f',
-          }}
+          placeholder="Message…"
+          className="field"
+          style={{ flex: 1, borderRadius: '9999px', padding: '10px 18px' }}
         />
         <button type="submit" disabled={sending || !text.trim()}
           style={{
-            background: text.trim() ? '#0066cc' : '#d2d2d7',
+            background: text.trim() ? 'var(--blue)' : 'var(--border)',
             color: '#fff',
             border: 'none',
             borderRadius: '9999px',
-            padding: '9px 20px',
-            fontSize: '15px',
-            fontWeight: 500,
+            width: '40px', height: '40px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: text.trim() ? 'pointer' : 'not-allowed',
             transition: 'background 0.15s',
+            flexShrink: 0,
           }}>
-          Send
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
         </button>
       </form>
     </div>

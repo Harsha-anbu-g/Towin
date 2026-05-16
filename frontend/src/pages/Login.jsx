@@ -1,49 +1,125 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import AuroraBackground from '../components/magic/AuroraBackground';
 import BlurFade from '../components/magic/BlurFade';
 import ShimmerButton from '../components/magic/ShimmerButton';
 
+/* Curated Unsplash photos — elderly + community lifestyle */
+const PHOTOS = [
+  { id: 'photo-1576765974256-9b879d60a571', alt: 'Elder with helper' },
+  { id: 'photo-1529156069898-49953e39b3ac', alt: 'Community friends' },
+  { id: 'photo-1559839734-2b71ea197ec2', alt: 'Smiling elder woman' },
+  { id: 'photo-1507679799987-c73779587ccf', alt: 'Elder gentleman' },
+];
+
+const unsplash = (id, w = 400, h = 300) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
 function HeroPanel() {
   return (
-    <AuroraBackground style={{ flex: '0 0 44%' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '64px 52px', minHeight: '100svh' }}>
-        <BlurFade delay={1}>
-          <p style={{ fontSize: '18px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', marginBottom: '52px', fontFamily: 'var(--font-body)' }}>
-            ToWin
-          </p>
-        </BlurFade>
+    <div style={{
+      flex: '0 0 46%',
+      background: '#020817',
+      position: 'relative',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+      padding: '52px 48px',
+      minHeight: '100svh',
+    }}>
+      {/* Full-bleed lifestyle photo */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <LazyLoadImage
+          src={unsplash('photo-1576765974256-9b879d60a571', 900, 1100)}
+          alt="Elder and helper together"
+          effect="blur"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+        />
+        {/* Dark gradient overlay so text reads */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(2,8,23,0.95) 0%, rgba(2,8,23,0.55) 50%, rgba(2,8,23,0.2) 100%)',
+        }} />
+        {/* Aurora tint overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(135deg, rgba(37,99,235,0.3) 0%, transparent 60%)',
+        }} />
+      </div>
 
+      {/* Logo top-left */}
+      <div style={{ position: 'absolute', top: '32px', left: '48px', zIndex: 2 }}>
+        <p style={{ fontSize: '17px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-body)' }}>
+          ToWin
+        </p>
+      </div>
+
+      {/* Photo grid — top right corner mosaic */}
+      <div style={{
+        position: 'absolute', top: '24px', right: '24px', zIndex: 2,
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px',
+        width: '120px',
+      }}>
+        {PHOTOS.slice(1).map(({ id, alt }) => (
+          <div key={id} style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '1' }}>
+            <LazyLoadImage
+              src={unsplash(id, 120, 120)}
+              alt={alt}
+              effect="blur"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom content */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
         <BlurFade delay={2}>
-          <h1 className="font-display" style={{ fontSize: '48px', lineHeight: 1.08, color: '#fff', marginBottom: '20px', letterSpacing: '-0.5px' }}>
+          <h1 className="font-display" style={{ fontSize: '44px', lineHeight: 1.1, color: '#fff', marginBottom: '16px', letterSpacing: '-0.3px' }}>
             Connecting<br /><em>generations,</em><br />building trust.
           </h1>
         </BlurFade>
 
         <BlurFade delay={3}>
-          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.58)', lineHeight: 1.75, marginBottom: '48px', maxWidth: '300px' }}>
+          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: '32px', maxWidth: '280px' }}>
             A safe, verified community where elders and helpers find each other.
           </p>
         </BlurFade>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          {[
-            '12,000+ verified members',
-            'Trust score system',
-            'Completely free to join',
-          ].map((text, i) => (
-            <BlurFade key={text} delay={i + 4}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.35)' }}>✦</span>
-                <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.65)', fontWeight: 400 }}>{text}</span>
-              </div>
-            </BlurFade>
-          ))}
-        </div>
+        {/* Social proof avatars */}
+        <BlurFade delay={4}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex' }}>
+              {PHOTOS.map(({ id }, i) => (
+                <div key={id} style={{
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  border: '2px solid rgba(255,255,255,0.8)',
+                  overflow: 'hidden', marginLeft: i === 0 ? 0 : '-10px',
+                  position: 'relative', zIndex: PHOTOS.length - i,
+                }}>
+                  <LazyLoadImage
+                    src={unsplash(id, 64, 64)}
+                    alt=""
+                    effect="blur"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+                  />
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+              <strong style={{ color: '#fff' }}>12,000+</strong> members joined
+            </p>
+          </div>
+        </BlurFade>
       </div>
-    </AuroraBackground>
+    </div>
   );
 }
 
@@ -74,7 +150,7 @@ export default function Login() {
       <HeroPanel />
 
       <div style={{
-        flex: '0 0 56%',
+        flex: '0 0 54%',
         background: 'var(--canvas)',
         display: 'flex',
         alignItems: 'center',

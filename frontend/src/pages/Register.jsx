@@ -1,58 +1,113 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import AuroraBackground from '../components/magic/AuroraBackground';
 import BlurFade from '../components/magic/BlurFade';
 import ShimmerButton from '../components/magic/ShimmerButton';
 
+const unsplash = (id, w = 400, h = 300) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+const COMMUNITY_PHOTOS = [
+  'photo-1529156069898-49953e39b3ac',
+  'photo-1544005313-94ddf0286df2',
+  'photo-1507679799987-c73779587ccf',
+  'photo-1438761681033-6461ffad8d80',
+  'photo-1534528741775-53994a69daeb',
+  'photo-1573497491208-6b1acb260507',
+];
+
 function HeroPanel() {
   return (
-    <AuroraBackground style={{ flex: '0 0 42%' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '64px 48px', minHeight: '100svh' }}>
-        <BlurFade delay={1}>
-          <p style={{ fontSize: '18px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', marginBottom: '52px' }}>
-            ToWin
-          </p>
-        </BlurFade>
+    <div style={{
+      flex: '0 0 42%',
+      background: '#020817',
+      position: 'relative',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+      padding: '52px 44px',
+      minHeight: '100svh',
+    }}>
+      {/* Background photo */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <LazyLoadImage
+          src={unsplash('photo-1529156069898-49953e39b3ac', 900, 1200)}
+          alt="Community"
+          effect="blur"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+        />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(2,8,23,0.96) 0%, rgba(2,8,23,0.6) 45%, rgba(2,8,23,0.15) 100%)',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(135deg, rgba(5,150,105,0.25) 0%, transparent 55%)',
+        }} />
+      </div>
 
+      {/* Logo */}
+      <div style={{ position: 'absolute', top: '32px', left: '44px', zIndex: 2 }}>
+        <p style={{ fontSize: '17px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-body)' }}>ToWin</p>
+      </div>
+
+      {/* Community photo mosaic — right side vertical strip */}
+      <div style={{
+        position: 'absolute', top: '60px', right: '20px', bottom: '220px', zIndex: 2,
+        display: 'flex', flexDirection: 'column', gap: '6px', width: '80px',
+      }}>
+        {COMMUNITY_PHOTOS.slice(0, 4).map((id) => (
+          <div key={id} style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
+            <LazyLoadImage
+              src={unsplash(id, 160, 160)}
+              alt=""
+              effect="blur"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom text */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
         <BlurFade delay={2}>
-          <h1 className="font-display" style={{ fontSize: '44px', lineHeight: 1.1, color: '#fff', marginBottom: '20px' }}>
+          <h1 className="font-display" style={{ fontSize: '40px', lineHeight: 1.1, color: '#fff', marginBottom: '14px' }}>
             Your community<br /><em>is waiting</em><br />for you.
           </h1>
         </BlurFade>
 
         <BlurFade delay={3}>
-          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.75, marginBottom: '48px', maxWidth: '280px' }}>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.58)', lineHeight: 1.7, marginBottom: '28px', maxWidth: '240px' }}>
             Join thousands of elders and helpers building real, trusted connections every day.
           </p>
         </BlurFade>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {[
-            'Free to join — no credit card',
-            'Verified and safe community',
-            'Your data stays private',
-          ].map((text, i) => (
-            <BlurFade key={text} delay={i + 4}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <BlurFade delay={4}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {['Free to join — no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
-                  width: '18px', height: '18px', borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.15)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                    <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg width="7" height="5" viewBox="0 0 7 5" fill="none">
+                    <path d="M1 2.5L2.8 4L6 1" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.65)' }}>{text}</span>
+                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)' }}>{text}</span>
               </div>
-            </BlurFade>
-          ))}
-        </div>
+            ))}
+          </div>
+        </BlurFade>
       </div>
-    </AuroraBackground>
+    </div>
   );
 }
 
@@ -154,12 +209,10 @@ export default function Register() {
                     return (
                       <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
                         style={{
-                          padding: '12px 8px',
-                          borderRadius: '14px',
+                          padding: '12px 8px', borderRadius: '14px',
                           border: active ? '2px solid var(--blue)' : '1.5px solid var(--border)',
                           background: active ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' : 'var(--canvas)',
-                          cursor: 'pointer', textAlign: 'left',
-                          transition: 'all 0.15s',
+                          cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
                           transform: active ? 'scale(1.02)' : 'scale(1)',
                         }}>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: active ? 'var(--blue)' : 'var(--ink)', marginBottom: '3px' }}>
