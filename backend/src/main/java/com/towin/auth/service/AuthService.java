@@ -49,7 +49,7 @@ public class AuthService {
             throw new IllegalStateException("User ID was not generated after save");
         }
         String id = saved.getId().toString();
-        String token = jwtUtil.generateToken(id, saved.getEmail());
+        String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name());
         return new AuthResponse(token, saved.getRole().name(), id);
     }
 
@@ -61,7 +61,7 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail());
+        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
     }
 

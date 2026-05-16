@@ -26,10 +26,11 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String userId, String email) {
+    public String generateToken(String userId, String email, String role) {
         return Jwts.builder()
                 .subject(userId)
                 .claim("email", email)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key)
@@ -61,6 +62,17 @@ public class JwtUtil {
             return Optional.of(
                 Jwts.parser().verifyWith(key).build()
                     .parseSignedClaims(token).getPayload().get("email", String.class)
+            );
+        } catch (JwtException | IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> extractRole(String token) {
+        try {
+            return Optional.ofNullable(
+                Jwts.parser().verifyWith(key).build()
+                    .parseSignedClaims(token).getPayload().get("role", String.class)
             );
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
