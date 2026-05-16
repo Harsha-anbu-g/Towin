@@ -4,6 +4,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustBadge from '../components/TrustBadge';
+import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 
@@ -283,13 +284,6 @@ export default function HelperDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
                       {conn.status === 'ACTIVE' && (
                         <>
-                          {!conn.confirmedByMe ? (
-                            <button onClick={() => confirmTrust(conn.id)} disabled={confirmingTrust === conn.id} className="btn-ghost">
-                              {confirmingTrust === conn.id ? '...' : 'Confirm Trust'}
-                            </button>
-                          ) : (
-                            <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>Confirmed</span>
-                          )}
                           <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px' }}>
                             Message
                           </button>
@@ -354,6 +348,17 @@ export default function HelperDashboard() {
                         <button onClick={() => setReviewingConn(null)} className="btn-ghost">Cancel</button>
                       </div>
                     </div>
+                  )}
+
+                  {/* Trust Journey — only on active connections */}
+                  {conn.status === 'ACTIVE' && (
+                    <TrustJourney
+                      currentTrustLevel={conn.currentTrustLevel}
+                      confirmedByMe={conn.confirmedByMe}
+                      otherUserName={conn.otherUserName || 'them'}
+                      onConfirm={() => confirmTrust(conn.id)}
+                      confirming={confirmingTrust === conn.id}
+                    />
                   )}
                 </div>
               ))}
