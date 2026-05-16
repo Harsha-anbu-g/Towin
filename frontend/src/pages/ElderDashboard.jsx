@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustBadge from '../components/TrustBadge';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+
+const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+const COMMUNITY_PHOTOS = [
+  { id: 'photo-1576765974256-9b879d60a571', label: 'Elder with helper' },
+  { id: 'photo-1529156069898-49953e39b3ac', label: 'Community' },
+  { id: 'photo-1559839734-2b71ea197ec2', label: 'Elder woman' },
+  { id: 'photo-1507679799987-c73779587ccf', label: 'Elder man' },
+];
 
 const statusStyle = (status) => {
   const map = {
@@ -143,14 +154,19 @@ export default function ElderDashboard() {
         {profile && (
           <BlurFade delay={1}>
           <div className="card" style={{ overflow: 'hidden' }}>
-            {/* Gradient cover */}
-            <div style={{
-              height: '96px',
-              background: 'linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 40%, #7c3aed 100%)',
-              backgroundSize: '200% 200%',
-              animation: 'gradient-x 8s ease infinite',
-              position: 'relative',
-            }}>
+            {/* Photo cover */}
+            <div style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
+              <LazyLoadImage
+                src={unsplash('photo-1576765974256-9b879d60a571', 800, 240)}
+                alt=""
+                effect="blur"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+              />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(135deg, rgba(29,78,216,0.7) 0%, rgba(124,58,237,0.5) 100%)',
+              }} />
               <div style={{
                 position: 'absolute', bottom: '-32px', left: '24px',
                 width: '64px', height: '64px', borderRadius: '50%',
@@ -183,6 +199,28 @@ export default function ElderDashboard() {
           </div>
           </BlurFade>
         )}
+
+        {/* Community photo strip */}
+        <BlurFade delay={2}>
+          <div className="card" style={{ padding: '20px 24px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-3)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '14px' }}>
+              Your community
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+              {COMMUNITY_PHOTOS.map(({ id, label }) => (
+                <div key={id} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '1' }} className="lift">
+                  <LazyLoadImage
+                    src={unsplash(id, 200, 200)}
+                    alt={label}
+                    effect="blur"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </BlurFade>
 
         {/* Tab bar */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', gap: '0' }}>
