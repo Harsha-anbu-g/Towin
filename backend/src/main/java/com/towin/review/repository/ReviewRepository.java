@@ -20,4 +20,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Double findAverageRatingByRevieweeId(@Param("userId") UUID userId);
 
     long countByRevieweeIdAndSafetyConcernTrue(UUID revieweeId);
+
+    List<Review> findBySafetyConcernTrue();
+
+    void deleteByReviewerIdOrRevieweeId(UUID reviewerId, UUID revieweeId);
 }

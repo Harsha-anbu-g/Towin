@@ -59,6 +59,16 @@ public class S3Service {
         return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
     }
 
+    public void deleteFile(String url) {
+        if (url == null || url.isBlank()) return;
+        try {
+            String key = url.substring(url.indexOf(".amazonaws.com/") + ".amazonaws.com/".length());
+            s3Client.deleteObject(b -> b.bucket(bucket).key(key));
+        } catch (Exception e) {
+            // Log but don't throw — file may already be deleted
+        }
+    }
+
     private String getExtension(String filename) {
         if (filename == null || !filename.contains(".")) return ".jpg";
         return filename.substring(filename.lastIndexOf('.'));
