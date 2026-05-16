@@ -17,7 +17,11 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token, data.role, data.userId);
-      navigate('/dashboard');
+      if (data.role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch {
       setError('Invalid email or password. Please try again.');
     } finally {
