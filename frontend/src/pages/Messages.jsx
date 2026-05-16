@@ -27,6 +27,7 @@ export default function Messages() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [otherName, setOtherName] = useState('');
   const [otherUserId, setOtherUserId] = useState(null);
   const [trustLevel, setTrustLevel] = useState(null);
@@ -67,8 +68,14 @@ export default function Messages() {
     try {
       const res = await api.get(`/messages/${connectionId}?sort=createdAt,asc&size=50`);
       setMessages(res.data.content ?? []);
+      setLoadError('');
       await api.post(`/messages/${connectionId}/seen`).catch(() => {});
-    } catch {}
+    } catch (err) {
+      const msg = err?.response?.data?.message || '';
+      if (msg.toLowerCase().includes('trust')) {
+        setLoadError('trust');
+      }
+    }
   }
 
   async function send(e) {
@@ -357,6 +364,18 @@ export default function Messages() {
         <div ref={bottomRef} />
       </div>
 
+      {/* Trust-level lock notice */}
+      {loadError === 'trust' && (
+        <div style={{
+          background: '#fef3c7', borderTop: '1px solid #fde68a',
+          padding: '12px 20px', textAlign: 'center',
+        }}>
+          <p style={{ fontSize: '14px', color: '#92400e', fontFamily: SFText, margin: 0 }}>
+            Messaging is locked. Both of you need to click <strong>Confirm Trust</strong> on the dashboard to unlock messages.
+          </p>
+        </div>
+      )}
+
       {/* Trust badge strip if trust level set */}
       {trustLevel && (
         <div style={{
@@ -396,7 +415,8 @@ export default function Messages() {
         <input
           value={text}
           onChange={e => setText(e.target.value)}
-          placeholder="iMessage"
+          placeholder={loadError === 'trust' ? 'Confirm trust on dashboard first…' : 'iMessage'}
+          disabled={loadError === 'trust'}
           className="field"
           style={{
             flex: 1,
@@ -412,9 +432,9 @@ export default function Messages() {
         />
         <button
           type="submit"
-          disabled={sending || !text.trim()}
+          disabled={sending || !text.trim() || loadError === 'trust'}
           style={{
-            background: text.trim() ? '#0066cc' : '#e0e0e0',
+            background: text.trim() && loadError !== 'trust' ? '#0066cc' : '#e0e0e0',
             color: '#fff',
             border: 'none',
             borderRadius: '50%',
