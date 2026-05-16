@@ -56,6 +56,15 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updatePhone(userId, body.get("phone")));
     }
 
+    @PutMapping("/location")
+    public ResponseEntity<Void> updateLocation(
+            Authentication auth,
+            @RequestBody Map<String, Double> body) {
+        UUID userId = UUID.fromString(auth.getName());
+        profileService.updateLocation(userId, body.get("locationLat"), body.get("locationLng"));
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/photo")
     public ResponseEntity<Map<String, String>> uploadPhoto(
             Authentication auth,

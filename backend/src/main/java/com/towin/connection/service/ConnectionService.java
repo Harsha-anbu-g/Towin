@@ -98,8 +98,9 @@ public class ConnectionService {
 
         ConnectionEvent.Type eventType;
         if (Boolean.TRUE.equals(request.getAccept())) {
-            connection.setConfirmedByUser(responderId, true);
             connection.setStatus(ConnectionStatus.ACTIVE);
+            connection.setConfirmedByUser(connection.getUserA().getId(), false);
+            connection.setConfirmedByUser(connection.getUserB().getId(), false);
             eventType = ConnectionEvent.Type.REQUEST_ACCEPTED;
         } else {
             connection.setStatus(ConnectionStatus.DECLINED);
@@ -130,6 +131,8 @@ public class ConnectionService {
         User other = connection.getOtherUser(viewerUserId);
         String otherName = resolveDisplayName(other);
 
+        boolean phoneUnlocked = connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
+
         return ConnectionResponse.builder()
                 .id(connection.getId())
                 .otherUserId(other.getId())
@@ -138,8 +141,10 @@ public class ConnectionService {
                 .status(connection.getStatus())
                 .currentTrustLevel(connection.getCurrentTrustLevel())
                 .confirmedByMe(connection.isConfirmedByUser(viewerUserId))
+                .confirmedByOther(connection.isConfirmedByUser(other.getId()))
                 .initiatedByMe(connection.getInitiatedBy().getId().equals(viewerUserId))
                 .requestMessage(connection.getRequestMessage())
+                .otherUserPhone(phoneUnlocked ? other.getPhone() : null)
                 .createdAt(connection.getCreatedAt())
                 .updatedAt(connection.getUpdatedAt())
                 .build();

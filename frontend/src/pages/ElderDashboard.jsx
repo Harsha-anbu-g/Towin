@@ -49,9 +49,11 @@ export default function ElderDashboard() {
   const [respondingConn, setRespondingConn] = useState(null);
   const [confirmingTrust, setConfirmingTrust] = useState(null);
   const [reviewingNeed, setReviewingNeed] = useState(null);
+  const [reviewingConn, setReviewingConn] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, tags: [], comment: '', safetyConcern: false });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewedNeeds, setReviewedNeeds] = useState(new Set());
+  const [reviewedConns, setReviewedConns] = useState(new Set());
   const [location, setLocation] = useState(null);
   const [locationStatus, setLocationStatus] = useState('idle');
   const [loading, setLoading] = useState(true);
@@ -72,19 +74,24 @@ export default function ElderDashboard() {
     api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
     loadConnections();
     loadNeeds();
+    requestLocation();
   }, []);
 
   useEffect(() => {
     if (tab === 'needs') loadNeeds();
     if (tab === 'connections') loadConnections();
-    if (tab === 'post' && locationStatus === 'idle') requestLocation();
   }, [tab]);
 
   function requestLocation() {
     if (!navigator.geolocation) { setLocationStatus('denied'); return; }
     setLocationStatus('asking');
     navigator.geolocation.getCurrentPosition(
-      pos => { setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationStatus('granted'); },
+      pos => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setLocation(loc);
+        setLocationStatus('granted');
+        api.put('/profile/location', { locationLat: loc.lat, locationLng: loc.lng }).catch(() => {});
+      },
       () => setLocationStatus('denied')
     );
   }
@@ -156,6 +163,18 @@ export default function ElderDashboard() {
 
   function toggleTag(tag) {
     setReviewForm(f => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag] }));
+  }
+
+  async function submitHelperReview(conn) {
+    setSubmittingReview(true);
+    try {
+      await api.post('/reviews', { revieweeId: conn.otherUserId, ...reviewForm, comment: reviewForm.comment || null });
+      setReviewedConns(prev => new Set([...prev, conn.id]));
+      setReviewingConn(null);
+      setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
+      toast.success('Review submitted! Thank you.');
+    } catch (err) { toast.error(err?.response?.data?.message || 'Could not submit review.'); }
+    finally { setSubmittingReview(false); }
   }
 
   async function submitReview(need) {
@@ -301,6 +320,11 @@ export default function ElderDashboard() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Helper'}</p>
                       <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '2px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
+                      {conn.otherUserPhone && (
+                        <p style={{ fontSize: '13px', color: '#0066cc', margin: '4px 0 0', fontWeight: 500 }}>
+                          📞 {conn.otherUserPhone}
+                        </p>
+                      )}
                     </div>
                     <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px', flexShrink: 0 }}>
                       Message
@@ -309,7 +333,9 @@ export default function ElderDashboard() {
                   <TrustJourney
                     currentTrustLevel={conn.currentTrustLevel}
                     confirmedByMe={conn.confirmedByMe}
+                    confirmedByOther={conn.confirmedByOther}
                     otherUserName={conn.otherUserName || 'them'}
+                    isElder={true}
                     onConfirm={() => confirmTrust(conn.id)}
                     confirming={confirmingTrust === conn.id}
                   />
@@ -410,6 +436,14 @@ export default function ElderDashboard() {
                           Message
                         </button>
                       )}
+                      {conn.status === 'ACTIVE' && conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
+                        <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '14px' }}>
+                          Review Helper
+                        </button>
+                      )}
+                      {reviewedConns.has(conn.id) && (
+                        <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>✓ Reviewed</span>
+                      )}
                       {conn.status === 'PENDING' && !conn.initiatedByMe && (
                         <>
                           <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
@@ -429,10 +463,47 @@ export default function ElderDashboard() {
                     <TrustJourney
                       currentTrustLevel={conn.currentTrustLevel}
                       confirmedByMe={conn.confirmedByMe}
+                      confirmedByOther={conn.confirmedByOther}
                       otherUserName={conn.otherUserName || 'them'}
+                      isElder={true}
                       onConfirm={() => confirmTrust(conn.id)}
                       confirming={confirmingTrust === conn.id}
                     />
+                  )}
+
+                  {/* Review form for helper */}
+                  {reviewingConn === conn.id && (
+                    <div style={{ marginTop: '14px', padding: '16px', background: '#fafafc', borderRadius: '12px', border: '1px solid #e8e8ed' }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '12px' }}>Rate {conn.otherUserName}</p>
+                      <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+                        {[1,2,3,4,5].map(s => (
+                          <button key={s} type="button" onClick={() => setReviewForm(f => ({...f, rating: s}))}
+                            style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', color: s <= reviewForm.rating ? '#ff9500' : '#d1d5db' }}>
+                            ★
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                        {['Punctual','Kind','Trustworthy','Patient','Helpful'].map(tag => (
+                          <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
+                            fontSize: '12px', padding: '4px 12px', borderRadius: '9999px', cursor: 'pointer',
+                            border: '1px solid', transition: 'all 0.15s',
+                            borderColor: reviewForm.tags.includes(tag) ? '#0066cc' : '#d2d2d7',
+                            background: reviewForm.tags.includes(tag) ? '#0066cc' : '#fff',
+                            color: reviewForm.tags.includes(tag) ? '#fff' : '#7a7a7a',
+                          }}>{tag}</button>
+                        ))}
+                      </div>
+                      <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
+                        placeholder="Share your experience (optional)" rows={2}
+                        style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #e0e0e0', fontSize: '14px', resize: 'none', boxSizing: 'border-box', marginBottom: '10px' }} />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => submitHelperReview(conn)} disabled={submittingReview} className="btn-primary" style={{ flex: 1, padding: '10px' }}>
+                          {submittingReview ? 'Submitting…' : 'Submit Review'}
+                        </button>
+                        <button onClick={() => setReviewingConn(null)} className="btn-ghost" style={{ padding: '10px 16px' }}>Cancel</button>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}

@@ -9,6 +9,7 @@ import com.towin.profile.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -60,6 +61,15 @@ public class ProfileService {
 
         helperProfileRepository.save(profile);
         return buildProfileResponse(user, null, profile);
+    }
+
+    @Transactional
+    public void updateLocation(UUID userId, Double lat, Double lng) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setLocationLat(lat != null ? BigDecimal.valueOf(lat) : null);
+        user.setLocationLng(lng != null ? BigDecimal.valueOf(lng) : null);
+        userRepository.save(user);
     }
 
     @Transactional

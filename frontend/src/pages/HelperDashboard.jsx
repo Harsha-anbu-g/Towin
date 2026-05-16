@@ -307,6 +307,11 @@ export default function HelperDashboard() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
                       <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '2px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
+                      {conn.otherUserPhone && (
+                        <p style={{ fontSize: '13px', color: '#0066cc', margin: '4px 0 0', fontWeight: 500 }}>
+                          📞 {conn.otherUserPhone}
+                        </p>
+                      )}
                     </div>
                     <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px', flexShrink: 0 }}>
                       Message
@@ -315,7 +320,9 @@ export default function HelperDashboard() {
                   <TrustJourney
                     currentTrustLevel={conn.currentTrustLevel}
                     confirmedByMe={conn.confirmedByMe}
+                    confirmedByOther={conn.confirmedByOther}
                     otherUserName={conn.otherUserName || 'them'}
+                    isElder={false}
                     onConfirm={() => confirmTrust(conn.id)}
                     confirming={confirmingTrust === conn.id}
                   />
