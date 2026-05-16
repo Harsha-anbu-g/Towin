@@ -21,6 +21,30 @@ public class NeedController {
 
     private final NeedService needService;
 
+    @GetMapping("/{needId}")
+    public ResponseEntity<NeedResponse> getOne(
+            @PathVariable UUID needId) {
+        return ResponseEntity.ok(needService.getOne(needId));
+    }
+
+    @DeleteMapping("/{needId}")
+    public ResponseEntity<Void> cancelNeed(
+            Authentication auth,
+            @PathVariable UUID needId) {
+        UUID userId = UUID.fromString(auth.getName());
+        needService.cancelNeed(userId, needId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{needId}/apply")
+    public ResponseEntity<Void> withdrawApplication(
+            Authentication auth,
+            @PathVariable UUID needId) {
+        UUID userId = UUID.fromString(auth.getName());
+        needService.withdrawApplication(userId, needId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping
     public ResponseEntity<NeedResponse> postNeed(
             Authentication auth,
