@@ -4,8 +4,6 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import BlurFade from '../components/magic/BlurFade';
-import ShimmerButton from '../components/magic/ShimmerButton';
 
 const unsplash = (id, w = 400, h = 300) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
@@ -43,17 +41,16 @@ function HeroPanel() {
         />
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to top, rgba(2,8,23,0.96) 0%, rgba(2,8,23,0.6) 45%, rgba(2,8,23,0.15) 100%)',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(135deg, rgba(5,150,105,0.25) 0%, transparent 55%)',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.15) 100%)',
         }} />
       </div>
 
       {/* Logo */}
       <div style={{ position: 'absolute', top: '32px', left: '44px', zIndex: 2 }}>
-        <p style={{ fontSize: '17px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-body)' }}>ToWin</p>
+        <p style={{
+          fontSize: '17px', fontWeight: 700, color: '#fff',
+          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        }}>ToWin</p>
       </div>
 
       {/* Community photo mosaic — right side vertical strip */}
@@ -76,37 +73,71 @@ function HeroPanel() {
 
       {/* Bottom text */}
       <div style={{ position: 'relative', zIndex: 2 }}>
-        <BlurFade delay={2}>
-          <h1 className="font-display" style={{ fontSize: '40px', lineHeight: 1.1, color: '#fff', marginBottom: '14px' }}>
-            Your community<br /><em>is waiting</em><br />for you.
-          </h1>
-        </BlurFade>
+        <h1 style={{
+          fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
+          fontSize: '40px', lineHeight: 1.1, color: '#fff',
+          marginBottom: '14px', fontWeight: 600,
+        }}>
+          Your community<br />is waiting<br />for you.
+        </h1>
 
-        <BlurFade delay={3}>
-          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.58)', lineHeight: 1.7, marginBottom: '28px', maxWidth: '240px' }}>
-            Join thousands of elders and helpers building real, trusted connections every day.
-          </p>
-        </BlurFade>
+        <p style={{
+          fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
+          marginBottom: '28px', maxWidth: '240px',
+          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        }}>
+          Join thousands of elders and helpers building real, trusted connections every day.
+        </p>
 
-        <BlurFade delay={4}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {['Free to join — no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <svg width="7" height="5" viewBox="0 0 7 5" fill="none">
-                    <path d="M1 2.5L2.8 4L6 1" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)' }}>{text}</span>
+        {/* Feature bullets */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {['Free to join — no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
+            <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
+                background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="7" height="5" viewBox="0 0 7 5" fill="none">
+                  <path d="M1 2.5L2.8 4L6 1" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
-            ))}
-          </div>
-        </BlurFade>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)' }}>{text}</span>
+            </div>
+          ))}
+        </div>
       </div>
+    </div>
+  );
+}
+
+/* 3-step progress indicator */
+function StepIndicator({ currentStep = 1 }) {
+  const steps = [1, 2, 3];
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0', marginBottom: '28px' }}>
+      {steps.map((step, i) => (
+        <div key={step} style={{ display: 'flex', alignItems: 'center', flex: i < steps.length - 1 ? 1 : 'none' }}>
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+            background: step <= currentStep ? '#0066cc' : '#e0e0e0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '12px', fontWeight: 700,
+            color: step <= currentStep ? '#fff' : '#a0a0a5',
+            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+            transition: 'background 0.2s',
+          }}>
+            {step}
+          </div>
+          {i < steps.length - 1 && (
+            <div style={{
+              flex: 1, height: '2px',
+              background: step < currentStep ? '#0066cc' : '#e0e0e0',
+              transition: 'background 0.2s',
+            }} />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -117,6 +148,7 @@ export default function Register() {
   const [form, setForm] = useState({ email: '', phone: '', password: '', role: 'ELDER' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -143,66 +175,75 @@ export default function Register() {
     <div style={{ minHeight: '100svh', display: 'flex' }}>
       <HeroPanel />
 
+      {/* Right panel */}
       <div style={{
         flex: '0 0 58%',
-        background: 'var(--canvas)',
+        background: '#fafafc',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px 64px',
+        justifyContent: 'flex-start',
         overflowY: 'auto',
       }}>
-        <div style={{ width: '100%', maxWidth: '400px' }}>
-          <BlurFade delay={1}>
-            <div style={{ marginBottom: '32px' }}>
-              <h2 className="font-display" style={{ fontSize: '36px', color: 'var(--ink)', marginBottom: '8px', letterSpacing: '-0.3px' }}>
-                Create your account
-              </h2>
-              <p style={{ fontSize: '15px', color: 'var(--ink-2)' }}>Connect, help, and belong</p>
-            </div>
-          </BlurFade>
+        {/* Dark hero band */}
+        <div style={{
+          width: '100%',
+          background: '#272729',
+          padding: '40px 64px 36px',
+          textAlign: 'center',
+        }}>
+          <h2 style={{
+            fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
+            fontSize: '56px', fontWeight: 600, color: '#ffffff',
+            marginBottom: '10px', letterSpacing: '-0.5px', lineHeight: 1.05,
+          }}>
+            Join ToWin.
+          </h2>
+          <p style={{
+            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+            fontSize: '17px', color: '#cccccc',
+          }}>
+            Create your free account in minutes.
+          </p>
+        </div>
 
-          {error && (
-            <div style={{
-              background: '#fef2f2', border: '1px solid #fecaca',
-              borderRadius: '12px', padding: '12px 16px',
-              fontSize: '14px', color: '#dc2626', marginBottom: '20px',
-            }}>
-              {error}
-            </div>
-          )}
+        {/* Form area */}
+        <div style={{
+          width: '100%', maxWidth: '440px',
+          padding: '40px 24px 48px',
+        }}>
+          {/* 3-step progress */}
+          <StepIndicator currentStep={1} />
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            <BlurFade delay={2}>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Email address</label>
-                <input type="email" autoComplete="email" required className="field"
-                  value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="you@example.com" />
+          {/* Form card */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '18px',
+            padding: '36px 32px',
+            border: '1px solid #e0e0e0',
+          }}>
+            {/* Error state */}
+            {error && (
+              <div style={{
+                background: '#fef2f2', border: '1px solid #fecaca',
+                borderRadius: '11px', padding: '12px 16px',
+                fontSize: '14px', color: '#dc2626', marginBottom: '20px',
+                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              }}>
+                {error}
               </div>
-            </BlurFade>
+            )}
 
-            <BlurFade delay={3}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              {/* Role selector */}
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Phone number</label>
-                <input type="tel" required className="field"
-                  value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                  placeholder="+1 555 000 0000" />
-              </div>
-            </BlurFade>
-
-            <BlurFade delay={4}>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Password</label>
-                <input type="password" autoComplete="new-password" required className="field"
-                  value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-                  placeholder="Create a password" />
-              </div>
-            </BlurFade>
-
-            <BlurFade delay={5}>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>I am joining as</label>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '8px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  I am joining as
+                </label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {ROLES.map(({ value, label, desc }) => {
                     const active = form.role === value;
@@ -210,15 +251,24 @@ export default function Register() {
                       <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
                         style={{
                           padding: '12px 8px', borderRadius: '14px',
-                          border: active ? '2px solid var(--blue)' : '1.5px solid var(--border)',
-                          background: active ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' : 'var(--canvas)',
-                          cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
-                          transform: active ? 'scale(1.02)' : 'scale(1)',
+                          border: active ? '2px solid #0066cc' : '1.5px solid #e0e0e0',
+                          background: active ? '#f0f6ff' : '#ffffff',
+                          cursor: 'pointer', textAlign: 'left',
+                          transition: 'all 0.15s',
                         }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: active ? 'var(--blue)' : 'var(--ink)', marginBottom: '3px' }}>
+                        <div style={{
+                          fontSize: '13px', fontWeight: 700,
+                          color: active ? '#0066cc' : '#1d1d1f',
+                          marginBottom: '3px',
+                          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                        }}>
                           {label}
                         </div>
-                        <div style={{ fontSize: '11px', color: active ? 'var(--blue-light)' : 'var(--ink-3)', lineHeight: 1.3 }}>
+                        <div style={{
+                          fontSize: '11px', lineHeight: 1.3,
+                          color: active ? '#5599dd' : '#a0a0a5',
+                          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                        }}>
                           {desc}
                         </div>
                       </button>
@@ -226,23 +276,115 @@ export default function Register() {
                   })}
                 </div>
               </div>
-            </BlurFade>
 
-            <BlurFade delay={6}>
-              <ShimmerButton type="submit" disabled={loading} style={{ width: '100%', marginTop: '4px', padding: '14px 28px', fontSize: '16px' }}>
+              {/* Email */}
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '6px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  Email address
+                </label>
+                <input
+                  type="email" autoComplete="email" required
+                  className="field"
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '6px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  Phone number
+                </label>
+                <input
+                  type="tel" required
+                  className="field"
+                  value={form.phone}
+                  onChange={e => setForm({ ...form, phone: e.target.value })}
+                  placeholder="+1 555 000 0000"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '6px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  Password
+                </label>
+                <input
+                  type="password" autoComplete="new-password" required
+                  className="field"
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  placeholder="Create a password"
+                />
+              </div>
+
+              {/* Terms checkbox */}
+              <label style={{
+                display: 'flex', alignItems: 'flex-start', gap: '10px',
+                cursor: 'pointer',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={e => setAgreed(e.target.checked)}
+                  style={{ marginTop: '2px', accentColor: '#0066cc', flexShrink: 0 }}
+                />
+                <span style={{
+                  fontSize: '13px', color: '#7a7a7a', lineHeight: 1.5,
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  I agree to the{' '}
+                  <Link to="/terms" style={{ color: '#0066cc', textDecoration: 'none' }}>Terms of Service</Link>
+                  {' '}and{' '}
+                  <Link to="/privacy" style={{ color: '#0066cc', textDecoration: 'none' }}>Privacy Policy</Link>
+                </span>
+              </label>
+
+              {/* Blue pill Create Account button */}
+              <button
+                type="submit"
+                disabled={loading || !agreed}
+                style={{
+                  width: '100%', height: '48px',
+                  background: loading || !agreed ? '#a0c4e8' : '#0066cc',
+                  color: '#ffffff',
+                  border: 'none', borderRadius: '9999px',
+                  fontSize: '16px', fontWeight: 600,
+                  cursor: loading || !agreed ? 'not-allowed' : 'pointer',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  marginTop: '4px',
+                  transition: 'background 0.15s',
+                }}
+              >
                 {loading ? 'Creating account…' : 'Create Account'}
-              </ShimmerButton>
-            </BlurFade>
-          </form>
+              </button>
+            </form>
+          </div>
 
-          <BlurFade delay={7}>
-            <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-              <p style={{ fontSize: '14px', color: 'var(--ink-2)' }}>
-                Already have an account?{' '}
-                <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
-              </p>
-            </div>
-          </BlurFade>
+          {/* Sign in link */}
+          <p style={{
+            textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
+            marginTop: '20px',
+            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+          }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: '#0066cc', fontWeight: 600, textDecoration: 'none' }}>
+              Sign In
+            </Link>
+          </p>
         </div>
       </div>
     </div>
