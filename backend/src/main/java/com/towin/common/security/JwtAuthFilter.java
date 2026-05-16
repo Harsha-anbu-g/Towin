@@ -2,16 +2,16 @@ package com.towin.common.security;
 
 import com.towin.auth.security.JwtUtil;
 import com.towin.common.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.UUID;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final ApplicationContext ctx;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -34,9 +34,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            if (jwtUtil.isTokenValid(token)) {
-                String userId = jwtUtil.extractUserId(token).orElse(null);
-                String role = jwtUtil.extractRole(token).orElse(null);
+            try {
+                Claims claims = jwtUtil.extractAllClaims(token);
+                String userId = claims.getSubject();
+                String role = claims.get("role", String.class);
                 if (userId != null) {
                     List<SimpleGrantedAuthority> authorities = role != null
                             ? List.of(new SimpleGrantedAuthority(role))
@@ -46,6 +47,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                     updateLastSeen(userId);
                 }
+            } catch (JwtException | IllegalArgumentException ignored) {
+                // invalid token — leave security context empty
             }
         }
         chain.doFilter(request, response);
@@ -53,10 +56,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private void updateLastSeen(String userId) {
         try {
-            UserRepository repo = ctx.getBean(UserRepository.class);
-            repo.findById(UUID.fromString(userId)).ifPresent(user -> {
+            userRepository.findById(UUID.fromString(userId)).ifPresent(user -> {
                 user.setLastSeenAt(LocalDateTime.now());
-                repo.save(user);
+                userRepository.save(user);
             });
         } catch (Exception ignored) {
             // never block the request for a lastSeenAt update

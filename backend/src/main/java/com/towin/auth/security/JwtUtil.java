@@ -37,9 +37,13 @@ public class JwtUtil {
                 .compact();
     }
 
+    private io.jsonwebtoken.Claims parseClaims(String token) {
+        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    }
+
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            parseClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -48,10 +52,7 @@ public class JwtUtil {
 
     public Optional<String> extractUserId(String token) {
         try {
-            return Optional.of(
-                Jwts.parser().verifyWith(key).build()
-                    .parseSignedClaims(token).getPayload().getSubject()
-            );
+            return Optional.ofNullable(parseClaims(token).getSubject());
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
@@ -59,10 +60,7 @@ public class JwtUtil {
 
     public Optional<String> extractEmail(String token) {
         try {
-            return Optional.of(
-                Jwts.parser().verifyWith(key).build()
-                    .parseSignedClaims(token).getPayload().get("email", String.class)
-            );
+            return Optional.ofNullable(parseClaims(token).get("email", String.class));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
@@ -70,12 +68,13 @@ public class JwtUtil {
 
     public Optional<String> extractRole(String token) {
         try {
-            return Optional.ofNullable(
-                Jwts.parser().verifyWith(key).build()
-                    .parseSignedClaims(token).getPayload().get("role", String.class)
-            );
+            return Optional.ofNullable(parseClaims(token).get("role", String.class));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
+    }
+
+    public io.jsonwebtoken.Claims extractAllClaims(String token) {
+        return parseClaims(token);
     }
 }
