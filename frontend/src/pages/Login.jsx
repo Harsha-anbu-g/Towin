@@ -97,11 +97,17 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    const errs = {};
+    if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
+    if (form.password.length < 6) errs.password = 'Password must be at least 6 characters';
+    if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
+    setFieldErrors({});
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token, data.role, data.userId);
@@ -176,9 +182,11 @@ export default function Login() {
                   type="email" required autoComplete="email"
                   className="field"
                   value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
                   placeholder="you@example.com"
+                  style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
                 />
+                {fieldErrors.email && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
               </div>
 
               <div>
@@ -193,9 +201,11 @@ export default function Login() {
                   type="password" required autoComplete="current-password"
                   className="field"
                   value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
                   placeholder="••••••••"
+                  style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined }}
                 />
+                {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
                   <Link to="/forgot-password" style={{
