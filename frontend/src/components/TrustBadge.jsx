@@ -1,16 +1,30 @@
-const TIER_STYLES = {
-  'Community Champion': 'bg-purple-100 text-purple-700',
-  'Highly Trusted':     'bg-yellow-100 text-yellow-700',
-  'Reliable':           'bg-green-100 text-green-700',
-  'Getting Started':    'bg-blue-100 text-blue-700',
-  'New Member':         'bg-gray-100 text-gray-600',
+const TIER_COLORS = {
+  'Community Champion': { bg: '#f0e6ff', color: '#6200ea' },
+  'Highly Trusted':     { bg: '#fff3cd', color: '#b45309' },
+  'Reliable':           { bg: '#d4edda', color: '#155724' },
+  'Getting Started':    { bg: '#d6e8ff', color: '#004499' },
+  'New Member':         { bg: '#f2f2f7', color: '#6e6e73' },
 };
 
 export default function TrustBadge({ tier, score }) {
-  const style = TIER_STYLES[tier] ?? TIER_STYLES['New Member'];
+  const colors = TIER_COLORS[tier] ?? TIER_COLORS['New Member'];
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${style}`}>
-      {tier ?? 'New Member'} · {score ?? 0}
+    <span
+      style={{
+        background: colors.bg,
+        color: colors.color,
+        fontSize: '12px',
+        fontWeight: 500,
+        padding: '2px 8px',
+        borderRadius: '9999px',
+        letterSpacing: '0',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '4px',
+      }}
+    >
+      {tier ?? 'New Member'}
+      <span style={{ opacity: 0.6 }}>· {score ?? 0}</span>
     </span>
   );
 }

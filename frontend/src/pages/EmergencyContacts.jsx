@@ -2,8 +2,32 @@ import { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import api from '../api/axios';
 
-const INPUT = 'w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300';
-const LABEL = 'block text-sm font-medium text-gray-700 mb-1';
+const inputStyle = {
+  width: '100%',
+  border: '1px solid #d2d2d7',
+  borderRadius: '10px',
+  padding: '10px 14px',
+  fontSize: '15px',
+  color: '#1d1d1f',
+  outline: 'none',
+  background: '#fff',
+  fontFamily: 'inherit',
+};
+
+const labelStyle = {
+  display: 'block',
+  fontSize: '13px',
+  fontWeight: 500,
+  color: '#6e6e73',
+  marginBottom: '6px',
+};
+
+const card = {
+  background: '#fff',
+  border: '1px solid #d2d2d7',
+  borderRadius: '18px',
+  padding: '20px',
+};
 
 export default function EmergencyContacts() {
   const [contacts, setContacts] = useState([]);
@@ -29,12 +53,10 @@ export default function EmergencyContacts() {
       });
       setContacts(prev => [...prev, res.data]);
       setForm({ name: '', phone: '', relationship: '', inactivityDays: 5 });
-      setMsg('Contact added!');
+      setMsg('Contact added.');
     } catch (err) {
       setMsg(err?.response?.data?.message || 'Failed to add contact.');
-    } finally {
-      setAdding(false);
-    }
+    } finally { setAdding(false); }
   }
 
   async function remove(contactId) {
@@ -48,46 +70,46 @@ export default function EmergencyContacts() {
     setSosMsg('');
     try {
       await api.post('/emergency/sos');
-      setSosMsg('SOS sent to all emergency contacts!');
+      setSosMsg('SOS sent to all emergency contacts.');
     } catch {
       setSosMsg('Failed to send SOS.');
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100svh', background: '#f5f5f7' }}>
       <NavBar />
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-800">🚨 Emergency Contacts</h1>
-          <button
-            onClick={triggerSos}
-            className="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700 font-medium">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <p style={{ fontSize: '24px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.3px' }}>Emergency Contacts</p>
+          <button onClick={triggerSos}
+            style={{ background: '#ff3b30', color: '#fff', border: 'none', borderRadius: '9999px', padding: '9px 20px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
             Trigger SOS
           </button>
         </div>
+
         {sosMsg && (
-          <p className={`text-sm ${sosMsg.includes('!') ? 'text-green-600' : 'text-red-500'}`}>{sosMsg}</p>
+          <p style={{ fontSize: '14px', color: sosMsg.includes('sent') ? '#155724' : '#c62828' }}>{sosMsg}</p>
         )}
 
         {contacts.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-400">
-            <p className="text-4xl mb-2">📞</p>
-            <p>No emergency contacts yet. Add up to 3.</p>
+          <div style={{ ...card, textAlign: 'center', padding: '48px 24px' }}>
+            <p style={{ fontSize: '14px', color: '#86868b' }}>No emergency contacts yet. Add up to 3.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {contacts.map(c => (
-              <div key={c.id} className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
+              <div key={c.id} style={{ ...card, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <p className="font-medium text-gray-800">{c.name}</p>
-                  <p className="text-sm text-gray-500">{c.phone}{c.relationship ? ` · ${c.relationship}` : ''}</p>
-                  <p className="text-xs text-gray-400">Alert after {c.inactivityDays} inactive days</p>
+                  <p style={{ fontWeight: 500, fontSize: '15px', color: '#1d1d1f' }}>{c.name}</p>
+                  <p style={{ fontSize: '14px', color: '#6e6e73', marginTop: '2px' }}>
+                    {c.phone}{c.relationship ? ` · ${c.relationship}` : ''}
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#86868b', marginTop: '2px' }}>Alert after {c.inactivityDays} inactive days</p>
                 </div>
-                <button
-                  onClick={() => remove(c.id)}
-                  className="text-sm text-red-500 hover:text-red-700 px-2 py-1">
+                <button onClick={() => remove(c.id)}
+                  style={{ background: 'none', border: '1px solid #d2d2d7', borderRadius: '9999px', padding: '5px 14px', fontSize: '13px', color: '#ff3b30', cursor: 'pointer' }}>
                   Remove
                 </button>
               </div>
@@ -96,34 +118,44 @@ export default function EmergencyContacts() {
         )}
 
         {contacts.length < 3 && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4">Add Contact ({contacts.length}/3)</h2>
-            <form onSubmit={addContact} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+          <div style={card}>
+            <p style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f', marginBottom: '16px' }}>
+              Add Contact ({contacts.length}/3)
+            </p>
+            <form onSubmit={addContact} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label className={LABEL}>Name</label>
-                  <input {...f('name')} className={INPUT} placeholder="Contact name" required />
+                  <label style={labelStyle}>Name</label>
+                  <input {...f('name')} style={inputStyle} placeholder="Contact name" required
+                    onFocus={e => e.target.style.borderColor = '#0066cc'}
+                    onBlur={e => e.target.style.borderColor = '#d2d2d7'} />
                 </div>
                 <div>
-                  <label className={LABEL}>Phone</label>
-                  <input {...f('phone')} className={INPUT} placeholder="+1 555 000 0000" required />
+                  <label style={labelStyle}>Phone</label>
+                  <input {...f('phone')} style={inputStyle} placeholder="+1 555 000 0000" required
+                    onFocus={e => e.target.style.borderColor = '#0066cc'}
+                    onBlur={e => e.target.style.borderColor = '#d2d2d7'} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label className={LABEL}>Relationship (optional)</label>
-                  <input {...f('relationship')} className={INPUT} placeholder="e.g. Daughter, Doctor" />
+                  <label style={labelStyle}>Relationship (optional)</label>
+                  <input {...f('relationship')} style={inputStyle} placeholder="e.g. Daughter, Doctor"
+                    onFocus={e => e.target.style.borderColor = '#0066cc'}
+                    onBlur={e => e.target.style.borderColor = '#d2d2d7'} />
                 </div>
                 <div>
-                  <label className={LABEL}>Alert after (days inactive)</label>
-                  <input {...f('inactivityDays')} type="number" min={1} max={30} className={INPUT} />
+                  <label style={labelStyle}>Alert after (days inactive)</label>
+                  <input {...f('inactivityDays')} type="number" min={1} max={30} style={inputStyle}
+                    onFocus={e => e.target.style.borderColor = '#0066cc'}
+                    onBlur={e => e.target.style.borderColor = '#d2d2d7'} />
                 </div>
               </div>
               {msg && (
-                <p className={`text-sm ${msg.includes('!') ? 'text-green-600' : 'text-red-500'}`}>{msg}</p>
+                <p style={{ fontSize: '14px', color: msg.includes('.') && msg.includes('Contact') ? '#155724' : '#c62828' }}>{msg}</p>
               )}
               <button type="submit" disabled={adding}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
+                style={{ width: '100%', background: adding ? '#86868b' : '#0066cc', color: '#fff', border: 'none', borderRadius: '9999px', padding: '12px', fontSize: '15px', fontWeight: 500, cursor: adding ? 'not-allowed' : 'pointer' }}>
                 {adding ? 'Adding...' : 'Add Contact'}
               </button>
             </form>
