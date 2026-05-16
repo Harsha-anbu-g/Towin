@@ -13,4 +13,6 @@ public interface ElderProfileRepository extends JpaRepository<ElderProfile, UUID
 
     @Query("SELECT p FROM ElderProfile p WHERE p.user.isActive = true AND p.user.locationLat IS NOT NULL AND p.user.id != :excludeUserId")
     List<ElderProfile> findAllActiveWithLocation(@org.springframework.data.repository.query.Param("excludeUserId") UUID excludeUserId);
+
+    void deleteByUserId(UUID userId);
 }
