@@ -5,6 +5,7 @@ import com.towin.need.entity.Need;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
@@ -18,4 +19,8 @@ public interface NeedRepository extends JpaRepository<Need, UUID> {
     List<Need> findOpenNeedsWithLocation(@Param("status") NeedStatus status);
 
     List<Need> findByStatusOrderByCreatedAtDesc(NeedStatus status);
+
+    @Modifying
+    @Query("DELETE FROM Need n WHERE n.elder.id = :elderId")
+    void deleteByElderId(@Param("elderId") UUID elderId);
 }

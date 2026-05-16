@@ -1,6 +1,7 @@
 package com.towin.common.repository;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.VerificationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByPhone(String phone);
     boolean existsByEmail(String email);
     boolean existsByPhone(String phone);
+
+    List<User> findByVerificationStatus(VerificationStatus status);
 
     @Query("""
         SELECT u FROM User u
