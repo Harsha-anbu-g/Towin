@@ -156,6 +156,48 @@ export default function TrustJourney({
         </svg>
       </button>
 
+      {/* ── Slider progress bar — always visible ── */}
+      <div style={{ padding: '16px 20px 4px', background: isTrusted ? '#1d1d1f' : '#fafafc' }}>
+        <Slider
+          value={[idx]}
+          min={0}
+          max={LEVELS.length - 1}
+          step={1}
+          disabled
+          showTooltip
+          tooltipContent={(v) => `${LEVELS[v]?.emoji} ${LEVELS[v]?.label}`}
+        />
+        <span
+          className="mt-2 flex w-full items-center justify-between gap-1 px-2.5"
+          aria-hidden="true"
+        >
+          {LEVELS.map((level, i) => (
+            <span key={level.key} className="flex w-0 flex-col items-center justify-center gap-1">
+              <span style={{
+                height: '4px', width: '1px',
+                background: i <= idx
+                  ? (isTrusted ? '#34c759' : '#0066cc')
+                  : (isTrusted ? 'rgba(255,255,255,0.2)' : '#d1d1d6'),
+                display: 'block',
+              }} />
+              <span style={{
+                fontSize: '9px',
+                fontWeight: i === idx ? 700 : i < idx ? 500 : 400,
+                color: i === idx
+                  ? (isTrusted ? '#34c759' : '#0066cc')
+                  : i < idx
+                    ? (isTrusted ? 'rgba(255,255,255,0.7)' : '#1d1d1f')
+                    : (isTrusted ? 'rgba(255,255,255,0.3)' : '#a0a0a5'),
+                fontFamily: SFT,
+                whiteSpace: 'nowrap',
+              }}>
+                {level.emoji}
+              </span>
+            </span>
+          ))}
+        </span>
+      </div>
+
       {/* ── Inline confirm CTA when not expanded — H6: recognition, not recall ── */}
       {!expanded && !isTrusted && onConfirm && !confirmedByMe && (
         <div style={{
@@ -207,53 +249,7 @@ export default function TrustJourney({
         </div>
       )}
 
-      {/* ── Expanded full journey (H8: revealed on demand) ── */}
-      {expanded && (
-        <div style={{ padding: '20px 20px 0' }}>
-          <style>{`
-            @keyframes tJPulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,102,204,0.4)} 50%{box-shadow:0 0 0 6px rgba(0,102,204,0)} }
-          `}</style>
-
-          {/* Slider progress bar */}
-          <Slider
-            value={[idx]}
-            min={0}
-            max={LEVELS.length - 1}
-            step={1}
-            disabled
-            showTooltip
-            tooltipContent={(v) => `${LEVELS[v]?.emoji} ${LEVELS[v]?.label}`}
-            className="mb-1"
-          />
-
-          {/* Tick labels */}
-          <span
-            className="mt-3 flex w-full items-center justify-between gap-1 px-2.5"
-            aria-hidden="true"
-          >
-            {LEVELS.map((level, i) => (
-              <span key={level.key} className="flex w-0 flex-col items-center justify-center gap-1">
-                <span style={{
-                  height: '4px', width: '1px',
-                  background: i <= idx ? '#0066cc' : '#d1d1d6',
-                  display: 'block',
-                }} />
-                <span style={{
-                  fontSize: '9px',
-                  fontWeight: i === idx ? 700 : i < idx ? 500 : 400,
-                  color: i === idx ? '#0066cc' : i < idx ? '#1d1d1f' : '#a0a0a5',
-                  fontFamily: SFT,
-                  whiteSpace: 'nowrap',
-                }}>
-                  {level.emoji}
-                </span>
-              </span>
-            ))}
-          </span>
-
-          <div style={{ marginBottom: '16px' }} />
-        </div>
-      )}
+      {/* ── Expanded detail section (H8: revealed on demand) ── */}
 
       {/* ── Two-panel access section — H6: show what's available now vs next ── */}
       {expanded && (
