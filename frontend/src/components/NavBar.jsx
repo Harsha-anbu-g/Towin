@@ -11,19 +11,6 @@ export default function NavBar() {
 
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
 
-  const navLink = (to, label) => (
-    <Link
-      to={to}
-      className={`text-sm transition-colors px-3 py-1 rounded-full ${
-        pathname === to
-          ? 'text-white bg-white/20'
-          : 'text-white/70 hover:text-white'
-      }`}
-    >
-      {label}
-    </Link>
-  );
-
   async function triggerSos() {
     setSending(true);
     try {
@@ -37,31 +24,87 @@ export default function NavBar() {
     }
   }
 
+  const navLinkStyle = (to) => ({
+    fontSize: '13px',
+    fontWeight: 500,
+    fontFamily: 'var(--font-body)',
+    color: pathname === to ? '#fff' : 'rgba(255,255,255,0.55)',
+    textDecoration: 'none',
+    padding: '4px 10px',
+    borderRadius: '6px',
+    background: pathname === to ? 'rgba(255,255,255,0.1)' : 'transparent',
+    transition: 'color 0.15s, background 0.15s',
+  });
+
   return (
-    <nav style={{ background: '#000', height: '44px' }} className="flex items-center px-6 gap-6">
-      <Link to="/dashboard" className="text-white font-semibold text-sm tracking-tight mr-4">
+    <nav style={{
+      background: '#000',
+      height: '48px',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 24px',
+      gap: '24px',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+    }}>
+      <Link to="/dashboard" style={{
+        fontSize: '15px',
+        fontWeight: 700,
+        color: '#fff',
+        textDecoration: 'none',
+        fontFamily: 'var(--font-body)',
+        letterSpacing: '-0.2px',
+        marginRight: '8px',
+      }}>
         ToWin
       </Link>
-      <div className="flex items-center gap-1 flex-1">
-        {navLink('/dashboard', 'Dashboard')}
-        {navLink('/profile', 'Profile')}
-        {isElder && navLink('/emergency-contacts', 'Emergency')}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
+        <Link to="/dashboard" style={navLinkStyle('/dashboard')}>Dashboard</Link>
+        <Link to="/profile" style={navLinkStyle('/profile')}>Profile</Link>
+        {isElder && <Link to="/emergency-contacts" style={navLinkStyle('/emergency-contacts')}>Emergency</Link>}
       </div>
-      <div className="flex items-center gap-3">
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {isElder && (
           <button
             onClick={triggerSos}
             disabled={sending}
-            className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors disabled:opacity-50 ${
-              sosSent
-                ? 'bg-green-500 text-white'
-                : 'bg-red-600 text-white hover:bg-red-500'
-            }`}
+            style={{
+              fontSize: '12px',
+              fontWeight: 700,
+              fontFamily: 'var(--font-body)',
+              letterSpacing: '0.3px',
+              padding: '5px 14px',
+              borderRadius: '9999px',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+              background: sosSent ? '#16a34a' : '#dc2626',
+              color: '#fff',
+              opacity: sending ? 0.5 : 1,
+            }}
           >
             {sosSent ? 'Help sent' : sending ? '...' : 'SOS'}
           </button>
         )}
-        <button onClick={logout} className="text-xs text-white/50 hover:text-white/80 transition-colors">
+        <button
+          onClick={logout}
+          style={{
+            fontSize: '13px',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 400,
+            color: 'rgba(255,255,255,0.45)',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => e.target.style.color = 'rgba(255,255,255,0.8)'}
+          onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.45)'}
+        >
           Sign out
         </button>
       </div>

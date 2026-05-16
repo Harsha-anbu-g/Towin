@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import TrustBadge from '../components/TrustBadge';
+import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 
 const statusStyle = (status) => {
@@ -160,25 +161,26 @@ export default function HelperDashboard() {
   );
 
   return (
-    <div style={{ minHeight: '100svh', background: '#f5f5f7' }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface)' }}>
       <NavBar />
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '32px 16px 48px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {/* Profile hero */}
         {profile && (
-          <div className="card animate-in" style={{ overflow: 'hidden' }}>
+          <BlurFade delay={1}>
+          <div className="card" style={{ overflow: 'hidden' }}>
             <div style={{
-              height: '88px',
-              background: 'linear-gradient(-45deg, #155724, #34c759, #0066cc)',
-              backgroundSize: '300% 300%',
-              animation: 'gradientShift 14s ease infinite',
+              height: '96px',
+              background: 'linear-gradient(135deg, #065f46 0%, #059669 40%, var(--blue) 100%)',
+              backgroundSize: '200% 200%',
+              animation: 'gradient-x 9s ease infinite',
               position: 'relative',
             }}>
               <div style={{
                 position: 'absolute', bottom: '-32px', left: '24px',
                 width: '64px', height: '64px', borderRadius: '50%',
-                background: profile.photoUrl ? 'transparent' : 'linear-gradient(135deg, #34c759, #30d158)',
-                border: '3px solid #fff',
+                background: profile.photoUrl ? 'transparent' : 'linear-gradient(135deg, #059669, #10b981)',
+                border: '3px solid var(--canvas)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '20px', fontWeight: 700, color: '#fff',
                 overflow: 'hidden',
@@ -191,26 +193,28 @@ export default function HelperDashboard() {
               </div>
             </div>
             <div style={{ padding: '44px 24px 20px' }}>
-              <p style={{ fontSize: '20px', fontWeight: 700, color: '#1d1d1f', letterSpacing: '-0.3px' }}>
+              <p className="font-display" style={{ fontSize: '22px', color: 'var(--ink)', letterSpacing: '-0.2px' }}>
                 {profile.name || 'Set up your profile'}
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                {profile.city && <span style={{ fontSize: '14px', color: '#6e6e73' }}>{profile.city}</span>}
+                {profile.city && <span style={{ fontSize: '14px', color: 'var(--ink-2)' }}>{profile.city}</span>}
                 <TrustBadge tier={profile.trustTier} score={profile.trustScore} />
               </div>
             </div>
           </div>
+          </BlurFade>
         )}
 
         {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #d2d2d7' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
           {tabs.map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)} style={{
               padding: '12px 20px', fontSize: '14px', fontWeight: tab === id ? 600 : 400,
-              color: tab === id ? '#0066cc' : '#6e6e73',
+              color: tab === id ? 'var(--blue)' : 'var(--ink-2)',
               background: 'none', border: 'none',
-              borderBottom: tab === id ? '2px solid #0066cc' : '2px solid transparent',
+              borderBottom: tab === id ? '2px solid var(--blue)' : '2px solid transparent',
               cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', marginBottom: '-1px',
+              fontFamily: 'var(--font-body)',
             }}>{label}</button>
           ))}
         </div>
