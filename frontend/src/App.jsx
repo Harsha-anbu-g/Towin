@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import ElderDashboard from './pages/ElderDashboard';
@@ -31,6 +32,7 @@ function DashboardRouter() {
 
 function App() {
   return (
+    <ToastProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -46,6 +48,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </ToastProvider>
   );
 }
 

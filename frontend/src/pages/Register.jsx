@@ -142,6 +142,16 @@ function StepIndicator({ currentStep = 1 }) {
   );
 }
 
+const pwdStrength = (p) => {
+  if (!p) return 0;
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^a-zA-Z0-9]/.test(p)) s++;
+  return s;
+};
+
 export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -149,11 +159,18 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    const errs = {};
+    if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
+    if (form.phone.length < 7) errs.phone = 'Enter a valid phone number';
+    if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
+    if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
+    setFieldErrors({});
     try {
       const { data } = await api.post('/auth/register', form);
       login(data.token, data.role, data.userId);
@@ -290,9 +307,11 @@ export default function Register() {
                   type="email" autoComplete="email" required
                   className="field"
                   value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
                   placeholder="you@example.com"
+                  style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
                 />
+                {fieldErrors.email && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
               </div>
 
               {/* Phone */}
@@ -308,9 +327,11 @@ export default function Register() {
                   type="tel" required
                   className="field"
                   value={form.phone}
-                  onChange={e => setForm({ ...form, phone: e.target.value })}
+                  onChange={e => { setForm({ ...form, phone: e.target.value }); setFieldErrors(f => ({ ...f, phone: '' })); }}
                   placeholder="+1 555 000 0000"
+                  style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
                 />
+                {fieldErrors.phone && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.phone}</p>}
               </div>
 
               {/* Password */}
@@ -326,9 +347,27 @@ export default function Register() {
                   type="password" autoComplete="new-password" required
                   className="field"
                   value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
                   placeholder="Create a password"
+                  style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined }}
                 />
+                {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
+                {form.password && (
+                  <div style={{ marginTop: '6px', display: 'flex', gap: '3px', alignItems: 'center' }}>
+                    {[1,2,3,4].map(i => (
+                      <div key={i} style={{
+                        flex: 1, height: '3px', borderRadius: '9999px',
+                        background: i <= pwdStrength(form.password)
+                          ? ['#ff3b30','#ff9500','#34c759','#34c759'][pwdStrength(form.password)-1]
+                          : '#e0e0e0',
+                        transition: 'background 0.2s',
+                      }} />
+                    ))}
+                    <span style={{ fontSize: '11px', color: '#7a7a7a', marginLeft: '6px', fontFamily: 'inherit' }}>
+                      {['','Weak','Fair','Good','Strong'][pwdStrength(form.password)]}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Terms checkbox */}

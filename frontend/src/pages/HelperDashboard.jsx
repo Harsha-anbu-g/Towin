@@ -7,6 +7,7 @@ import TrustBadge from '../components/TrustBadge';
 import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+import { useToast } from '../context/ToastContext';
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
@@ -32,6 +33,7 @@ const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(
 
 export default function HelperDashboard() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
@@ -47,6 +49,7 @@ export default function HelperDashboard() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, tags: [], comment: '', safetyConcern: false });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewedConns, setReviewedConns] = useState(new Set());
+  const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState(null);
   const [locationStatus, setLocationStatus] = useState('idle');
   const [radiusKm, setRadiusKm] = useState(25);
@@ -61,7 +64,9 @@ export default function HelperDashboard() {
     } catch {}
   }
   async function loadConnections() {
+    setLoading(true);
     try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
+    finally { setLoading(false); }
   }
   async function loadElders(loc) {
     try {
@@ -101,7 +106,8 @@ export default function HelperDashboard() {
     try {
       await api.delete(`/needs/${needId}/apply`);
       setApplyMsg(prev => { const next = {...prev}; delete next[needId]; return next; });
-    } catch { alert('Could not withdraw application.'); }
+      toast.info('Application withdrawn.');
+    } catch { toast.error('Could not withdraw. Try again.'); }
   }
 
   async function apply(needId) {
@@ -109,6 +115,7 @@ export default function HelperDashboard() {
     try {
       await api.post(`/needs/${needId}/apply`);
       setApplyMsg(prev => ({...prev, [needId]: 'Applied!'}));
+      toast.success('Application sent!');
       await loadNeeds();
     } catch (err) {
       setApplyMsg(prev => ({...prev, [needId]: err?.response?.data?.message || 'Could not apply.'}));
@@ -128,15 +135,23 @@ export default function HelperDashboard() {
 
   async function respondToConnection(connId, accept) {
     setRespondingConn(connId);
-    try { await api.post(`/connections/${connId}/respond`, { accept }); await loadConnections(); }
-    catch (err) { alert(err?.response?.data?.message || 'Could not respond.'); }
+    try {
+      await api.post(`/connections/${connId}/respond`, { accept });
+      if (accept) toast.success('Connection accepted!');
+      await loadConnections();
+    }
+    catch (err) { toast.error(err?.response?.data?.message || 'Could not respond to request.'); }
     finally { setRespondingConn(null); }
   }
 
   async function confirmTrust(connId) {
     setConfirmingTrust(connId);
-    try { await api.post(`/trust/${connId}/confirm`); await loadConnections(); }
-    catch (err) { alert(err?.response?.data?.message || 'Could not confirm trust.'); }
+    try {
+      await api.post(`/trust/${connId}/confirm`);
+      toast.success('Trust level confirmed!');
+      await loadConnections();
+    }
+    catch (err) { toast.error('Could not advance trust level. Try again.'); }
     finally { setConfirmingTrust(null); }
   }
 
@@ -149,11 +164,13 @@ export default function HelperDashboard() {
       setReviewedConns(prev => new Set([...prev, conn.id]));
       setReviewingConn(null);
       setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
-    } catch (err) { alert(err?.response?.data?.message || 'Could not submit review.'); }
+      toast.success('Review submitted!');
+    } catch (err) { toast.error(err?.response?.data?.message || 'Could not submit review.'); }
     finally { setSubmittingReview(false); }
   }
 
-  const trustLabel = (level) => ({ DISCOVERED: 'Discovered', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Call', VIDEO_CALL: 'Video Call', VERIFIED: 'Verified', FIRST_MEET: 'First Meet', TRUSTED: 'Trusted' }[level] || level);
+  const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
+  const trustLabel = (l) => TRUST_LABELS[l] || l;
   const connectedElderIds = new Set(connections.map(c => c.otherUserId));
   const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const tabs = [
@@ -242,17 +259,20 @@ export default function HelperDashboard() {
           {/* Connections tab */}
           {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {connections.length === 0 && (
-                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dcfce7', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34c759" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                  </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Discover elders near you and send a connection request.</p>
-                  <button onClick={() => setTab('discover')} className="btn-primary" style={{ marginTop: '16px', padding: '10px 24px', fontSize: '14px' }}>
+              {loading && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                  ))}
+                  <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+                </div>
+              )}
+              {!loading && connections.length === 0 && (
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>👥</div>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Discover elders near you and send a connection request to get started.</p>
+                  <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
                     Discover Elders
                   </button>
                 </div>
@@ -306,7 +326,7 @@ export default function HelperDashboard() {
                         </>
                       )}
                       <span style={statusStyle(conn.status === 'PENDING' && conn.initiatedByMe ? 'PENDING' : conn.status)}>
-                        {conn.status === 'PENDING' && conn.initiatedByMe ? 'Waiting' : conn.status}
+                        {{ ACTIVE: 'Connected', PENDING: 'Request Sent' }[conn.status] || conn.status}
                       </span>
                     </div>
                   </div>
@@ -378,7 +398,9 @@ export default function HelperDashboard() {
                   </div>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests found</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a' }}>
-                    {locationStatus === 'granted' ? `No open requests within ${radiusKm} km. Try a larger radius.` : 'No open requests right now.'}
+                    {locationStatus === 'granted'
+                      ? `Nothing within ${radiusKm} km right now. Use the radius selector above to expand your search area.`
+                      : 'No open requests right now. Check back soon or enable location to filter by distance.'}
                   </p>
                 </div>
               )}
