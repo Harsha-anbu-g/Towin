@@ -140,6 +140,37 @@ public class NeedService {
         return toResponse(needRepository.save(need), null);
     }
 
+    public NeedResponse getOne(UUID needId) {
+        return toResponse(getNeed(needId), null, true);
+    }
+
+    @Transactional
+    public void cancelNeed(UUID elderId, UUID needId) {
+        Need need = getNeed(needId);
+        if (!need.getElder().getId().equals(elderId)) {
+            throw new IllegalArgumentException("Only the posting elder can cancel this need");
+        }
+        if (need.getStatus() == NeedStatus.COMPLETED) {
+            throw new IllegalArgumentException("Cannot cancel a completed need");
+        }
+        need.setStatus(NeedStatus.CANCELLED);
+        needRepository.save(need);
+    }
+
+    @Transactional
+    public void withdrawApplication(UUID helperId, UUID needId) {
+        Need need = getNeed(needId);
+        if (need.getStatus() != NeedStatus.OPEN) {
+            throw new IllegalArgumentException("Cannot withdraw from a need that is no longer open");
+        }
+        NeedApplication application = applicationRepository.findByNeedIdAndHelperId(needId, helperId)
+                .orElseThrow(() -> new IllegalArgumentException("No application found"));
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw new IllegalArgumentException("Can only withdraw a pending application");
+        }
+        applicationRepository.delete(application);
+    }
+
     @Transactional
     public NeedResponse complete(UUID elderId, UUID needId) {
         Need need = getNeed(needId);

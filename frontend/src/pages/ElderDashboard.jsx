@@ -111,6 +111,12 @@ export default function ElderDashboard() {
     catch { alert('Could not mark complete.'); }
   }
 
+  async function cancelNeed(needId) {
+    if (!confirm('Cancel this request?')) return;
+    try { await api.delete(`/needs/${needId}`); await loadNeeds(); }
+    catch { alert('Could not cancel request.'); }
+  }
+
   async function acceptHelper(needId, helperId) {
     setAccepting(`${needId}-${helperId}`);
     try { await api.post(`/needs/${needId}/accept/${helperId}`); await loadNeeds(); }
@@ -352,7 +358,12 @@ export default function ElderDashboard() {
                     </div>
                   )}
                   {need.status === 'OPEN' && (!need.applications || need.applications.length === 0) && (
-                    <p style={{ fontSize: '13px', color: '#a0a0a5', borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>No applicants yet</p>
+                    <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <p style={{ fontSize: '13px', color: '#a0a0a5', margin: 0 }}>No applicants yet</p>
+                      <button onClick={() => cancelNeed(need.id)} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
+                        Cancel
+                      </button>
+                    </div>
                   )}
                   {need.status === 'ASSIGNED' && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>

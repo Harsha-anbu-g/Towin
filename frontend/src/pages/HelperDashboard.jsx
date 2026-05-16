@@ -96,6 +96,13 @@ export default function HelperDashboard() {
     if (tab === 'discover') loadElders();
   }, [tab, radiusKm]);
 
+  async function withdrawApplication(needId) {
+    try {
+      await api.delete(`/needs/${needId}/apply`);
+      setApplyMsg(prev => { const next = {...prev}; delete next[needId]; return next; });
+    } catch { alert('Could not withdraw application.'); }
+  }
+
   async function apply(needId) {
     setApplying(needId);
     try {
@@ -391,7 +398,7 @@ export default function HelperDashboard() {
                       </div>
                       <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '6px' }}>Posted by {need.elderName}</p>
                     </div>
-                    <div style={{ flexShrink: 0 }}>
+                    <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
                       <button onClick={() => apply(need.id)} disabled={applying === need.id || !!applyMsg[need.id]}
                         className={applyMsg[need.id]?.includes('!') ? '' : 'btn-primary'}
                         style={applyMsg[need.id]?.includes('!') ? {
@@ -400,6 +407,12 @@ export default function HelperDashboard() {
                         } : { padding: '8px 18px', fontSize: '13px' }}>
                         {applying === need.id ? '...' : applyMsg[need.id] || 'Apply'}
                       </button>
+                      {applyMsg[need.id]?.includes('!') && (
+                        <button onClick={() => withdrawApplication(need.id)}
+                          style={{ fontSize: '11px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
+                          Withdraw
+                        </button>
+                      )}
                     </div>
                   </div>
                   {applyMsg[need.id] && !applyMsg[need.id].includes('!') && (
