@@ -1,5 +1,5 @@
 package com.towin.common.enums;
 
 public enum UserRole {
-    ELDER, HELPER, BOTH
+    ELDER, HELPER, BOTH, ADMIN
 }
