@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { Slider } from './ui/slider';
 
 const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -73,25 +74,12 @@ export default function TrustJourney({
   confirming = false,
 }) {
   const [expanded, setExpanded] = useState(false);
-  const trackRef = useRef(null);
 
   const idx = LEVEL_IDX[currentTrustLevel] ?? 0;
   const current = LEVELS[idx];
   const next = LEVELS[idx + 1] ?? null;
   const pct = Math.round((idx / (LEVELS.length - 1)) * 100);
   const isTrusted = idx === LEVELS.length - 1;
-
-  /* H1: animate fill on mount and whenever level changes */
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    el.style.width = '0%';
-    const id = requestAnimationFrame(() => {
-      el.style.transition = 'width 1s cubic-bezier(0.4,0,0.2,1)';
-      el.style.width = `${pct}%`;
-    });
-    return () => cancelAnimationFrame(id);
-  }, [pct]);
 
   return (
     <div style={{
@@ -221,76 +209,49 @@ export default function TrustJourney({
 
       {/* ── Expanded full journey (H8: revealed on demand) ── */}
       {expanded && (
-        <div style={{ padding: '16px 16px 0' }}>
+        <div style={{ padding: '20px 20px 0' }}>
+          <style>{`
+            @keyframes tJPulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,102,204,0.4)} 50%{box-shadow:0 0 0 6px rgba(0,102,204,0)} }
+          `}</style>
 
-          {/* Track */}
-          <div style={{ position: 'relative', marginBottom: '6px' }}>
-            <div style={{
-              position: 'absolute', top: '13px', left: '13px', right: '13px',
-              height: '2px', background: '#e8e8ed', borderRadius: '9999px',
-            }} />
-            <div ref={trackRef} style={{
-              position: 'absolute', top: '13px', left: '13px',
-              height: '2px',
-              background: 'linear-gradient(90deg, #0066cc, #2997ff)',
-              borderRadius: '9999px', width: '0%',
-            }} />
-            <div style={{
-              position: 'relative', zIndex: 1,
-              display: 'flex', justifyContent: 'space-between',
-            }}>
-              {LEVELS.map((level, i) => {
-                const done   = i < idx;
-                const active = i === idx;
-                const locked = i > idx;
-                return (
-                  <div key={level.key} style={{
-                    flex: i < LEVELS.length - 1 ? 1 : 'none',
-                    display: 'flex', justifyContent: 'center',
-                  }}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {active && (
-                        <div style={{
-                          position: 'absolute', width: '30px', height: '30px',
-                          borderRadius: '50%', border: '2px solid #0066cc44',
-                          animation: 'tJPulse 2s ease-in-out infinite',
-                        }} />
-                      )}
-                      <div style={{
-                        width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
-                        background: done ? '#0066cc' : active ? '#0066cc' : '#f0f0f5',
-                        border: done ? 'none' : active ? '3px solid #0066cc' : '2px solid #d1d1d6',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: active ? '0 0 0 4px #0066cc18' : done ? '0 1px 4px #0066cc44' : 'none',
-                      }}>
-                        {done   && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                        {active && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#fff' }} />}
-                        {locked && <svg width="7" height="9" viewBox="0 0 7 9" fill="none"><rect x="0.7" y="3.7" width="5.6" height="5" rx="1" stroke="#c7c7cc" strokeWidth="1.3"/><path d="M1.8 3.7V2.5a1.7 1.7 0 0 1 3.4 0v1.2" stroke="#c7c7cc" strokeWidth="1.3" strokeLinecap="round"/></svg>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          {/* Slider progress bar */}
+          <Slider
+            value={[idx]}
+            min={0}
+            max={LEVELS.length - 1}
+            step={1}
+            disabled
+            showTooltip
+            tooltipContent={(v) => `${LEVELS[v]?.emoji} ${LEVELS[v]?.label}`}
+            className="mb-1"
+          />
 
-          {/* Level short labels */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+          {/* Tick labels */}
+          <span
+            className="mt-3 flex w-full items-center justify-between gap-1 px-2.5"
+            aria-hidden="true"
+          >
             {LEVELS.map((level, i) => (
-              <div key={level.key} style={{
-                flex: i < LEVELS.length - 1 ? 1 : 'none',
-                display: 'flex', justifyContent: 'center',
-              }}>
+              <span key={level.key} className="flex w-0 flex-col items-center justify-center gap-1">
                 <span style={{
-                  fontSize: '9px', fontWeight: i === idx ? 700 : i < idx ? 500 : 400,
+                  height: '4px', width: '1px',
+                  background: i <= idx ? '#0066cc' : '#d1d1d6',
+                  display: 'block',
+                }} />
+                <span style={{
+                  fontSize: '9px',
+                  fontWeight: i === idx ? 700 : i < idx ? 500 : 400,
                   color: i === idx ? '#0066cc' : i < idx ? '#1d1d1f' : '#a0a0a5',
-                  fontFamily: SFT, whiteSpace: 'nowrap',
+                  fontFamily: SFT,
+                  whiteSpace: 'nowrap',
                 }}>
-                  {level.short}
+                  {level.emoji}
                 </span>
-              </div>
+              </span>
             ))}
-          </div>
+          </span>
+
+          <div style={{ marginBottom: '16px' }} />
         </div>
       )}
 
