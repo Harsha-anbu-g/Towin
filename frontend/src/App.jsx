@@ -7,6 +7,8 @@ import HelperDashboard from './pages/HelperDashboard';
 import ProfileEdit from './pages/ProfileEdit';
 import EmergencyContacts from './pages/EmergencyContacts';
 import Messages from './pages/Messages';
+import Admin from './pages/Admin';
+import AdminRoute from './components/AdminRoute';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -38,6 +40,7 @@ function App() {
           <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
           <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
           <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
+          <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
