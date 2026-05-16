@@ -2,79 +2,57 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import AuroraBackground from '../components/magic/AuroraBackground';
+import BlurFade from '../components/magic/BlurFade';
+import ShimmerButton from '../components/magic/ShimmerButton';
 
 function HeroPanel() {
   return (
-    <div style={{
-      flex: '0 0 45%',
-      background: 'linear-gradient(-45deg, #004499, #0066cc, #5856d6, #003380)',
-      backgroundSize: '400% 400%',
-      animation: 'gradientShift 10s ease infinite',
-      position: 'relative',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      padding: '64px 48px',
-    }}>
-      {/* Decorative shapes */}
-      <div style={{
-        position: 'absolute', width: '360px', height: '360px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-        top: '-80px', right: '-80px',
-        animation: 'float 8s ease-in-out infinite',
-      }} />
-      <div style={{
-        position: 'absolute', width: '240px', height: '240px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%)',
-        bottom: '-40px', left: '-40px',
-        animation: 'floatReverse 10s ease-in-out infinite',
-      }} />
+    <AuroraBackground style={{ flex: '0 0 42%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '64px 48px', minHeight: '100svh' }}>
+        <BlurFade delay={1}>
+          <p style={{ fontSize: '18px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px', marginBottom: '52px' }}>
+            ToWin
+          </p>
+        </BlurFade>
 
-      {/* Content */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <p style={{
-          fontSize: '24px', fontWeight: 700, color: '#fff',
-          letterSpacing: '-0.5px', marginBottom: '40px',
-          fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-        }}>
-          ToWin
-        </p>
+        <BlurFade delay={2}>
+          <h1 className="font-display" style={{ fontSize: '44px', lineHeight: 1.1, color: '#fff', marginBottom: '20px' }}>
+            Your community<br /><em>is waiting</em><br />for you.
+          </h1>
+        </BlurFade>
 
-        <h1 style={{
-          fontSize: '36px', fontWeight: 700, color: '#fff',
-          lineHeight: 1.12, letterSpacing: '-0.8px', marginBottom: '16px',
-          fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-        }}>
-          Your community<br />is waiting for you.
-        </h1>
+        <BlurFade delay={3}>
+          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.75, marginBottom: '48px', maxWidth: '280px' }}>
+            Join thousands of elders and helpers building real, trusted connections every day.
+          </p>
+        </BlurFade>
 
-        <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.72)', lineHeight: 1.6, marginBottom: '40px' }}>
-          Join thousands of elders and helpers building real, trusted connections every day.
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {[
-            'Free to join — no credit card needed',
+            'Free to join — no credit card',
             'Verified and safe community',
             'Your data stays private',
-          ].map((item) => (
-            <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '18px', height: '18px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.9)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              }}>
-                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                  <path d="M1 4L3.5 6.5L9 1" stroke="#0066cc" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+          ].map((text, i) => (
+            <BlurFade key={text} delay={i + 4}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '18px', height: '18px', borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.15)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                }}>
+                  <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                    <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.65)' }}>{text}</span>
               </div>
-              <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.85)' }}>{item}</p>
-            </div>
+            </BlurFade>
           ))}
         </div>
       </div>
-    </div>
+    </AuroraBackground>
   );
 }
 
@@ -108,99 +86,110 @@ export default function Register() {
 
   return (
     <div style={{ minHeight: '100svh', display: 'flex' }}>
-      {/* Left: Hero */}
       <HeroPanel />
 
-      {/* Right: Form */}
       <div style={{
-        flex: '0 0 55%',
-        background: '#fff',
+        flex: '0 0 58%',
+        background: 'var(--canvas)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '48px 56px',
+        padding: '48px 64px',
         overflowY: 'auto',
       }}>
-        <div style={{ width: '100%', maxWidth: '400px', animation: 'fadeSlideUp 0.5s ease forwards' }}>
-          <div style={{ marginBottom: '32px' }}>
-            <p style={{ fontSize: '28px', fontWeight: 700, color: '#1d1d1f', letterSpacing: '-0.5px', marginBottom: '8px',
-              fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif" }}>
-              Create your account
-            </p>
-            <p style={{ fontSize: '15px', color: '#6e6e73' }}>Connect, help, and belong</p>
-          </div>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          <BlurFade delay={1}>
+            <div style={{ marginBottom: '32px' }}>
+              <h2 className="font-display" style={{ fontSize: '36px', color: 'var(--ink)', marginBottom: '8px', letterSpacing: '-0.3px' }}>
+                Create your account
+              </h2>
+              <p style={{ fontSize: '15px', color: 'var(--ink-2)' }}>Connect, help, and belong</p>
+            </div>
+          </BlurFade>
 
           {error && (
             <div style={{
-              background: '#fff5f5', border: '1px solid #fecaca',
+              background: '#fef2f2', border: '1px solid #fecaca',
               borderRadius: '12px', padding: '12px 16px',
-              fontSize: '14px', color: '#c62828', marginBottom: '20px',
-              animation: 'scaleIn 0.2s ease',
+              fontSize: '14px', color: '#dc2626', marginBottom: '20px',
             }}>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            <div>
-              <label className="field-label">Email address</label>
-              <input type="email" autoComplete="email" required className="input-field"
-                value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                placeholder="you@example.com" />
-            </div>
-
-            <div>
-              <label className="field-label">Phone number</label>
-              <input type="tel" required className="input-field"
-                value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                placeholder="+1 555 000 0000" />
-            </div>
-
-            <div>
-              <label className="field-label">Password</label>
-              <input type="password" autoComplete="new-password" required className="input-field"
-                value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-                placeholder="Create a password" />
-            </div>
-
-            <div>
-              <label className="field-label">I am joining as</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                {ROLES.map(({ value, label, desc }) => (
-                  <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
-                    style={{
-                      padding: '12px 8px',
-                      borderRadius: '14px',
-                      border: form.role === value ? '2px solid #0066cc' : '1px solid #d2d2d7',
-                      background: form.role === value ? 'linear-gradient(135deg, #e8f0fe 0%, #dbeafe 100%)' : '#fff',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.15s',
-                      transform: form.role === value ? 'scale(1.02)' : 'scale(1)',
-                    }}>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: form.role === value ? '#0066cc' : '#1d1d1f', marginBottom: '3px' }}>
-                      {label}
-                    </div>
-                    <div style={{ fontSize: '11px', color: form.role === value ? '#0066cc' : '#86868b', lineHeight: 1.3 }}>
-                      {desc}
-                    </div>
-                  </button>
-                ))}
+            <BlurFade delay={2}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Email address</label>
+                <input type="email" autoComplete="email" required className="field"
+                  value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                  placeholder="you@example.com" />
               </div>
-            </div>
+            </BlurFade>
 
-            <button type="submit" disabled={loading} className="btn-primary"
-              style={{ width: '100%', marginTop: '4px', padding: '14px', fontSize: '17px' }}>
-              {loading ? 'Creating account…' : 'Create Account'}
-            </button>
+            <BlurFade delay={3}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Phone number</label>
+                <input type="tel" required className="field"
+                  value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
+                  placeholder="+1 555 000 0000" />
+              </div>
+            </BlurFade>
+
+            <BlurFade delay={4}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Password</label>
+                <input type="password" autoComplete="new-password" required className="field"
+                  value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+                  placeholder="Create a password" />
+              </div>
+            </BlurFade>
+
+            <BlurFade delay={5}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>I am joining as</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                  {ROLES.map(({ value, label, desc }) => {
+                    const active = form.role === value;
+                    return (
+                      <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
+                        style={{
+                          padding: '12px 8px',
+                          borderRadius: '14px',
+                          border: active ? '2px solid var(--blue)' : '1.5px solid var(--border)',
+                          background: active ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' : 'var(--canvas)',
+                          cursor: 'pointer', textAlign: 'left',
+                          transition: 'all 0.15s',
+                          transform: active ? 'scale(1.02)' : 'scale(1)',
+                        }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: active ? 'var(--blue)' : 'var(--ink)', marginBottom: '3px' }}>
+                          {label}
+                        </div>
+                        <div style={{ fontSize: '11px', color: active ? 'var(--blue-light)' : 'var(--ink-3)', lineHeight: 1.3 }}>
+                          {desc}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </BlurFade>
+
+            <BlurFade delay={6}>
+              <ShimmerButton type="submit" disabled={loading} style={{ width: '100%', marginTop: '4px', padding: '14px 28px', fontSize: '16px' }}>
+                {loading ? 'Creating account…' : 'Create Account'}
+              </ShimmerButton>
+            </BlurFade>
           </form>
 
-          <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #f0f0f0', textAlign: 'center' }}>
-            <p style={{ fontSize: '14px', color: '#6e6e73' }}>
-              Already have an account?{' '}
-              <Link to="/login" style={{ color: '#0066cc', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
-            </p>
-          </div>
+          <BlurFade delay={7}>
+            <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', color: 'var(--ink-2)' }}>
+                Already have an account?{' '}
+                <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
+              </p>
+            </div>
+          </BlurFade>
         </div>
       </div>
     </div>
