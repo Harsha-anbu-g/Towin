@@ -69,7 +69,9 @@ const LEVEL_IDX = Object.fromEntries(LEVELS.map((l, i) => [l.key, i]));
 export default function TrustJourney({
   currentTrustLevel = 'DISCOVERED',
   confirmedByMe = false,
+  confirmedByOther = false,
   otherUserName = 'them',
+  isElder = false,
   onConfirm,
   confirming = false,
 }) {
@@ -198,55 +200,93 @@ export default function TrustJourney({
         </span>
       </div>
 
-      {/* ── Inline confirm CTA when not expanded — H6: recognition, not recall ── */}
-      {!expanded && !isTrusted && onConfirm && !confirmedByMe && (
-        <div style={{
-          padding: '10px 16px',
-          borderTop: '1px solid #f0f0f5',
-          background: '#fafafc',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
-        }}>
-          <p style={{
-            fontSize: '12px', color: '#7a7a7a', fontFamily: SFT, margin: 0, lineHeight: 1.4,
-          }}>
-            {current.nextAction}
-          </p>
-          <button
-            onClick={onConfirm}
-            disabled={confirming}
-            style={{
-              flexShrink: 0,
-              padding: '7px 16px',
-              background: confirming ? '#a0c4e8' : '#0066cc',
-              color: '#fff', border: 'none', borderRadius: '9999px',
-              fontSize: '12px', fontWeight: 600, fontFamily: SFT,
-              cursor: confirming ? 'not-allowed' : 'pointer',
-              transition: 'background 0.15s, transform 0.1s',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseDown={e => !confirming && (e.currentTarget.style.transform = 'scale(0.96)')}
-            onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-          >
-            {confirming ? '…' : 'Advance →'}
-          </button>
-        </div>
-      )}
+      {/* ── Inline CTA when not expanded ── */}
+      {!expanded && !isTrusted && (
+        <>
+          {/* Elder: can always advance if not yet confirmed */}
+          {isElder && !confirmedByMe && (
+            <div style={{
+              padding: '10px 16px', borderTop: '1px solid #f0f0f5', background: '#fafafc',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+            }}>
+              <p style={{ fontSize: '12px', color: '#7a7a7a', fontFamily: SFT, margin: 0, lineHeight: 1.4 }}>
+                {current.nextAction}
+              </p>
+              <button onClick={onConfirm} disabled={confirming} style={{
+                flexShrink: 0, padding: '7px 16px',
+                background: confirming ? '#a0c4e8' : '#0066cc',
+                color: '#fff', border: 'none', borderRadius: '9999px',
+                fontSize: '12px', fontWeight: 600, fontFamily: SFT,
+                cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
+              }}>
+                {confirming ? '…' : 'Advance →'}
+              </button>
+            </div>
+          )}
 
-      {/* Waiting state */}
-      {!expanded && !isTrusted && confirmedByMe && (
-        <div style={{
-          padding: '8px 16px',
-          borderTop: '1px solid #f0f0f5',
-          background: '#f0fdf4',
-          display: 'flex', alignItems: 'center', gap: '8px',
-        }}>
-          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-            <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span style={{ fontSize: '12px', color: '#166534', fontFamily: SFT, fontWeight: 500 }}>
-            You confirmed — waiting for {otherUserName}
-          </span>
-        </div>
+          {/* Elder: waiting for helper to accept */}
+          {isElder && confirmedByMe && (
+            <div style={{
+              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f0fdf4',
+              display: 'flex', alignItems: 'center', gap: '8px',
+            }}>
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontSize: '12px', color: '#166534', fontFamily: SFT, fontWeight: 500 }}>
+                Trust request sent — waiting for {otherUserName} to accept
+              </span>
+            </div>
+          )}
+
+          {/* Helper: elder hasn't initiated yet */}
+          {!isElder && !confirmedByOther && (
+            <div style={{
+              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#fafafc',
+              display: 'flex', alignItems: 'center', gap: '8px',
+            }}>
+              <span style={{ fontSize: '12px', color: '#7a7a7a', fontFamily: SFT }}>
+                Waiting for {otherUserName} to initiate the next trust step
+              </span>
+            </div>
+          )}
+
+          {/* Helper: elder has confirmed, helper can accept */}
+          {!isElder && confirmedByOther && !confirmedByMe && (
+            <div style={{
+              padding: '10px 16px', borderTop: '1px solid #f0f0f5', background: '#eff6ff',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+            }}>
+              <p style={{ fontSize: '12px', color: '#1d4ed8', fontFamily: SFT, margin: 0, fontWeight: 500 }}>
+                {otherUserName} wants to advance your trust
+              </p>
+              <button onClick={onConfirm} disabled={confirming} style={{
+                flexShrink: 0, padding: '7px 16px',
+                background: confirming ? '#a0c4e8' : '#0066cc',
+                color: '#fff', border: 'none', borderRadius: '9999px',
+                fontSize: '12px', fontWeight: 600, fontFamily: SFT,
+                cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
+              }}>
+                {confirming ? '…' : 'Accept →'}
+              </button>
+            </div>
+          )}
+
+          {/* Helper: already accepted */}
+          {!isElder && confirmedByMe && (
+            <div style={{
+              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f0fdf4',
+              display: 'flex', alignItems: 'center', gap: '8px',
+            }}>
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontSize: '12px', color: '#166534', fontFamily: SFT, fontWeight: 500 }}>
+                You accepted — trust advancing
+              </span>
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Expanded detail section (H8: revealed on demand) ── */}

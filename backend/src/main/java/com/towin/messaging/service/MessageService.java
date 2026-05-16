@@ -25,7 +25,7 @@ public class MessageService {
 
     public Page<MessageResponse> getHistory(UUID connectionId, UUID userId, Pageable pageable) {
         Connection conn = getAuthorizedConnection(connectionId, userId);
-        return messageRepository.findByConnectionIdOrderByCreatedAtDesc(conn.getId(), pageable)
+        return messageRepository.findByConnectionIdOrderByCreatedAtAsc(conn.getId(), pageable)
                 .map(this::toResponse);
     }
 
@@ -49,7 +49,7 @@ public class MessageService {
     @Transactional
     public void markSeen(UUID connectionId, UUID userId) {
         getAuthorizedConnection(connectionId, userId);
-        messageRepository.findByConnectionIdOrderByCreatedAtDesc(connectionId, Pageable.unpaged())
+        messageRepository.findByConnectionIdOrderByCreatedAtAsc(connectionId, Pageable.unpaged())
                 .stream()
                 .filter(m -> !m.getSender().getId().equals(userId) && m.getSeenAt() == null)
                 .forEach(m -> m.setSeenAt(LocalDateTime.now()));

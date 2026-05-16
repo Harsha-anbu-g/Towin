@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
-    Page<Message> findByConnectionIdOrderByCreatedAtDesc(UUID connectionId, Pageable pageable);
+    Page<Message> findByConnectionIdOrderByCreatedAtAsc(UUID connectionId, Pageable pageable);
     long countByConnectionIdAndSeenAtIsNull(UUID connectionId);
 
     @Modifying
