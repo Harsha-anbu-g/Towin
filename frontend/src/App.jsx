@@ -39,6 +39,7 @@ function App() {
           <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
           <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
+          <Route path="/messages" element={<Navigate to="/dashboard" replace />} />
           <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
