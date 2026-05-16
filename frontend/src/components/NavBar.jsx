@@ -24,48 +24,51 @@ export default function NavBar() {
     }
   }
 
-  const navLinkStyle = (to) => ({
-    fontSize: '13px',
-    fontWeight: 500,
-    fontFamily: 'var(--font-body)',
-    color: pathname === to ? '#fff' : 'rgba(255,255,255,0.55)',
-    textDecoration: 'none',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    background: pathname === to ? 'rgba(255,255,255,0.1)' : 'transparent',
-    transition: 'color 0.15s, background 0.15s',
-  });
+  const link = (to, label) => (
+    <Link to={to} style={{
+      fontSize: '12px',
+      fontFamily: '-apple-system, SF Pro Text, system-ui, sans-serif',
+      fontWeight: pathname === to ? 500 : 400,
+      letterSpacing: '-0.12px',
+      color: pathname === to ? '#ffffff' : 'rgba(245,245,247,0.72)',
+      textDecoration: 'none',
+      padding: '4px 8px',
+      borderRadius: '5px',
+      transition: 'color 0.12s',
+    }}>{label}</Link>
+  );
 
   return (
     <nav style={{
-      background: '#000',
-      height: '48px',
+      background: '#000000',
+      height: '44px',
       display: 'flex',
       alignItems: 'center',
-      padding: '0 24px',
-      gap: '24px',
+      padding: '0 22px',
+      gap: '0',
       position: 'sticky',
       top: 0,
       zIndex: 100,
     }}>
+      {/* Brand */}
       <Link to="/dashboard" style={{
-        fontSize: '15px',
-        fontWeight: 700,
-        color: '#fff',
+        fontSize: '17px',
+        fontWeight: 600,
+        fontFamily: '-apple-system, SF Pro Display, system-ui, sans-serif',
+        letterSpacing: '-0.3px',
+        color: '#ffffff',
         textDecoration: 'none',
-        fontFamily: 'var(--font-body)',
-        letterSpacing: '-0.2px',
-        marginRight: '8px',
-      }}>
-        ToWin
-      </Link>
+        marginRight: '32px',
+      }}>ToWin</Link>
 
+      {/* Nav links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-        <Link to="/dashboard" style={navLinkStyle('/dashboard')}>Dashboard</Link>
-        <Link to="/profile" style={navLinkStyle('/profile')}>Profile</Link>
-        {isElder && <Link to="/emergency-contacts" style={navLinkStyle('/emergency-contacts')}>Emergency</Link>}
+        {link('/dashboard', 'Dashboard')}
+        {link('/profile', 'Profile')}
+        {isElder && link('/emergency-contacts', 'Emergency')}
       </div>
 
+      {/* Right actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {isElder && (
           <button
@@ -73,37 +76,37 @@ export default function NavBar() {
             disabled={sending}
             style={{
               fontSize: '12px',
-              fontWeight: 700,
-              fontFamily: 'var(--font-body)',
-              letterSpacing: '0.3px',
+              fontWeight: 600,
+              fontFamily: '-apple-system, SF Pro Text, system-ui, sans-serif',
+              letterSpacing: '0.2px',
               padding: '5px 14px',
               borderRadius: '9999px',
               border: 'none',
               cursor: 'pointer',
-              transition: 'background 0.15s',
-              background: sosSent ? '#16a34a' : '#dc2626',
+              transition: 'background 0.12s',
+              background: sosSent ? '#1a7a1a' : '#cc0000',
               color: '#fff',
               opacity: sending ? 0.5 : 1,
             }}
           >
-            {sosSent ? 'Help sent' : sending ? '...' : 'SOS'}
+            {sosSent ? '✓ Help sent' : sending ? '…' : 'SOS'}
           </button>
         )}
         <button
           onClick={logout}
           style={{
-            fontSize: '13px',
-            fontFamily: 'var(--font-body)',
+            fontSize: '12px',
+            fontFamily: '-apple-system, SF Pro Text, system-ui, sans-serif',
             fontWeight: 400,
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(245,245,247,0.55)',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             padding: '4px 8px',
-            transition: 'color 0.15s',
+            transition: 'color 0.12s',
           }}
-          onMouseEnter={e => e.target.style.color = 'rgba(255,255,255,0.8)'}
-          onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.45)'}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(245,245,247,0.9)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(245,245,247,0.55)'}
         >
           Sign out
         </button>

@@ -70,6 +70,9 @@ services:
       AWS_ACCESS_KEY: ${AWS_ACCESS_KEY:-dummy}
       AWS_SECRET_KEY: ${AWS_SECRET_KEY:-dummy}
       AWS_REGION: ${AWS_REGION:-us-east-1}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
 
 volumes:
   postgres_data:

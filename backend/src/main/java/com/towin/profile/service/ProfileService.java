@@ -62,6 +62,36 @@ public class ProfileService {
         return buildProfileResponse(user, null, profile);
     }
 
+    @Transactional
+    public void updatePhotoUrl(UUID userId, String photoUrl) {
+        ElderProfile elder = elderProfileRepository.findByUserId(userId).orElse(null);
+        if (elder != null) {
+            elder.setPhotoUrl(photoUrl);
+            elderProfileRepository.save(elder);
+            return;
+        }
+        HelperProfile helper = helperProfileRepository.findByUserId(userId).orElse(null);
+        if (helper != null) {
+            helper.setPhotoUrl(photoUrl);
+            helperProfileRepository.save(helper);
+        }
+    }
+
+    @Transactional
+    public ProfileResponse updatePhone(UUID userId, String phone) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (phone.equals(user.getPhone())) {
+            return buildProfileResponse(user, null, null);
+        }
+        user.setPhone(phone);
+        user.setPhoneVerified(false);
+        user.setPhoneOtp(null);
+        user.setPhoneOtpExpiresAt(null);
+        userRepository.save(user);
+        return buildProfileResponse(user, null, null);
+    }
+
     public ProfileResponse getProfile(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -81,6 +111,7 @@ public class ProfileService {
                 .trustTier(TrustScoreService.tierFor(score))
                 .verificationStatus(user.getVerificationStatus().name())
                 .phoneVerified(user.isPhoneVerified())
+                .phone(user.getPhone())
                 .city(user.getCity());
 
         if (elder != null) {

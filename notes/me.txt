@@ -1,0 +1,122 @@
+ToWin Project — Progress Log
+==============================
+Last updated: 2026-05-10
+
+PROJECT OVERVIEW
+----------------
+ToWin is a platform that connects elderly people (Elders) with volunteers (Helpers)
+who can assist them with everyday tasks like grocery shopping, companionship,
+transportation, and more. Built with Spring Boot 3.2.5 + React + PostgreSQL.
+
+STACK
+-----
+Backend:  Java 21, Spring Boot 3.2.5, Hibernate 6, PostgreSQL 18, Flyway, Kafka, Redis
+Frontend: React + Vite, Tailwind CSS, Axios
+Auth:     JWT (HS384), BCrypt password hashing
+Infra:    Kafka + Zookeeper + Redis via Docker; PostgreSQL runs locally on port 5432
+
+
+WHAT HAS BEEN BUILT (Plans 1–4)
+---------------------------------
+
+PLAN 1 — Auth + Profiles
+  - User registration and login with JWT
+  - Elder profile: name, age, bio, interests, city, location
+  - Helper profile: name, skills, availability, background check status
+  - React pages: Register (/register) and Login (/login)
+  - Migrations: V1 (users), V2 (profiles), V3 (emergency_contacts)
+
+PLAN 2 — Trust Progression Engine
+  - TrustLevel enum: DISCOVERED → MESSAGING → PHONE_CALL → VIDEO_CALL
+                     → VERIFIED → FIRST_MEET → TRUSTED
+  - Connection entity: two users, status (PENDING/ACTIVE/PAUSED/DECLINED/ENDED)
+  - TrustService: advance trust level, confirm, pause, resume
+  - TrustProgressionLog: audit trail of every trust level change
+  - ConnectionService: send request, respond, list connections
+  - Discovery: find nearby Elders/Helpers by role and location
+  - Migrations: V4 (connections), V5 (trust_progression_log)
+
+PLAN 3 — Service Mode + Infrastructure
+  - Need entity: title, category, urgency, status (OPEN/ASSIGNED/COMPLETED)
+  - NeedApplication: helpers apply to open needs; Elder accepts one
+  - NeedService: post need, browse nearby, apply, accept helper, complete
+  - Kafka: ConnectionEventProducer publishes events (request sent, accepted, declined)
+  - ConnectionEventConsumer: listens to Kafka, logs events
+  - Redis: configured for caching (not yet used in business logic)
+  - Migrations: V6 (needs), V7 (need_applications)
+
+PLAN 4 — Messaging + Emergency Contacts
+  - Message entity: text messages tied to a connection (trust >= MESSAGING required)
+  - MessageService: send, paginated history, mark seen
+  - MessageController: GET /api/messages/{connectionId}, POST send, POST seen
+  - EmergencyContact entity: up to 3 contacts per Elder (name, phone, relationship)
+  - EmergencyContactService: list, add (max 3), remove
+  - EmergencyController: GET/POST /api/emergency/contacts, DELETE, POST /api/emergency/sos
+  - SosService: triggers SMS alerts via Twilio (no-op when env vars not set)
+  - TrustService: hooks into FIRST_MEET event to notify emergency contacts
+  - WebSocket: STOMP over SockJS at /ws for real-time messaging
+  - Migrations: V8 (messages), V9 (alter emergency_contacts)
+
+BUG FIXES (after Plan 4)
+  - Added @JdbcTypeCode(SqlTypes.NAMED_ENUM) to all PostgreSQL custom enum columns
+    in User, Connection, Need, NeedApplication, ElderProfile, HelperProfile, Message
+    → Hibernate 6 requires this to map Java enums to PostgreSQL named enum types
+  - Fixed all controllers to use Authentication auth + auth.getName() instead of
+    @AuthenticationPrincipal UserDetails (JwtAuthFilter stores userId as String)
+  - Added global CORS config in SecurityConfig for all endpoints + HTTP methods
+    → Previously only AuthController and ProfileController had @CrossOrigin
+
+FRONTEND (currently built)
+  - /register — registration form (email, phone, password, role)
+  - /login    — login form
+  - /dashboard — Elder Dashboard with 3 tabs:
+      Connections: list all connections with trust level and status badge
+      My Requests: list posted needs with status (OPEN/ASSIGNED/COMPLETED)
+      Post Request: form to post a new help request (category + urgency)
+
+
+RUNNING THE APP LOCALLY
+------------------------
+1. Start Docker Desktop (for Redis, Kafka, Zookeeper):
+     docker compose up redis zookeeper kafka -d
+
+2. Start backend (PostgreSQL must be running on port 5432, password: 0000):
+     cd backend && ./mvnw spring-boot:run
+
+3. Start frontend:
+     cd frontend && npm run dev
+
+4. Open browser: http://localhost:5173
+   Backend API: http://localhost:8080/api
+
+DATABASE
+--------
+PostgreSQL 18 at /Library/PostgreSQL/18/bin/psql
+DB: towin_db, User: postgres, Password: 0000
+
+COMMITS (newest first)
+-----------------------
+114e9c3  fix: resolve auth, CORS, and enum mapping bugs blocking dashboard
+1555edc  feat: add messaging, emergency contacts, WebSocket, and Twilio SOS (Plan 4)
+c3a3c0c  feat: implement Plan 3 - Service Mode + Infrastructure
+17978c8  feat: implement Plan 2 - Trust Progression Engine
+9040fef  feat: add global exception handler, fix JwtUtilTest
+26aab8f  feat: add React auth pages with register and login
+0be1f93  feat: add elder and helper profile management
+581c0aa  fix: improve auth service safety, add missing tests
+c0931af  feat: add auth service with register and login
+...
+
+WHAT IS NOT BUILT YET (future plans)
+--------------------------------------
+Plan 5 — Reviews + Trust Score
+  - Helper reviews after need completion
+  - Trust score calculation from reviews
+  - Verification badge system
+
+Plan 6 — Production Readiness
+  - Proper error pages and loading states
+  - Helper dashboard
+  - Profile editing UI
+  - Push notifications
+  - Deployment (AWS / Railway / Render)

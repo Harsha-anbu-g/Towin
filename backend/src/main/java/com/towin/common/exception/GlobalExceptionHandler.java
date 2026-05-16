@@ -31,6 +31,15 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(message, 400, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
+        String msg = ex.getMessage() != null && ex.getMessage().contains("phone")
+                ? "That phone number is already in use by another account."
+                : "A duplicate value already exists.";
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse(msg, 400, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Unhandled exception", ex);

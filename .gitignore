@@ -24,3 +24,4 @@ logs/
 node_modules/
 dist/
 build/
+*.csv
