@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useAuth } from '../context/AuthContext';
@@ -44,8 +45,9 @@ function FieldRow({ label, children }) {
 }
 
 export default function ProfileEdit() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: '', age: '', bio: '',
@@ -69,6 +71,15 @@ export default function ProfileEdit() {
   const [photoFile, setPhotoFile] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoMsg, setPhotoMsg] = useState('');
+
+  const [notifPrefs, setNotifPrefs] = useState({
+    messages: true,
+    connectionRequests: true,
+    safetyAlerts: false,
+    weeklyDigest: false,
+  });
+
+  const toggleNotif = (key) => setNotifPrefs(p => ({ ...p, [key]: !p[key] }));
 
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
@@ -508,51 +519,58 @@ export default function ProfileEdit() {
               <div style={card}>
                 {sectionHeader('Notifications')}
                 {[
-                  { label: 'New messages', sub: 'Get notified when someone messages you' },
-                  { label: 'Connection requests', sub: 'When someone wants to connect' },
-                  { label: 'Safety alerts', sub: 'Emergency and trust notifications' },
-                  { label: 'Weekly digest', sub: 'Summary of your community activity' },
-                ].map((row, idx, arr) => (
-                  <div key={idx}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '14px 0',
-                    }}>
-                      <div>
-                        <p style={{ fontSize: '15px', fontWeight: 500, color: '#1d1d1f', marginBottom: '2px' }}>
-                          {row.label}
-                        </p>
-                        <p style={{ fontSize: '13px', color: '#7a7a7a' }}>{row.sub}</p>
-                      </div>
-                      {/* iOS-style toggle */}
+                  { label: 'New messages', sub: 'Get notified when someone messages you', key: 'messages' },
+                  { label: 'Connection requests', sub: 'When someone wants to connect', key: 'connectionRequests' },
+                  { label: 'Safety alerts', sub: 'Emergency and trust notifications', key: 'safetyAlerts' },
+                  { label: 'Weekly digest', sub: 'Summary of your community activity', key: 'weeklyDigest' },
+                ].map((row, idx, arr) => {
+                  const on = notifPrefs[row.key];
+                  return (
+                    <div key={row.key}>
                       <div style={{
-                        width: '51px',
-                        height: '31px',
-                        borderRadius: '9999px',
-                        background: idx < 2 ? '#34c759' : '#e0e0e0',
-                        position: 'relative',
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                        transition: 'background 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 0',
                       }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: '2px',
-                          [idx < 2 ? 'right' : 'left']: '2px',
-                          width: '27px',
-                          height: '27px',
-                          borderRadius: '50%',
-                          background: '#ffffff',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                          transition: 'left 0.2s, right 0.2s',
-                        }} />
+                        <div>
+                          <p style={{ fontSize: '15px', fontWeight: 500, color: '#1d1d1f', marginBottom: '2px' }}>
+                            {row.label}
+                          </p>
+                          <p style={{ fontSize: '13px', color: '#7a7a7a' }}>{row.sub}</p>
+                        </div>
+                        {/* iOS-style toggle */}
+                        <div
+                          role="switch"
+                          aria-checked={on}
+                          onClick={() => toggleNotif(row.key)}
+                          style={{
+                            width: '51px',
+                            height: '31px',
+                            borderRadius: '9999px',
+                            background: on ? '#34c759' : '#e0e0e0',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            transition: 'background 0.2s',
+                          }}>
+                          <div style={{
+                            position: 'absolute',
+                            top: '2px',
+                            left: on ? '20px' : '2px',
+                            width: '27px',
+                            height: '27px',
+                            borderRadius: '50%',
+                            background: '#ffffff',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            transition: 'left 0.2s',
+                          }} />
+                        </div>
                       </div>
+                      {idx < arr.length - 1 && <Divider />}
                     </div>
-                    {idx < arr.length - 1 && <Divider />}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </BlurFade>
 
@@ -609,7 +627,7 @@ export default function ProfileEdit() {
                 </p>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    onClick={() => {}}
+                    onClick={() => { logout(); navigate('/login'); }}
                     style={{
                       flex: 1,
                       background: 'transparent',
@@ -626,7 +644,7 @@ export default function ProfileEdit() {
                     Sign Out
                   </button>
                   <button
-                    onClick={() => {}}
+                    onClick={() => alert('To delete your account, please contact support at support@towin.app')}
                     style={{
                       flex: 1,
                       background: 'transparent',
