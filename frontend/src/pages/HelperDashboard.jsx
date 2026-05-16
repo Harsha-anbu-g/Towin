@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustBadge from '../components/TrustBadge';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+
+const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+const COMMUNITY_PHOTOS = [
+  { id: 'photo-1529156069898-49953e39b3ac', label: 'Community' },
+  { id: 'photo-1544005313-94ddf0286df2', label: 'Elder woman' },
+  { id: 'photo-1573497491208-6b1acb260507', label: 'Helping hands' },
+  { id: 'photo-1438761681033-6461ffad8d80', label: 'Community member' },
+];
 
 const statusStyle = (status) => {
   const map = {
@@ -169,13 +180,18 @@ export default function HelperDashboard() {
         {profile && (
           <BlurFade delay={1}>
           <div className="card" style={{ overflow: 'hidden' }}>
-            <div style={{
-              height: '96px',
-              background: 'linear-gradient(135deg, #065f46 0%, #059669 40%, var(--blue) 100%)',
-              backgroundSize: '200% 200%',
-              animation: 'gradient-x 9s ease infinite',
-              position: 'relative',
-            }}>
+            <div style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
+              <LazyLoadImage
+                src={unsplash('photo-1529156069898-49953e39b3ac', 800, 240)}
+                alt=""
+                effect="blur"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+              />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(135deg, rgba(6,95,70,0.75) 0%, rgba(37,99,235,0.5) 100%)',
+              }} />
               <div style={{
                 position: 'absolute', bottom: '-32px', left: '24px',
                 width: '64px', height: '64px', borderRadius: '50%',
@@ -204,6 +220,28 @@ export default function HelperDashboard() {
           </div>
           </BlurFade>
         )}
+
+        {/* Community photo strip */}
+        <BlurFade delay={2}>
+          <div className="card" style={{ padding: '20px 24px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-3)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '14px' }}>
+              Your community
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+              {COMMUNITY_PHOTOS.map(({ id, label }) => (
+                <div key={id} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '1' }} className="lift">
+                  <LazyLoadImage
+                    src={unsplash(id, 200, 200)}
+                    alt={label}
+                    effect="blur"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </BlurFade>
 
         {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
