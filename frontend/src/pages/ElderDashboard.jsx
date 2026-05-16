@@ -145,344 +145,339 @@ export default function ElderDashboard() {
     ['post', 'Post Request'],
   ];
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning.' : hour < 17 ? 'Good afternoon.' : 'Good evening.';
+
   return (
-    <div style={{ minHeight: '100svh', background: 'var(--surface)' }}>
+    <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '32px 16px 48px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* Profile hero card */}
-        {profile && (
-          <BlurFade delay={1}>
-          <div className="card" style={{ overflow: 'hidden' }}>
-            {/* Photo cover */}
-            <div style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
-              <LazyLoadImage
-                src={unsplash('photo-1576765974256-9b879d60a571', 800, 240)}
-                alt=""
-                effect="blur"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-              />
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'linear-gradient(135deg, rgba(29,78,216,0.7) 0%, rgba(124,58,237,0.5) 100%)',
-              }} />
-              <div style={{
-                position: 'absolute', bottom: '-32px', left: '24px',
-                width: '64px', height: '64px', borderRadius: '50%',
-                background: profile.photoUrl ? 'transparent' : 'linear-gradient(135deg, #0066cc, #5856d6)',
-                border: '3px solid #fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '20px', fontWeight: 700, color: '#fff',
-                overflow: 'hidden',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-              }}>
-                {profile.photoUrl
-                  ? <img src={profile.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : initials(profile.name)
-                }
-              </div>
-            </div>
-            <div style={{ padding: '44px 24px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div>
-                  <p className="font-display" style={{ fontSize: '22px', color: 'var(--ink)', letterSpacing: '-0.2px' }}>
-                    {profile.name || 'Set up your profile'}
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                    {profile.city && <span style={{ fontSize: '14px', color: 'var(--ink-2)' }}>{profile.city}</span>}
-                    <TrustBadge tier={profile.trustTier} score={profile.trustScore} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          </BlurFade>
-        )}
-
-        {/* Community photo strip */}
-        <BlurFade delay={2}>
-          <div className="card" style={{ padding: '20px 24px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-3)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '14px' }}>
-              Your community
+      {/* Hero section */}
+      <div style={{ background: '#1d1d1f', padding: '60px 80px 48px', position: 'relative' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '32px', flexWrap: 'wrap' }}>
+          <div>
+            <h1 style={{
+              fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+              fontSize: '48px', fontWeight: 600, color: '#ffffff',
+              letterSpacing: '-0.5px', margin: 0, lineHeight: 1.1,
+            }}>
+              {greeting}
+            </h1>
+            <p style={{ fontSize: '20px', fontWeight: 300, color: '#cccccc', marginTop: '12px', lineHeight: 1.4 }}>
+              {profile
+                ? `${connections.filter(c => c.status === 'ACTIVE').length} active helper${connections.filter(c => c.status === 'ACTIVE').length !== 1 ? 's' : ''} · ${pendingIncoming.length} new request${pendingIncoming.length !== 1 ? 's' : ''}`
+                : 'Welcome to ToWin'}
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-              {COMMUNITY_PHOTOS.map(({ id, label }) => (
-                <div key={id} style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '1' }} className="lift">
-                  <LazyLoadImage
-                    src={unsplash(id, 200, 200)}
-                    alt={label}
-                    effect="blur"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-                  />
-                </div>
-              ))}
-            </div>
+            {profile?.trustScore != null && (
+              <div style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(0,102,204,0.25)', border: '1px solid rgba(0,102,204,0.5)', borderRadius: '9999px', padding: '6px 16px' }}>
+                <span style={{ fontSize: '13px', color: '#60a5fa', fontWeight: 500 }}>Trust Score</span>
+                <span style={{ fontSize: '15px', color: '#ffffff', fontWeight: 700 }}>{profile.trustScore}</span>
+              </div>
+            )}
           </div>
-        </BlurFade>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
+            <button onClick={() => setTab('connections')} className="btn-primary" style={{ padding: '11px 24px', fontSize: '15px' }}>
+              Find a Helper
+            </button>
+            <button onClick={() => navigate('/messages')} style={{
+              padding: '11px 24px', fontSize: '15px', borderRadius: '9999px',
+              border: '1px solid rgba(255,255,255,0.4)', background: 'transparent',
+              color: '#ffffff', cursor: 'pointer', fontFamily: 'inherit',
+              transition: 'background 0.15s',
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              Messages
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 80px 64px' }}>
 
         {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', gap: '0' }}>
+        <div style={{ background: '#fafafc', borderBottom: '1px solid #e0e0e0', margin: '0 -80px', padding: '0 80px', display: 'flex', gap: 0 }}>
           {tabs.map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)} style={{
-              padding: '12px 20px', fontSize: '14px', fontWeight: tab === id ? 600 : 400,
-              color: tab === id ? 'var(--blue)' : 'var(--ink-2)',
+              height: '48px', padding: '0 20px', fontSize: '14px',
+              fontWeight: tab === id ? 600 : 400,
+              color: tab === id ? '#0066cc' : '#7a7a7a',
               background: 'none', border: 'none',
-              borderBottom: tab === id ? '2px solid var(--blue)' : '2px solid transparent',
-              cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', marginBottom: '-1px',
-              fontFamily: 'var(--font-body)',
+              borderBottom: tab === id ? '2px solid #0066cc' : '2px solid transparent',
+              cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
+              marginBottom: '-1px', fontFamily: 'inherit',
             }}>
               {label}
             </button>
           ))}
         </div>
 
-        {/* Connections */}
-        {tab === 'connections' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {connections.length === 0 && (
-              <div className="card" style={{ textAlign: 'center', padding: '64px 24px' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                </div>
-                <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
-                <p style={{ fontSize: '14px', color: '#86868b' }}>Helpers will send you connection requests. Check back soon.</p>
-              </div>
-            )}
-            {connections.map((conn, i) => (
-              <div key={conn.id} className="card card-lift" style={{ padding: '18px 20px', animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both` }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-                    <div style={{
-                      width: '44px', height: '44px', borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #34c759, #30d158)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 700, color: '#fff', flexShrink: 0,
-                    }}>
-                      {initials(conn.otherUserName)}
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, fontSize: '15px', color: '#1d1d1f' }}>{conn.otherUserName || 'User'}</p>
-                      <p style={{ fontSize: '12px', color: '#86868b', marginTop: '2px' }}>{trustLabel(conn.currentTrustLevel)}</p>
-                      {conn.requestMessage && (
-                        <p style={{ fontSize: '12px', color: '#6e6e73', fontStyle: 'italic', marginTop: '3px' }}>"{conn.requestMessage}"</p>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
-                    {conn.status === 'ACTIVE' && (
-                      <>
-                        {!conn.confirmedByMe ? (
-                          <button onClick={() => confirmTrust(conn.id)} disabled={confirmingTrust === conn.id} className="btn-ghost">
-                            {confirmingTrust === conn.id ? '...' : 'Confirm Trust'}
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>Confirmed</span>
-                        )}
-                        <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>
-                          Message
-                        </button>
-                      </>
-                    )}
-                    {conn.status === 'PENDING' && !conn.initiatedByMe && (
-                      <>
-                        <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                          className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
-                        <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                          className="btn-ghost">Decline</button>
-                      </>
-                    )}
-                    <span style={statusStyle(conn.status === 'PENDING' && conn.initiatedByMe ? 'PENDING' : conn.status)}>
-                      {conn.status === 'PENDING' && conn.initiatedByMe ? 'Waiting' : conn.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div style={{ paddingTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {/* My Requests */}
-        {tab === 'needs' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {myNeeds.length === 0 && (
-              <div className="card" style={{ textAlign: 'center', padding: '64px 24px' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                  </svg>
+          {/* Connections tab */}
+          {tab === 'connections' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+                My Helpers
+              </h2>
+              {connections.length === 0 && (
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                  </div>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Helpers will send you connection requests. Check back soon.</p>
                 </div>
-                <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests yet</p>
-                <p style={{ fontSize: '14px', color: '#86868b' }}>Post a request to get help from helpers near you.</p>
-                <button onClick={() => setTab('post')} className="btn-primary" style={{ marginTop: '16px', padding: '10px 24px', fontSize: '14px' }}>
-                  Post a Request
-                </button>
-              </div>
-            )}
-            {myNeeds.map((need, i) => (
-              <div key={need.id} className="card card-lift" style={{ padding: '20px', animation: `fadeSlideUp 0.4s ease ${i * 0.06}s both` }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '4px' }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f' }}>{need.title}</p>
-                    {need.description && <p style={{ fontSize: '14px', color: '#6e6e73', marginTop: '4px', lineHeight: 1.5 }}>{need.description}</p>}
-                    <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '12px', background: '#f3f4f6', color: '#6b7280', padding: '3px 10px', borderRadius: '9999px' }}>{need.category}</span>
-                      {need.urgency === 'URGENT' && (
-                        <span style={{ fontSize: '12px', background: '#fee2e2', color: '#991b1b', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
-                      )}
-                    </div>
-                  </div>
-                  <span style={statusStyle(need.status)}>{need.status}</span>
-                </div>
-
-                {need.status === 'OPEN' && need.applications?.length > 0 && (
-                  <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
-                    <p style={{ fontSize: '12px', fontWeight: 600, color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
-                      {need.applications.length} Applicant{need.applications.length !== 1 ? 's' : ''}
-                    </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {need.applications.map(app => (
-                        <div key={app.helperId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f9fafb', borderRadius: '12px', padding: '10px 14px', border: '1px solid #f0f0f0' }}>
-                          <div>
-                            <p style={{ fontSize: '14px', fontWeight: 500, color: '#1d1d1f' }}>{app.helperName}</p>
-                            {app.message && <p style={{ fontSize: '12px', color: '#6e6e73', marginTop: '2px' }}>{app.message}</p>}
-                          </div>
-                          <button onClick={() => acceptHelper(need.id, app.helperId)} disabled={accepting === `${need.id}-${app.helperId}`}
-                            className="btn-primary" style={{ padding: '6px 16px', fontSize: '12px', flexShrink: 0 }}>
-                            {accepting === `${need.id}-${app.helperId}` ? '...' : 'Accept'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {need.status === 'OPEN' && (!need.applications || need.applications.length === 0) && (
-                  <p style={{ fontSize: '13px', color: '#86868b', borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>No applicants yet</p>
-                )}
-                {need.status === 'ASSIGNED' && (
-                  <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
-                    <button onClick={() => completeNeed(need.id)} className="btn-primary"
-                      style={{ width: '100%', background: '#34c759', padding: '11px', fontSize: '15px' }}>
-                      Mark as Complete
-                    </button>
-                  </div>
-                )}
-                {need.status === 'COMPLETED' && !reviewedNeeds.has(need.id) && need.applications?.some(a => a.status === 'ACCEPTED') && (
-                  <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
-                    {reviewingNeed === need.id ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>Rate your helper</p>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          {[1,2,3,4,5].map(s => (
-                            <button key={s} type="button" onClick={() => setReviewForm(f => ({...f, rating: s}))}
-                              style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', color: s <= reviewForm.rating ? '#ff9500' : '#d1d5db', transition: 'transform 0.1s' }}
-                              onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}
-                              onMouseLeave={e => e.target.style.transform = 'scale(1)'}>★</button>
-                          ))}
-                        </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          {REVIEW_TAGS.map(tag => (
-                            <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
-                              fontSize: '13px', padding: '5px 14px', borderRadius: '9999px',
-                              border: '1px solid', transition: 'all 0.15s',
-                              borderColor: reviewForm.tags.includes(tag) ? '#0066cc' : '#d2d2d7',
-                              background: reviewForm.tags.includes(tag) ? '#0066cc' : '#fff',
-                              color: reviewForm.tags.includes(tag) ? '#fff' : '#6e6e73', cursor: 'pointer',
-                            }}>{tag}</button>
-                          ))}
-                        </div>
-                        <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
-                          placeholder="Add a comment (optional)" rows={2}
-                          style={{ width: '100%', border: '1px solid #d2d2d7', borderRadius: '12px', padding: '10px 14px', fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical' }} />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff3b30', cursor: 'pointer' }}>
-                          <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
-                          Flag a safety concern
-                        </label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => submitReview(need)} disabled={submittingReview} className="btn-primary" style={{ flex: 1, padding: '10px' }}>
-                            {submittingReview ? 'Submitting...' : 'Submit Review'}
-                          </button>
-                          <button onClick={() => setReviewingNeed(null)} className="btn-ghost">Cancel</button>
-                        </div>
+              )}
+              {connections.map((conn, i) => (
+                <div key={conn.id} style={{
+                  background: '#ffffff', borderRadius: '18px', padding: '24px',
+                  border: '1px solid #e0e0e0',
+                  animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
+                      <div style={{
+                        width: '48px', height: '48px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #34c759, #30d158)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '16px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                      }}>
+                        {initials(conn.otherUserName)}
                       </div>
-                    ) : (
-                      <button onClick={() => setReviewingNeed(need.id)} className="btn-secondary" style={{ width: '100%', padding: '10px' }}>
-                        Leave a Review
-                      </button>
-                    )}
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'User'}</p>
+                        <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '3px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
+                        {conn.requestMessage && (
+                          <p style={{ fontSize: '13px', color: '#a0a0a5', fontStyle: 'italic', margin: '4px 0 0' }}>"{conn.requestMessage}"</p>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
+                      {conn.status === 'ACTIVE' && (
+                        <>
+                          {!conn.confirmedByMe ? (
+                            <button onClick={() => confirmTrust(conn.id)} disabled={confirmingTrust === conn.id} className="btn-ghost">
+                              {confirmingTrust === conn.id ? '...' : 'Confirm Trust'}
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>Confirmed</span>
+                          )}
+                          <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px' }}>
+                            Message
+                          </button>
+                        </>
+                      )}
+                      {conn.status === 'PENDING' && !conn.initiatedByMe && (
+                        <>
+                          <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
+                            className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px' }}>Accept</button>
+                          <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
+                            className="btn-ghost">Decline</button>
+                        </>
+                      )}
+                      <span style={statusStyle(conn.status === 'PENDING' && conn.initiatedByMe ? 'PENDING' : conn.status)}>
+                        {conn.status === 'PENDING' && conn.initiatedByMe ? 'Waiting' : conn.status}
+                      </span>
+                    </div>
                   </div>
-                )}
-                {need.status === 'COMPLETED' && reviewedNeeds.has(need.id) && (
-                  <p style={{ fontSize: '13px', color: '#166534', fontWeight: 500, borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>Review submitted</p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          )}
 
-        {/* Post Request */}
-        {tab === 'post' && (
-          <div className="card animate-scale" style={{ padding: '28px' }}>
-            <p style={{ fontSize: '22px', fontWeight: 700, color: '#1d1d1f', letterSpacing: '-0.4px', marginBottom: '24px',
-              fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif" }}>
-              Post a Help Request
-            </p>
-            <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div>
-                <label className="field-label">What do you need?</label>
-                <input value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
-                  placeholder="e.g. Help with grocery shopping" className="input-field" required />
-              </div>
-              <div>
-                <label className="field-label">Description</label>
-                <textarea value={needForm.description} onChange={e => setNeedForm(f => ({...f, description: e.target.value}))}
-                  placeholder="Add more details..." rows={3}
-                  style={{ width: '100%', border: '1px solid #d2d2d7', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', fontFamily: 'inherit', resize: 'vertical', transition: 'border-color 0.15s, box-shadow 0.15s' }}
-                  onFocus={e => { e.target.style.borderColor = '#0066cc'; e.target.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.12)'; }}
-                  onBlur={e => { e.target.style.borderColor = '#d2d2d7'; e.target.style.boxShadow = 'none'; }} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div>
-                  <label className="field-label">Category</label>
-                  <select value={needForm.category} onChange={e => setNeedForm(f => ({...f, category: e.target.value}))}
-                    style={{ width: '100%', border: '1px solid #d2d2d7', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', background: '#fff', fontFamily: 'inherit', transition: 'border-color 0.15s' }}>
-                    <option value="COMPANIONSHIP">Companionship</option>
-                    <option value="TRANSPORTATION">Transportation</option>
-                    <option value="ERRANDS">Errands</option>
-                    <option value="CLEANING">Cleaning</option>
-                    <option value="OTHER">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="field-label">Urgency</label>
-                  <select value={needForm.urgency} onChange={e => setNeedForm(f => ({...f, urgency: e.target.value}))}
-                    style={{ width: '100%', border: '1px solid #d2d2d7', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', background: '#fff', fontFamily: 'inherit' }}>
-                    <option value="NORMAL">Normal</option>
-                    <option value="URGENT">Urgent</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#0369a1' }}>
-                {locationStatus === 'asking' && 'Getting your location...'}
-                {locationStatus === 'granted' && 'Location captured — helpers nearby will see your request first.'}
-                {locationStatus === 'denied' && 'Location not available — request will still be visible to all helpers.'}
-                {locationStatus === 'idle' && (
-                  <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#0369a1', padding: 0, textDecoration: 'underline' }}>
-                    Allow location so nearby helpers find you faster
+          {/* My Requests tab */}
+          {tab === 'needs' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+                My Help Requests
+              </h2>
+              {myNeeds.length === 0 && (
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                  </div>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests yet</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Post a request to get help from helpers near you.</p>
+                  <button onClick={() => setTab('post')} className="btn-primary" style={{ marginTop: '16px', padding: '10px 24px', fontSize: '14px' }}>
+                    Post a Request
                   </button>
-                )}
-              </div>
-              {postMsg && <p style={{ fontSize: '14px', color: postMsg.includes('!') ? '#166534' : '#991b1b', fontWeight: 500 }}>{postMsg}</p>}
-              <button type="submit" disabled={posting} className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '17px' }}>
-                {posting ? 'Posting...' : 'Post Request'}
-              </button>
-            </form>
-          </div>
-        )}
+                </div>
+              )}
+              {myNeeds.map((need, i) => (
+                <div key={need.id} style={{
+                  background: '#ffffff', borderRadius: '18px', padding: '20px',
+                  border: '1px solid #e0e0e0',
+                  animation: `fadeSlideUp 0.4s ease ${i * 0.06}s both`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '4px' }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', margin: 0 }}>{need.title}</p>
+                      {need.description && <p style={{ fontSize: '14px', color: '#7a7a7a', marginTop: '4px', lineHeight: 1.5 }}>{need.description}</p>}
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#7a7a7a', padding: '3px 10px', borderRadius: '9999px' }}>{need.category}</span>
+                        {need.urgency === 'URGENT' && (
+                          <span style={{ fontSize: '12px', background: '#fee2e2', color: '#991b1b', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
+                        )}
+                      </div>
+                    </div>
+                    <span style={statusStyle(need.status)}>{need.status}</span>
+                  </div>
+
+                  {need.status === 'OPEN' && need.applications?.length > 0 && (
+                    <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+                        {need.applications.length} Applicant{need.applications.length !== 1 ? 's' : ''}
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {need.applications.map(app => (
+                          <div key={app.helperId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fafafc', borderRadius: '12px', padding: '10px 14px', border: '1px solid #e0e0e0' }}>
+                            <div>
+                              <p style={{ fontSize: '14px', fontWeight: 500, color: '#1d1d1f', margin: 0 }}>{app.helperName}</p>
+                              {app.message && <p style={{ fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>{app.message}</p>}
+                            </div>
+                            <button onClick={() => acceptHelper(need.id, app.helperId)} disabled={accepting === `${need.id}-${app.helperId}`}
+                              className="btn-primary" style={{ padding: '6px 16px', fontSize: '12px', flexShrink: 0 }}>
+                              {accepting === `${need.id}-${app.helperId}` ? '...' : 'Accept'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {need.status === 'OPEN' && (!need.applications || need.applications.length === 0) && (
+                    <p style={{ fontSize: '13px', color: '#a0a0a5', borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>No applicants yet</p>
+                  )}
+                  {need.status === 'ASSIGNED' && (
+                    <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
+                      <button onClick={() => completeNeed(need.id)} className="btn-primary"
+                        style={{ width: '100%', background: '#34c759', padding: '11px', fontSize: '15px' }}>
+                        Mark as Complete
+                      </button>
+                    </div>
+                  )}
+                  {need.status === 'COMPLETED' && !reviewedNeeds.has(need.id) && need.applications?.some(a => a.status === 'ACCEPTED') && (
+                    <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
+                      {reviewingNeed === need.id ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>Rate your helper</p>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            {[1,2,3,4,5].map(s => (
+                              <button key={s} type="button" onClick={() => setReviewForm(f => ({...f, rating: s}))}
+                                style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', color: s <= reviewForm.rating ? '#ff9500' : '#d1d5db', transition: 'transform 0.1s' }}
+                                onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}
+                                onMouseLeave={e => e.target.style.transform = 'scale(1)'}>★</button>
+                            ))}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                            {REVIEW_TAGS.map(tag => (
+                              <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
+                                fontSize: '13px', padding: '5px 14px', borderRadius: '9999px',
+                                border: '1px solid', transition: 'all 0.15s',
+                                borderColor: reviewForm.tags.includes(tag) ? '#0066cc' : '#d2d2d7',
+                                background: reviewForm.tags.includes(tag) ? '#0066cc' : '#fff',
+                                color: reviewForm.tags.includes(tag) ? '#fff' : '#7a7a7a', cursor: 'pointer',
+                              }}>{tag}</button>
+                            ))}
+                          </div>
+                          <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
+                            placeholder="Add a comment (optional)" rows={2}
+                            style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical' }} />
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff3b30', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
+                            Flag a safety concern
+                          </label>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => submitReview(need)} disabled={submittingReview} className="btn-primary" style={{ flex: 1, padding: '10px' }}>
+                              {submittingReview ? 'Submitting...' : 'Submit Review'}
+                            </button>
+                            <button onClick={() => setReviewingNeed(null)} className="btn-ghost">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button onClick={() => setReviewingNeed(need.id)} className="btn-secondary" style={{ width: '100%', padding: '10px' }}>
+                          Leave a Review
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {need.status === 'COMPLETED' && reviewedNeeds.has(need.id) && (
+                    <p style={{ fontSize: '13px', color: '#166534', fontWeight: 500, borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>Review submitted</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Post Request tab */}
+          {tab === 'post' && (
+            <div style={{ background: '#ffffff', borderRadius: '18px', padding: '32px', border: '1px solid #e0e0e0' }}>
+              <h2 style={{
+                fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+                fontSize: '28px', fontWeight: 600, color: '#1d1d1f',
+                letterSpacing: '-0.4px', marginBottom: '28px', marginTop: 0,
+              }}>
+                Post a Help Request
+              </h2>
+              <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div className="field">
+                  <label className="field-label">What do you need?</label>
+                  <input value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
+                    placeholder="e.g. Help with grocery shopping" className="input-field" required />
+                </div>
+                <div className="field">
+                  <label className="field-label">Description</label>
+                  <textarea value={needForm.description} onChange={e => setNeedForm(f => ({...f, description: e.target.value}))}
+                    placeholder="Add more details..." rows={3}
+                    style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', fontFamily: 'inherit', resize: 'vertical', transition: 'border-color 0.15s, box-shadow 0.15s' }}
+                    onFocus={e => { e.target.style.borderColor = '#0066cc'; e.target.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.12)'; }}
+                    onBlur={e => { e.target.style.borderColor = '#e0e0e0'; e.target.style.boxShadow = 'none'; }} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div className="field">
+                    <label className="field-label">Category</label>
+                    <select value={needForm.category} onChange={e => setNeedForm(f => ({...f, category: e.target.value}))}
+                      style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', background: '#fff', fontFamily: 'inherit', transition: 'border-color 0.15s' }}>
+                      <option value="COMPANIONSHIP">Companionship</option>
+                      <option value="TRANSPORTATION">Transportation</option>
+                      <option value="ERRANDS">Errands</option>
+                      <option value="CLEANING">Cleaning</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label className="field-label">Urgency</label>
+                    <select value={needForm.urgency} onChange={e => setNeedForm(f => ({...f, urgency: e.target.value}))}
+                      style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', background: '#fff', fontFamily: 'inherit' }}>
+                      <option value="NORMAL">Normal</option>
+                      <option value="URGENT">Urgent</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ background: '#f0f6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#1d4ed8' }}>
+                  {locationStatus === 'asking' && 'Getting your location...'}
+                  {locationStatus === 'granted' && 'Location captured — helpers nearby will see your request first.'}
+                  {locationStatus === 'denied' && 'Location not available — request will still be visible to all helpers.'}
+                  {locationStatus === 'idle' && (
+                    <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#1d4ed8', padding: 0, textDecoration: 'underline' }}>
+                      Allow location so nearby helpers find you faster
+                    </button>
+                  )}
+                </div>
+                {postMsg && <p style={{ fontSize: '14px', color: postMsg.includes('!') ? '#166534' : '#991b1b', fontWeight: 500 }}>{postMsg}</p>}
+                <button type="submit" disabled={posting} className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '17px' }}>
+                  {posting ? 'Posting...' : 'Post Request'}
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

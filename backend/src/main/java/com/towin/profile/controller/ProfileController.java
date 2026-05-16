@@ -48,12 +48,21 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.createOrUpdateHelperProfile(userId, request));
     }
 
+    @PutMapping("/phone")
+    public ResponseEntity<ProfileResponse> updatePhone(
+            Authentication auth,
+            @RequestBody Map<String, String> body) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(profileService.updatePhone(userId, body.get("phone")));
+    }
+
     @PutMapping("/photo")
     public ResponseEntity<Map<String, String>> uploadPhoto(
             Authentication auth,
             @RequestParam("file") MultipartFile file) {
         UUID userId = UUID.fromString(auth.getName());
         String url = s3Service.uploadPhoto(userId, file);
+        profileService.updatePhotoUrl(userId, url);
         return ResponseEntity.ok(Map.of("photoUrl", url));
     }
 }

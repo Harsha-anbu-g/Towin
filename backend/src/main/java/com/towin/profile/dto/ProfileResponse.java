@@ -25,4 +25,5 @@ public class ProfileResponse {
     private String[] availabilityTimes;
     private String backgroundCheckStatus;
     private boolean phoneVerified;
+    private String phone;
 }

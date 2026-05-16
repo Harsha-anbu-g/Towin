@@ -2,21 +2,37 @@
 
 /* ─── Design tokens ─── */
 :root {
-  --blue:       #2563eb;
-  --blue-light: #3b82f6;
-  --blue-dark:  #1d4ed8;
-  --ink:        #0f172a;
-  --ink-2:      #475569;
-  --ink-3:      #94a3b8;
-  --canvas:     #ffffff;
-  --surface:    #f8fafc;
-  --border:     #e2e8f0;
-  --amber:      #f59e0b;
-  --green:      #22c55e;
-  --red:        #ef4444;
+  /* Apple Action Blue */
+  --blue:         #0066cc;
+  --blue-focus:   #0071e3;
+  --blue-dark:    #004499;
+  --blue-on-dark: #2997ff;
 
-  --font-display: 'Instrument Serif', Georgia, serif;
-  --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Typography colors */
+  --ink:    #1d1d1f;
+  --ink-2:  #333333;
+  --ink-3:  #7a7a7a;
+  --ink-4:  #a0a0a5;
+
+  /* Surfaces */
+  --canvas:         #ffffff;
+  --surface:        #f5f5f7;
+  --surface-pearl:  #fafafc;
+  --surface-dark:   #272729;
+  --surface-black:  #000000;
+
+  /* Borders */
+  --border:      #e0e0e0;
+  --border-soft: #f0f0f0;
+
+  /* Semantic */
+  --red:   #cc0000;
+  --green: #1a7a1a;
+  --amber: #b05000;
+
+  /* Typography */
+  --font-display: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  --font-body:    -apple-system, 'SF Pro Text', system-ui, sans-serif;
 }
 
 /* ─── Base ─── */
@@ -25,8 +41,9 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.374px;
   color: var(--ink);
   background: var(--surface);
   -webkit-font-smoothing: antialiased;
@@ -183,24 +200,42 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 .primary-btn:active { transform: scale(0.96); }
 .primary-btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
+/* Apple pill primary button */
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: 11px 22px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* Input field */
 .field {
   width: 100%;
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
   padding: 12px 16px;
-  font-size: 15px;
   font-family: var(--font-body);
+  font-size: 17px;
   color: var(--ink);
-  background: var(--canvas);
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
+  display: block;
 }
 .field:focus {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.12);
 }
-.field::placeholder { color: var(--ink-3); }
+.field::placeholder { color: var(--ink-4); }
 
 /* Card base */
 .card {
@@ -219,4 +254,63 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   border-radius: 9999px;
   letter-spacing: 0.4px;
   text-transform: uppercase;
+}
+
+/* Apple Design System utilities */
+.apple-nav {
+  background: #000000;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.apple-pill-btn {
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  padding: 11px 22px;
+  transition: opacity 0.15s;
+}
+.apple-pill-btn:hover { opacity: 0.85; }
+
+.apple-pill-btn-primary {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.apple-pill-btn-ghost {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue) !important;
+}
+
+.apple-card {
+  background: var(--canvas);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.apple-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.apple-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.12);
 }

@@ -1,6 +1,10 @@
 package com.towin.common.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.ApplicationStatus;
+import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.NeedStatus;
+import com.towin.common.enums.TrustLevel;
 import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.repository.ConnectionRepository;
@@ -35,10 +39,10 @@ public class TrustScoreService {
 
         if (user.getVerificationStatus() == VerificationStatus.VERIFIED) score += 20;
 
-        long trustedCount = connectionRepository.countTrustedByUser(userId);
+        long trustedCount = connectionRepository.countTrustedByUser(userId, TrustLevel.TRUSTED, ConnectionStatus.ACTIVE);
         score += (int) Math.min(trustedCount * 5L, 25);
 
-        long completedServices = needApplicationRepository.countCompletedByHelper(userId);
+        long completedServices = needApplicationRepository.countCompletedByHelper(userId, ApplicationStatus.ACCEPTED, NeedStatus.COMPLETED);
         score += (int) Math.min(completedServices * 3L, 15);
 
         Double avgRating = reviewRepository.findAverageRatingByRevieweeId(userId);
