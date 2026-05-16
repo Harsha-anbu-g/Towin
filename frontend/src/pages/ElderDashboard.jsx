@@ -185,7 +185,7 @@ export default function ElderDashboard() {
             <button onClick={() => setTab('connections')} className="btn-primary" style={{ padding: '11px 24px', fontSize: '15px' }}>
               Find a Helper
             </button>
-            <button onClick={() => navigate('/messages')} style={{
+            <button onClick={() => setTab('connections')} style={{
               padding: '11px 24px', fontSize: '15px', borderRadius: '9999px',
               border: '1px solid rgba(255,255,255,0.4)', background: 'transparent',
               color: '#ffffff', cursor: 'pointer', fontFamily: 'inherit',
