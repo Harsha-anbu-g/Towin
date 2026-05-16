@@ -11,13 +11,13 @@ export default function NavBar() {
 
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
 
-  const link = (to, label) => (
+  const navLink = (to, label) => (
     <Link
       to={to}
-      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      className={`text-sm transition-colors px-3 py-1 rounded-full ${
         pathname === to
-          ? 'bg-indigo-100 text-indigo-700'
-          : 'text-gray-600 hover:bg-gray-100'
+          ? 'text-white bg-white/20'
+          : 'text-white/70 hover:text-white'
       }`}
     >
       {label}
@@ -38,30 +38,30 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="bg-white border-b px-6 py-3 flex items-center justify-between">
-      <div className="flex items-center gap-6">
-        <Link to="/dashboard" className="text-lg font-bold text-indigo-700">ToWin</Link>
-        <div className="flex items-center gap-1">
-          {link('/dashboard', 'Dashboard')}
-          {link('/profile', 'Profile')}
-          {isElder && link('/emergency-contacts', 'Emergency Contacts')}
-        </div>
+    <nav style={{ background: '#000', height: '44px' }} className="flex items-center px-6 gap-6">
+      <Link to="/dashboard" className="text-white font-semibold text-sm tracking-tight mr-4">
+        ToWin
+      </Link>
+      <div className="flex items-center gap-1 flex-1">
+        {navLink('/dashboard', 'Dashboard')}
+        {navLink('/profile', 'Profile')}
+        {isElder && navLink('/emergency-contacts', 'Emergency')}
       </div>
       <div className="flex items-center gap-3">
         {isElder && (
           <button
             onClick={triggerSos}
             disabled={sending}
-            className={`text-sm font-bold px-4 py-1.5 rounded-full transition-colors ${
+            className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors disabled:opacity-50 ${
               sosSent
                 ? 'bg-green-500 text-white'
-                : 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
-            } disabled:opacity-50`}
+                : 'bg-red-600 text-white hover:bg-red-500'
+            }`}
           >
-            {sosSent ? '✓ Help sent' : sending ? '...' : '🆘 SOS'}
+            {sosSent ? 'Help sent' : sending ? '...' : 'SOS'}
           </button>
         )}
-        <button onClick={logout} className="text-sm text-red-500 hover:underline">
+        <button onClick={logout} className="text-xs text-white/50 hover:text-white/80 transition-colors">
           Sign out
         </button>
       </div>
