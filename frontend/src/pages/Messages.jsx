@@ -3,8 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import api from '../api/axios';
+import { useToast } from '../context/ToastContext';
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+const TRUST_LABELS = {
+  DISCOVERED: 'Just Connected',
+  MESSAGING: 'Messaging',
+  PHONE_CALL: 'Phone Ready',
+  VIDEO_CALL: 'Video Ready',
+  VERIFIED: 'Verified',
+  FIRST_MEET: 'Ready to Meet',
+  TRUSTED: 'Fully Trusted',
+};
 
 const TRUST_BANNERS = {
   PHONE_CALL: { text: 'Ready for a phone call? Share your number when comfortable.', bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
@@ -23,10 +34,12 @@ export default function Messages() {
   const { connectionId } = useParams();
   const navigate = useNavigate();
   const myUserId = localStorage.getItem('userId');
+  const { toast } = useToast();
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [otherName, setOtherName] = useState('');
   const [otherUserId, setOtherUserId] = useState(null);
@@ -86,8 +99,10 @@ export default function Messages() {
       const res = await api.post(`/messages/${connectionId}/send`, { content: text.trim() });
       setMessages(prev => [...prev, res.data]);
       setText('');
+      setSent(true);
+      setTimeout(() => setSent(false), 1200);
     } catch (err) {
-      alert(err?.response?.data?.message || 'Could not send message.');
+      toast.error(err?.response?.data?.message || 'Message not sent. Tap to retry.');
     } finally { setSending(false); }
   }
 
@@ -175,7 +190,7 @@ export default function Messages() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34c759' }} />
             <p style={{ fontSize: '12px', color: '#7a7a7a' }}>
-              {trustLevel ? trustLevel.replace(/_/g, ' ') : 'Online'}
+              {trustLevel ? (TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')) : 'Online'}
             </p>
           </div>
         </div>
@@ -294,7 +309,9 @@ export default function Messages() {
             <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '6px', fontFamily: SF }}>
               {otherName}
             </p>
-            <p style={{ fontSize: '14px', color: '#a0a0a5' }}>No messages yet. Say hello!</p>
+            {loadError !== 'trust' && (
+              <p style={{ fontSize: '14px', color: '#a0a0a5' }}>No messages yet. Say hello to {otherName}! 👋</p>
+            )}
           </div>
         )}
 
@@ -395,7 +412,7 @@ export default function Messages() {
             padding: '4px 12px',
             borderRadius: '9999px',
           }}>
-            Trust: {trustLevel.replace(/_/g, ' ')}
+            Trust: {TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')}
           </div>
           <p style={{ fontSize: '12px', color: '#7a7a7a', fontFamily: SFText }}>
             Your connection level with {otherName}
@@ -410,26 +427,39 @@ export default function Messages() {
         padding: '12px 16px',
         display: 'flex',
         gap: '10px',
-        alignItems: 'center',
+        alignItems: 'flex-end',
       }}>
-        <input
-          value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder={loadError === 'trust' ? 'Confirm trust on dashboard first…' : 'iMessage'}
-          disabled={loadError === 'trust'}
-          className="field"
-          style={{
-            flex: 1,
-            borderRadius: '9999px',
-            padding: '10px 18px',
-            background: '#ffffff',
-            border: '1.5px solid #e0e0e0',
-            fontSize: '15px',
-            fontFamily: SFText,
-            color: '#1d1d1f',
-            outline: 'none',
-          }}
-        />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <textarea
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (text.trim() && !sending) send(e);
+              }
+            }}
+            placeholder={loadError === 'trust' ? 'Confirm trust on dashboard first…' : 'iMessage'}
+            disabled={loadError === 'trust'}
+            rows={2}
+            className="field"
+            style={{
+              flex: 1,
+              borderRadius: '18px',
+              padding: '10px 18px',
+              background: '#ffffff',
+              border: '1.5px solid #e0e0e0',
+              fontSize: '15px',
+              fontFamily: SFText,
+              color: '#1d1d1f',
+              outline: 'none',
+              resize: 'none',
+            }}
+          />
+          <span style={{ fontSize: '11px', color: '#a0a0a5', marginTop: '4px', paddingLeft: '4px' }}>
+            Enter to send · Shift+Enter for new line
+          </span>
+        </div>
         <button
           type="submit"
           disabled={sending || !text.trim() || loadError === 'trust'}
@@ -446,11 +476,15 @@ export default function Messages() {
             cursor: text.trim() ? 'pointer' : 'not-allowed',
             transition: 'background 0.15s',
             flexShrink: 0,
+            marginBottom: '20px',
+            fontSize: '16px',
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-          </svg>
+          {sent ? '✓' : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+            </svg>
+          )}
         </button>
       </form>
     </div>

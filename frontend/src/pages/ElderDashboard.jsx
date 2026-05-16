@@ -7,6 +7,7 @@ import TrustBadge from '../components/TrustBadge';
 import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+import { useToast } from '../context/ToastContext';
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
@@ -36,6 +37,7 @@ const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(
 
 export default function ElderDashboard() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
@@ -52,12 +54,18 @@ export default function ElderDashboard() {
   const [reviewedNeeds, setReviewedNeeds] = useState(new Set());
   const [location, setLocation] = useState(null);
   const [locationStatus, setLocationStatus] = useState('idle');
+  const [loading, setLoading] = useState(true);
+  const [cancelConfirm, setCancelConfirm] = useState(null);
 
   async function loadConnections() {
+    setLoading(true);
     try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
+    finally { setLoading(false); }
   }
   async function loadNeeds() {
+    setLoading(true);
     try { const res = await api.get('/needs/mine'); setMyNeeds(res.data.content ?? []); } catch {}
+    finally { setLoading(false); }
   }
 
   useEffect(() => {
@@ -83,15 +91,23 @@ export default function ElderDashboard() {
 
   async function respondToConnection(connId, accept) {
     setRespondingConn(connId);
-    try { await api.post(`/connections/${connId}/respond`, { accept }); await loadConnections(); }
-    catch (err) { alert(err?.response?.data?.message || 'Could not respond.'); }
+    try {
+      await api.post(`/connections/${connId}/respond`, { accept });
+      await loadConnections();
+      if (accept) toast.success('Connection accepted!');
+    }
+    catch (err) { toast.error(err?.response?.data?.message || 'Could not respond to request.'); }
     finally { setRespondingConn(null); }
   }
 
   async function confirmTrust(connId) {
     setConfirmingTrust(connId);
-    try { await api.post(`/trust/${connId}/confirm`); await loadConnections(); }
-    catch (err) { alert(err?.response?.data?.message || 'Could not confirm trust.'); }
+    try {
+      await api.post(`/trust/${connId}/confirm`);
+      await loadConnections();
+      toast.success('Trust level confirmed!');
+    }
+    catch { toast.error('Could not advance trust level. Try again.'); }
     finally { setConfirmingTrust(null); }
   }
 
@@ -108,20 +124,31 @@ export default function ElderDashboard() {
   }
 
   async function completeNeed(needId) {
-    try { await api.post(`/needs/${needId}/complete`); await loadNeeds(); }
-    catch { alert('Could not mark complete.'); }
+    try {
+      await api.post(`/needs/${needId}/complete`);
+      await loadNeeds();
+      toast.success('Marked as complete!');
+    }
+    catch { toast.error('Could not mark as complete. Try again.'); }
   }
 
   async function cancelNeed(needId) {
-    if (!confirm('Cancel this request?')) return;
-    try { await api.delete(`/needs/${needId}`); await loadNeeds(); }
-    catch { alert('Could not cancel request.'); }
+    try {
+      await api.delete(`/needs/${needId}`);
+      await loadNeeds();
+      toast.success('Request cancelled.');
+    }
+    catch { toast.error('Could not cancel. Try again.'); }
   }
 
   async function acceptHelper(needId, helperId) {
     setAccepting(`${needId}-${helperId}`);
-    try { await api.post(`/needs/${needId}/accept/${helperId}`); await loadNeeds(); }
-    catch { alert('Could not accept helper.'); }
+    try {
+      await api.post(`/needs/${needId}/accept/${helperId}`);
+      await loadNeeds();
+      toast.success('Helper accepted!');
+    }
+    catch { toast.error('Could not accept helper. Try again.'); }
     finally { setAccepting(null); }
   }
 
@@ -140,11 +167,13 @@ export default function ElderDashboard() {
       setReviewedNeeds(prev => new Set([...prev, need.id]));
       setReviewingNeed(null);
       setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
-    } catch (err) { alert(err?.response?.data?.message || 'Could not submit review.'); }
+      toast.success('Review submitted! Thank you.');
+    } catch (err) { toast.error(err?.response?.data?.message || 'Could not submit review.'); }
     finally { setSubmittingReview(false); }
   }
 
-  const trustLabel = (level) => ({ DISCOVERED: 'Discovered', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Call', VIDEO_CALL: 'Video Call', VERIFIED: 'Verified', FIRST_MEET: 'First Meet', TRUSTED: 'Trusted' }[level] || level);
+  const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
+  const trustLabel = (l) => TRUST_LABELS[l] || l;
   const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const tabs = [
     ['connections', `Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
@@ -225,22 +254,25 @@ export default function ElderDashboard() {
           {/* Connections tab */}
           {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <style>{`@keyframes shimmer { 0%,100% { opacity:0.6 } 50% { opacity:1 } }`}</style>
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
                 My Helpers
               </h2>
-              {connections.length === 0 && (
-                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                  </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Helpers will send you connection requests. Check back soon.</p>
+              {loading && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                  ))}
                 </div>
               )}
-              {connections.map((conn, i) => (
+              {!loading && connections.length === 0 && (
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>🤝</div>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No helpers yet</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>Helpers in your area will send you connection requests. You'll see them here.</p>
+                </div>
+              )}
+              {!loading && connections.map((conn, i) => (
                 <div key={conn.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '24px',
                   border: '1px solid #e0e0e0',
@@ -279,7 +311,7 @@ export default function ElderDashboard() {
                         </>
                       )}
                       <span style={statusStyle(conn.status === 'PENDING' && conn.initiatedByMe ? 'PENDING' : conn.status)}>
-                        {conn.status === 'PENDING' && conn.initiatedByMe ? 'Waiting' : conn.status}
+                        {conn.status === 'PENDING' && conn.initiatedByMe ? 'Request Sent' : ({ ACTIVE: 'Connected', PENDING: 'Request Sent' }[conn.status] || conn.status)}
                       </span>
                     </div>
                   </div>
@@ -305,21 +337,24 @@ export default function ElderDashboard() {
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
                 My Help Requests
               </h2>
-              {myNeeds.length === 0 && (
-                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                    </svg>
-                  </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests yet</p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Post a request to get help from helpers near you.</p>
-                  <button onClick={() => setTab('post')} className="btn-primary" style={{ marginTop: '16px', padding: '10px 24px', fontSize: '14px' }}>
+              {loading && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                  ))}
+                </div>
+              )}
+              {!loading && myNeeds.length === 0 && (
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>📋</div>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests yet</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>Post a request and helpers near you will offer to assist. It only takes a minute.</p>
+                  <button onClick={() => setTab('post')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
                     Post a Request
                   </button>
                 </div>
               )}
-              {myNeeds.map((need, i) => (
+              {!loading && myNeeds.map((need, i) => (
                 <div key={need.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '20px',
                   border: '1px solid #e0e0e0',
@@ -336,7 +371,7 @@ export default function ElderDashboard() {
                         )}
                       </div>
                     </div>
-                    <span style={statusStyle(need.status)}>{need.status}</span>
+                    <span style={statusStyle(need.status)}>{{ OPEN: 'Looking for Help', ASSIGNED: 'Helper Found', COMPLETED: 'Completed', CANCELLED: 'Cancelled' }[need.status] || need.status}</span>
                   </div>
 
                   {need.status === 'OPEN' && need.applications?.length > 0 && (
@@ -361,11 +396,21 @@ export default function ElderDashboard() {
                     </div>
                   )}
                   {need.status === 'OPEN' && (!need.applications || need.applications.length === 0) && (
-                    <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <p style={{ fontSize: '13px', color: '#a0a0a5', margin: 0 }}>No applicants yet</p>
-                      <button onClick={() => cancelNeed(need.id)} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
-                        Cancel
-                      </button>
+                    <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>
+                      {cancelConfirm === need.id ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid #fee2e2', paddingTop: '10px', marginTop: '0', background: '#fef2f2', borderRadius: '10px', padding: '10px 12px' }}>
+                          <span style={{ fontSize: '13px', color: '#991b1b', flex: 1 }}>Cancel this request?</span>
+                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: '#cc0000', border: 'none', borderRadius: '9999px', padding: '5px 14px', cursor: 'pointer' }}>Yes, cancel</button>
+                          <button onClick={() => setCancelConfirm(null)} style={{ fontSize: '12px', color: '#7a7a7a', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '5px 12px', cursor: 'pointer' }}>Keep</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <p style={{ fontSize: '13px', color: '#a0a0a5', margin: 0 }}>No applicants yet</p>
+                          <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
+                            Cancel
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                   {need.status === 'ASSIGNED' && (
