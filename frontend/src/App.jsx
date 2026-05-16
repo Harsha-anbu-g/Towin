@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import ElderDashboard from './pages/ElderDashboard';
@@ -36,6 +37,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
@@ -44,7 +46,7 @@ function App() {
           <Route path="/messages" element={<Navigate to="/dashboard" replace />} />
           <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

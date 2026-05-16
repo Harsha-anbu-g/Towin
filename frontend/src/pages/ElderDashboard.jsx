@@ -41,7 +41,7 @@ export default function ElderDashboard() {
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
-  const [tab, setTab] = useState('connections');
+  const [tab, setTab] = useState('overview');
   const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
@@ -176,6 +176,7 @@ export default function ElderDashboard() {
   const trustLabel = (l) => TRUST_LABELS[l] || l;
   const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const tabs = [
+    ['overview', 'Overview'],
     ['connections', `Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
     ['needs', 'My Requests'],
     ['post', 'Post Request'],
@@ -250,6 +251,113 @@ export default function ElderDashboard() {
         </div>
 
         <div style={{ paddingTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Overview tab */}
+          {tab === 'overview' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+                Your Trust Journey
+              </h2>
+              <p style={{ fontSize: '15px', color: '#7a7a7a', margin: '-16px 0 0' }}>
+                See how your relationships are growing with each helper.
+              </p>
+
+              {loading && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '120px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                  ))}
+                </div>
+              )}
+
+              {!loading && connections.filter(c => c.status === 'ACTIVE').length === 0 && (
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '56px 24px', border: '1px solid #e0e0e0' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '14px' }}>🌱</div>
+                  <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>No active connections yet</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '24px', maxWidth: '280px', margin: '0 auto 24px' }}>
+                    Once a helper connects with you, you'll see your trust progress here.
+                  </p>
+                  <button onClick={() => setTab('connections')} className="btn-primary" style={{ padding: '11px 28px', fontSize: '15px' }}>
+                    View Connections
+                  </button>
+                </div>
+              )}
+
+              {!loading && connections.filter(c => c.status === 'ACTIVE').map((conn, i) => (
+                <div key={conn.id} style={{
+                  background: '#ffffff', borderRadius: '18px', padding: '24px',
+                  border: '1px solid #e0e0e0',
+                  animation: `fadeSlideUp 0.4s ease ${i * 0.06}s both`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '4px' }}>
+                    <div style={{
+                      width: '44px', height: '44px', borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #34c759, #30d158)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '15px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                    }}>
+                      {initials(conn.otherUserName)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Helper'}</p>
+                      <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '2px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
+                    </div>
+                    <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px', flexShrink: 0 }}>
+                      Message
+                    </button>
+                  </div>
+                  <TrustJourney
+                    currentTrustLevel={conn.currentTrustLevel}
+                    confirmedByMe={conn.confirmedByMe}
+                    otherUserName={conn.otherUserName || 'them'}
+                    onConfirm={() => confirmTrust(conn.id)}
+                    confirming={confirmingTrust === conn.id}
+                  />
+                </div>
+              ))}
+
+              {!loading && connections.filter(c => c.status === 'PENDING').length > 0 && (
+                <div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 12px' }}>
+                    Pending Requests ({connections.filter(c => c.status === 'PENDING').length})
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {connections.filter(c => c.status === 'PENDING').map(conn => (
+                      <div key={conn.id} style={{
+                        background: '#ffffff', borderRadius: '14px', padding: '16px 20px',
+                        border: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{
+                            width: '38px', height: '38px', borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #0066cc, #2997ff)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '13px', fontWeight: 700, color: '#fff',
+                          }}>
+                            {initials(conn.otherUserName)}
+                          </div>
+                          <div>
+                            <p style={{ fontWeight: 600, fontSize: '15px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Helper'}</p>
+                            <p style={{ fontSize: '12px', color: '#7a7a7a', margin: '2px 0 0' }}>
+                              {conn.initiatedByMe ? 'Request Sent' : 'Wants to connect'}
+                            </p>
+                          </div>
+                        </div>
+                        {!conn.initiatedByMe && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
+                              className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
+                            <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
+                              className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Connections tab */}
           {tab === 'connections' && (
