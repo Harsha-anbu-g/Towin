@@ -13,37 +13,40 @@
 ## Scoring Rules Reference
 
 ### Basic Score (double, 0.0 – 2.0)
+
 Each of the 8 profile fields is worth **0.25 pts**:
 
-| Field | Source |
-|-------|--------|
-| ID verified | `user.verificationStatus == VERIFIED` |
-| Phone verified | `user.phoneVerified` |
-| Profile photo | `helperProfile.photoUrl` not blank |
-| Social media | `helperProfile.facebookUrl` OR `instagramUrl` not blank |
-| Hobbies | `helperProfile.hobbies` array not empty |
-| Occupation | `helperProfile.occupation` not blank |
-| Bio | `helperProfile.bio` not blank |
-| Date of birth | `helperProfile.dateOfBirth` not null |
+| Field          | Source                                                  |
+| -------------- | ------------------------------------------------------- |
+| ID verified    | `user.verificationStatus == VERIFIED`                   |
+| Phone verified | `user.phoneVerified`                                    |
+| Profile photo  | `helperProfile.photoUrl` not blank                      |
+| Social media   | `helperProfile.facebookUrl` OR `instagramUrl` not blank |
+| Hobbies        | `helperProfile.hobbies` array not empty                 |
+| Occupation     | `helperProfile.occupation` not blank                    |
+| Bio            | `helperProfile.bio` not blank                           |
+| Date of birth  | `helperProfile.dateOfBirth` not null                    |
 
 If `helperProfile` is null (elder-only users), only the first two fields can score → max 0.5.
 
 ### Rooting Score (int, cumulative)
+
 For each active connection, count how many of the **5 spec stages** have been reached (based on `connection.currentTrustLevel`):
 
-| TrustLevel value | Spec stage reached | Cumulative pts from this connection |
-|---|---|---|
-| DISCOVERED (0) | — | 0 |
-| MESSAGING (1) | Stage 1: Text | 1 |
-| PHONE_CALL (2) | Stage 2: Voice | 2 |
-| VIDEO_CALL (3) | Stage 3: Video | 3 |
-| VERIFIED (4) | *(not a spec stage)* | 3 |
-| FIRST_MEET (5) | Stage 4: In-person | 4 |
-| TRUSTED (6) | Stage 5: Help session | 5 |
+| TrustLevel value | Spec stage reached    | Cumulative pts from this connection |
+| ---------------- | --------------------- | ----------------------------------- |
+| DISCOVERED (0)   | —                     | 0                                   |
+| MESSAGING (1)    | Stage 1: Text         | 1                                   |
+| PHONE_CALL (2)   | Stage 2: Voice        | 2                                   |
+| VIDEO_CALL (3)   | Stage 3: Video        | 3                                   |
+| VERIFIED (4)     | _(not a spec stage)_  | 3                                   |
+| FIRST_MEET (5)   | Stage 4: In-person    | 4                                   |
+| TRUSTED (6)      | Stage 5: Help session | 5                                   |
 
 Total Rooting Score = sum of stage points across all active connections.
 
 ### Review Score (int, cumulative)
+
 Elders rate helpers 1–5 stars. Each star = 1 pt. The Review Score is the running total of all star ratings ever received.
 
 `SELECT COALESCE(SUM(r.rating), 0) FROM reviews r WHERE r.reviewee_id = :userId`
@@ -51,33 +54,36 @@ Elders rate helpers 1–5 stars. Each star = 1 pt. The Review Score is the runni
 Max per review = 5. No cap on total.
 
 ### Tier Thresholds (updated)
-| Score | Tier |
-|---|---|
-| 0–2 | New Member |
-| 3–14 | Getting Started |
-| 15–49 | Reliable |
-| 50–119 | Highly Trusted |
-| 120+ | Community Champion |
+
+| Score  | Tier               |
+| ------ | ------------------ |
+| 0–2    | New Member         |
+| 3–14   | Getting Started    |
+| 15–49  | Reliable           |
+| 50–119 | Highly Trusted     |
+| 120+   | Community Champion |
 
 ---
 
 ## File Structure
 
 ### Backend — modified files
-| File | Change |
-|------|--------|
-| `backend/src/main/resources/db/migration/V17__add_profile_fields.sql` | NEW — add 5 columns to `helper_profiles` |
-| `backend/src/main/java/com/towin/profile/entity/HelperProfile.java` | Add 5 new fields |
-| `backend/src/main/java/com/towin/profile/dto/HelperProfileRequest.java` | Add 5 new fields |
-| `backend/src/main/java/com/towin/profile/service/ProfileService.java` | Save new fields; inject TrustScoreService; call recalculate() after profile save |
-| `backend/src/main/java/com/towin/review/repository/ReviewRepository.java` | Add `sumRatingsByRevieweeId` query |
-| `backend/src/main/java/com/towin/trust/dto/TrustScoreBreakdownResponse.java` | Redesign to 3-section DTO |
-| `backend/src/main/java/com/towin/common/service/TrustScoreService.java` | Full rewrite of scoring logic |
-| `backend/src/test/java/com/towin/trust/service/TrustScoreServiceTest.java` | Replace old tests with new ones |
+
+| File                                                                         | Change                                                                           |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `backend/src/main/resources/db/migration/V17__add_profile_fields.sql`        | NEW — add 5 columns to `helper_profiles`                                         |
+| `backend/src/main/java/com/towin/profile/entity/HelperProfile.java`          | Add 5 new fields                                                                 |
+| `backend/src/main/java/com/towin/profile/dto/HelperProfileRequest.java`      | Add 5 new fields                                                                 |
+| `backend/src/main/java/com/towin/profile/service/ProfileService.java`        | Save new fields; inject TrustScoreService; call recalculate() after profile save |
+| `backend/src/main/java/com/towin/review/repository/ReviewRepository.java`    | Add `sumRatingsByRevieweeId` query                                               |
+| `backend/src/main/java/com/towin/trust/dto/TrustScoreBreakdownResponse.java` | Redesign to 3-section DTO                                                        |
+| `backend/src/main/java/com/towin/common/service/TrustScoreService.java`      | Full rewrite of scoring logic                                                    |
+| `backend/src/test/java/com/towin/trust/service/TrustScoreServiceTest.java`   | Replace old tests with new ones                                                  |
 
 ### Frontend — modified files
-| File | Change |
-|------|--------|
+
+| File                           | Change                      |
+| ------------------------------ | --------------------------- |
 | `frontend/src/pages/Trust.jsx` | Rewrite to 3-section layout |
 
 ---
@@ -87,6 +93,7 @@ Max per review = 5. No cap on total.
 ### Task 1: V17 Migration
 
 **Files:**
+
 - Create: `backend/src/main/resources/db/migration/V17__add_profile_fields.sql`
 
 - [ ] **Step 1: Write the migration**
@@ -112,6 +119,7 @@ git commit -m "feat: V17 add hobbies/occupation/social/dob to helper_profiles"
 ### Task 2: Update HelperProfile Entity + HelperProfileRequest DTO
 
 **Files:**
+
 - Modify: `backend/src/main/java/com/towin/profile/entity/HelperProfile.java`
 - Modify: `backend/src/main/java/com/towin/profile/dto/HelperProfileRequest.java`
 
@@ -168,6 +176,7 @@ git commit -m "feat: add hobbies/occupation/social/dob fields to HelperProfile"
 ### Task 3: Update ProfileService to Save New Fields
 
 **Files:**
+
 - Modify: `backend/src/main/java/com/towin/profile/service/ProfileService.java`
 
 - [ ] **Step 1: Add TrustScoreService injection**
@@ -217,6 +226,7 @@ git commit -m "feat: save new profile fields and recalculate trust score on help
 ### Task 4: Add sumRatingsByRevieweeId to ReviewRepository
 
 **Files:**
+
 - Modify: `backend/src/main/java/com/towin/review/repository/ReviewRepository.java`
 
 - [ ] **Step 1: Add the query method**
@@ -246,6 +256,7 @@ git commit -m "feat: add sumRatingsByRevieweeId to ReviewRepository"
 ### Task 5: Redesign TrustScoreBreakdownResponse DTO
 
 **Files:**
+
 - Modify: `backend/src/main/java/com/towin/trust/dto/TrustScoreBreakdownResponse.java`
 
 - [ ] **Step 1: Replace the DTO with the new 3-section structure**
@@ -324,6 +335,7 @@ git commit -m "refactor: redesign TrustScoreBreakdownResponse to 3-section DTO"
 ### Task 6: Rewrite TrustScoreService (TDD)
 
 **Files:**
+
 - Create/replace: `backend/src/test/java/com/towin/trust/service/TrustScoreServiceTest.java`
 - Modify: `backend/src/main/java/com/towin/common/service/TrustScoreService.java`
 
@@ -762,9 +774,11 @@ git commit -m "feat: Trust Score v2 — Basic + Rooting + Review; 7 TDD tests pa
 ### Task 7: Rewrite Trust.jsx
 
 **Files:**
+
 - Modify: `frontend/src/pages/Trust.jsx`
 
 The page calls `GET /api/trust/my-score` which returns the new 3-section DTO:
+
 ```json
 {
   "totalScore": 11.25,
@@ -780,22 +794,22 @@ The page calls `GET /api/trust/my-score` which returns the new 3-section DTO:
 Replace the entire file:
 
 ```jsx
-import { useEffect, useState } from 'react';
-import NavBar from '../components/NavBar';
-import api from '../api/axios';
+import { useEffect, useState } from "react";
+import NavBar from "../components/NavBar";
+import api from "../api/axios";
 
-const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
-const SKY = '#4FA3CE';
-const BLUE = '#3D8AB0';
-const BG  = '#EAF5FB';
+const SKY = "#4FA3CE";
+const BLUE = "#3D8AB0";
+const BG = "#EAF5FB";
 
 const TIER_COLORS = {
-  'Community Champion': { bg: '#FFF7E6', color: '#92400e', border: '#FDE68A' },
-  'Highly Trusted':     { bg: BG, color: BLUE, border: '#A8D4EC' },
-  'Reliable':           { bg: BG, color: BLUE, border: '#A8D4EC' },
-  'Getting Started':    { bg: '#F3F4F6', color: '#5a6470', border: '#D1D5DB' },
-  'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
+  "Community Champion": { bg: "#FFF7E6", color: "#92400e", border: "#FDE68A" },
+  "Highly Trusted": { bg: BG, color: BLUE, border: "#A8D4EC" },
+  Reliable: { bg: BG, color: BLUE, border: "#A8D4EC" },
+  "Getting Started": { bg: "#F3F4F6", color: "#5a6470", border: "#D1D5DB" },
+  "New Member": { bg: "#F3F4F6", color: "#9ca3af", border: "#E5E7EB" },
 };
 
 function ScoreRing({ score }) {
@@ -803,20 +817,50 @@ function ScoreRing({ score }) {
   const circ = 2 * Math.PI * r;
   const BASE = 65;
   const pct = Math.min(score / BASE, 1);
-  const display = Number.isInteger(score) ? score : score.toFixed(2).replace(/\.?0+$/, '');
+  const display = Number.isInteger(score)
+    ? score
+    : score.toFixed(2).replace(/\.?0+$/, "");
   return (
     <svg width="148" height="148" viewBox="0 0 148 148">
-      <circle cx="74" cy="74" r={r} fill="none" stroke="#ececef" strokeWidth="10" />
-      <circle cx="74" cy="74" r={r} fill="none" stroke={SKY} strokeWidth="10"
-        strokeDasharray={`${pct * circ} ${circ}`} strokeLinecap="round"
+      <circle
+        cx="74"
+        cy="74"
+        r={r}
+        fill="none"
+        stroke="#ececef"
+        strokeWidth="10"
+      />
+      <circle
+        cx="74"
+        cy="74"
+        r={r}
+        fill="none"
+        stroke={SKY}
+        strokeWidth="10"
+        strokeDasharray={`${pct * circ} ${circ}`}
+        strokeLinecap="round"
         transform="rotate(-90 74 74)"
-        style={{ transition: 'stroke-dasharray 0.7s ease' }} />
-      <text x="74" y="70" textAnchor="middle"
-        style={{ fontFamily: SFD, fontSize: '28px', fontWeight: 700, fill: '#1d1d1f' }}>
+        style={{ transition: "stroke-dasharray 0.7s ease" }}
+      />
+      <text
+        x="74"
+        y="70"
+        textAnchor="middle"
+        style={{
+          fontFamily: SFD,
+          fontSize: "28px",
+          fontWeight: 700,
+          fill: "#1d1d1f",
+        }}
+      >
         {display}
       </text>
-      <text x="74" y="88" textAnchor="middle"
-        style={{ fontFamily: SF, fontSize: '12px', fill: '#9ca3af' }}>
+      <text
+        x="74"
+        y="88"
+        textAnchor="middle"
+        style={{ fontFamily: SF, fontSize: "12px", fill: "#9ca3af" }}
+      >
         pts
       </text>
     </svg>
@@ -824,36 +868,69 @@ function ScoreRing({ score }) {
 }
 
 function ScoreCard({ data }) {
-  const tierStyle = TIER_COLORS[data.tier] ?? TIER_COLORS['New Member'];
+  const tierStyle = TIER_COLORS[data.tier] ?? TIER_COLORS["New Member"];
   return (
-    <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '32px 36px', display: 'flex', alignItems: 'center', gap: '40px',
-      marginBottom: '20px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "18px",
+        border: "1px solid #e0e0e0",
+        padding: "32px 36px",
+        display: "flex",
+        alignItems: "center",
+        gap: "40px",
+        marginBottom: "20px",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
+      }}
+    >
       <ScoreRing score={data.totalScore} />
       <div style={{ flex: 1 }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center',
-          background: tierStyle.bg, color: tierStyle.color,
-          border: `1px solid ${tierStyle.border}`,
-          borderRadius: '9999px', padding: '5px 16px',
-          fontSize: '13px', fontWeight: 700, fontFamily: SF, marginBottom: '14px',
-        }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            background: tierStyle.bg,
+            color: tierStyle.color,
+            border: `1px solid ${tierStyle.border}`,
+            borderRadius: "9999px",
+            padding: "5px 16px",
+            fontSize: "13px",
+            fontWeight: 700,
+            fontFamily: SF,
+            marginBottom: "14px",
+          }}
+        >
           {data.tier}
         </div>
-        <h2 style={{
-          fontFamily: SFD, fontSize: '24px', fontWeight: 700,
-          color: '#1d1d1f', margin: '0 0 8px', letterSpacing: '-0.3px',
-        }}>
-          {data.totalScore % 1 === 0 ? data.totalScore : data.totalScore.toFixed(2)} pts
+        <h2
+          style={{
+            fontFamily: SFD,
+            fontSize: "24px",
+            fontWeight: 700,
+            color: "#1d1d1f",
+            margin: "0 0 8px",
+            letterSpacing: "-0.3px",
+          }}
+        >
+          {data.totalScore % 1 === 0
+            ? data.totalScore
+            : data.totalScore.toFixed(2)}{" "}
+          pts
         </h2>
-        <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: 0, lineHeight: 1.55 }}>
+        <p
+          style={{
+            fontFamily: SF,
+            fontSize: "14px",
+            color: "#7a7a7a",
+            margin: 0,
+            lineHeight: 1.55,
+          }}
+        >
           {data.totalScore < 3
-            ? 'Verify your phone and ID, then fill in your profile to unlock your first points.'
+            ? "Verify your phone and ID, then fill in your profile to unlock your first points."
             : data.totalScore < 15
-            ? 'Start building relationships with elders to earn rooting points.'
-            : 'Great score — keep completing engagements and earning reviews.'}
+              ? "Start building relationships with elders to earn rooting points."
+              : "Great score — keep completing engagements and earning reviews."}
         </p>
       </div>
     </div>
@@ -863,55 +940,127 @@ function ScoreCard({ data }) {
 function BasicCard({ basic }) {
   const pct = Math.round((basic.earned / basic.max) * 100);
   return (
-    <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '28px 32px', marginBottom: '16px',
-      boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "18px",
+        border: "1px solid #e0e0e0",
+        padding: "28px 32px",
+        marginBottom: "16px",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+        }}
+      >
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
+          <h3
+            style={{
+              fontFamily: SFD,
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#1d1d1f",
+              margin: "0 0 4px",
+            }}
+          >
             Profile Score
           </h3>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
+          <p
+            style={{
+              fontFamily: SF,
+              fontSize: "13px",
+              color: "#a0a0a5",
+              margin: 0,
+            }}
+          >
             How completely you've filled in your profile
           </p>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <span style={{ fontFamily: SFD, fontSize: '28px', fontWeight: 800, color: '#1d1d1f' }}>
+        <div style={{ textAlign: "right" }}>
+          <span
+            style={{
+              fontFamily: SFD,
+              fontSize: "28px",
+              fontWeight: 800,
+              color: "#1d1d1f",
+            }}
+          >
             {basic.earned}
           </span>
-          <span style={{ fontFamily: SF, fontSize: '14px', color: '#a0a0a5' }}> / {basic.max}</span>
+          <span style={{ fontFamily: SF, fontSize: "14px", color: "#a0a0a5" }}>
+            {" "}
+            / {basic.max}
+          </span>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div style={{ height: '8px', borderRadius: '9999px', background: '#ececef', marginBottom: '24px' }}>
-        <div style={{
-          height: '100%', width: `${pct}%`, background: SKY,
-          borderRadius: '9999px', transition: 'width 0.6s ease',
-        }} />
+      <div
+        style={{
+          height: "8px",
+          borderRadius: "9999px",
+          background: "#ececef",
+          marginBottom: "24px",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${pct}%`,
+            background: SKY,
+            borderRadius: "9999px",
+            transition: "width 0.6s ease",
+          }}
+        />
       </div>
 
       {/* Field grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-        {basic.fields.map(f => (
-          <div key={f.key} style={{
-            display: 'flex', alignItems: 'flex-start', gap: '10px',
-            padding: '12px 14px', borderRadius: '12px',
-            background: f.completed ? BG : '#fafafa',
-            border: `1px solid ${f.completed ? '#BFD9EA' : '#f0f0f0'}`,
-          }}>
-            <span style={{ fontSize: '16px', marginTop: '1px' }}>{f.completed ? '✓' : '○'}</span>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}
+      >
+        {basic.fields.map((f) => (
+          <div
+            key={f.key}
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+              padding: "12px 14px",
+              borderRadius: "12px",
+              background: f.completed ? BG : "#fafafa",
+              border: `1px solid ${f.completed ? "#BFD9EA" : "#f0f0f0"}`,
+            }}
+          >
+            <span style={{ fontSize: "16px", marginTop: "1px" }}>
+              {f.completed ? "✓" : "○"}
+            </span>
             <div>
-              <p style={{
-                fontFamily: SF, fontSize: '13px', fontWeight: 600,
-                color: f.completed ? BLUE : '#1d1d1f', margin: '0 0 2px',
-              }}>
+              <p
+                style={{
+                  fontFamily: SF,
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: f.completed ? BLUE : "#1d1d1f",
+                  margin: "0 0 2px",
+                }}
+              >
                 {f.label}
               </p>
               {!f.completed && f.tip && (
-                <p style={{ fontFamily: SF, fontSize: '11px', color: '#a0a0a5', margin: 0, lineHeight: 1.4 }}>
+                <p
+                  style={{
+                    fontFamily: SF,
+                    fontSize: "11px",
+                    color: "#a0a0a5",
+                    margin: 0,
+                    lineHeight: 1.4,
+                  }}
+                >
                   {f.tip}
                 </p>
               )}
@@ -925,41 +1074,96 @@ function BasicCard({ basic }) {
 
 function RootingCard({ rooting }) {
   return (
-    <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '28px 32px', marginBottom: '16px',
-      boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "18px",
+        border: "1px solid #e0e0e0",
+        padding: "28px 32px",
+        marginBottom: "16px",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          marginBottom: "16px",
+        }}
+      >
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
+          <h3
+            style={{
+              fontFamily: SFD,
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#1d1d1f",
+              margin: "0 0 4px",
+            }}
+          >
             Rooting Score
           </h3>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
+          <p
+            style={{
+              fontFamily: SF,
+              fontSize: "13px",
+              color: "#a0a0a5",
+              margin: 0,
+            }}
+          >
             Points earned by progressing through trust stages with elders
           </p>
         </div>
-        <span style={{ fontFamily: SFD, fontSize: '28px', fontWeight: 800, color: '#1d1d1f' }}>
+        <span
+          style={{
+            fontFamily: SFD,
+            fontSize: "28px",
+            fontWeight: 800,
+            color: "#1d1d1f",
+          }}
+        >
           +{rooting.earned}
         </span>
       </div>
-      <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: '0 0 16px' }}>
+      <p
+        style={{
+          fontFamily: SF,
+          fontSize: "14px",
+          color: "#7a7a7a",
+          margin: "0 0 16px",
+        }}
+      >
         {rooting.detail}
       </p>
       {/* Stage guide */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {['Text', 'Voice', 'Video', 'In-person', 'Help session'].map((s, i) => (
-          <span key={s} style={{
-            fontFamily: SF, fontSize: '12px', fontWeight: 600,
-            background: '#f5f5f7', color: '#5a6470',
-            borderRadius: '9999px', padding: '4px 12px',
-          }}>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        {["Text", "Voice", "Video", "In-person", "Help session"].map((s, i) => (
+          <span
+            key={s}
+            style={{
+              fontFamily: SF,
+              fontSize: "12px",
+              fontWeight: 600,
+              background: "#f5f5f7",
+              color: "#5a6470",
+              borderRadius: "9999px",
+              padding: "4px 12px",
+            }}
+          >
             {i + 1}. {s}
           </span>
         ))}
       </div>
       {rooting.earned === 0 && (
-        <p style={{ fontFamily: SF, fontSize: '13px', color: SKY, margin: '12px 0 0' }}>
+        <p
+          style={{
+            fontFamily: SF,
+            fontSize: "13px",
+            color: SKY,
+            margin: "12px 0 0",
+          }}
+        >
           → Start a connection and send a message to earn your first point.
         </p>
       )}
@@ -969,28 +1173,76 @@ function RootingCard({ rooting }) {
 
 function ReviewCard({ review }) {
   return (
-    <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '28px 32px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "18px",
+        border: "1px solid #e0e0e0",
+        padding: "28px 32px",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          marginBottom: "16px",
+        }}
+      >
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
+          <h3
+            style={{
+              fontFamily: SFD,
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#1d1d1f",
+              margin: "0 0 4px",
+            }}
+          >
             Review Score
           </h3>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
+          <p
+            style={{
+              fontFamily: SF,
+              fontSize: "13px",
+              color: "#a0a0a5",
+              margin: 0,
+            }}
+          >
             Cumulative sum of all ratings from elders (out of 10 each)
           </p>
         </div>
-        <span style={{ fontFamily: SFD, fontSize: '28px', fontWeight: 800, color: '#1d1d1f' }}>
+        <span
+          style={{
+            fontFamily: SFD,
+            fontSize: "28px",
+            fontWeight: 800,
+            color: "#1d1d1f",
+          }}
+        >
           +{review.earned}
         </span>
       </div>
-      <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: 0 }}>
+      <p
+        style={{
+          fontFamily: SF,
+          fontSize: "14px",
+          color: "#7a7a7a",
+          margin: 0,
+        }}
+      >
         {review.detail}
       </p>
       {review.earned === 0 && (
-        <p style={{ fontFamily: SF, fontSize: '13px', color: SKY, margin: '12px 0 0' }}>
+        <p
+          style={{
+            fontFamily: SF,
+            fontSize: "13px",
+            color: SKY,
+            margin: "12px 0 0",
+          }}
+        >
           → Complete a help session so an elder can leave you a review.
         </p>
       )}
@@ -999,49 +1251,86 @@ function ReviewCard({ review }) {
 }
 
 export default function Trust() {
-  const [data, setData]       = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    api.get('/trust/my-score')
-      .then(r => setData(r.data))
-      .catch(() => setError('Could not load your trust score. Please try again.'))
+    api
+      .get("/trust/my-score")
+      .then((r) => setData(r.data))
+      .catch(() =>
+        setError("Could not load your trust score. Please try again."),
+      )
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc' }}>
+    <div style={{ minHeight: "100svh", background: "#fafafc" }}>
       <NavBar />
-      <div style={{ maxWidth: '780px', margin: '0 auto', padding: '40px 24px 80px' }}>
-
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{
-            fontFamily: SFD, fontSize: '34px', fontWeight: 700,
-            color: '#1d1d1f', margin: '0 0 8px', letterSpacing: '-0.5px',
-          }}>
+      <div
+        style={{
+          maxWidth: "780px",
+          margin: "0 auto",
+          padding: "40px 24px 80px",
+        }}
+      >
+        <div style={{ marginBottom: "32px" }}>
+          <h1
+            style={{
+              fontFamily: SFD,
+              fontSize: "34px",
+              fontWeight: 700,
+              color: "#1d1d1f",
+              margin: "0 0 8px",
+              letterSpacing: "-0.5px",
+            }}
+          >
             Your Trust Score
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '16px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
-            Three parts: your profile completeness, the depth of your relationships, and what elders say about you.
+          <p
+            style={{
+              fontFamily: SF,
+              fontSize: "16px",
+              color: "#7a7a7a",
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            Three parts: your profile completeness, the depth of your
+            relationships, and what elders say about you.
           </p>
         </div>
 
         {loading && (
-          <div style={{
-            background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-            padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '15px', color: '#a0a0a5',
-          }}>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "18px",
+              border: "1px solid #e0e0e0",
+              padding: "64px",
+              textAlign: "center",
+              fontFamily: SF,
+              fontSize: "15px",
+              color: "#a0a0a5",
+            }}
+          >
             Loading your score…
           </div>
         )}
 
         {error && (
-          <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
-            borderRadius: '14px', padding: '16px 20px',
-            fontFamily: SF, fontSize: '14px', color: '#dc2626',
-          }}>
+          <div
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: "14px",
+              padding: "16px 20px",
+              fontFamily: SF,
+              fontSize: "14px",
+              color: "#dc2626",
+            }}
+          >
             {error}
           </div>
         )}

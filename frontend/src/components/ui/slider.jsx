@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Slider = React.forwardRef(
-  ({ className, trackClassName, rangeClassName, thumbClassName, showTooltip = false, tooltipContent, ...props }, ref) => {
+  ({ className, trackClassName, rangeClassName, thumbClassName, thumbContent, showTooltip = false, tooltipContent, ...props }, ref) => {
     const [showTooltipState, setShowTooltipState] = React.useState(false);
     const [internalValue, setInternalValue] = React.useState(
       props.defaultValue ?? props.value ?? [0],
@@ -42,11 +42,15 @@ const Slider = React.forwardRef(
       const thumb = (
         <SliderPrimitive.Thumb
           className={cn(
-            "block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-[disabled]:cursor-not-allowed",
+            thumbContent
+              ? "flex items-center justify-center rounded-full bg-white border-0 shadow-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-[disabled]:cursor-not-allowed"
+              : "block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-[disabled]:cursor-not-allowed",
             thumbClassName,
           )}
           onPointerDown={handlePointerDown}
-        />
+        >
+          {thumbContent ?? null}
+        </SliderPrimitive.Thumb>
       );
 
       if (!showTooltip) return thumb;

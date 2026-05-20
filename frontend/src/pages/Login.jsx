@@ -41,7 +41,7 @@ function HeroPanel() {
         position: 'absolute', top: '32px', left: '48px', zIndex: 2,
         display: 'flex', alignItems: 'center', gap: '10px',
       }}>
-        <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
+        <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <p style={{
           fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.4px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
