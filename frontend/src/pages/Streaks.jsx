@@ -28,71 +28,72 @@ function greeting() {
   return 'Good evening';
 }
 
+function computeAge(dobStr) {
+  if (!dobStr) return null;
+  const dob = new Date(dobStr);
+  const now = new Date();
+
+  const totalDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
+
+  let years = now.getFullYear() - dob.getFullYear();
+  let months = now.getMonth() - dob.getMonth();
+  let days = now.getDate() - dob.getDate();
+
+  if (days < 0) {
+    months -= 1;
+    days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+  }
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+
+  return { totalDays, years, months, days };
+}
+
 export default function Streaks() {
   const navigate = useNavigate();
   const [streak, setStreak] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [checking, setChecking] = useState(false);
-
+  const [dob, setDob] = useState(null);
   useEffect(() => {
     api.get('/streaks/me')
       .then(r => setStreak(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  async function handleCheckIn() {
-    setChecking(true);
-    try {
-      const r = await api.post('/streaks/checkin');
-      setStreak(r.data);
-    } catch {}
-    finally { setChecking(false); }
-  }
+  useEffect(() => {
+    api.get('/profile/me')
+      .then(r => setDob(r.data.dateOfBirth))
+      .catch(() => {});
+  }, []);
 
   const alreadyDone = streak?.alreadyCheckedIn;
 
   return (
     <div style={{ display: 'flex', minHeight: '100svh', fontFamily: SFT }}>
 
-      {/* Left — image panel identical to login/register */}
+      {/* Left — image panel */}
       <div style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
         padding: '52px 48px', minHeight: '100svh',
       }}>
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 0,
-          background: 'linear-gradient(160deg, #3D8AB0 0%, #4FA3CE 40%, #7EC4DF 70%, #BFD9EA 100%)',
-        }} />
         {/* Logo top-left */}
         <div style={{
           position: 'absolute', top: '32px', left: '48px', zIndex: 2,
           display: 'flex', alignItems: 'center', gap: '10px',
         }}>
-          <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
+          <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
           <p style={{
-            fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.4px',
+            fontSize: '22px', fontWeight: 800, color: '#1a5c2e', letterSpacing: '-0.4px',
             fontFamily: SF, margin: 0,
           }}>ToWin</p>
         </div>
-        {/* Caption */}
-        <div style={{ position: 'relative', zIndex: 2 }}>
-          <h2 style={{
-            fontFamily: SF, fontSize: '36px', lineHeight: 1.15, color: '#fff',
-            marginBottom: '14px', letterSpacing: '-0.3px', fontWeight: 600,
-            textShadow: '0 2px 24px rgba(20,55,80,0.45)',
-          }}>
-            Every day<br />counts.
-          </h2>
-          <p style={{
-            fontFamily: SFT, fontSize: '17px', color: 'rgba(255,255,255,0.92)',
-            maxWidth: '340px', lineHeight: 1.55, margin: 0,
-            textShadow: '0 1px 12px rgba(20,55,80,0.5)',
-          }}>
-            Showing up today is the most important thing you can do.
-          </p>
-        </div>
+        <img src="/journey.jpg" alt="" style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', zIndex: 0,
+        }} />
       </div>
 
       {/* Right — streak content */}
@@ -152,6 +153,41 @@ export default function Streaks() {
             )}
           </div>
 
+          {/* Age display */}
+          {dob && (() => {
+            const age = computeAge(dob);
+            if (!age) return null;
+            return (
+              <div style={{
+                background: '#ffffff', borderRadius: '20px',
+                border: '1px solid #e0e0e0', padding: '24px 28px',
+                marginBottom: '28px',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
+              }}>
+                <p style={{
+                  fontFamily: SF, fontSize: '40px', fontWeight: 800,
+                  color: '#1a5c2e', lineHeight: 1, margin: '0 0 6px',
+                  letterSpacing: '-1px',
+                }}>
+                  {age.totalDays.toLocaleString()}
+                </p>
+                <p style={{
+                  fontSize: '15px', fontWeight: 600, color: '#7a7a7a',
+                  fontFamily: SFT, margin: '0 0 10px',
+                }}>
+                  days you have lived
+                </p>
+                <p style={{
+                  fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, margin: 0,
+                }}>
+                  {age.years} {age.years === 1 ? 'year' : 'years'},{' '}
+                  {age.months} {age.months === 1 ? 'month' : 'months'},{' '}
+                  {age.days} {age.days === 1 ? 'day' : 'days'} old
+                </p>
+              </div>
+            );
+          })()}
+
           {/* Action */}
           {!loading && (
             alreadyDone ? (
@@ -184,20 +220,17 @@ export default function Streaks() {
             ) : (
               <>
                 <button
-                  onClick={handleCheckIn}
-                  disabled={checking}
+                  onClick={() => navigate('/game')}
                   style={{
                     width: '100%', background: '#1d1d1f', color: '#fff',
                     border: 'none', borderRadius: '9999px',
                     padding: '22px 0', fontSize: '20px', fontWeight: 700,
-                    fontFamily: SFT, cursor: checking ? 'default' : 'pointer',
+                    fontFamily: SFT, cursor: 'pointer',
                     marginBottom: '16px', letterSpacing: '-0.2px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                    transition: 'opacity 0.15s',
-                    opacity: checking ? 0.7 : 1,
                   }}
                 >
-                  {checking ? 'Marking you present…' : "I'm here today"}
+                  I'm here today
                 </button>
                 <p style={{
                   textAlign: 'center', fontSize: '14px', color: '#a0a0a5',
