@@ -2,6 +2,7 @@ package com.towin.discovery.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.TrustScoreService;
 import com.towin.discovery.dto.DiscoveredUserResponse;
 import com.towin.discovery.dto.DiscoveryFilter;
 import com.towin.profile.entity.ElderProfile;
@@ -26,6 +27,7 @@ public class DiscoveryService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final UserRepository userRepository;
+    private final TrustScoreService trustScoreService;
 
     @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
@@ -76,6 +78,7 @@ public class DiscoveryService {
     }
 
     private DiscoveredUserResponse toElderResponse(ElderProfile p, double distanceKm) {
+        int score = p.getUser().getTrustScore();
         return DiscoveredUserResponse.builder()
                 .userId(p.getUser().getId())
                 .name(p.getName())
@@ -85,21 +88,26 @@ public class DiscoveryService {
                 .interests(p.getInterests() != null ? Arrays.asList(p.getInterests()) : List.of())
                 .languages(p.getLanguages() != null ? Arrays.asList(p.getLanguages()) : List.of())
                 .city(p.getUser().getCity())
-                .trustScore(p.getUser().getTrustScore())
+                .trustScore(score)
+                .trustTier(TrustScoreService.tierFor(score))
                 .distanceKm(Math.round(distanceKm * 10.0) / 10.0)
                 .build();
     }
 
     private DiscoveredUserResponse toHelperResponse(HelperProfile p, double distanceKm) {
+        int score = p.getUser().getTrustScore();
         return DiscoveredUserResponse.builder()
                 .userId(p.getUser().getId())
                 .name(p.getName())
                 .age(p.getAge())
                 .photoUrl(p.getPhotoUrl())
                 .bio(p.getBio())
+                .interests(p.getHobbies() != null ? Arrays.asList(p.getHobbies()) : List.of())
                 .languages(p.getLanguages() != null ? Arrays.asList(p.getLanguages()) : List.of())
+                .skillsOffered(p.getSkillsOffered() != null ? Arrays.asList(p.getSkillsOffered()) : List.of())
                 .city(p.getUser().getCity())
-                .trustScore(p.getUser().getTrustScore())
+                .trustScore(score)
+                .trustTier(TrustScoreService.tierFor(score))
                 .distanceKm(Math.round(distanceKm * 10.0) / 10.0)
                 .build();
     }
