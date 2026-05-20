@@ -20,7 +20,7 @@ const COMMUNITY_PHOTOS = [
 
 const statusStyle = (status) => {
   const map = {
-    ACTIVE:  { bg: '#dcfce7', color: '#166534' },
+    ACTIVE:  { bg: '#EAF5FB', color: '#3D8AB0' },
     PENDING: { bg: '#fef3c7', color: '#92400e' },
     DECLINED: { bg: '#fee2e2', color: '#991b1b' },
   };
@@ -204,58 +204,59 @@ export default function HelperDashboard() {
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
-      {/* Hero section */}
-      <div style={{ background: '#fafafc', borderBottom: '1px solid #e0e0e0', padding: '48px 80px 40px' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-          <h1 style={{
-            fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-            fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
-            letterSpacing: '-0.5px', margin: '0 0 8px',
-          }}>
-            Hello{profile?.name ? `, ${profile.name.split(' ')[0]}.` : '.'}
-          </h1>
-          <p style={{ fontSize: '17px', color: '#7a7a7a', margin: '0 0 24px', fontWeight: 300 }}>
-            Ready to make a difference today?
-          </p>
+      <div style={{ display: 'flex', minHeight: 'calc(100svh - 72px)' }}>
 
-          {/* Stats row */}
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            {profile?.trustScore != null && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1.5px solid #0066cc', borderRadius: '9999px', padding: '8px 18px', background: '#f0f6ff' }}>
-                <span style={{ fontSize: '13px', color: '#0066cc', fontWeight: 500 }}>Trust Score</span>
-                <span style={{ fontSize: '15px', color: '#0066cc', fontWeight: 700 }}>{profile.trustScore}</span>
-              </div>
-            )}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '9999px', padding: '8px 18px', background: '#dcfce7' }}>
-              <span style={{ fontSize: '13px', color: '#166534', fontWeight: 500 }}>Help sessions</span>
-              <span style={{ fontSize: '15px', color: '#166534', fontWeight: 700 }}>{activeConnections.length}</span>
-            </div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '9999px', padding: '8px 18px', background: '#fef3c7' }}>
-              <span style={{ fontSize: '13px', color: '#92400e', fontWeight: 500 }}>Pending requests</span>
-              <span style={{ fontSize: '15px', color: '#92400e', fontWeight: 700 }}>{pendingIncoming.length}</span>
-            </div>
+        {/* Left hero panel — only on Overview tab */}
+        {tab === 'overview' && <div style={{ flex: '0 0 38%', position: 'sticky', top: '72px', height: 'calc(100svh - 72px)', overflow: 'hidden', flexShrink: 0 }}>
+          <img src="/journey.jpg" alt="Trust journey" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%', zIndex: 0 }} />
+          <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(to top, rgba(20,55,80,0.65) 0%, rgba(20,55,80,0.28) 45%, rgba(20,55,80,0.04) 100%)' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2, padding: '40px 40px 48px' }}>
+            <h2 style={{ fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif', fontSize: '30px', lineHeight: 1.2, color: '#fff', marginBottom: '12px', letterSpacing: '-0.3px', fontWeight: 600, textShadow: '0 2px 24px rgba(20,55,80,0.45)' }}>
+              Every relationship<br />starts with trust.
+            </h2>
+            <p style={{ fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif', fontSize: '15px', color: 'rgba(255,255,255,0.88)', lineHeight: 1.55, margin: 0, textShadow: '0 1px 12px rgba(20,55,80,0.5)' }}>
+              Each connection you build here is a step toward a stronger community.
+            </p>
           </div>
+        </div>}
+
+        {/* Right — scrollable dashboard content */}
+        <div style={{ flex: 1, overflowY: 'auto', background: '#f5f5f7', minWidth: 0 }}>
+      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '32px 40px 64px' }}>
+
+        {/* Prominent pill tab bar */}
+        <div style={{
+          display: 'flex', gap: '10px', flexWrap: 'wrap',
+          marginBottom: '32px',
+        }}>
+          {tabs.map(([id, label]) => {
+            const active = tab === id;
+            return (
+              <button key={id} onClick={() => setTab(id)} style={{
+                flex: '1 1 auto', minWidth: '160px',
+                height: '64px', padding: '0 24px',
+                fontSize: '18px', letterSpacing: '-0.2px',
+                fontWeight: active ? 700 : 500,
+                color: active ? '#ffffff' : '#1d1d1f',
+                background: active ? '#4FA3CE' : '#ffffff',
+                border: active ? '1px solid #4FA3CE' : '1px solid #e0e0e0',
+                borderRadius: '16px',
+                cursor: 'pointer',
+                transition: 'background 0.18s ease, color 0.18s ease, border-color 0.18s ease',
+                whiteSpace: 'nowrap',
+                fontFamily: 'inherit',
+                boxShadow: active ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
+              }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f7'; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = '#ffffff'; }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
-      </div>
 
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 80px 64px' }}>
-
-        {/* Tab bar */}
-        <div style={{ background: '#fafafc', borderBottom: '1px solid #e0e0e0', margin: '0 -80px', padding: '0 80px', display: 'flex', gap: 0 }}>
-          {tabs.map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)} style={{
-              height: '48px', padding: '0 20px', fontSize: '14px',
-              fontWeight: tab === id ? 600 : 400,
-              color: tab === id ? '#0066cc' : '#7a7a7a',
-              background: 'none', border: 'none',
-              borderBottom: tab === id ? '2px solid #0066cc' : '2px solid transparent',
-              cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
-              marginBottom: '-1px', fontFamily: 'inherit',
-            }}>{label}</button>
-          ))}
-        </div>
-
-        <div style={{ paddingTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Overview tab */}
           {tab === 'overview' && (
@@ -268,6 +269,32 @@ export default function HelperDashboard() {
                 Track how your relationships are growing with each elder.
               </p>
 
+              {/* Trust Score card */}
+              <div
+                onClick={() => navigate('/trust')}
+                style={{
+                  background: '#ffffff', borderRadius: '16px',
+                  border: '1px solid #e0e0e0', padding: '20px 24px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  cursor: 'pointer', marginBottom: '16px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                  transition: 'box-shadow 0.15s',
+                }}
+              >
+                <div>
+                  <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#a0a0a5', margin: '0 0 4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    Trust Score
+                  </p>
+                  <p style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 800, color: '#1d1d1f', margin: 0, letterSpacing: '-0.5px' }}>
+                    {profile?.trustScore ?? '—'}
+                  </p>
+                  <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#4FA3CE', margin: '2px 0 0', fontWeight: 600 }}>
+                    {profile?.trustTier ?? 'New Member'}
+                  </p>
+                </div>
+                <div style={{ fontSize: '28px', color: '#ececef' }}>→</div>
+              </div>
+
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
@@ -278,7 +305,9 @@ export default function HelperDashboard() {
 
               {!loading && connections.filter(c => c.status === 'ACTIVE').length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '56px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '14px' }}>🌱</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EAF5FB', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                  </div>
                   <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>No active connections yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '24px', maxWidth: '280px', margin: '0 auto 24px' }}>
                     Connect with an elder to start building trust together.
@@ -298,9 +327,9 @@ export default function HelperDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '4px' }}>
                     <div style={{
                       width: '44px', height: '44px', borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                      background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                      fontSize: '15px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
                     }}>
                       {initials(conn.otherUserName)}
                     </div>
@@ -308,8 +337,8 @@ export default function HelperDashboard() {
                       <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
                       <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '2px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
                       {conn.otherUserPhone && (
-                        <p style={{ fontSize: '13px', color: '#0066cc', margin: '4px 0 0', fontWeight: 500 }}>
-                          📞 {conn.otherUserPhone}
+                        <p style={{ fontSize: '13px', color: '#4FA3CE', margin: '4px 0 0', fontWeight: 500 }}>
+                          {conn.otherUserPhone}
                         </p>
                       )}
                     </div>
@@ -343,9 +372,9 @@ export default function HelperDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{
                             width: '38px', height: '38px', borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                            background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '13px', fontWeight: 700, color: '#fff',
+                            fontSize: '13px', fontWeight: 700, color: '#3D8AB0',
                           }}>
                             {initials(conn.otherUserName)}
                           </div>
@@ -385,7 +414,9 @@ export default function HelperDashboard() {
               )}
               {!loading && connections.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>👥</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EAF5FB', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Discover elders near you and send a connection request to get started.</p>
                   <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
@@ -403,9 +434,9 @@ export default function HelperDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
                       <div style={{
                         width: '48px', height: '48px', borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                        background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                        fontSize: '16px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
                       }}>
                         {initials(conn.otherUserName)}
                       </div>
@@ -429,7 +460,7 @@ export default function HelperDashboard() {
                             </button>
                           )}
                           {reviewedConns.has(conn.id) && (
-                            <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>Reviewed</span>
+                            <span style={{ fontSize: '12px', color: '#3D8AB0', fontWeight: 500 }}>Reviewed</span>
                           )}
                         </>
                       )}
@@ -464,8 +495,8 @@ export default function HelperDashboard() {
                             ...f, tags: f.tags.includes(t) ? f.tags.filter(x => x !== t) : [...f.tags, t]
                           }))} style={{
                             fontSize: '13px', padding: '5px 14px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
-                            borderColor: reviewForm.tags.includes(t) ? '#0066cc' : '#e0e0e0',
-                            background: reviewForm.tags.includes(t) ? '#0066cc' : '#fff',
+                            borderColor: reviewForm.tags.includes(t) ? '#4FA3CE' : '#e0e0e0',
+                            background: reviewForm.tags.includes(t) ? '#4FA3CE' : '#fff',
                             color: reviewForm.tags.includes(t) ? '#fff' : '#7a7a7a',
                           }}>{t}</button>
                         ))}
@@ -508,7 +539,7 @@ export default function HelperDashboard() {
               {needs.length === 0 && locationStatus !== 'asking' && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                   </div>
@@ -546,7 +577,7 @@ export default function HelperDashboard() {
                         className={applyMsg[need.id]?.includes('!') ? '' : 'btn-primary'}
                         style={applyMsg[need.id]?.includes('!') ? {
                           fontSize: '13px', padding: '8px 18px', borderRadius: '9999px', border: 'none',
-                          background: '#dcfce7', color: '#166534', cursor: 'default', fontWeight: 600
+                          background: '#EAF5FB', color: '#3D8AB0', cursor: 'default', fontWeight: 600
                         } : { padding: '8px 18px', fontSize: '13px' }}>
                         {applying === need.id ? '...' : applyMsg[need.id] || 'Apply'}
                       </button>
@@ -573,7 +604,7 @@ export default function HelperDashboard() {
               {elders.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
                     </svg>
                   </div>
@@ -594,9 +625,9 @@ export default function HelperDashboard() {
                       <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
                         <div style={{
                           width: '52px', height: '52px', borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                          background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '17px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                          fontSize: '17px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
                         }}>
                           {elder.name ? elder.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
                         </div>
@@ -613,7 +644,7 @@ export default function HelperDashboard() {
                           {elder.interests?.length > 0 && (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
                               {elder.interests.map(interest => (
-                                <span key={interest} style={{ fontSize: '12px', background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px', borderRadius: '9999px' }}>{interest}</span>
+                                <span key={interest} style={{ fontSize: '12px', background: '#dbeafe', color: '#3D8AB0', padding: '2px 8px', borderRadius: '9999px' }}>{interest}</span>
                               ))}
                             </div>
                           )}
@@ -621,12 +652,12 @@ export default function HelperDashboard() {
                       </div>
                       <div style={{ flexShrink: 0 }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: '12px', background: '#dcfce7', color: '#166534', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
+                          <span style={{ fontSize: '12px', background: '#EAF5FB', color: '#3D8AB0', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
                         ) : sent ? (
                           <span style={{
                             fontSize: '12px', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600,
-                            background: sent.includes('!') ? '#dcfce7' : '#fee2e2',
-                            color: sent.includes('!') ? '#166534' : '#991b1b',
+                            background: sent.includes('!') ? '#EAF5FB' : '#fee2e2',
+                            color: sent.includes('!') ? '#3D8AB0' : '#991b1b',
                           }}>{sent}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
@@ -642,6 +673,8 @@ export default function HelperDashboard() {
             </div>
           )}
         </div>
+      </div>
+      </div>
       </div>
     </div>
   );
