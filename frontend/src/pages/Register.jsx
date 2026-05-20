@@ -257,12 +257,6 @@ export default function Register() {
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
     if (!form.dateOfBirth) errs.dateOfBirth = 'Date of birth is required';
-    else {
-      const dob = new Date(form.dateOfBirth);
-      const minAge = new Date();
-      minAge.setFullYear(minAge.getFullYear() - 18);
-      if (dob > minAge) errs.dateOfBirth = 'You must be at least 18 years old';
-    }
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
@@ -445,7 +439,7 @@ export default function Register() {
                   required
                   className="field"
                   value={form.dateOfBirth}
-                  max={(() => { const d = new Date(); d.setFullYear(d.getFullYear() - 18); return d.toISOString().split('T')[0]; })()}
+                  max={new Date().toISOString().split('T')[0]}
                   onChange={e => { setForm({ ...form, dateOfBirth: e.target.value }); setFieldErrors(f => ({ ...f, dateOfBirth: '' })); }}
                   style={{ borderColor: fieldErrors.dateOfBirth ? '#fca5a5' : undefined }}
                 />
