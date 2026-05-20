@@ -150,7 +150,12 @@ public class ProfileService {
                     .skillsOffered(helper.getSkillsOffered())
                     .availabilityDays(helper.getAvailabilityDays())
                     .availabilityTimes(helper.getAvailabilityTimes())
-                    .backgroundCheckStatus(helper.getBackgroundCheckStatus().name());
+                    .backgroundCheckStatus(helper.getBackgroundCheckStatus().name())
+                    .hobbies(helper.getHobbies())
+                    .occupation(helper.getOccupation())
+                    .facebookUrl(helper.getFacebookUrl())
+                    .instagramUrl(helper.getInstagramUrl())
+                    .dateOfBirth(helper.getDateOfBirth() != null ? helper.getDateOfBirth().toString() : null);
         }
 
         return builder.build();
