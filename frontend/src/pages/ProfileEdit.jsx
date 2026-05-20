@@ -22,6 +22,19 @@ const BORDER = '#e0e0e0';
 
 const STAR_GOLD = '#F5B400';
 
+function computeAge(dobStr) {
+  if (!dobStr) return null;
+  const dob = new Date(dobStr);
+  const now = new Date();
+  const totalDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
+  let years = now.getFullYear() - dob.getFullYear();
+  let months = now.getMonth() - dob.getMonth();
+  let days = now.getDate() - dob.getDate();
+  if (days < 0) { months -= 1; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+  if (months < 0) { years -= 1; months += 12; }
+  return { totalDays, years, months, days };
+}
+
 function Stars({ rating }) {
   return (
     <span style={{ color: STAR_GOLD, letterSpacing: '-2px', fontSize: '16px' }}>
@@ -161,10 +174,13 @@ export default function ProfileEdit() {
 
   async function save(e) {
     e.preventDefault(); setSaving(true); setMsg('');
+    const computedAge = form.dateOfBirth
+      ? (computeAge(form.dateOfBirth)?.years ?? Number(form.age))
+      : Number(form.age);
     try {
       if (isElder) {
         await api.put('/profile/elder', {
-          name: form.name, age: Number(form.age), bio: form.bio,
+          name: form.name, age: computedAge, bio: form.bio,
           interests: toArr(form.interests), languages: toArr(form.languages), lookingFor: form.lookingFor,
           facebookUrl: form.facebookUrl || null,
           instagramUrl: form.instagramUrl || null,
@@ -173,7 +189,7 @@ export default function ProfileEdit() {
         });
       } else {
         await api.put('/profile/helper', {
-          name: form.name, age: Number(form.age), bio: form.bio,
+          name: form.name, age: computedAge, bio: form.bio,
           skillsOffered: toArr(form.skillsOffered), languages: toArr(form.languages),
           availabilityDays: toArr(form.availabilityDays), availabilityTimes: toArr(form.availabilityTimes),
           hobbies: toArr(form.hobbies),
@@ -313,10 +329,30 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Age">
-                    <input {...f('age')} type="number"
-                      placeholder={isElder ? '50–120' : '18–80'}
-                      min={isElder ? 50 : 18} max={isElder ? 120 : 80} required
-                      style={{ width: '100%', boxSizing: 'border-box' }} />
+                    {form.dateOfBirth ? (() => {
+                      const age = computeAge(form.dateOfBirth);
+                      return age ? (
+                        <div style={{
+                          padding: '10px 14px', borderRadius: '12px',
+                          background: '#f5f5f7', border: '1.5px solid #e0e0e0',
+                          fontSize: '14px', color: '#1d1d1f', lineHeight: 1.6,
+                        }}>
+                          <span style={{ fontWeight: 700, fontSize: '20px', color: '#1a5c2e' }}>
+                            {age.years}
+                          </span>
+                          <span style={{ color: '#7a7a7a' }}> years old</span>
+                          <br />
+                          <span style={{ fontSize: '12px', color: '#a0a0a5' }}>
+                            {age.totalDays.toLocaleString()} days · {age.months} mo {age.days} d
+                          </span>
+                        </div>
+                      ) : null;
+                    })() : (
+                      <input {...f('age')} type="number"
+                        placeholder={isElder ? '50–120' : '18–80'}
+                        min={isElder ? 50 : 18} max={isElder ? 120 : 80}
+                        style={{ width: '100%', boxSizing: 'border-box' }} />
+                    )}
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Bio">
