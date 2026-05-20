@@ -129,7 +129,8 @@ public class ProfileService {
                 .verificationStatus(user.getVerificationStatus().name())
                 .phoneVerified(user.isPhoneVerified())
                 .phone(user.getPhone())
-                .city(user.getCity());
+                .city(user.getCity())
+                .dateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
 
         if (elder != null) {
             builder.name(elder.getName())
@@ -154,8 +155,7 @@ public class ProfileService {
                     .hobbies(helper.getHobbies())
                     .occupation(helper.getOccupation())
                     .facebookUrl(helper.getFacebookUrl())
-                    .instagramUrl(helper.getInstagramUrl())
-                    .dateOfBirth(helper.getDateOfBirth() != null ? helper.getDateOfBirth().toString() : null);
+                    .instagramUrl(helper.getInstagramUrl());
         }
 
         return builder.build();
