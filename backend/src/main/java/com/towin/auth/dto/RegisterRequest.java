@@ -3,6 +3,7 @@ package com.towin.auth.dto;
 import com.towin.common.enums.UserRole;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 public class RegisterRequest {
@@ -17,4 +18,6 @@ public class RegisterRequest {
 
     @NotNull
     private UserRole role;
+
+    private LocalDate dateOfBirth;
 }

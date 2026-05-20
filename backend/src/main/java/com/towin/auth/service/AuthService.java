@@ -42,6 +42,7 @@ public class AuthService {
                 .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
+                .dateOfBirth(request.getDateOfBirth())
                 .build();
 
         User saved = userRepository.save(user);
