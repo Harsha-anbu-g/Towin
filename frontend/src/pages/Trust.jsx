@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import api from '../api/axios';
@@ -82,7 +83,7 @@ function ScoreCard({ data }) {
   );
 }
 
-function BasicCard({ basic }) {
+function BasicCard({ basic, onGoToProfile }) {
   const pct = Math.round((basic.earned / basic.max) * 100);
   return (
     <div style={{
@@ -125,13 +126,24 @@ function BasicCard({ basic }) {
             <span style={{ fontSize: '15px', marginTop: '1px', color: f.completed ? BLUE : '#c0c0c8' }}>
               {f.completed ? '✓' : '○'}
             </span>
-            <div>
-              <p style={{
-                fontFamily: SF, fontSize: '13px', fontWeight: 600,
-                color: f.completed ? BLUE : '#1d1d1f', margin: '0 0 2px',
-              }}>
-                {f.label}
-              </p>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                <p style={{
+                  fontFamily: SF, fontSize: '13px', fontWeight: 600,
+                  color: f.completed ? BLUE : '#1d1d1f', margin: '0 0 2px',
+                }}>
+                  {f.label}
+                </p>
+                <span style={{
+                  fontFamily: SF, fontSize: '11px', fontWeight: 700,
+                  color: f.completed ? BLUE : '#a0a0a5',
+                  background: f.completed ? 'rgba(61,138,176,0.08)' : 'transparent',
+                  borderRadius: '9999px', padding: f.completed ? '2px 7px' : '0',
+                  whiteSpace: 'nowrap', flexShrink: 0,
+                }}>
+                  {f.completed ? '+0.25 pts ✓' : '+0.25 pts'}
+                </span>
+              </div>
               {!f.completed && f.tip && (
                 <p style={{ fontFamily: SF, fontSize: '11px', color: '#a0a0a5', margin: 0, lineHeight: 1.4 }}>
                   {f.tip}
@@ -141,6 +153,25 @@ function BasicCard({ basic }) {
           </div>
         ))}
       </div>
+
+      {basic.earned < basic.max && (
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <button
+            onClick={onGoToProfile}
+            style={{
+              background: SKY, color: '#fff', border: 'none',
+              borderRadius: '9999px', padding: '12px 28px',
+              fontSize: '14px', fontWeight: 700, fontFamily: SF,
+              cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
+            }}
+          >
+            Complete your profile →
+          </button>
+          <p style={{ fontFamily: SF, fontSize: '12px', color: '#a0a0a5', margin: '8px 0 0' }}>
+            Each completed field adds +0.25 pts to your trust score
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -227,6 +258,7 @@ function ReviewCard({ review }) {
 
 export default function Trust() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isHelper = user?.role === 'HELPER' || user?.role === 'BOTH';
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
@@ -280,7 +312,7 @@ export default function Trust() {
         {data && (
           <>
             <ScoreCard data={data} />
-            <BasicCard basic={data.basic} />
+            <BasicCard basic={data.basic} onGoToProfile={() => navigate('/profile')} />
             <RootingCard rooting={data.rooting} />
             <ReviewCard review={data.review} />
           </>
