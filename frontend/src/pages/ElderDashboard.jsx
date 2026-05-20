@@ -113,6 +113,10 @@ export default function ElderDashboard() {
   const [locationStatus, setLocationStatus] = useState('idle');
   const [loading, setLoading] = useState(true);
   const [cancelConfirm, setCancelConfirm] = useState(null);
+  const [helpers, setHelpers] = useState([]);
+  const [radiusKm, setRadiusKm] = useState(25);
+  const [connectingTo, setConnectingTo] = useState(null);
+  const [connectMsg, setConnectMsg] = useState({});
 
   async function loadConnections() {
     setLoading(true);
@@ -135,7 +139,29 @@ export default function ElderDashboard() {
   useEffect(() => {
     if (tab === 'needs') loadNeeds();
     if (tab === 'connections') loadConnections();
-  }, [tab]);
+    if (tab === 'discover') loadHelpers();
+  }, [tab, radiusKm]);
+
+  async function loadHelpers(loc) {
+    const coords = loc ?? location;
+    try {
+      const res = coords
+        ? await api.get(`/discover/helpers?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`)
+        : await api.get('/discover/helpers');
+      setHelpers(res.data || []);
+    } catch {}
+  }
+
+  async function connectToHelper(helperId) {
+    setConnectingTo(helperId);
+    try {
+      await api.post('/connections/request', { targetUserId: helperId });
+      setConnectMsg(prev => ({ ...prev, [helperId]: 'Request sent!' }));
+      await loadConnections();
+    } catch (err) {
+      setConnectMsg(prev => ({ ...prev, [helperId]: err?.response?.data?.message || 'Could not connect.' }));
+    } finally { setConnectingTo(null); }
+  }
 
   function requestLocation() {
     if (!navigator.geolocation) { setLocationStatus('denied'); return; }
@@ -146,6 +172,7 @@ export default function ElderDashboard() {
         setLocation(loc);
         setLocationStatus('granted');
         api.put('/profile/location', { locationLat: loc.lat, locationLng: loc.lng }).catch(() => {});
+        loadHelpers(loc);
       },
       () => setLocationStatus('denied')
     );
@@ -249,9 +276,12 @@ export default function ElderDashboard() {
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
   const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+  const connectedHelperIds = new Set(connections.map(c => c.otherUserId));
+
   const tabs = [
     ['overview', 'Overview'],
     ['connections', `Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
+    ['discover', 'Find Helpers'],
     ['needs', 'My Requests'],
     ['post', 'Post Request'],
   ];
@@ -595,6 +625,111 @@ export default function ElderDashboard() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Find Helpers tab */}
+          {tab === 'discover' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 6px' }}>
+                  Find Helpers
+                </h2>
+                <p style={{ fontSize: '15px', color: '#7a7a7a', margin: 0 }}>
+                  Browse helpers in your area and reach out to connect.
+                </p>
+              </div>
+
+              {/* Radius bar */}
+              <div style={{ background: '#ffffff', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
+                <p style={{ fontSize: '13px', color: '#7a7a7a', margin: 0 }}>
+                  {locationStatus === 'asking' && 'Getting your location…'}
+                  {locationStatus === 'granted' && `Showing within ${radiusKm} km of you`}
+                  {locationStatus === 'denied' && 'Location unavailable — showing all helpers'}
+                  {locationStatus === 'idle' && 'Detecting location…'}
+                </p>
+                {locationStatus === 'granted' && (
+                  <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
+                    style={{ border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '5px 12px', fontSize: '13px', outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                    {[5, 10, 25, 50, 100].map(v => <option key={v} value={v}>{v} km</option>)}
+                  </select>
+                )}
+              </div>
+
+              {helpers.length === 0 && (
+                <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0', padding: '48px 24px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No helpers found nearby</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Try a larger radius or check back later.</p>
+                </div>
+              )}
+
+              {helpers.map((helper, i) => {
+                const alreadyConnected = connectedHelperIds.has(helper.userId);
+                const sent = connectMsg[helper.userId];
+                return (
+                  <div key={helper.userId} style={{
+                    background: '#ffffff', borderRadius: '18px', padding: '20px',
+                    border: '1px solid #e0e0e0',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+                      <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
+                        <div style={{
+                          width: '52px', height: '52px', borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '17px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
+                        }}>
+                          {helper.name ? helper.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{helper.name || 'Helper'}</p>
+                            <TrustBadge tier={helper.trustTier} score={helper.trustScore} />
+                          </div>
+                          {helper.city && <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '3px 0 0' }}>{helper.city}</p>}
+                          {helper.distanceKm > 0 && (
+                            <p style={{ fontSize: '12px', color: '#a0a0a5', margin: '2px 0 0' }}>{Math.round(helper.distanceKm * 10) / 10} km away</p>
+                          )}
+                          {helper.bio && <p style={{ fontSize: '14px', color: '#7a7a7a', margin: '6px 0 0', lineHeight: 1.5 }}>{helper.bio}</p>}
+                          {helper.skillsOffered?.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
+                              {helper.skillsOffered.map(s => (
+                                <span key={s} style={{ fontSize: '12px', background: '#EAF5FB', color: '#3D8AB0', padding: '2px 8px', borderRadius: '9999px' }}>{s}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+                        {alreadyConnected ? (
+                          <span style={{ fontSize: '12px', background: '#EAF5FB', color: '#3D8AB0', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
+                        ) : sent ? (
+                          <span style={{
+                            fontSize: '12px', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600,
+                            background: sent.includes('!') ? '#EAF5FB' : '#fee2e2',
+                            color: sent.includes('!') ? '#3D8AB0' : '#991b1b',
+                          }}>{sent}</span>
+                        ) : (
+                          <button onClick={() => connectToHelper(helper.userId)} disabled={connectingTo === helper.userId}
+                            className="btn-primary" style={{ padding: '8px 18px', fontSize: '13px' }}>
+                            {connectingTo === helper.userId ? '…' : 'Connect'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => navigate(`/user/${helper.userId}`)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
+                            fontSize: '12px', color: '#4FA3CE', fontWeight: 600, padding: '2px 0',
+                          }}
+                        >
+                          View Profile
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
