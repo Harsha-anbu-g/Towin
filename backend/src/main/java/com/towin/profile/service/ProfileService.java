@@ -38,8 +38,16 @@ public class ProfileService {
         if (request.getLookingFor() != null) {
             profile.setLookingFor(request.getLookingFor());
         }
+        profile.setFacebookUrl(request.getFacebookUrl());
+        profile.setInstagramUrl(request.getInstagramUrl());
+        profile.setOccupation(request.getOccupation());
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+            userRepository.save(user);
+        }
 
         elderProfileRepository.save(profile);
+        trustScoreService.recalculate(userId);
         return buildProfileResponse(user, profile, null);
     }
 
@@ -139,7 +147,10 @@ public class ProfileService {
                     .bio(elder.getBio())
                     .interests(elder.getInterests())
                     .languages(elder.getLanguages())
-                    .lookingFor(elder.getLookingFor().name());
+                    .lookingFor(elder.getLookingFor().name())
+                    .facebookUrl(elder.getFacebookUrl())
+                    .instagramUrl(elder.getInstagramUrl())
+                    .occupation(elder.getOccupation());
         }
 
         if (helper != null) {
