@@ -19,6 +19,7 @@ public class ProfileService {
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
+    private final TrustScoreService trustScoreService;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -58,8 +59,14 @@ public class ProfileService {
         profile.setLanguages(request.getLanguages());
         profile.setAvailabilityDays(request.getAvailabilityDays());
         profile.setAvailabilityTimes(request.getAvailabilityTimes());
+        profile.setHobbies(request.getHobbies());
+        profile.setOccupation(request.getOccupation());
+        profile.setFacebookUrl(request.getFacebookUrl());
+        profile.setInstagramUrl(request.getInstagramUrl());
+        profile.setDateOfBirth(request.getDateOfBirth());
 
         helperProfileRepository.save(profile);
+        trustScoreService.recalculate(userId);
         return buildProfileResponse(user, null, profile);
     }
 
