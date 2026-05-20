@@ -11,7 +11,7 @@ public class ElderProfileRequest {
     @NotBlank
     private String name;
 
-    @NotNull @Min(50) @Max(120)
+    @NotNull @Min(1) @Max(150)
     private Integer age;
 
     private String bio;
