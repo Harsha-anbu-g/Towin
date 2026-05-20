@@ -1,6 +1,8 @@
 package com.towin.trust.controller;
 
+import com.towin.common.service.TrustScoreService;
 import com.towin.trust.dto.TrustActionRequest;
+import com.towin.trust.dto.TrustScoreBreakdownResponse;
 import com.towin.trust.dto.TrustStatusResponse;
 import com.towin.trust.service.TrustService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,13 @@ import java.util.UUID;
 public class TrustController {
 
     private final TrustService trustService;
+    private final TrustScoreService trustScoreService;
+
+    @GetMapping("/my-score")
+    public ResponseEntity<TrustScoreBreakdownResponse> getMyScore(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(trustScoreService.getMyScoreBreakdown(userId));
+    }
 
     @PostMapping("/{connectionId}/confirm")
     public ResponseEntity<TrustStatusResponse> confirm(
