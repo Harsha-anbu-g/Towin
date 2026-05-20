@@ -302,8 +302,7 @@ export default function ElderDashboard() {
 
         {/* Left hero panel — only on Overview tab */}
         {tab === 'overview' && <div style={{ flex: '0 0 38%', position: 'sticky', top: '72px', height: 'calc(100svh - 72px)', overflow: 'hidden', flexShrink: 0 }}>
-          <img src="/journey.jpg" alt="Trust journey" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%', zIndex: 0 }} />
-          <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(to top, rgba(20,55,80,0.65) 0%, rgba(20,55,80,0.28) 45%, rgba(20,55,80,0.04) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, #3D8AB0 0%, #4FA3CE 40%, #7EC4DF 70%, #BFD9EA 100%)' }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2, padding: '40px 40px 48px' }}>
             <h2 style={{ fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif', fontSize: '30px', lineHeight: 1.2, color: '#fff', marginBottom: '12px', letterSpacing: '-0.3px', fontWeight: 600, textShadow: '0 2px 24px rgba(20,55,80,0.45)' }}>
               Every relationship<br />starts with trust.
