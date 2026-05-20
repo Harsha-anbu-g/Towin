@@ -236,23 +236,6 @@ export default function HelperDashboard() {
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
-      <div style={{ display: 'flex', minHeight: 'calc(100svh - 72px)' }}>
-
-        {/* Left hero panel — only on Overview tab */}
-        {tab === 'overview' && <div style={{ flex: '0 0 38%', position: 'sticky', top: '72px', height: 'calc(100svh - 72px)', overflow: 'hidden', flexShrink: 0 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, #3D8AB0 0%, #4FA3CE 40%, #7EC4DF 70%, #BFD9EA 100%)' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2, padding: '40px 40px 48px' }}>
-            <h2 style={{ fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif', fontSize: '30px', lineHeight: 1.2, color: '#fff', marginBottom: '12px', letterSpacing: '-0.3px', fontWeight: 600, textShadow: '0 2px 24px rgba(20,55,80,0.45)' }}>
-              Every relationship<br />starts with trust.
-            </h2>
-            <p style={{ fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif', fontSize: '15px', color: 'rgba(255,255,255,0.88)', lineHeight: 1.55, margin: 0, textShadow: '0 1px 12px rgba(20,55,80,0.5)' }}>
-              Each connection you build here is a step toward a stronger community.
-            </p>
-          </div>
-        </div>}
-
-        {/* Right — scrollable dashboard content */}
-        <div style={{ flex: 1, overflowY: 'auto', background: '#f5f5f7', minWidth: 0 }}>
       <div style={{ maxWidth: '860px', margin: '0 auto', padding: '32px 40px 64px' }}>
 
         {/* Prominent pill tab bar */}
@@ -715,8 +698,6 @@ export default function HelperDashboard() {
             </div>
           )}
         </div>
-      </div>
-      </div>
       </div>
     </div>
   );

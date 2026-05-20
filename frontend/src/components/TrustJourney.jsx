@@ -168,8 +168,9 @@ export default function TrustJourney({
           showTooltip
           tooltipContent={(v) => LEVELS[v]?.label}
           trackClassName="!h-3 !bg-[#e4eef5]"
-          rangeClassName="!bg-[#1d1d1f]"
-          thumbClassName="!h-6 !w-6 !border-[3px] !border-[#1d1d1f] !shadow-md"
+          rangeClassName="!bg-[#4FA3CE]"
+          thumbClassName="!h-14 !w-14"
+          thumbContent={<img src="/tortoise-logo.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain', transform: 'rotate(90deg)' }} />}
         />
         <span
           className="mt-2 flex w-full items-center justify-between gap-1 px-2.5"

@@ -77,13 +77,13 @@ export default function NavBar() {
         fontSize: '24px', fontWeight: 800,
         fontFamily: SFD,
         letterSpacing: '-0.4px',
-        color: '#3D8AB0',
+        color: '#1a5c2e',
         textDecoration: 'none',
         marginRight: '40px',
         flexShrink: 0,
         display: 'inline-flex', alignItems: 'center', gap: '8px',
       }}>
-        <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
+        <img src="/logo.png" alt="ToWin logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
         ToWin
       </Link>
 
