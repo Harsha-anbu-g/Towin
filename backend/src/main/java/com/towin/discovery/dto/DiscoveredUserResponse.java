@@ -21,5 +21,7 @@ public class DiscoveredUserResponse {
     private List<String> languages;
     private String city;
     private Integer trustScore;
+    private String trustTier;
+    private List<String> skillsOffered;
     private double distanceKm;
 }
