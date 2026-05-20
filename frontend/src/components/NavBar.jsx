@@ -107,7 +107,7 @@ export default function NavBar() {
           )}
         </div>
         <NavLink to="/profile" label="Profile" />
-        {isHelper && <NavLink to="/trust" label="Trust" />}
+        <NavLink to="/trust" label="Trust Score" />
         {isElder && <NavLink to="/emergency-contacts" label="Emergency" />}
       </div>
 
