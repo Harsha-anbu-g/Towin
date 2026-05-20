@@ -7,7 +7,9 @@ import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
+import com.towin.profile.entity.ElderProfile;
 import com.towin.profile.entity.HelperProfile;
+import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
 import com.towin.review.repository.ReviewRepository;
 import com.towin.trust.dto.TrustScoreBreakdownResponse;
@@ -26,6 +28,7 @@ public class TrustScoreService {
 
     private final UserRepository userRepository;
     private final HelperProfileRepository helperProfileRepository;
+    private final ElderProfileRepository elderProfileRepository;
     private final ReviewRepository reviewRepository;
     private final ConnectionRepository connectionRepository;
 
@@ -34,8 +37,9 @@ public class TrustScoreService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
         HelperProfile profile = helperProfileRepository.findByUserId(userId).orElse(null);
+        ElderProfile elderProfile = elderProfileRepository.findByUserId(userId).orElse(null);
 
-        double basic  = calculateBasicScore(user, profile);
+        double basic  = calculateBasicScore(user, profile, elderProfile);
         int rooting   = calculateRootingScore(userId);
         int review    = reviewRepository.sumRatingsByRevieweeId(userId);
 
@@ -47,8 +51,9 @@ public class TrustScoreService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
         HelperProfile profile = helperProfileRepository.findByUserId(userId).orElse(null);
+        ElderProfile elderProfile = elderProfileRepository.findByUserId(userId).orElse(null);
 
-        double basic = calculateBasicScore(user, profile);
+        double basic = calculateBasicScore(user, profile, elderProfile);
 
         List<Connection> active = connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE);
         int rootingScore = active.stream().mapToInt(c -> stagesEarned(c.getCurrentTrustLevel())).sum();
@@ -64,7 +69,7 @@ public class TrustScoreService {
                 .basic(BasicSection.builder()
                         .earned(basic)
                         .max(2.0)
-                        .fields(buildProfileFields(user, profile))
+                        .fields(buildProfileFields(user, profile, elderProfile))
                         .build())
                 .rooting(RootingSection.builder()
                         .earned(rootingScore)
@@ -83,10 +88,11 @@ public class TrustScoreService {
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private double calculateBasicScore(User user, HelperProfile p) {
+    private double calculateBasicScore(User user, HelperProfile p, ElderProfile e) {
         double score = 0.0;
         if (user.getVerificationStatus() == VerificationStatus.VERIFIED) score += 0.25;
-        if (user.isPhoneVerified()) score += 0.25;
+        if (user.isPhoneVerified())                                        score += 0.25;
+
         if (p != null) {
             if (notBlank(p.getPhotoUrl()))                                     score += 0.25;
             if (notBlank(p.getFacebookUrl()) || notBlank(p.getInstagramUrl())) score += 0.25;
@@ -95,6 +101,15 @@ public class TrustScoreService {
             if (notBlank(p.getBio()))                                          score += 0.25;
             if (p.getDateOfBirth() != null)                                    score += 0.25;
         }
+
+        if (e != null) {
+            if (notBlank(e.getPhotoUrl()))                                     score += 0.25;
+            if (notBlank(e.getFacebookUrl()) || notBlank(e.getInstagramUrl())) score += 0.25;
+            if (notBlank(e.getOccupation()))                                   score += 0.25;
+            if (notBlank(e.getBio()))                                          score += 0.25;
+            if (user.getDateOfBirth() != null)                                 score += 0.25;
+        }
+
         return Math.min(score, 2.0);
     }
 
@@ -114,14 +129,15 @@ public class TrustScoreService {
         return pts;
     }
 
-    private List<ProfileField> buildProfileFields(User user, HelperProfile p) {
+    private List<ProfileField> buildProfileFields(User user, HelperProfile p, ElderProfile e) {
         List<ProfileField> fields = new ArrayList<>();
-        fields.add(field("id_verified",  "Identity Verified",
+        fields.add(field("id_verified", "Identity Verified",
                 user.getVerificationStatus() == VerificationStatus.VERIFIED,
                 "Upload a government ID in Profile → Verification."));
         fields.add(field("phone_verified", "Phone Verified",
                 user.isPhoneVerified(),
                 "Verify your phone number in Profile → Verification."));
+
         if (p != null) {
             fields.add(field("photo",      "Profile Photo",
                     notBlank(p.getPhotoUrl()),
@@ -142,6 +158,25 @@ public class TrustScoreService {
                     p.getDateOfBirth() != null,
                     "Add your date of birth in your profile."));
         }
+
+        if (e != null) {
+            fields.add(field("photo",      "Profile Photo",
+                    notBlank(e.getPhotoUrl()),
+                    "Add a clear photo so others feel comfortable."));
+            fields.add(field("social",     "Social Media",
+                    notBlank(e.getFacebookUrl()) || notBlank(e.getInstagramUrl()),
+                    "Link your Facebook or Instagram in your profile."));
+            fields.add(field("occupation", "Occupation",
+                    notBlank(e.getOccupation()),
+                    "Add your occupation — context builds trust."));
+            fields.add(field("bio",        "About Me",
+                    notBlank(e.getBio()),
+                    "Write a short bio in your own words."));
+            fields.add(field("dob",        "Date of Birth",
+                    user.getDateOfBirth() != null,
+                    "Add your date of birth in your profile."));
+        }
+
         return fields;
     }
 
