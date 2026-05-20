@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import api from '../api/axios';
 
@@ -225,6 +226,8 @@ function ReviewCard({ review }) {
 }
 
 export default function Trust() {
+  const { user } = useAuth();
+  const isHelper = user?.role === 'HELPER' || user?.role === 'BOTH';
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
@@ -249,7 +252,9 @@ export default function Trust() {
             Your Trust Score
           </h1>
           <p style={{ fontFamily: SF, fontSize: '16px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
-            Three parts: your profile completeness, the depth of your relationships, and what elders say about you.
+            {isHelper
+              ? 'Three parts: your profile completeness, the depth of your elder relationships, and what elders say about you.'
+              : 'Your community standing — built through verified identity, connections, and reviews.'}
           </p>
         </div>
 
