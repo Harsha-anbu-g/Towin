@@ -13,6 +13,7 @@ export default function NavBar() {
   const [sending, setSending] = useState(false);
 
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
+  const isHelper = user?.role === 'HELPER' || user?.role === 'BOTH';
 
   async function triggerSos() {
     setSending(true);
@@ -32,19 +33,19 @@ export default function NavBar() {
     const active = pathname === to || pathname.startsWith(to + '/');
     return (
       <Link to={to} style={{
-        display: 'flex', alignItems: 'center', gap: '5px',
-        fontSize: '12px', letterSpacing: '-0.12px',
+        display: 'flex', alignItems: 'center', gap: '8px',
+        fontSize: '16px', letterSpacing: '-0.15px',
         fontFamily: SF,
-        fontWeight: active ? 500 : 400,
-        color: active ? '#ffffff' : 'rgba(245,245,247,0.65)',
+        fontWeight: active ? 600 : 500,
+        color: active ? '#3D8AB0' : '#5a6470',
         textDecoration: 'none',
-        padding: '4px 10px',
-        borderRadius: '6px',
-        background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
+        padding: '10px 18px',
+        borderRadius: '10px',
+        background: active ? '#EAF5FB' : 'transparent',
         transition: 'color 0.12s, background 0.12s',
         whiteSpace: 'nowrap',
       }}>
-        {icon && <span style={{ opacity: active ? 1 : 0.7, fontSize: '13px' }}>{icon}</span>}
+        {icon && <span style={{ opacity: active ? 1 : 0.8, fontSize: '17px' }}>{icon}</span>}
         {label}
       </Link>
     );
@@ -52,40 +53,43 @@ export default function NavBar() {
 
   return (
     <nav style={{
-      background: '#000000',
-      height: '44px',
+      background: '#ffffff',
+      height: '72px',
       display: 'flex',
       alignItems: 'center',
-      padding: '0 20px',
+      padding: '0 32px',
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      borderBottom: '1px solid #ececef',
     }}>
       {/* Brand — H4: consistent brand placement */}
       <Link to="/dashboard" style={{
-        fontSize: '17px', fontWeight: 600,
+        fontSize: '24px', fontWeight: 800,
         fontFamily: SFD,
-        letterSpacing: '-0.3px',
-        color: '#ffffff',
+        letterSpacing: '-0.4px',
+        color: '#3D8AB0',
         textDecoration: 'none',
-        marginRight: '28px',
+        marginRight: '40px',
         flexShrink: 0,
+        display: 'inline-flex', alignItems: 'center', gap: '8px',
       }}>
+        <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
         ToWin
       </Link>
 
       {/* Nav links — H4: consistent navigation, same items every page */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
         <NavLink to="/dashboard" label="Dashboard" />
         {/* H4: Messages always in nav — users expect it */}
         <NavLink to="/messages" label="Messages" />
         <NavLink to="/profile" label="Profile" />
+        {isHelper && <NavLink to="/trust" label="Trust" />}
         {isElder && <NavLink to="/emergency-contacts" label="Emergency" />}
       </div>
 
       {/* Right actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         {/* H1: SOS gives clear visual feedback of state */}
         {isElder && (
           <button
@@ -93,15 +97,15 @@ export default function NavBar() {
             disabled={sending}
             title="Send emergency alert to your contacts"
             style={{
-              fontSize: '12px', fontWeight: 600,
+              fontSize: '15px', fontWeight: 700,
               fontFamily: SF,
-              letterSpacing: '0.2px',
-              padding: '5px 14px',
+              letterSpacing: '0.3px',
+              padding: '10px 22px',
               borderRadius: '9999px',
               border: 'none',
               cursor: sending ? 'not-allowed' : 'pointer',
               transition: 'background 0.15s, transform 0.1s',
-              background: sosSent ? '#1a7a1a' : sending ? '#660000' : '#cc0000',
+              background: sosSent ? '#3D8AB0' : sending ? '#660000' : '#cc0000',
               color: '#fff',
               opacity: sending ? 0.7 : 1,
               transform: sending ? 'scale(0.97)' : 'scale(1)',
@@ -109,7 +113,7 @@ export default function NavBar() {
             onMouseDown={e => !sending && (e.currentTarget.style.transform = 'scale(0.95)')}
             onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
           >
-            {sosSent ? '✓ Help sent' : sending ? 'Sending…' : 'SOS'}
+            {sosSent ? 'Help sent' : sending ? 'Sending…' : 'SOS'}
           </button>
         )}
 
@@ -117,16 +121,16 @@ export default function NavBar() {
         <button
           onClick={logout}
           style={{
-            fontSize: '12px', fontFamily: SF,
-            fontWeight: 400,
-            color: 'rgba(245,245,247,0.5)',
+            fontSize: '15px', fontFamily: SF,
+            fontWeight: 500,
+            color: '#7a7a7a',
             background: 'none', border: 'none',
-            cursor: 'pointer', padding: '4px 8px',
+            cursor: 'pointer', padding: '8px 14px',
             transition: 'color 0.12s',
-            borderRadius: '4px',
+            borderRadius: '8px',
           }}
-          onMouseEnter={e => e.currentTarget.style.color = 'rgba(245,245,247,0.9)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'rgba(245,245,247,0.5)'}
+          onMouseEnter={e => e.currentTarget.style.color = '#1d1d1f'}
+          onMouseLeave={e => e.currentTarget.style.color = '#7a7a7a'}
         >
           Sign out
         </button>
