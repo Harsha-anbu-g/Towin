@@ -32,6 +32,24 @@ public class ConnectionService {
 
     private static final int MAX_REQUESTS_PER_DAY = 10;
 
+    private int activeLimit(User user) {
+        return switch (user.getRole()) {
+            case HELPER -> 1;
+            case ELDER  -> 2;
+            case BOTH   -> 1; // stricter — can act as helper
+            default     -> Integer.MAX_VALUE;
+        };
+    }
+
+    private void enforceActiveLimit(User user) {
+        int active = connectionRepository.findByUserAndStatus(user.getId(), ConnectionStatus.ACTIVE).size();
+        int limit  = activeLimit(user);
+        if (active >= limit) {
+            throw new IllegalArgumentException(
+                user.getRole() + " connection limit reached (" + limit + "). End an existing connection first.");
+        }
+    }
+
     private final ConnectionRepository connectionRepository;
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
@@ -51,6 +69,9 @@ public class ConnectionService {
         connectionRepository.findBetweenUsers(senderId, target.getId()).ifPresent(c -> {
             throw new IllegalArgumentException("A connection already exists between these users");
         });
+
+        enforceActiveLimit(sender);
+        enforceActiveLimit(target);
 
         long recentCount = connectionRepository.countRequestsSince(senderId, LocalDateTime.now().minusDays(1));
         if (recentCount >= MAX_REQUESTS_PER_DAY) {
@@ -100,6 +121,8 @@ public class ConnectionService {
 
         ConnectionEvent.Type eventType;
         if (Boolean.TRUE.equals(request.getAccept())) {
+            enforceActiveLimit(connection.getUserA());
+            enforceActiveLimit(connection.getUserB());
             connection.setStatus(ConnectionStatus.ACTIVE);
             connection.setConfirmedByUser(connection.getUserA().getId(), false);
             connection.setConfirmedByUser(connection.getUserB().getId(), false);
@@ -117,6 +140,19 @@ public class ConnectionService {
                 .recipientId(connection.getInitiatedBy().getId())
                 .build());
         return toResponse(saved, responderId);
+    }
+
+    @Transactional
+    public void endConnection(UUID userId, UUID connectionId) {
+        Connection connection = getConnection(connectionId);
+        if (!connection.isParticipant(userId)) {
+            throw new IllegalArgumentException("You are not part of this connection");
+        }
+        if (connection.getStatus() != ConnectionStatus.ACTIVE) {
+            throw new IllegalArgumentException("Only active connections can be ended");
+        }
+        connection.setStatus(ConnectionStatus.ENDED);
+        connectionRepository.save(connection);
     }
 
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status) {

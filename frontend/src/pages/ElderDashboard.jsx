@@ -163,6 +163,14 @@ export default function ElderDashboard() {
     } finally { setConnectingTo(null); }
   }
 
+  async function endConnection(connId) {
+    try {
+      await api.delete(`/connections/${connId}`);
+      toast.info('Connection ended.');
+      await loadConnections();
+    } catch (err) { toast.error(err?.response?.data?.message || 'Could not end connection.'); }
+  }
+
   function requestLocation() {
     if (!navigator.geolocation) { setLocationStatus('denied'); return; }
     setLocationStatus('asking');
@@ -445,6 +453,12 @@ export default function ElderDashboard() {
                         }}
                       >
                         View Profile
+                      </button>
+                      <button
+                        onClick={() => { if (window.confirm('End this connection?')) endConnection(conn.id); }}
+                        style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        End
                       </button>
                     </div>
                   </div>
