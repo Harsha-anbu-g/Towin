@@ -52,9 +52,6 @@ export default function EmergencyContacts() {
   const [sosMsg, setSosMsg] = useState('');
   const [sosSent, setSosSent] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [safetyToggles, setSafetyToggles] = useState({ shareLocation: true, autoAlert: true });
-  const toggleSafety = (key) => setSafetyToggles(p => ({ ...p, [key]: !p[key] }));
-
   useEffect(() => {
     api.get('/emergency/contacts').then(r => setContacts(r.data)).catch(() => {});
   }, []);
@@ -425,75 +422,6 @@ export default function EmergencyContacts() {
           </BlurFade>
         )}
 
-        {/* Location sharing section */}
-        <BlurFade delay={6}>
-          <div style={{
-            background: '#ffffff',
-            border: '1px solid #ececef',
-            borderRadius: '18px',
-            padding: '24px',
-            marginTop: '8px',
-          }}>
-            <p style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: '#1d1d1f',
-              fontFamily: SF,
-              marginBottom: '16px',
-              letterSpacing: '-0.2px',
-            }}>
-              Location Sharing
-            </p>
-            {[
-              { label: 'Share location with contacts', sub: 'Contacts can see your approximate location', key: 'shareLocation' },
-              { label: 'Auto-alert on inactivity', sub: 'Send alert if no check-in within set days', key: 'autoAlert' },
-            ].map((row, idx) => {
-              const on = safetyToggles[row.key];
-              return (
-                <div key={row.key} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '14px 0',
-                  borderBottom: idx === 0 ? '1px solid #ececef' : 'none',
-                }}>
-                  <div>
-                    <p style={{ fontSize: '15px', fontWeight: 500, color: '#1d1d1f', marginBottom: '2px' }}>
-                      {row.label}
-                    </p>
-                    <p style={{ fontSize: '13px', color: '#7a7a7a' }}>{row.sub}</p>
-                  </div>
-                  <div
-                    role="switch"
-                    aria-checked={on}
-                    onClick={() => toggleSafety(row.key)}
-                    style={{
-                      width: '51px',
-                      height: '31px',
-                      borderRadius: '9999px',
-                      background: on ? '#4FA3CE' : '#d1d1d6',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      transition: 'background 0.2s',
-                    }}>
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      left: on ? '20px' : '2px',
-                      width: '27px',
-                      height: '27px',
-                      borderRadius: '50%',
-                      background: '#ffffff',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                      transition: 'left 0.2s',
-                    }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </BlurFade>
       </div>
     </div>
   );
