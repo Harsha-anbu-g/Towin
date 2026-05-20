@@ -154,10 +154,6 @@ function HeroPanel() {
           objectFit: 'cover', objectPosition: 'center', zIndex: 0,
         }}
       />
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 1,
-        background: 'linear-gradient(to top, rgba(20,55,80,0.70) 0%, rgba(20,55,80,0.32) 50%, rgba(20,55,80,0.08) 100%)',
-      }} />
 
       {/* Turtle logo + wordmark */}
       <div style={{
@@ -234,7 +230,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     email: '', phone: '', password: '', confirmPassword: '',
-    role: 'ELDER', dateOfBirth: '',
+    role: 'ELDER',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -256,18 +252,11 @@ export default function Register() {
     if (form.phone.length < 7) errs.phone = 'Enter a valid phone number';
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
-    if (!form.dateOfBirth) errs.dateOfBirth = 'Date of birth is required';
-    else {
-      const dob = new Date(form.dateOfBirth);
-      const minAge = new Date();
-      minAge.setFullYear(minAge.getFullYear() - 18);
-      if (dob > minAge) errs.dateOfBirth = 'You must be at least 18 years old';
-    }
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
-      const { email, phone, password, role, dateOfBirth } = form;
-      const { data } = await api.post('/auth/register', { email, phone, password, role, dateOfBirth });
+      const { email, phone, password, role } = form;
+      const { data } = await api.post('/auth/register', { email, phone, password, role });
       login(data.token, data.role, data.userId);
       navigate(
         data.role === 'ADMIN' ? '/admin' :
@@ -429,31 +418,6 @@ export default function Register() {
                   style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
                 />
                 {fieldErrors.phone && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.phone}</p>}
-              </div>
-
-              {/* Date of Birth */}
-              <div>
-                <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
-                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                }}>
-                  Date of birth
-                </label>
-                <input
-                  type="date"
-                  required
-                  className="field"
-                  value={form.dateOfBirth}
-                  max={(() => { const d = new Date(); d.setFullYear(d.getFullYear() - 18); return d.toISOString().split('T')[0]; })()}
-                  onChange={e => { setForm({ ...form, dateOfBirth: e.target.value }); setFieldErrors(f => ({ ...f, dateOfBirth: '' })); }}
-                  style={{ borderColor: fieldErrors.dateOfBirth ? '#fca5a5' : undefined }}
-                />
-                {fieldErrors.dateOfBirth && (
-                  <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>
-                    {fieldErrors.dateOfBirth}
-                  </p>
-                )}
               </div>
 
               {/* Password */}
