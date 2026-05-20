@@ -1,27 +1,138 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
-const unsplash = (id, w = 400, h = 300) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
-
-const COMMUNITY_PHOTOS = [
-  'photo-1529156069898-49953e39b3ac',
-  'photo-1544005313-94ddf0286df2',
-  'photo-1507679799987-c73779587ccf',
-  'photo-1438761681033-6461ffad8d80',
-  'photo-1534528741775-53994a69daeb',
-  'photo-1573497491208-6b1acb260507',
+const TERMS_CONTENT = [
+  { h: '1. Welcome to ToWin',
+    p: 'ToWin is a community platform that connects elders with helpers for companionship, errands, and everyday support. By creating an account, you agree to these Terms of Service. This is a placeholder document for the prototype — final terms will be reviewed by counsel before launch.' },
+  { h: '2. Eligibility',
+    p: 'You must be at least 18 years old to use ToWin. By registering, you confirm that the information you provide is accurate and that you will keep it up to date. Accounts created with false information may be suspended at any time.' },
+  { h: '3. Your account',
+    p: 'You are responsible for keeping your password confidential and for any activity on your account. Notify us immediately if you suspect unauthorized use. We may suspend accounts that violate community standards, including harassment, fraud, or unsafe behavior toward another member.' },
+  { h: '4. Community conduct',
+    p: 'ToWin exists to build trust. You agree to treat every elder, helper, and admin with respect. Discrimination, threats, solicitation, or any behavior that compromises another member’s safety is grounds for immediate removal.' },
+  { h: '5. Help requests and meetings',
+    p: 'Helpers and elders may arrange to meet in person once trust has been established through the Trust Journey. ToWin facilitates introductions but is not a party to any agreement between members. Use good judgment, meet in public when possible, and report safety concerns promptly.' },
+  { h: '6. Reviews and trust scores',
+    p: 'Trust scores and reviews reflect community feedback. Reviews must be honest and based on real interactions. Fake or coordinated reviews are not allowed and may result in account action.' },
+  { h: '7. Limitation of liability',
+    p: 'ToWin is provided “as is.” To the maximum extent permitted by law, we are not liable for losses arising from interactions between members. Always use common sense and your local emergency services when needed.' },
+  { h: '8. Changes to these terms',
+    p: 'We may update these terms from time to time. We will notify you of significant changes. Continued use of ToWin after changes take effect means you accept the revised terms.' },
+  { h: '9. Contact',
+    p: 'Questions about these terms can be sent to support@towin.example. Last updated: May 2026.' },
 ];
+
+const PRIVACY_CONTENT = [
+  { h: '1. What we collect',
+    p: 'We collect the information you provide when you register (name, email, phone, role) and the content you create on ToWin (profile, help requests, messages, reviews). We also collect basic device information to keep the service secure.' },
+  { h: '2. Location',
+    p: 'If you share your location, we use it only to match you with nearby helpers or elders. You can turn location off at any time in your device settings — your account will continue to work, just without distance-based matching.' },
+  { h: '3. How we use your data',
+    p: 'Your data is used to operate ToWin: showing nearby members, enabling messaging, calculating trust scores, and keeping the community safe. We do not sell your personal data to advertisers.' },
+  { h: '4. Who can see what',
+    p: 'Other members can see your name, role, city, bio, interests, and trust score. Your email and phone are visible to a connection only after the trust journey reaches the “Phone Ready” stage. Admins may access account data when investigating safety reports.' },
+  { h: '5. Messages',
+    p: 'Messages between members are stored so you can read your history. Admins may review messages flagged for safety. We do not use the content of your messages for advertising.' },
+  { h: '6. Data retention',
+    p: 'We keep your account data while your account is active. If you delete your account, we remove your profile within 30 days. Anonymized records of past interactions may be retained for safety investigations.' },
+  { h: '7. Your rights',
+    p: 'You can edit or delete your profile information at any time from the Profile page. You can request a copy of your data or full deletion by contacting support@towin.example.' },
+  { h: '8. Security',
+    p: 'We use industry-standard encryption in transit and at rest. No system is perfectly secure, so please use a strong, unique password and report anything suspicious.' },
+  { h: '9. Children',
+    p: 'ToWin is not directed at children under 18. If we learn we have collected data from a minor, we will delete it.' },
+  { h: '10. Contact',
+    p: 'Privacy questions can be sent to privacy@towin.example. Last updated: May 2026.' },
+];
+
+function LegalModal({ title, sections, onClose }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        background: 'rgba(20,55,80,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '24px',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#ffffff', borderRadius: '20px',
+          maxWidth: '640px', width: '100%', maxHeight: '85vh',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '0 20px 60px rgba(20,55,80,0.25)',
+          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        }}
+      >
+        <div style={{
+          padding: '24px 32px', borderBottom: '1px solid #ececef',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
+        }}>
+          <h3 style={{
+            margin: 0, fontSize: '22px', fontWeight: 700, color: '#1d1d1f',
+            fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
+            letterSpacing: '-0.3px',
+          }}>{title}</h3>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              border: '1px solid #e0e0e0', background: '#ffffff',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '18px', color: '#7a7a7a',
+            }}
+          >×</button>
+        </div>
+        <div style={{ padding: '20px 32px 28px', overflowY: 'auto' }}>
+          <p style={{
+            fontSize: '12px', color: '#a0a0a5', textTransform: 'uppercase',
+            letterSpacing: '0.5px', fontWeight: 600, margin: '0 0 18px',
+          }}>
+            Placeholder document — prototype only
+          </p>
+          {sections.map(s => (
+            <div key={s.h} style={{ marginBottom: '20px' }}>
+              <h4 style={{
+                fontSize: '15px', fontWeight: 700, color: '#1d1d1f',
+                margin: '0 0 6px',
+              }}>{s.h}</h4>
+              <p style={{
+                fontSize: '14px', color: '#5a6b75', lineHeight: 1.6, margin: 0,
+              }}>{s.p}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{
+          padding: '16px 32px', borderTop: '1px solid #ececef',
+          display: 'flex', justifyContent: 'flex-end',
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              height: '40px', padding: '0 22px',
+              background: '#4FA3CE', color: '#ffffff',
+              border: 'none', borderRadius: '9999px',
+              fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function HeroPanel() {
   return (
     <div style={{
       flex: '0 0 42%',
-      background: '#020817',
       position: 'relative',
       overflow: 'hidden',
       display: 'flex',
@@ -29,115 +140,81 @@ function HeroPanel() {
       justifyContent: 'flex-end',
       padding: '52px 44px',
       minHeight: '100svh',
+      background:
+        'radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.55) 0%, transparent 55%),' +
+        'radial-gradient(ellipse at 80% 85%, #BFD9EA 0%, transparent 60%),' +
+        'linear-gradient(160deg, #EAF5FB 0%, #BFD9EA 45%, #4FA3CE 100%)',
     }}>
-      {/* Background photo */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <LazyLoadImage
-          src={unsplash('photo-1529156069898-49953e39b3ac', 900, 1200)}
-          alt="Community"
-          effect="blur"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-        />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.15) 100%)',
-        }} />
-      </div>
-
-      {/* Logo */}
-      <div style={{ position: 'absolute', top: '32px', left: '44px', zIndex: 2 }}>
-        <p style={{
-          fontSize: '17px', fontWeight: 700, color: '#fff',
-          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-        }}>ToWin</p>
-      </div>
-
-      {/* Community photo mosaic — right side vertical strip */}
+      {/* Hero photo — elder and younger person walking hand in hand */}
+      <img
+        src="/walking.png"
+        alt="An elder and younger person walking together hand in hand"
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center', zIndex: 0,
+        }}
+      />
       <div style={{
-        position: 'absolute', top: '60px', right: '20px', bottom: '220px', zIndex: 2,
-        display: 'flex', flexDirection: 'column', gap: '6px', width: '80px',
+        position: 'absolute', inset: 0, zIndex: 1,
+        background: 'linear-gradient(to top, rgba(20,55,80,0.70) 0%, rgba(20,55,80,0.32) 50%, rgba(20,55,80,0.08) 100%)',
+      }} />
+
+      {/* Turtle logo + wordmark */}
+      <div style={{
+        position: 'absolute', top: '32px', left: '44px', zIndex: 2,
+        display: 'flex', alignItems: 'center', gap: '10px',
       }}>
-        {COMMUNITY_PHOTOS.slice(0, 4).map((id) => (
-          <div key={id} style={{ flex: 1, borderRadius: '10px', overflow: 'hidden' }}>
-            <LazyLoadImage
-              src={unsplash(id, 160, 160)}
-              alt=""
-              effect="blur"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-            />
-          </div>
-        ))}
+        <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
+        <p style={{
+          fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.4px',
+          fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
+          margin: 0,
+        }}>ToWin</p>
       </div>
 
       {/* Bottom text */}
       <div style={{ position: 'relative', zIndex: 2 }}>
         <h1 style={{
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-          fontSize: '40px', lineHeight: 1.1, color: '#fff',
+          fontSize: '40px', lineHeight: 1.15, color: '#fff',
           marginBottom: '14px', fontWeight: 600,
+          textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
           Your community<br />is waiting<br />for you.
         </h1>
 
         <p style={{
-          fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
-          marginBottom: '28px', maxWidth: '240px',
+          fontSize: '14px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.7,
+          marginBottom: '28px', maxWidth: '260px',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+          textShadow: '0 1px 10px rgba(20,55,80,0.5)',
         }}>
           Join thousands of elders and helpers building real, trusted connections every day.
         </p>
 
-        {/* Feature bullets */}
+        {/* Feature bullets — leaf-green check pills */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {['Free to join — no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
-                width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)',
+                width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
+                background: 'rgba(79,163,206,0.95)',
+                border: '1px solid rgba(255,255,255,0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="7" height="5" viewBox="0 0 7 5" fill="none">
-                  <path d="M1 2.5L2.8 4L6 1" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg width="9" height="7" viewBox="0 0 7 5" fill="none">
+                  <path d="M1 2.5L2.8 4L6 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)' }}>{text}</span>
+              <span style={{
+                fontSize: '13px', color: 'rgba(255,255,255,0.92)',
+                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                textShadow: '0 1px 8px rgba(20,55,80,0.5)',
+              }}>{text}</span>
             </div>
           ))}
         </div>
       </div>
-    </div>
-  );
-}
-
-/* 3-step progress indicator */
-function StepIndicator({ currentStep = 1 }) {
-  const steps = [1, 2, 3];
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0', marginBottom: '28px' }}>
-      {steps.map((step, i) => (
-        <div key={step} style={{ display: 'flex', alignItems: 'center', flex: i < steps.length - 1 ? 1 : 'none' }}>
-          <div style={{
-            width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
-            background: step <= currentStep ? '#0066cc' : '#e0e0e0',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '12px', fontWeight: 700,
-            color: step <= currentStep ? '#fff' : '#a0a0a5',
-            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            transition: 'background 0.2s',
-          }}>
-            {step}
-          </div>
-          {i < steps.length - 1 && (
-            <div style={{
-              flex: 1, height: '2px',
-              background: step < currentStep ? '#0066cc' : '#e0e0e0',
-              transition: 'background 0.2s',
-            }} />
-          )}
-        </div>
-      ))}
     </div>
   );
 }
@@ -155,11 +232,17 @@ const pwdStrength = (p) => {
 export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', phone: '', password: '', role: 'ELDER' });
+  const [form, setForm] = useState({ email: '', phone: '', password: '', confirmPassword: '', role: 'ELDER' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [legalOpen, setLegalOpen] = useState(null);
+
+  const linkBtn = {
+    color: '#4FA3CE', background: 'none', border: 'none', padding: 0,
+    cursor: 'pointer', font: 'inherit', textDecoration: 'underline',
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -169,10 +252,12 @@ export default function Register() {
     if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
     if (form.phone.length < 7) errs.phone = 'Enter a valid phone number';
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
+    if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
-      const { data } = await api.post('/auth/register', form);
+      const { email, phone, password, role } = form;
+      const { data } = await api.post('/auth/register', { email, phone, password, role });
       login(data.token, data.role, data.userId);
       navigate('/dashboard');
     } catch (err) {
@@ -202,23 +287,24 @@ export default function Register() {
         justifyContent: 'flex-start',
         overflowY: 'auto',
       }}>
-        {/* Dark hero band */}
+        {/* Light hero band */}
         <div style={{
           width: '100%',
-          background: '#272729',
+          background: '#ffffff',
+          borderBottom: '1px solid #ececef',
           padding: '40px 64px 36px',
           textAlign: 'center',
         }}>
           <h2 style={{
             fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-            fontSize: '56px', fontWeight: 600, color: '#ffffff',
+            fontSize: '56px', fontWeight: 600, color: '#1d1d1f',
             marginBottom: '10px', letterSpacing: '-0.5px', lineHeight: 1.05,
           }}>
             Join ToWin.
           </h2>
           <p style={{
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            fontSize: '17px', color: '#cccccc',
+            fontSize: '17px', color: '#7a7a7a',
           }}>
             Create your free account in minutes.
           </p>
@@ -229,9 +315,6 @@ export default function Register() {
           width: '100%', maxWidth: '440px',
           padding: '40px 24px 48px',
         }}>
-          {/* 3-step progress */}
-          <StepIndicator currentStep={1} />
-
           {/* Form card */}
           <div style={{
             background: '#ffffff',
@@ -268,14 +351,14 @@ export default function Register() {
                       <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
                         style={{
                           padding: '12px 8px', borderRadius: '14px',
-                          border: active ? '2px solid #0066cc' : '1.5px solid #e0e0e0',
-                          background: active ? '#f0f6ff' : '#ffffff',
+                          border: active ? '2px solid #4FA3CE' : '1.5px solid #e0e0e0',
+                          background: active ? '#EAF5FB' : '#ffffff',
                           cursor: 'pointer', textAlign: 'left',
                           transition: 'all 0.15s',
                         }}>
                         <div style={{
                           fontSize: '13px', fontWeight: 700,
-                          color: active ? '#0066cc' : '#1d1d1f',
+                          color: active ? '#4FA3CE' : '#1d1d1f',
                           marginBottom: '3px',
                           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                         }}>
@@ -283,7 +366,7 @@ export default function Register() {
                         </div>
                         <div style={{
                           fontSize: '11px', lineHeight: 1.3,
-                          color: active ? '#5599dd' : '#a0a0a5',
+                          color: active ? '#7BB8D6' : '#a0a0a5',
                           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                         }}>
                           {desc}
@@ -358,7 +441,7 @@ export default function Register() {
                       <div key={i} style={{
                         flex: 1, height: '3px', borderRadius: '9999px',
                         background: i <= pwdStrength(form.password)
-                          ? ['#ff3b30','#ff9500','#34c759','#34c759'][pwdStrength(form.password)-1]
+                          ? ['#ff3b30','#ff9500','#4FA3CE','#4FA3CE'][pwdStrength(form.password)-1]
                           : '#e0e0e0',
                         transition: 'background 0.2s',
                       }} />
@@ -367,6 +450,29 @@ export default function Register() {
                       {['','Weak','Fair','Good','Strong'][pwdStrength(form.password)]}
                     </span>
                   </div>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '6px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  Re-enter password
+                </label>
+                <input
+                  type="password" autoComplete="new-password" required
+                  className="field"
+                  value={form.confirmPassword}
+                  onChange={e => { setForm({ ...form, confirmPassword: e.target.value }); setFieldErrors(f => ({ ...f, confirmPassword: '' })); }}
+                  placeholder="Type the same password again"
+                  style={{ borderColor: fieldErrors.confirmPassword ? '#fca5a5' : undefined }}
+                />
+                {fieldErrors.confirmPassword && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.confirmPassword}</p>}
+                {form.confirmPassword && form.password && form.confirmPassword === form.password && (
+                  <p style={{ fontSize: '12px', color: '#5FA670', marginTop: '4px', fontFamily: 'inherit' }}>Passwords match</p>
                 )}
               </div>
 
@@ -379,16 +485,16 @@ export default function Register() {
                   type="checkbox"
                   checked={agreed}
                   onChange={e => setAgreed(e.target.checked)}
-                  style={{ marginTop: '2px', accentColor: '#0066cc', flexShrink: 0 }}
+                  style={{ marginTop: '2px', accentColor: '#4FA3CE', flexShrink: 0 }}
                 />
                 <span style={{
                   fontSize: '13px', color: '#7a7a7a', lineHeight: 1.5,
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   I agree to the{' '}
-                  <Link to="/terms" style={{ color: '#0066cc', textDecoration: 'none' }}>Terms of Service</Link>
+                  <button type="button" onClick={() => setLegalOpen('terms')} style={linkBtn}>Terms of Service</button>
                   {' '}and{' '}
-                  <Link to="/privacy" style={{ color: '#0066cc', textDecoration: 'none' }}>Privacy Policy</Link>
+                  <button type="button" onClick={() => setLegalOpen('privacy')} style={linkBtn}>Privacy Policy</button>
                 </span>
               </label>
 
@@ -398,7 +504,7 @@ export default function Register() {
                 disabled={loading || !agreed}
                 style={{
                   width: '100%', height: '48px',
-                  background: loading || !agreed ? '#a0c4e8' : '#0066cc',
+                  background: loading || !agreed ? '#BFD9EA' : '#4FA3CE',
                   color: '#ffffff',
                   border: 'none', borderRadius: '9999px',
                   fontSize: '16px', fontWeight: 600,
@@ -420,12 +526,19 @@ export default function Register() {
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
           }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: '#0066cc', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/login" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
               Sign In
             </Link>
           </p>
         </div>
       </div>
+
+      {legalOpen === 'terms' && (
+        <LegalModal title="Terms of Service" sections={TERMS_CONTENT} onClose={() => setLegalOpen(null)} />
+      )}
+      {legalOpen === 'privacy' && (
+        <LegalModal title="Privacy Policy" sections={PRIVACY_CONTENT} onClose={() => setLegalOpen(null)} />
+      )}
     </div>
   );
 }
