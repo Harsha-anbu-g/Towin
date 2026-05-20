@@ -5,7 +5,7 @@ const ToastContext = createContext(null);
 const ICONS = {
   success: (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <circle cx="7" cy="7" r="7" fill="#34c759"/>
+      <circle cx="7" cy="7" r="7" fill="#4FA3CE"/>
       <path d="M3.5 7L5.8 9.3L10.5 4.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
@@ -17,7 +17,7 @@ const ICONS = {
   ),
   info: (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <circle cx="7" cy="7" r="7" fill="#0066cc"/>
+      <circle cx="7" cy="7" r="7" fill="#4FA3CE"/>
       <path d="M7 6.5V10M7 4.5V5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
     </svg>
   ),
@@ -104,7 +104,7 @@ function ToastItem({ toast: t, dismiss }) {
       }}>{t.message}</span>
       {t.undo && (
         <button onClick={() => { t.undo(); dismiss(t.id); }} style={{
-          fontSize: '13px', fontWeight: 600, color: '#2997ff',
+          fontSize: '13px', fontWeight: 600, color: '#4FA3CE',
           background: 'none', border: 'none', cursor: 'pointer',
           fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
           padding: '0 4px', flexShrink: 0,
