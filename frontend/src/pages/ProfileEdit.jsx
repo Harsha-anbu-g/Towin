@@ -166,6 +166,10 @@ export default function ProfileEdit() {
         await api.put('/profile/elder', {
           name: form.name, age: Number(form.age), bio: form.bio,
           interests: toArr(form.interests), languages: toArr(form.languages), lookingFor: form.lookingFor,
+          facebookUrl: form.facebookUrl || null,
+          instagramUrl: form.instagramUrl || null,
+          occupation: form.occupation || null,
+          dateOfBirth: form.dateOfBirth || null,
         });
       } else {
         await api.put('/profile/helper', {
@@ -372,24 +376,26 @@ export default function ProfileEdit() {
                       <FieldRow label="Hobbies">
                         <input {...f('hobbies')} placeholder="Reading, Hiking, Cooking" style={{ width: '100%', boxSizing: 'border-box' }} />
                       </FieldRow>
-                      <Divider />
-                      <FieldRow label="Occupation">
-                        <input {...f('occupation')} placeholder="e.g. Retired teacher, Student" style={{ width: '100%', boxSizing: 'border-box' }} />
-                      </FieldRow>
-                      <Divider />
-                      <FieldRow label="Facebook URL">
-                        <input {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
-                      </FieldRow>
-                      <Divider />
-                      <FieldRow label="Instagram URL">
-                        <input {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
-                      </FieldRow>
-                      <Divider />
-                      <FieldRow label="Date of Birth">
-                        <input {...f('dateOfBirth')} type="date" style={{ width: '100%', boxSizing: 'border-box' }} />
-                      </FieldRow>
                     </>
                   )}
+
+                  {/* Shared fields — all roles */}
+                  <Divider />
+                  <FieldRow label="Date of Birth">
+                    <input {...f('dateOfBirth')} type="date" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+                  <Divider />
+                  <FieldRow label="Occupation">
+                    <input {...f('occupation')} placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+                  <Divider />
+                  <FieldRow label="Facebook URL">
+                    <input {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+                  <Divider />
+                  <FieldRow label="Instagram URL">
+                    <input {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
 
                   {msg && (
                     <p style={{ fontSize: '14px', color: msg.includes('saved') ? '#3D8AB0' : '#cc0000', fontWeight: 500, marginTop: '8px' }}>
