@@ -41,6 +41,15 @@ public class ElderProfile {
     @Column(columnDefinition = "text[]")
     private String[] languages;
 
+    @Column(name = "facebook_url")
+    private String facebookUrl;
+
+    @Column(name = "instagram_url")
+    private String instagramUrl;
+
+    @Column(name = "occupation")
+    private String occupation;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "looking_for", columnDefinition = "looking_for_type")
