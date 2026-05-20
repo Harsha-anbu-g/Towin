@@ -61,17 +61,9 @@ export default function Streaks() {
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
         padding: '52px 48px', minHeight: '100svh',
       }}>
-        <img
-          src="/journey.jpg"
-          alt="Splinter and the turtles"
-          style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: 'center 30%', zIndex: 0,
-          }}
-        />
         <div style={{
-          position: 'absolute', inset: 0, zIndex: 1,
-          background: 'linear-gradient(to top, rgba(20,55,80,0.65) 0%, rgba(20,55,80,0.28) 50%, rgba(20,55,80,0.04) 100%)',
+          position: 'absolute', inset: 0, zIndex: 0,
+          background: 'linear-gradient(160deg, #3D8AB0 0%, #4FA3CE 40%, #7EC4DF 70%, #BFD9EA 100%)',
         }} />
         {/* Logo top-left */}
         <div style={{
