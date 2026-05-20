@@ -168,6 +168,14 @@ export default function HelperDashboard() {
     finally { setRespondingConn(null); }
   }
 
+  async function endConnection(connId) {
+    try {
+      await api.delete(`/connections/${connId}`);
+      toast.info('Connection ended.');
+      await loadConnections();
+    } catch (err) { toast.error(err?.response?.data?.message || 'Could not end connection.'); }
+  }
+
   async function confirmTrust(connId) {
     setConfirmingTrust(connId);
     try {
@@ -499,6 +507,14 @@ export default function HelperDashboard() {
                       <span style={statusStyle(conn.status === 'PENDING' && conn.initiatedByMe ? 'PENDING' : conn.status)}>
                         {{ ACTIVE: 'Connected', PENDING: 'Request Sent' }[conn.status] || conn.status}
                       </span>
+                      {conn.status === 'ACTIVE' && (
+                        <button
+                          onClick={() => { if (window.confirm('End this connection?')) endConnection(conn.id); }}
+                          style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                          End
+                        </button>
+                      )}
                     </div>
                   </div>
 
