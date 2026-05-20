@@ -667,7 +667,7 @@ export default function HelperDashboard() {
                           )}
                         </div>
                       </div>
-                      <div style={{ flexShrink: 0 }}>
+                      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
                         {alreadyConnected ? (
                           <span style={{ fontSize: '12px', background: '#EAF5FB', color: '#3D8AB0', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
                         ) : sent ? (
@@ -682,6 +682,16 @@ export default function HelperDashboard() {
                             {connectingTo === elder.userId ? '...' : 'Connect'}
                           </button>
                         )}
+                        <button
+                          onClick={() => navigate(`/user/${elder.userId}`)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, fontSize: '12px', color: '#4FA3CE', fontWeight: 600,
+                            padding: '4px 0',
+                          }}
+                        >
+                          View Profile
+                        </button>
                       </div>
                     </div>
                   </div>

@@ -402,9 +402,21 @@ export default function ElderDashboard() {
                         </p>
                       )}
                     </div>
-                    <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px', flexShrink: 0 }}>
-                      Message
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
+                      <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px' }}>
+                        Message
+                      </button>
+                      <button
+                        onClick={() => navigate(`/user/${conn.otherUserId}`)}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
+                          fontSize: '12px', color: '#4FA3CE', fontWeight: 600, padding: '2px 0',
+                        }}
+                      >
+                        View Profile
+                      </button>
+                    </div>
                   </div>
                   <TrustJourney
                     currentTrustLevel={conn.currentTrustLevel}

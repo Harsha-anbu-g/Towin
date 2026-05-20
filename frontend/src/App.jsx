@@ -14,6 +14,7 @@ import Admin from './pages/Admin';
 import AdminRoute from './components/AdminRoute';
 import Trust from './pages/Trust';
 import Streaks from './pages/Streaks';
+import UserProfile from './pages/UserProfile';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -50,6 +51,7 @@ function App() {
           <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/streaks" element={<ElderOnly><Streaks /></ElderOnly>} />
           <Route path="/trust" element={<PrivateRoute><Trust /></PrivateRoute>} />
+          <Route path="/user/:id" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
