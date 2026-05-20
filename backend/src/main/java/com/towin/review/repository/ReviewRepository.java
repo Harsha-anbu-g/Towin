@@ -19,6 +19,9 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.reviewee.id = :userId")
     Double findAverageRatingByRevieweeId(@Param("userId") UUID userId);
 
+    @Query("SELECT COALESCE(SUM(r.rating), 0) FROM Review r WHERE r.reviewee.id = :userId")
+    int sumRatingsByRevieweeId(@Param("userId") UUID userId);
+
     long countByRevieweeIdAndSafetyConcernTrue(UUID revieweeId);
 
     List<Review> findBySafetyConcernTrue();
