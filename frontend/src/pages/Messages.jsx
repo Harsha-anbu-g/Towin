@@ -18,11 +18,11 @@ const TRUST_LABELS = {
 };
 
 const TRUST_BANNERS = {
-  PHONE_CALL: { text: 'Ready for a phone call? Share your number when comfortable.', bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
-  VIDEO_CALL:  { text: 'Time for a video call? Exchange details when ready.',         bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d' },
+  PHONE_CALL: { text: 'Ready for a phone call? Share your number when comfortable.', bg: '#eff6ff', border: '#bfdbfe', color: '#3D8AB0' },
+  VIDEO_CALL:  { text: 'Time for a video call? Exchange details when ready.',         bg: '#EAF5FB', border: '#BFD9EA', color: '#3D8AB0' },
   VERIFIED:    { text: 'Both of you are verified. Trust is growing.',                  bg: '#faf5ff', border: '#e9d5ff', color: '#7c3aed' },
   FIRST_MEET:  { text: 'Planning your first meet? Choose a public place.',             bg: '#fff7ed', border: '#fed7aa', color: '#c2410c' },
-  TRUSTED:     { text: 'Fully trusted connection. Enjoy your friendship.',             bg: '#f0fdf4', border: '#86efac', color: '#166534' },
+  TRUSTED:     { text: 'Fully trusted connection. Enjoy your friendship.',             bg: '#EAF5FB', border: '#BFD9EA', color: '#3D8AB0' },
 };
 
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
@@ -147,7 +147,7 @@ export default function Messages() {
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          color: '#0066cc',
+          color: '#4FA3CE',
           fontSize: '15px',
           fontFamily: SFText,
           fontWeight: 500,
@@ -157,7 +157,7 @@ export default function Messages() {
           gap: '4px',
         }}>
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
-            <path d="M8.5 1L1.5 8L8.5 15" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8.5 1L1.5 8L8.5 15" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Back
         </button>
@@ -188,7 +188,7 @@ export default function Messages() {
             letterSpacing: '-0.2px',
           }}>{otherName || 'Conversation'}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34c759' }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4FA3CE' }} />
             <p style={{ fontSize: '12px', color: '#7a7a7a' }}>
               {trustLevel ? (TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')) : 'Online'}
             </p>
@@ -257,7 +257,7 @@ export default function Messages() {
               style={{ borderColor: '#fecaca', resize: 'none' }}
             />
             {reportMsg && (
-              <p style={{ fontSize: '13px', color: reportMsg.includes('Thank') ? '#34c759' : '#cc3333' }}>
+              <p style={{ fontSize: '13px', color: reportMsg.includes('Thank') ? '#4FA3CE' : '#cc3333' }}>
                 {reportMsg}
               </p>
             )}
@@ -310,7 +310,7 @@ export default function Messages() {
               {otherName}
             </p>
             {loadError !== 'trust' && (
-              <p style={{ fontSize: '14px', color: '#a0a0a5' }}>No messages yet. Say hello to {otherName}! 👋</p>
+              <p style={{ fontSize: '14px', color: '#a0a0a5' }}>No messages yet. Send the first message to {otherName}.</p>
             )}
           </div>
         )}
@@ -362,7 +362,7 @@ export default function Messages() {
                   maxWidth: '68%',
                   padding: '10px 14px',
                   borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  background: isMe ? '#0066cc' : '#f0f0f5',
+                  background: isMe ? '#4FA3CE' : '#f0f0f5',
                   color: isMe ? '#ffffff' : '#1d1d1f',
                 }}>
                   <p style={{ fontSize: '15px', lineHeight: 1.45, fontFamily: SFText }}>{m.content}</p>
@@ -396,7 +396,7 @@ export default function Messages() {
       {/* Trust badge strip if trust level set */}
       {trustLevel && (
         <div style={{
-          background: '#f0f6ff',
+          background: '#EAF5FB',
           borderTop: '1px solid #e0e0e0',
           padding: '10px 20px',
           display: 'flex',
@@ -406,8 +406,8 @@ export default function Messages() {
           <div style={{
             fontSize: '12px',
             fontWeight: 600,
-            color: '#0066cc',
-            background: '#0066cc',
+            color: '#4FA3CE',
+            background: '#4FA3CE',
             color: '#ffffff',
             padding: '4px 12px',
             borderRadius: '9999px',
@@ -464,7 +464,7 @@ export default function Messages() {
           type="submit"
           disabled={sending || !text.trim() || loadError === 'trust'}
           style={{
-            background: text.trim() && loadError !== 'trust' ? '#0066cc' : '#e0e0e0',
+            background: text.trim() && loadError !== 'trust' ? '#4FA3CE' : '#e0e0e0',
             color: '#fff',
             border: 'none',
             borderRadius: '50%',
@@ -480,7 +480,11 @@ export default function Messages() {
             fontSize: '16px',
           }}
         >
-          {sent ? '✓' : (
+          {sent ? (
+            <svg width="14" height="14" viewBox="0 0 12 10" fill="none">
+              <path d="M1 5L4 8L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : (
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
             </svg>

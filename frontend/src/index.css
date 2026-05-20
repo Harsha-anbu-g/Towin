@@ -18,10 +18,10 @@
 /* ─── Design tokens ─── */
 :root {
   /* Apple Action Blue */
-  --blue:         #0066cc;
+  --blue:         #4FA3CE;
   --blue-focus:   #0071e3;
   --blue-dark:    #004499;
-  --blue-on-dark: #2997ff;
+  --blue-on-dark: #4FA3CE;
 
   /* Typography colors */
   --ink:    #1d1d1f;
@@ -42,7 +42,7 @@
 
   /* Semantic */
   --red:   #cc0000;
-  --green: #1a7a1a;
+  --green: #3D8AB0;
   --amber: #b05000;
 
   /* Typography */
@@ -162,7 +162,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
     90deg,
     var(--blue-dark) 0%,
     var(--blue) 20%,
-    #60a5fa 50%,
+    #9CC9E2 50%,
     var(--blue) 80%,
     var(--blue-dark) 100%
   );

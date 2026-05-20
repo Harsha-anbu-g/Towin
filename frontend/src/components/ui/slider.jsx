@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Slider = React.forwardRef(
-  ({ className, showTooltip = false, tooltipContent, ...props }, ref) => {
+  ({ className, trackClassName, rangeClassName, thumbClassName, showTooltip = false, tooltipContent, ...props }, ref) => {
     const [showTooltipState, setShowTooltipState] = React.useState(false);
     const [internalValue, setInternalValue] = React.useState(
       props.defaultValue ?? props.value ?? [0],
@@ -41,7 +41,10 @@ const Slider = React.forwardRef(
     const renderThumb = (value) => {
       const thumb = (
         <SliderPrimitive.Thumb
-          className="block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-[disabled]:cursor-not-allowed"
+          className={cn(
+            "block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-[disabled]:cursor-not-allowed",
+            thumbClassName,
+          )}
           onPointerDown={handlePointerDown}
         />
       );
@@ -74,8 +77,14 @@ const Slider = React.forwardRef(
         onValueChange={handleValueChange}
         {...props}
       >
-        <SliderPrimitive.Track className="relative grow overflow-hidden rounded-full bg-secondary data-[orientation=horizontal]:h-2 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-2">
-          <SliderPrimitive.Range className="absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full" />
+        <SliderPrimitive.Track className={cn(
+          "relative grow overflow-hidden rounded-full bg-secondary data-[orientation=horizontal]:h-2 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-2",
+          trackClassName,
+        )}>
+          <SliderPrimitive.Range className={cn(
+            "absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full",
+            rangeClassName,
+          )} />
         </SliderPrimitive.Track>
         {internalValue?.map((value, index) => (
           <React.Fragment key={index}>{renderThumb(value)}</React.Fragment>
