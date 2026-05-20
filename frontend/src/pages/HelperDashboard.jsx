@@ -11,6 +11,30 @@ import { useToast } from '../context/ToastContext';
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
+function StarPicker({ value, onChange }) {
+  const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+  return (
+    <div style={{ display: 'flex', gap: '8px' }}>
+      {[1,2,3,4,5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '32px', padding: '0',
+            color: n <= value ? '#F5B400' : '#e0e0e0',
+            transition: 'color 0.1s',
+            fontFamily: SFT,
+          }}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const COMMUNITY_PHOTOS = [
   { id: 'photo-1529156069898-49953e39b3ac', label: 'Community' },
   { id: 'photo-1544005313-94ddf0286df2', label: 'Elder woman' },
@@ -481,14 +505,7 @@ export default function HelperDashboard() {
                   {reviewingConn === conn.id && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>Rate {conn.otherUserName || 'this elder'}</p>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {[1,2,3,4,5].map(s => (
-                          <button key={s} onClick={() => setReviewForm(f => ({...f, rating: s}))}
-                            style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', color: s <= reviewForm.rating ? '#ff9500' : '#d1d5db', transition: 'transform 0.1s' }}
-                            onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}
-                            onMouseLeave={e => e.target.style.transform = 'scale(1)'}>★</button>
-                        ))}
-                      </div>
+                      <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {REVIEW_TAGS.map(t => (
                           <button key={t} onClick={() => setReviewForm(f => ({
