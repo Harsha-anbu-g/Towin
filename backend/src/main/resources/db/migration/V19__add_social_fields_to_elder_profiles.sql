@@ -1,0 +1,4 @@
+ALTER TABLE elder_profiles
+    ADD COLUMN IF NOT EXISTS facebook_url  VARCHAR(500),
+    ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(500),
+    ADD COLUMN IF NOT EXISTS occupation    VARCHAR(255);
