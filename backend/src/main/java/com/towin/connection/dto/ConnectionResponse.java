@@ -25,4 +25,7 @@ public class ConnectionResponse {
     private String requestMessage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String lastMessagePreview;
+    private LocalDateTime lastMessageAt;
+    private int unreadCount;
 }

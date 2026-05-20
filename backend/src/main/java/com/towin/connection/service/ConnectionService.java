@@ -11,6 +11,7 @@ import com.towin.connection.dto.ConnectionResponse;
 import com.towin.connection.dto.RespondToConnectionRequest;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
+import com.towin.messaging.repository.MessageRepository;
 import com.towin.profile.entity.ElderProfile;
 import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
@@ -36,6 +37,7 @@ public class ConnectionService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final ConnectionEventProducer eventProducer;
+    private final MessageRepository messageRepository;
 
     @Transactional
     public ConnectionResponse sendRequest(UUID senderId, ConnectionRequest request) {
@@ -133,6 +135,13 @@ public class ConnectionService {
 
         boolean phoneUnlocked = connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
+        var last = messageRepository.findFirstByConnectionIdOrderByCreatedAtDesc(connection.getId());
+        String preview = last.map(m -> m.getContent().length() > 60
+                ? m.getContent().substring(0, 57) + "…"
+                : m.getContent()).orElse(null);
+        java.time.LocalDateTime lastAt = last.map(com.towin.messaging.entity.Message::getCreatedAt).orElse(null);
+        int unread = (int) messageRepository.countByConnectionIdAndSenderIdNotAndSeenAtIsNull(connection.getId(), viewerUserId);
+
         return ConnectionResponse.builder()
                 .id(connection.getId())
                 .otherUserId(other.getId())
@@ -147,6 +156,9 @@ public class ConnectionService {
                 .otherUserPhone(phoneUnlocked ? other.getPhone() : null)
                 .createdAt(connection.getCreatedAt())
                 .updatedAt(connection.getUpdatedAt())
+                .lastMessagePreview(preview)
+                .lastMessageAt(lastAt)
+                .unreadCount(unread)
                 .build();
     }
 
