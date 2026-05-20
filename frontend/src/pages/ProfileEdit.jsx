@@ -349,8 +349,8 @@ export default function ProfileEdit() {
                       ) : null;
                     })() : (
                       <input {...f('age')} type="number"
-                        placeholder={isElder ? '50–120' : '18–80'}
-                        min={isElder ? 50 : 18} max={isElder ? 120 : 80}
+                        placeholder="Your age"
+                        min={1} max={150}
                         style={{ width: '100%', boxSizing: 'border-box' }} />
                     )}
                   </FieldRow>
