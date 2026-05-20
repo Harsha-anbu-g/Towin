@@ -27,69 +27,20 @@ function initCards() {
   }));
 }
 
-function HexCard({ card, onClick }) {
-  const revealed = card.flipped || card.matched;
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        width: 80, height: 80,
-        clipPath: HEX,
-        background: card.matched ? SKY : revealed ? '#f0fdf4' : GREEN,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: card.matched ? 'default' : 'pointer',
-        transition: 'background 0.25s',
-        userSelect: 'none', flexShrink: 0,
-      }}
-    >
-      {revealed && (
-        <span style={{
-          fontSize: card.matched ? '20px' : '26px',
-          fontWeight: 800,
-          color: card.matched ? '#fff' : GREEN,
-          fontFamily: SF, lineHeight: 1,
-        }}>
-          {card.matched ? '✓' : card.num}
-        </span>
-      )}
-    </div>
-  );
+function hexPoints(cx, cy, s, inset = 3) {
+  const r = s - inset;
+  return Array.from({ length: 6 }, (_, i) => {
+    const a = (Math.PI / 3) * i;
+    return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
+  }).join(' ');
 }
 
-function TortoiseHead() {
-  return (
-    <svg width="48" height="52" viewBox="0 0 48 52" fill="none">
-      <ellipse cx="24" cy="36" rx="14" ry="14" fill={GREEN} />
-      <ellipse cx="24" cy="18" rx="11" ry="13" fill={GREEN} />
-      <circle cx="19" cy="13" r="3" fill="#f0fdf4" />
-      <circle cx="29" cy="13" r="3" fill="#f0fdf4" />
-      <circle cx="19" cy="13" r="1.4" fill="#1d1d1f" />
-      <circle cx="29" cy="13" r="1.4" fill="#1d1d1f" />
-    </svg>
-  );
-}
-
-function TortoiseTail() {
-  return (
-    <svg width="22" height="32" viewBox="0 0 22 32" fill="none">
-      <ellipse cx="11" cy="10" rx="9" ry="10" fill={GREEN} />
-      <path d="M7 16 Q11 32 15 16" fill={GREEN} />
-    </svg>
-  );
-}
-
-function TortoiseLeg({ rotate }) {
-  return (
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none"
-      style={{ transform: `rotate(${rotate}deg)`, display: 'block' }}>
-      <ellipse cx="22" cy="20" rx="11" ry="16" fill={GREEN} />
-      <ellipse cx="22" cy="34" rx="9" ry="6" fill={GREEN} />
-    </svg>
-  );
-}
-
-// 2-4-4-2 row config: [count, marginLeft]
-const ROWS = [[2, 43], [4, 0], [4, 0], [2, 43]];
+const POSITIONS = [
+  [152, 90], [228, 90],
+  [76, 156], [152, 156], [228, 156], [304, 156],
+  [76, 222], [152, 222], [228, 222], [304, 222],
+  [152, 288], [228, 288],
+];
 
 export default function PeekabooGame() {
   const navigate = useNavigate();
@@ -147,14 +98,6 @@ export default function PeekabooGame() {
   const timerPct     = timeLeft / TIME;
   const timerColor   = timeLeft <= 15 ? '#dc2626' : timeLeft <= 30 ? '#F5B400' : GREEN;
 
-  // Map cards to rows
-  let offset = 0;
-  const rowCards = ROWS.map(([count]) => {
-    const slice = cards.slice(offset, offset + count);
-    offset += count;
-    return slice;
-  });
-
   return (
     <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFT }}>
       <NavBar />
@@ -199,57 +142,74 @@ export default function PeekabooGame() {
           <span style={{ fontSize: '14px', color: '#7a7a7a', fontWeight: 700, flexShrink: 0 }}>{matchedCount}/{PAIRS}</span>
         </div>
 
-        {/* Tortoise body — centered */}
+        {/* Tortoise — single SVG */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
+          <svg width="380" height="400" viewBox="0 0 380 400" style={{ overflow: 'visible' }}>
+
+            {/* Shell base glow */}
+            <ellipse cx="190" cy="189" rx="140" ry="115" fill={GREEN} opacity="0.08" />
 
             {/* Head */}
-            <div style={{ position: 'absolute', top: '-56px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
-              <TortoiseHead />
-            </div>
+            <ellipse cx="190" cy="52" rx="20" ry="22" fill={GREEN} />
+            <ellipse cx="190" cy="72" rx="13" ry="14" fill={GREEN} />
+            <circle cx="183" cy="44" r="4" fill="#f0fdf4" />
+            <circle cx="197" cy="44" r="4" fill="#f0fdf4" />
+            <circle cx="183" cy="44" r="2" fill="#1d1d1f" />
+            <circle cx="197" cy="44" r="2" fill="#1d1d1f" />
 
             {/* Tail */}
-            <div style={{ position: 'absolute', bottom: '-44px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
-              <TortoiseTail />
-            </div>
+            <ellipse cx="190" cy="315" rx="10" ry="14" fill={GREEN} />
+            <path d="M186 325 Q190 345 194 325" fill={GREEN} />
 
             {/* Front-left leg */}
-            <div style={{ position: 'absolute', top: '6px', left: '-48px', pointerEvents: 'none' }}>
-              <TortoiseLeg rotate={-35} />
-            </div>
+            <ellipse cx="52" cy="148" rx="14" ry="22"
+              fill={GREEN} transform="rotate(-30 52 148)" />
 
             {/* Front-right leg */}
-            <div style={{ position: 'absolute', top: '6px', right: '-48px', pointerEvents: 'none' }}>
-              <TortoiseLeg rotate={35} />
-            </div>
+            <ellipse cx="328" cy="148" rx="14" ry="22"
+              fill={GREEN} transform="rotate(30 328 148)" />
 
             {/* Back-left leg */}
-            <div style={{ position: 'absolute', bottom: '6px', left: '-48px', pointerEvents: 'none' }}>
-              <TortoiseLeg rotate={35} />
-            </div>
+            <ellipse cx="52" cy="230" rx="14" ry="22"
+              fill={GREEN} transform="rotate(30 52 230)" />
 
             {/* Back-right leg */}
-            <div style={{ position: 'absolute', bottom: '6px', right: '-48px', pointerEvents: 'none' }}>
-              <TortoiseLeg rotate={-35} />
-            </div>
+            <ellipse cx="328" cy="230" rx="14" ry="22"
+              fill={GREEN} transform="rotate(-30 328 230)" />
 
-            {/* Shell grid (2-4-4-2 honeycomb) */}
-            <div>
-              {ROWS.map(([count, ml], rowIdx) => (
-                <div key={rowIdx} style={{ display: 'flex', gap: '6px', marginLeft: `${ml}px`, marginTop: rowIdx === 0 ? '0' : '-18px' }}>
-                  {rowCards[rowIdx].map((card, colIdx) => {
-                    const globalIdx = ROWS.slice(0, rowIdx).reduce((s, [c]) => s + c, 0) + colIdx;
-                    return <HexCard key={card.id} card={card} onClick={() => flip(globalIdx)} />;
-                  })}
-                </div>
-              ))}
-            </div>
-
-          </div>
+            {/* Hex cells */}
+            {cards.map((card, i) => {
+              const [cx, cy] = POSITIONS[i];
+              const revealed = card.flipped || card.matched;
+              const fill = card.matched ? SKY : revealed ? '#f0fdf4' : GREEN;
+              return (
+                <g key={card.id} onClick={() => flip(i)}
+                  style={{ cursor: card.matched ? 'default' : 'pointer' }}>
+                  <polygon
+                    points={hexPoints(cx, cy, 36, 3)}
+                    fill={fill}
+                    stroke="#fafafc"
+                    strokeWidth="2"
+                    style={{ transition: 'fill 0.25s' }}
+                  />
+                  {revealed && (
+                    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
+                      fill={card.matched ? '#fff' : GREEN}
+                      fontSize={card.matched ? 16 : 20}
+                      fontWeight="800"
+                      fontFamily={SF}
+                      style={{ userSelect: 'none', pointerEvents: 'none' }}>
+                      {card.matched ? '✓' : card.num}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </svg>
         </div>
 
         {/* Skip */}
-        <div style={{ textAlign: 'center', marginTop: '80px' }}>
+        <div style={{ textAlign: 'center', marginTop: '24px' }}>
           <button onClick={() => navigate('/streaks')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, textDecoration: 'underline', padding: '8px' }}>
             Skip game
           </button>
