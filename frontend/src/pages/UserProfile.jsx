@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
-import TrustBadge from '../components/TrustBadge';
 import api from '../api/axios';
 
 const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -60,6 +59,37 @@ function Stars({ rating }) {
     <span style={{ color: '#F5B400', letterSpacing: '-1px', fontSize: '17px' }}>
       {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
     </span>
+  );
+}
+
+const TIER_COLORS = {
+  'Community Champion': { bg: '#FFF7E6', color: '#92400e', border: '#FDE68A' },
+  'Highly Trusted':     { bg: BG, color: BLUE, border: '#A8D4EC' },
+  'Reliable':           { bg: BG, color: BLUE, border: '#A8D4EC' },
+  'Getting Started':    { bg: '#F3F4F6', color: '#5a6470', border: '#D1D5DB' },
+  'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
+};
+
+function ScoreRing({ score }) {
+  const r = 36;
+  const circ = 2 * Math.PI * r;
+  const pct = Math.min((score ?? 0) / 65, 1);
+  return (
+    <svg width="88" height="88" viewBox="0 0 88 88" style={{ flexShrink: 0 }}>
+      <circle cx="44" cy="44" r={r} fill="none" stroke="#ececef" strokeWidth="7" />
+      <circle cx="44" cy="44" r={r} fill="none" stroke={SKY} strokeWidth="7"
+        strokeDasharray={`${pct * circ} ${circ}`} strokeLinecap="round"
+        transform="rotate(-90 44 44)"
+        style={{ transition: 'stroke-dasharray 0.7s ease' }} />
+      <text x="44" y="40" textAnchor="middle"
+        style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, fill: '#1d1d1f' }}>
+        {score ?? 0}
+      </text>
+      <text x="44" y="54" textAnchor="middle"
+        style={{ fontFamily: SF, fontSize: '9px', fill: '#9ca3af' }}>
+        pts
+      </text>
+    </svg>
   );
 }
 
@@ -157,11 +187,10 @@ export default function UserProfile() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '18px' }}>
                 <Avatar name={profile.name} photoUrl={profile.photoUrl} size={80} />
                 <div style={{ flex: 1 }}>
-                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
                     {profile.name || 'User'}
                   </h1>
-                  <TrustBadge tier={profile.trustTier} score={profile.trustScore} />
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {profile.verificationStatus === 'VERIFIED' && (
                       <span style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>
                         ✓ ID Verified
@@ -173,6 +202,26 @@ export default function UserProfile() {
                       </span>
                     )}
                   </div>
+                </div>
+
+                {/* Trust score — prominent right-side block */}
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flexShrink: 0,
+                }}>
+                  <ScoreRing score={profile.trustScore} />
+                  {(() => {
+                    const tier = profile.trustTier ?? 'New Member';
+                    const tc = TIER_COLORS[tier] ?? TIER_COLORS['New Member'];
+                    return (
+                      <span style={{
+                        fontFamily: SF, fontSize: '11px', fontWeight: 700,
+                        background: tc.bg, color: tc.color, border: `1px solid ${tc.border}`,
+                        borderRadius: '9999px', padding: '3px 10px',
+                      }}>
+                        {tier}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 
