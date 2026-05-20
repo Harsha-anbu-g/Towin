@@ -13,6 +13,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Page<Message> findByConnectionIdOrderByCreatedAtAsc(UUID connectionId, Pageable pageable);
     long countByConnectionIdAndSeenAtIsNull(UUID connectionId);
 
+    java.util.Optional<Message> findFirstByConnectionIdOrderByCreatedAtDesc(UUID connectionId);
+    long countByConnectionIdAndSenderIdNotAndSeenAtIsNull(UUID connectionId, UUID senderId);
+
     @Modifying
     @Query("DELETE FROM Message m WHERE m.connection.id = :connectionId")
     void deleteByConnectionId(@Param("connectionId") UUID connectionId);

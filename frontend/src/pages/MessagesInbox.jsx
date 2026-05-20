@@ -17,6 +17,18 @@ const TRUST_LABELS = {
   TRUSTED: 'Fully Trusted',
 };
 
+function timeAgo(iso) {
+  if (!iso) return '';
+  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (secs < 60)   return 'now';
+  if (secs < 3600) return `${Math.floor(secs / 60)}m`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h`;
+  const d = Math.floor(secs / 86400);
+  if (d < 7)  return `${d}d`;
+  if (d < 30) return `${Math.floor(d / 7)}w`;
+  return `${Math.floor(d / 30)}mo`;
+}
+
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
 const Avatar = ({ name, size = 52 }) => (
@@ -51,7 +63,13 @@ export default function MessagesInbox() {
       .finally(() => setLoading(false));
   }, []);
 
-  const active = connections.filter(c => c.status === 'ACTIVE');
+  const active = connections
+    .filter(c => c.status === 'ACTIVE')
+    .sort((a, b) => {
+      const ta = a.lastMessageAt ? new Date(a.lastMessageAt) : new Date(a.createdAt);
+      const tb = b.lastMessageAt ? new Date(b.lastMessageAt) : new Date(b.createdAt);
+      return tb - ta;
+    });
 
   return (
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
@@ -161,21 +179,40 @@ export default function MessagesInbox() {
                 >
                   <Avatar name={c.otherUserName} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{
-                      fontSize: '16px', fontWeight: 600, color: '#1d1d1f',
-                      fontFamily: SF, marginBottom: '3px',
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                    }}>
-                      {c.otherUserName || 'User'}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#4FA3CE' }} />
-                      <p style={{ fontSize: '13px', color: '#7a7a7a' }}>
-                        {c.currentTrustLevel ? (TRUST_LABELS[c.currentTrustLevel] || c.currentTrustLevel.replace(/_/g, ' ')) : 'Connected'}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
+                      <p style={{
+                        fontSize: '16px', fontWeight: c.unreadCount > 0 ? 700 : 600,
+                        color: '#1d1d1f', fontFamily: SF, margin: 0,
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {c.otherUserName || 'User'}
                       </p>
+                      <span style={{ fontSize: '12px', color: '#a0a0a5', flexShrink: 0, fontFamily: SFText }}>
+                        {timeAgo(c.lastMessageAt)}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <p style={{
+                        fontSize: '13px', margin: 0,
+                        color: c.unreadCount > 0 ? '#1d1d1f' : '#7a7a7a',
+                        fontWeight: c.unreadCount > 0 ? 500 : 400,
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {c.lastMessagePreview || (TRUST_LABELS[c.currentTrustLevel] || 'Connected')}
+                      </p>
+                      {c.unreadCount > 0 && (
+                        <span style={{
+                          background: '#4FA3CE', color: '#fff',
+                          fontSize: '11px', fontWeight: 700, fontFamily: SFText,
+                          borderRadius: '9999px', padding: '2px 7px',
+                          flexShrink: 0, minWidth: '20px', textAlign: 'center',
+                        }}>
+                          {c.unreadCount}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <svg width="10" height="16" viewBox="0 0 10 16" fill="none" style={{ flexShrink: 0 }}>
+                  <svg width="10" height="16" viewBox="0 0 10 16" fill="none" style={{ flexShrink: 0, marginLeft: '4px' }}>
                     <path d="M1.5 1L8.5 8L1.5 15" stroke="#c0c0c5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -14,6 +14,15 @@ export default function NavBar() {
 
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
   const isHelper = user?.role === 'HELPER' || user?.role === 'BOTH';
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = () => api.get('/messages/unread-count').then(r => setUnread(r.data)).catch(() => {});
+    fetch();
+    const id = setInterval(fetch, 30000);
+    return () => clearInterval(id);
+  }, [user]);
 
   async function triggerSos() {
     setSending(true);
@@ -82,7 +91,21 @@ export default function NavBar() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
         <NavLink to="/dashboard" label="Dashboard" />
         {/* H4: Messages always in nav — users expect it */}
-        <NavLink to="/messages" label="Messages" />
+        <div style={{ position: 'relative', display: 'inline-flex' }}>
+          <NavLink to="/messages" label="Messages" />
+          {unread > 0 && (
+            <span style={{
+              position: 'absolute', top: '6px', right: '6px',
+              background: '#cc0000', color: '#fff',
+              fontSize: '10px', fontWeight: 700, fontFamily: SF,
+              borderRadius: '9999px', padding: '1px 5px',
+              minWidth: '16px', textAlign: 'center',
+              pointerEvents: 'none',
+            }}>
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </div>
         <NavLink to="/profile" label="Profile" />
         {isHelper && <NavLink to="/trust" label="Trust" />}
         {isElder && <NavLink to="/emergency-contacts" label="Emergency" />}

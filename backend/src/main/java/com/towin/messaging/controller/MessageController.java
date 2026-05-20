@@ -20,6 +20,12 @@ public class MessageController {
 
     private final MessageService messageService;
 
+    @GetMapping("/unread-count")
+    public ResponseEntity<Integer> unreadCount(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(messageService.totalUnreadCount(userId));
+    }
+
     @GetMapping("/{connectionId}")
     public ResponseEntity<Page<MessageResponse>> getHistory(
             @PathVariable UUID connectionId,
