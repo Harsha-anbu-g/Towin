@@ -154,39 +154,63 @@ export default function Streaks() {
           </div>
 
           {/* Age display */}
-          {dob && (() => {
-            const age = computeAge(dob);
-            if (!age) return null;
-            return (
-              <div style={{
-                background: '#ffffff', borderRadius: '20px',
-                border: '1px solid #e0e0e0', padding: '24px 28px',
-                marginBottom: '28px',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
-              }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '20px',
+            border: '1px solid #e0e0e0', padding: '24px 28px',
+            marginBottom: '28px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
+          }}>
+            {dob && computeAge(dob) ? (() => {
+              const age = computeAge(dob);
+              return (
+                <>
+                  <p style={{
+                    fontFamily: SF, fontSize: '40px', fontWeight: 800,
+                    color: '#1a5c2e', lineHeight: 1, margin: '0 0 6px',
+                    letterSpacing: '-1px',
+                  }}>
+                    {age.totalDays.toLocaleString()}
+                  </p>
+                  <p style={{
+                    fontSize: '15px', fontWeight: 600, color: '#7a7a7a',
+                    fontFamily: SFT, margin: '0 0 10px',
+                  }}>
+                    days you have lived
+                  </p>
+                  <p style={{
+                    fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, margin: 0,
+                  }}>
+                    {age.years} {age.years === 1 ? 'year' : 'years'},{' '}
+                    {age.months} {age.months === 1 ? 'month' : 'months'},{' '}
+                    {age.days} {age.days === 1 ? 'day' : 'days'} old
+                  </p>
+                </>
+              );
+            })() : (
+              <>
                 <p style={{
-                  fontFamily: SF, fontSize: '40px', fontWeight: 800,
-                  color: '#1a5c2e', lineHeight: 1, margin: '0 0 6px',
-                  letterSpacing: '-1px',
+                  fontFamily: SF, fontSize: '18px', fontWeight: 700,
+                  color: '#1d1d1f', margin: '0 0 6px',
                 }}>
-                  {age.totalDays.toLocaleString()}
+                  How many days have you lived?
                 </p>
-                <p style={{
-                  fontSize: '15px', fontWeight: 600, color: '#7a7a7a',
-                  fontFamily: SFT, margin: '0 0 10px',
-                }}>
-                  days you have lived
+                <p style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, margin: '0 0 14px' }}>
+                  Add your date of birth in your profile to see your life in days.
                 </p>
-                <p style={{
-                  fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, margin: 0,
-                }}>
-                  {age.years} {age.years === 1 ? 'year' : 'years'},{' '}
-                  {age.months} {age.months === 1 ? 'month' : 'months'},{' '}
-                  {age.days} {age.days === 1 ? 'day' : 'days'} old
-                </p>
-              </div>
-            );
-          })()}
+                <button
+                  onClick={() => navigate('/profile')}
+                  style={{
+                    background: 'none', border: '1.5px solid #e0e0e0',
+                    borderRadius: '9999px', padding: '8px 20px',
+                    fontSize: '14px', fontWeight: 600, color: '#4FA3CE',
+                    fontFamily: SFT, cursor: 'pointer',
+                  }}
+                >
+                  Add date of birth →
+                </button>
+              </>
+            )}
+          </div>
 
           {/* Action */}
           {!loading && (
