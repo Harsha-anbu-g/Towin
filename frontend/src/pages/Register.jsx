@@ -164,7 +164,7 @@ function HeroPanel() {
         position: 'absolute', top: '32px', left: '44px', zIndex: 2,
         display: 'flex', alignItems: 'center', gap: '10px',
       }}>
-        <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
+        <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <p style={{
           fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.4px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
@@ -232,7 +232,10 @@ const pwdStrength = (p) => {
 export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', phone: '', password: '', confirmPassword: '', role: 'ELDER' });
+  const [form, setForm] = useState({
+    email: '', phone: '', password: '', confirmPassword: '',
+    role: 'ELDER', dateOfBirth: '',
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -253,13 +256,24 @@ export default function Register() {
     if (form.phone.length < 7) errs.phone = 'Enter a valid phone number';
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
+    if (!form.dateOfBirth) errs.dateOfBirth = 'Date of birth is required';
+    else {
+      const dob = new Date(form.dateOfBirth);
+      const minAge = new Date();
+      minAge.setFullYear(minAge.getFullYear() - 18);
+      if (dob > minAge) errs.dateOfBirth = 'You must be at least 18 years old';
+    }
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
-      const { email, phone, password, role } = form;
-      const { data } = await api.post('/auth/register', { email, phone, password, role });
+      const { email, phone, password, role, dateOfBirth } = form;
+      const { data } = await api.post('/auth/register', { email, phone, password, role, dateOfBirth });
       login(data.token, data.role, data.userId);
-      navigate('/dashboard');
+      navigate(
+        data.role === 'ADMIN' ? '/admin' :
+        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' :
+        '/dashboard'
+      );
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -415,6 +429,31 @@ export default function Register() {
                   style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
                 />
                 {fieldErrors.phone && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.phone}</p>}
+              </div>
+
+              {/* Date of Birth */}
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '6px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  Date of birth
+                </label>
+                <input
+                  type="date"
+                  required
+                  className="field"
+                  value={form.dateOfBirth}
+                  max={(() => { const d = new Date(); d.setFullYear(d.getFullYear() - 18); return d.toISOString().split('T')[0]; })()}
+                  onChange={e => { setForm({ ...form, dateOfBirth: e.target.value }); setFieldErrors(f => ({ ...f, dateOfBirth: '' })); }}
+                  style={{ borderColor: fieldErrors.dateOfBirth ? '#fca5a5' : undefined }}
+                />
+                {fieldErrors.dateOfBirth && (
+                  <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>
+                    {fieldErrors.dateOfBirth}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
