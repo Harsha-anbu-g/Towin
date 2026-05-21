@@ -6,7 +6,7 @@ import api from '../api/axios';
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
-const TABS = ['Users', 'Verifications', 'Reports', 'Reviews', 'Data'];
+const TABS = ['Users', 'Verifications', 'Reports', 'Reviews', 'Data', 'Feedback'];
 const DATA_TABS = ['Connections', 'Needs', 'Messages'];
 
 function ConfirmButton({ label, style, onConfirm }) {
@@ -76,6 +76,87 @@ const trustColor = (score) => {
   if (score >= 30) return '#f59e0b';
   return '#cc0000';
 };
+
+const RATING_LABELS = [
+  { key: 'ratingIdea', label: 'Idea' },
+  { key: 'ratingUi', label: 'UI' },
+  { key: 'ratingTheme', label: 'Theme' },
+  { key: 'ratingSecurity', label: 'Security' },
+  { key: 'ratingEaseOfUse', label: 'Ease' },
+  { key: 'ratingPerformance', label: 'Perf' },
+  { key: 'ratingOverall', label: 'Overall' },
+];
+
+function avgRating(rows, key) {
+  const vals = rows.map(r => r[key]).filter(v => v != null);
+  if (!vals.length) return null;
+  return (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+}
+
+function FeedbackTab() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/admin/feedback')
+      .then(({ data }) => setRows(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p style={{ fontFamily: SFText, color: '#7a7a7a', padding: '24px' }}>Loading feedback…</p>;
+  if (!rows.length) return <p style={{ fontFamily: SFText, color: '#7a7a7a', padding: '24px' }}>No feedback yet.</p>;
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '28px',
+        background: '#fff', borderRadius: '14px', padding: '16px 20px', border: '1px solid #e0e0e0',
+      }}>
+        {RATING_LABELS.map(({ key, label }) => {
+          const a = avgRating(rows, key);
+          return (
+            <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: '#4FA3CE', fontFamily: SF }}>
+                {a ?? '—'}
+              </div>
+              <div style={{ fontSize: '11px', color: '#7a7a7a', fontFamily: SFText }}>{label}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: SFText, fontSize: '13px' }}>
+          <thead>
+            <tr style={{ background: '#f5f5f7', textAlign: 'left' }}>
+              {['Date', 'Name', 'Email', 'Phone', ...RATING_LABELS.map(r => r.label), 'Message'].map(h => (
+                <th key={h} style={{ padding: '10px 12px', color: '#1d1d1f', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <td style={{ padding: '10px 12px', color: '#7a7a7a', whiteSpace: 'nowrap' }}>
+                  {new Date(r.createdAt).toLocaleDateString()}
+                </td>
+                <td style={{ padding: '10px 12px' }}>{r.name ?? '—'}</td>
+                <td style={{ padding: '10px 12px' }}>{r.email ?? '—'}</td>
+                <td style={{ padding: '10px 12px' }}>{r.phone ?? '—'}</td>
+                {RATING_LABELS.map(({ key }) => (
+                  <td key={key} style={{ padding: '10px 12px', textAlign: 'center' }}>
+                    {r[key] != null ? `${r[key]} ⭐` : '—'}
+                  </td>
+                ))}
+                <td style={{ padding: '10px 12px', maxWidth: '240px', color: '#1d1d1f' }}>{r.message}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function Admin() {
   const { logout } = useAuth();
@@ -539,6 +620,9 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* Feedback tab */}
+        {tab === 'Feedback' && <FeedbackTab />}
 
         {/* Data tab */}
         {tab === 'Data' && (
