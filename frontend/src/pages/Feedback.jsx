@@ -228,12 +228,17 @@ export default function Feedback() {
 
               {/* Message — most important */}
               <div>
-                <label style={labelStyle}>Message <span style={{ color: '#dc2626' }}>*</span></label>
-                <textarea required rows={5}
+                <label style={labelStyle}>
+                  Message <span style={{ color: '#dc2626' }}>*</span>
+                </label>
+                <p style={{ fontFamily: SFText, fontSize: '12px', color: '#7a7a7a', margin: '0 0 8px', lineHeight: 1.5 }}>
+                  Be honest! Include <span style={{ fontWeight: 600, color: '#1d1d1f' }}>at least one thing you didn't like</span> or think could be better — that's where the real value is.
+                </p>
+                <textarea required rows={10}
                   style={{ ...inputStyle, resize: 'vertical' }}
                   value={form.message}
                   onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                  placeholder="Tell us anything — bugs, ideas, impressions, anything at all..."
+                  placeholder={"What did you think? What worked, what didn't?\nBe honest — one thing you didn't like is more valuable than ten compliments."}
                 />
               </div>
 
