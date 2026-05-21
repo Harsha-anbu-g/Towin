@@ -7,6 +7,7 @@ import com.towin.feedback.repository.FeedbackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
 
+    @Transactional
     public void submit(FeedbackRequest req) {
         feedbackRepository.save(Feedback.builder()
             .name(req.getName())
@@ -32,24 +34,29 @@ public class FeedbackService {
             .build());
     }
 
+    @Transactional(readOnly = true)
     public List<FeedbackResponse> getAll() {
         return feedbackRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
             .stream()
-            .map(f -> FeedbackResponse.builder()
-                .id(f.getId())
-                .name(f.getName())
-                .email(f.getEmail())
-                .phone(f.getPhone())
-                .message(f.getMessage())
-                .ratingIdea(f.getRatingIdea())
-                .ratingUi(f.getRatingUi())
-                .ratingTheme(f.getRatingTheme())
-                .ratingSecurity(f.getRatingSecurity())
-                .ratingEaseOfUse(f.getRatingEaseOfUse())
-                .ratingPerformance(f.getRatingPerformance())
-                .ratingOverall(f.getRatingOverall())
-                .createdAt(f.getCreatedAt())
-                .build())
+            .map(this::toResponse)
             .toList();
+    }
+
+    private FeedbackResponse toResponse(Feedback f) {
+        return FeedbackResponse.builder()
+            .id(f.getId())
+            .name(f.getName())
+            .email(f.getEmail())
+            .phone(f.getPhone())
+            .message(f.getMessage())
+            .ratingIdea(f.getRatingIdea())
+            .ratingUi(f.getRatingUi())
+            .ratingTheme(f.getRatingTheme())
+            .ratingSecurity(f.getRatingSecurity())
+            .ratingEaseOfUse(f.getRatingEaseOfUse())
+            .ratingPerformance(f.getRatingPerformance())
+            .ratingOverall(f.getRatingOverall())
+            .createdAt(f.getCreatedAt())
+            .build();
     }
 }

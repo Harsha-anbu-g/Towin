@@ -19,7 +19,7 @@ public class FeedbackController {
     @PostMapping("/api/feedback")
     public ResponseEntity<Void> submit(@Valid @RequestBody FeedbackRequest req) {
         feedbackService.submit(req);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(201).build();
     }
 
     @GetMapping("/api/admin/feedback")
