@@ -59,7 +59,7 @@ function CreatorCard() {
           <span style={{ fontWeight: 400, color: '#7a7a7a', fontSize: '18px' }}> (Harsha)</span>
         </h2>
         <p style={{ fontFamily: SFText, fontSize: '14px', color: '#4FA3CE', fontWeight: 600, margin: '0 0 2px' }}>
-          Full-Stack Engineer
+          Full-Stack Engineer · Aspiring Entrepreneur · Future Startup Founder
         </p>
         <p style={{ fontFamily: SFText, fontSize: '13px', color: '#7a7a7a', margin: 0 }}>
           Master's in Applied Computer Science · Concordia University, Montreal
