@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import api from '../api/axios';
-import { Mail, Phone, MapPin, Linkedin, Github, Instagram, Globe, Star } from 'lucide-react';
+import { Mail, Phone, MapPin, Briefcase, Code2, Camera, Globe, Star } from 'lucide-react';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -19,9 +19,9 @@ const SOCIALS = [
   { icon: Mail, label: 'agharsha.anbu@gmail.com', href: 'mailto:agharsha.anbu@gmail.com' },
   { icon: Phone, label: '+1 438-535-5782 (WhatsApp)', href: 'https://wa.me/14385355782' },
   { icon: MapPin, label: 'Montreal, Quebec, Canada', href: null },
-  { icon: Linkedin, label: 'harsha-anbu-gowri', href: 'https://www.linkedin.com/in/harsha-anbu-gowri/' },
-  { icon: Github, label: 'Harsha-anbu-g', href: 'https://github.com/Harsha-anbu-g' },
-  { icon: Instagram, label: 'harsha._.ag', href: 'https://www.instagram.com/harsha._.ag' },
+  { icon: Briefcase, label: 'harsha-anbu-gowri', href: 'https://www.linkedin.com/in/harsha-anbu-gowri/' },
+  { icon: Code2, label: 'Harsha-anbu-g', href: 'https://github.com/Harsha-anbu-g' },
+  { icon: Camera, label: 'harsha._.ag', href: 'https://www.instagram.com/harsha._.ag' },
   { icon: Globe, label: 'portfolioharsha.vercel.app', href: 'https://portfolioharsha.vercel.app/' },
 ];
 
