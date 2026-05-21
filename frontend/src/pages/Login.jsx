@@ -242,6 +242,15 @@ export default function Login() {
                 Create one
               </Link>
             </p>
+            <p style={{
+              textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              marginTop: '8px',
+            }}>
+              <Link to="/feedback" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
+                Share feedback
+              </Link>
+            </p>
           </div>
         </div>
       </div>
