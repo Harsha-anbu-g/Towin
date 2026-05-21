@@ -15,14 +15,13 @@ const RATINGS = [
   { key: 'ratingOverall', label: 'Overall' },
 ];
 
-const SOCIALS = [
+const CONTACTS = [
   { icon: Mail, label: 'agharsha.anbu@gmail.com', href: 'mailto:agharsha.anbu@gmail.com' },
   { icon: Phone, label: '+1 438-535-5782 (WhatsApp)', href: 'https://wa.me/14385355782' },
   { icon: MapPin, label: 'Montreal, Quebec, Canada', href: null },
-  { icon: Briefcase, label: 'harsha-anbu-gowri', href: 'https://www.linkedin.com/in/harsha-anbu-gowri/' },
-  { icon: Code2, label: 'Harsha-anbu-g', href: 'https://github.com/Harsha-anbu-g' },
-  { icon: Camera, label: 'harsha._.ag', href: 'https://www.instagram.com/harsha._.ag' },
-  { icon: Globe, label: 'portfolioharsha.vercel.app', href: 'https://portfolioharsha.vercel.app/' },
+  { icon: Briefcase, label: 'LinkedIn: harsha-anbu-gowri', href: 'https://www.linkedin.com/in/harsha-anbu-gowri/' },
+  { icon: Code2, label: 'GitHub: Harsha-anbu-g', href: 'https://github.com/Harsha-anbu-g' },
+  { icon: Camera, label: 'Instagram: harsha._.ag', href: 'https://www.instagram.com/harsha._.ag' },
 ];
 
 function StarRating({ value, onChange }) {
@@ -52,7 +51,7 @@ function CreatorCard() {
   return (
     <div style={{
       background: '#fff', borderRadius: '18px',
-      padding: '32px 36px', border: '1px solid #e0e0e0', marginBottom: '20px',
+      padding: '32px 36px', border: '1px solid #e0e0e0', marginTop: '20px',
     }}>
       <div style={{ marginBottom: '16px' }}>
         <h2 style={{ fontFamily: SF, fontSize: '22px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
@@ -73,11 +72,11 @@ function CreatorCard() {
         This isn't a university project — ToWin is my future startup. I'm building something real, and your feedback is what shapes it.
       </p>
       <p style={{ fontFamily: SFText, fontSize: '14px', color: '#7a7a7a', margin: '0 0 20px', lineHeight: 1.6 }}>
-        Fill in the form below, or drop your feedback directly on any of my socials. Love the idea? Want to connect or collaborate? Let's connect!
+        You can also drop your feedback directly on any of my socials. Love the idea? Want to connect or collaborate? Let's connect!
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {SOCIALS.map(({ icon: Icon, label, href }) => ( // eslint-disable-line no-unused-vars
+        {CONTACTS.map(({ icon: Icon, label, href }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Icon size={16} color="#4FA3CE" style={{ flexShrink: 0 }} />
             {href ? (
@@ -91,6 +90,40 @@ function CreatorCard() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function PortfolioCard() {
+  return (
+    <div style={{
+      background: '#fff', borderRadius: '18px',
+      padding: '24px 36px', border: '1px solid #e0e0e0', marginTop: '20px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
+    }}>
+      <div>
+        <p style={{ fontFamily: SFText, fontSize: '13px', color: '#7a7a7a', margin: '0 0 4px' }}>
+          Want to know more about me?
+        </p>
+        <p style={{ fontFamily: SF, fontSize: '15px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+          Visit my portfolio
+        </p>
+      </div>
+      <a
+        href="https://portfolioharsha.vercel.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'flex', alignItems: 'center', gap: '6px',
+          background: '#4FA3CE', color: '#fff',
+          padding: '10px 18px', borderRadius: '9999px',
+          fontSize: '14px', fontWeight: 600, fontFamily: SFText,
+          textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
+        }}
+      >
+        <Globe size={14} />
+        portfolioharsha.vercel.app
+      </a>
     </div>
   );
 }
@@ -139,8 +172,8 @@ export default function Feedback() {
   return (
     <div style={{ minHeight: '100svh', background: '#fafafc', padding: '48px 24px' }}>
       <div style={{ maxWidth: '560px', margin: '0 auto' }}>
-        <CreatorCard />
 
+        {/* 1. Feedback form — first thing */}
         {submitted ? (
           <div style={{
             background: '#fff', borderRadius: '18px', padding: '48px 36px',
@@ -174,6 +207,7 @@ export default function Feedback() {
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              {/* Name, Email, Phone */}
               <div>
                 <label style={labelStyle}>Name <span style={{ color: '#a0a0a5', fontWeight: 400 }}>(optional)</span></label>
                 <input style={inputStyle} value={form.name}
@@ -192,6 +226,20 @@ export default function Feedback() {
 
               <div style={{ height: '1px', background: '#e0e0e0' }} />
 
+              {/* Message — most important */}
+              <div>
+                <label style={labelStyle}>Message <span style={{ color: '#dc2626' }}>*</span></label>
+                <textarea required rows={5}
+                  style={{ ...inputStyle, resize: 'vertical' }}
+                  value={form.message}
+                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                  placeholder="Tell us anything — bugs, ideas, impressions, anything at all..."
+                />
+              </div>
+
+              <div style={{ height: '1px', background: '#e0e0e0' }} />
+
+              {/* Rate the app */}
               <div>
                 <p style={{ ...labelStyle, marginBottom: '14px' }}>
                   Rate the app <span style={{ color: '#a0a0a5', fontWeight: 400 }}>(optional)</span>
@@ -204,18 +252,6 @@ export default function Feedback() {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div style={{ height: '1px', background: '#e0e0e0' }} />
-
-              <div>
-                <label style={labelStyle}>Message <span style={{ color: '#dc2626' }}>*</span></label>
-                <textarea required rows={5}
-                  style={{ ...inputStyle, resize: 'vertical' }}
-                  value={form.message}
-                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                  placeholder="Tell us anything — bugs, ideas, impressions, anything at all..."
-                />
               </div>
 
               <button type="submit" disabled={loading} style={{
@@ -231,6 +267,13 @@ export default function Feedback() {
             </form>
           </div>
         )}
+
+        {/* 2. Creator bio — after the form */}
+        <CreatorCard />
+
+        {/* 3. Portfolio link — last */}
+        <PortfolioCard />
+
       </div>
     </div>
   );
