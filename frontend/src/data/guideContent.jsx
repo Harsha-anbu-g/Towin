@@ -120,7 +120,6 @@ export const STEPS = [
         <CardGrid>
           <MiniCard title="Elder">An older person looking for friendship, company, or help with daily tasks.</MiniCard>
           <MiniCard title="Helper">A younger person offering companionship and a hand with everyday things.</MiniCard>
-          <MiniCard title="Both">One person can be an Elder and a Helper at the same time.</MiniCard>
         </CardGrid>
         <NoteBox>
           Choose how you'll use ToWin with the tabs above — you can switch between
