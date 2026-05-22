@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { MinimalistHero } from '../components/ui/minimalist-hero';
 
 const navLinks = [
-  { label: 'HOW IT WORKS', href: '/how-it-works' },
+  { label: 'HOW TOWIN WORKS', href: '/how-it-works' },
   { label: 'COMMUNITY',    href: '#community' },
   { label: 'TRUST',        href: '#trust' },
 ];
