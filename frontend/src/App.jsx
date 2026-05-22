@@ -19,6 +19,7 @@ import PeekabooGame from './pages/PeekabooGame';
 import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
 import Feedback from './pages/Feedback';
+import Guide from './pages/Guide';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -50,6 +51,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/feedback" element={<Feedback />} />
+            <Route path="/how-it-works" element={<Guide />} />
             <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
