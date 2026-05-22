@@ -532,15 +532,18 @@ export default function Register() {
               Sign In
             </Link>
           </p>
-          <p style={{
-            textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
-            marginTop: '8px',
-            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-          }}>
-            <Link to="/how-it-works" style={{ color: '#7a7a7a', fontWeight: 700, textDecoration: 'none' }}>
+          <div style={{ textAlign: 'center', marginTop: '14px' }}>
+            <Link to="/how-it-works" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
+              borderRadius: '9999px', padding: '11px 24px',
+              fontSize: '14px', fontWeight: 700,
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
+            }}>
               How it works
             </Link>
-          </p>
+          </div>
         </div>
       </div>
 
