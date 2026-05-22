@@ -247,6 +247,10 @@ export default function Login() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               marginTop: '8px',
             }}>
+              <Link to="/how-it-works" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
+                How it works
+              </Link>
+              {'  ·  '}
               <Link to="/feedback" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
                 Share feedback
               </Link>
