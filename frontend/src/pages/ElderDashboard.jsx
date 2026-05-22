@@ -8,6 +8,21 @@ import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { useSeenIds } from '../lib/useSeenIds';
+
+function TabBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span style={{
+      marginLeft: '8px', verticalAlign: 'middle',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
+      background: '#cc0000', color: '#fff', fontSize: '13px', fontWeight: 700,
+      borderRadius: '9999px', lineHeight: 1,
+    }}>{count}</span>
+  );
+}
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
@@ -93,6 +108,9 @@ function FormField({ label, children }) {
 export default function ElderDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const seenConn = useSeenIds(user?.userId, 'connections');
+  const seenApplicants = useSeenIds(user?.userId, 'applicants');
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
@@ -283,15 +301,25 @@ export default function ElderDashboard() {
 
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
-  const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const connectedHelperIds = new Set(connections.map(c => c.otherUserId));
 
+  const connTokens = connections.map(c => `${c.id}:${c.status}`);
+  const applicantTokens = myNeeds.flatMap(n => (n.applications || []).map(a => `${n.id}:${a.helperId}`));
+  const connBadge = seenConn.unseenCount(connTokens);
+  const requestsBadge = seenApplicants.unseenCount(applicantTokens);
+
+  useEffect(() => {
+    if (tab === 'connections') seenConn.markSeen(connTokens);
+    if (tab === 'needs') seenApplicants.markSeen(applicantTokens);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, connections, myNeeds]);
+
   const tabs = [
-    ['overview', 'Overview'],
-    ['connections', `Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
-    ['discover', 'Find Helpers'],
-    ['needs', 'My Requests'],
-    ['post', 'Post Request'],
+    ['overview', 'Overview', 0],
+    ['connections', 'Connections', connBadge],
+    ['discover', 'Find Helpers', 0],
+    ['needs', 'My Requests', requestsBadge],
+    ['post', 'Post Request', 0],
   ];
 
   return (
@@ -305,7 +333,7 @@ export default function ElderDashboard() {
           display: 'flex', gap: '10px', flexWrap: 'wrap',
           marginBottom: '32px',
         }}>
-          {tabs.map(([id, label]) => {
+          {tabs.map(([id, label, badge]) => {
             const active = tab === id;
             return (
               <button key={id} onClick={() => setTab(id)} style={{
@@ -327,6 +355,7 @@ export default function ElderDashboard() {
                 onMouseLeave={e => { if (!active) e.currentTarget.style.background = '#ffffff'; }}
               >
                 {label}
+                <TabBadge count={badge} />
               </button>
             );
           })}
