@@ -8,6 +8,21 @@ import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { useSeenIds } from '../lib/useSeenIds';
+
+function TabBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span style={{
+      marginLeft: '8px', verticalAlign: 'middle',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
+      background: '#cc0000', color: '#fff', fontSize: '13px', fontWeight: 700,
+      borderRadius: '9999px', lineHeight: 1,
+    }}>{count}</span>
+  );
+}
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
@@ -58,6 +73,9 @@ const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(
 export default function HelperDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const seenConn = useSeenIds(user?.userId, 'connections');
+  const seenNeeds = useSeenIds(user?.userId, 'needs');
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
@@ -204,12 +222,23 @@ export default function HelperDashboard() {
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
   const connectedElderIds = new Set(connections.map(c => c.otherUserId));
-  const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+
+  const connTokens = connections.map(c => `${c.id}:${c.status}`);
+  const needTokens = needs.map(n => n.id);
+  const connBadge = seenConn.unseenCount(connTokens);
+  const browseBadge = seenNeeds.unseenCount(needTokens);
+
+  useEffect(() => {
+    if (tab === 'connections') seenConn.markSeen(connTokens);
+    if (tab === 'browse') seenNeeds.markSeen(needTokens);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, connections, needs]);
+
   const tabs = [
-    ['overview', 'Overview'],
-    ['connections', `Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
-    ['browse', 'Browse Needs'],
-    ['discover', 'Discover Elders'],
+    ['overview', 'Overview', 0],
+    ['connections', 'Connections', connBadge],
+    ['browse', 'Browse Needs', browseBadge],
+    ['discover', 'Discover Elders', 0],
   ];
 
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
@@ -243,7 +272,7 @@ export default function HelperDashboard() {
           display: 'flex', gap: '10px', flexWrap: 'wrap',
           marginBottom: '32px',
         }}>
-          {tabs.map(([id, label]) => {
+          {tabs.map(([id, label, badge]) => {
             const active = tab === id;
             return (
               <button key={id} onClick={() => setTab(id)} style={{
@@ -265,6 +294,7 @@ export default function HelperDashboard() {
                 onMouseLeave={e => { if (!active) e.currentTarget.style.background = '#ffffff'; }}
               >
                 {label}
+                <TabBadge count={badge} />
               </button>
             );
           })}
