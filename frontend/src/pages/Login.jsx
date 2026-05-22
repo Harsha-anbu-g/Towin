@@ -251,7 +251,7 @@ export default function Login() {
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
               }}>
-                How it works
+                How ToWin works
               </Link>
             </div>
             <p style={{
