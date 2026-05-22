@@ -273,7 +273,6 @@ export default function Register() {
   const ROLES = [
     { value: 'ELDER', label: 'Elder', desc: 'Looking for friends or help' },
     { value: 'HELPER', label: 'Helper', desc: 'Want to help others' },
-    { value: 'BOTH', label: 'Both', desc: 'Elder and helper' },
   ];
 
   return (
@@ -531,6 +530,15 @@ export default function Register() {
             Already have an account?{' '}
             <Link to="/login" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
               Sign In
+            </Link>
+          </p>
+          <p style={{
+            textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
+            marginTop: '8px',
+            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+          }}>
+            <Link to="/how-it-works" style={{ color: '#7a7a7a', fontWeight: 700, textDecoration: 'none' }}>
+              How it works
             </Link>
           </p>
         </div>
