@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
@@ -81,6 +82,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [showPwd, setShowPwd] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -184,14 +186,28 @@ export default function Login() {
                 }}>
                   Password
                 </label>
-                <input
-                  type="password" required autoComplete="current-password"
-                  className="field"
-                  value={form.password}
-                  onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
-                  placeholder="••••••••"
-                  style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPwd ? 'text' : 'password'} required autoComplete="current-password"
+                    className="field"
+                    value={form.password}
+                    onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
+                    placeholder="••••••••"
+                    style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined, paddingRight: '44px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd(v => !v)}
+                    aria-label={showPwd ? 'Hide password' : 'Show password'}
+                    style={{
+                      position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
+                      color: '#7a7a7a', display: 'flex',
+                    }}
+                  >
+                    {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>

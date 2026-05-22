@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
@@ -237,6 +238,14 @@ export default function Register() {
   const [agreed, setAgreed] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [legalOpen, setLegalOpen] = useState(null);
+  const [showPwd, setShowPwd] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const eyeBtn = {
+    position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+    background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
+    color: '#7a7a7a', display: 'flex',
+  };
 
   const linkBtn = {
     color: '#4FA3CE', background: 'none', border: 'none', padding: 0,
@@ -428,14 +437,20 @@ export default function Register() {
                 }}>
                   Password
                 </label>
-                <input
-                  type="password" autoComplete="new-password" required
-                  className="field"
-                  value={form.password}
-                  onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
-                  placeholder="Create a password"
-                  style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPwd ? 'text' : 'password'} autoComplete="new-password" required
+                    className="field"
+                    value={form.password}
+                    onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
+                    placeholder="Create a password"
+                    style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined, paddingRight: '44px' }}
+                  />
+                  <button type="button" onClick={() => setShowPwd(v => !v)}
+                    aria-label={showPwd ? 'Hide password' : 'Show password'} style={eyeBtn}>
+                    {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {form.password && (
                   <div style={{ marginTop: '6px', display: 'flex', gap: '3px', alignItems: 'center' }}>
@@ -464,14 +479,20 @@ export default function Register() {
                 }}>
                   Re-enter password
                 </label>
-                <input
-                  type="password" autoComplete="new-password" required
-                  className="field"
-                  value={form.confirmPassword}
-                  onChange={e => { setForm({ ...form, confirmPassword: e.target.value }); setFieldErrors(f => ({ ...f, confirmPassword: '' })); }}
-                  placeholder="Type the same password again"
-                  style={{ borderColor: fieldErrors.confirmPassword ? '#fca5a5' : undefined }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showConfirm ? 'text' : 'password'} autoComplete="new-password" required
+                    className="field"
+                    value={form.confirmPassword}
+                    onChange={e => { setForm({ ...form, confirmPassword: e.target.value }); setFieldErrors(f => ({ ...f, confirmPassword: '' })); }}
+                    placeholder="Type the same password again"
+                    style={{ borderColor: fieldErrors.confirmPassword ? '#fca5a5' : undefined, paddingRight: '44px' }}
+                  />
+                  <button type="button" onClick={() => setShowConfirm(v => !v)}
+                    aria-label={showConfirm ? 'Hide password' : 'Show password'} style={eyeBtn}>
+                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {fieldErrors.confirmPassword && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.confirmPassword}</p>}
                 {form.confirmPassword && form.password && form.confirmPassword === form.password && (
                   <p style={{ fontSize: '12px', color: '#5FA670', marginTop: '4px', fontFamily: 'inherit' }}>Passwords match</p>
