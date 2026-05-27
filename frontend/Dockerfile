@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.6
-
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
@@ -13,4 +11,4 @@ FROM nginx:1.27-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 ENV PORT=8080
-CMD ["/bin/sh", "-c", "sed 's/__PORT__/'\"$PORT\"'/' /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD sh -c "sed 's/__PORT__/'\"$PORT\"'/' /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
