@@ -260,7 +260,7 @@ export default function ElderDashboard() {
     setAccepting(`${needId}-${helperId}`);
     try {
       await api.post(`/needs/${needId}/accept/${helperId}`);
-      await loadNeeds();
+      await Promise.all([loadNeeds(), loadConnections()]);
       toast.success('Helper accepted!');
     }
     catch { toast.error('Could not accept helper. Try again.'); }
