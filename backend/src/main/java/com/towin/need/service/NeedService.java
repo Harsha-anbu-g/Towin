@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,7 @@ public class NeedService {
     private final HelperProfileRepository helperProfileRepository;
     private final TrustScoreService trustScoreService;
     private final ConnectionRepository connectionRepository;
-    private final ConnectionEventProducer connectionEventProducer;
+    private final Optional<ConnectionEventProducer> connectionEventProducer;
 
     @Transactional
     public NeedResponse postNeed(UUID elderId, NeedRequest request) {
@@ -165,12 +166,12 @@ public class NeedService {
         connection.setConfirmedByUser(helper.getId(), false);
         Connection savedConn = connectionRepository.save(connection);
 
-        connectionEventProducer.send(ConnectionEvent.builder()
+        connectionEventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
                 .type(ConnectionEvent.Type.REQUEST_ACCEPTED)
                 .connectionId(savedConn.getId())
                 .senderId(elderId)
                 .recipientId(helper.getId())
-                .build());
+                .build()));
 
         return toResponse(needRepository.save(need), null);
     }
