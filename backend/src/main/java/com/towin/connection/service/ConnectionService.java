@@ -54,7 +54,7 @@ public class ConnectionService {
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
-    private final ConnectionEventProducer eventProducer;
+    private final Optional<ConnectionEventProducer> eventProducer;
     private final MessageRepository messageRepository;
 
     @Transactional
@@ -96,12 +96,12 @@ public class ConnectionService {
         connection.setConfirmedByUser(senderId, true);
 
         Connection saved = connectionRepository.save(connection);
-        eventProducer.send(ConnectionEvent.builder()
+        eventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
                 .type(ConnectionEvent.Type.REQUEST_SENT)
                 .connectionId(saved.getId())
                 .senderId(senderId)
                 .recipientId(target.getId())
-                .build());
+                .build()));
         return toResponse(saved, senderId);
     }
 
@@ -133,12 +133,13 @@ public class ConnectionService {
         }
 
         Connection saved = connectionRepository.save(connection);
-        eventProducer.send(ConnectionEvent.builder()
-                .type(eventType)
+        final ConnectionEvent.Type emitType = eventType;
+        eventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
+                .type(emitType)
                 .connectionId(saved.getId())
                 .senderId(responderId)
                 .recipientId(connection.getInitiatedBy().getId())
-                .build());
+                .build()));
         return toResponse(saved, responderId);
     }
 
