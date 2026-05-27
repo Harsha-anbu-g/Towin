@@ -388,7 +388,6 @@ export default function ProfileEdit() {
                         <select {...f('lookingFor')} className="field" style={{ width: '100%', boxSizing: 'border-box' }}>
                           <option value="FRIENDSHIP">Friendship</option>
                           <option value="HELP">Help</option>
-                          <option value="BOTH">Both</option>
                         </select>
                       </FieldRow>
                     </>
