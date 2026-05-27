@@ -2,11 +2,13 @@ package com.towin.common.messaging;
 
 import com.towin.common.config.KafkaConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "app.kafka", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class ConnectionEventConsumer {
 
     @KafkaListener(topics = KafkaConfig.TOPIC_CONNECTION_EVENTS, groupId = "towin-notifications")
