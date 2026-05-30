@@ -84,6 +84,24 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [showPwd, setShowPwd] = useState(false);
 
+  const [guestLoading, setGuestLoading] = useState('');
+
+  const handleGuest = async (role) => {
+    setGuestLoading(role);
+    setError('');
+    try {
+      const { data } = await api.post('/auth/guest', { role });
+      login(data.token, data.role, data.userId);
+      navigate(
+        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard'
+      );
+    } catch {
+      setError('Could not start guest session. Please try again.');
+    } finally {
+      setGuestLoading('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -244,8 +262,43 @@ export default function Login() {
             {/* OR divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-              <span style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>OR</span>
+              <span style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>OR TRY AS GUEST (BETA)</span>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              <button
+                type="button"
+                onClick={() => handleGuest('ELDER')}
+                disabled={!!guestLoading}
+                style={{
+                  flex: 1, height: '44px',
+                  background: '#ffffff', color: '#4FA3CE',
+                  border: '1.5px solid #4FA3CE', borderRadius: '9999px',
+                  fontSize: '14px', fontWeight: 600,
+                  cursor: guestLoading ? 'not-allowed' : 'pointer',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  opacity: guestLoading && guestLoading !== 'ELDER' ? 0.6 : 1,
+                }}
+              >
+                {guestLoading === 'ELDER' ? 'Starting…' : 'Continue as Elder'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleGuest('HELPER')}
+                disabled={!!guestLoading}
+                style={{
+                  flex: 1, height: '44px',
+                  background: '#ffffff', color: '#4FA3CE',
+                  border: '1.5px solid #4FA3CE', borderRadius: '9999px',
+                  fontSize: '14px', fontWeight: 600,
+                  cursor: guestLoading ? 'not-allowed' : 'pointer',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  opacity: guestLoading && guestLoading !== 'HELPER' ? 0.6 : 1,
+                }}
+              >
+                {guestLoading === 'HELPER' ? 'Starting…' : 'Continue as Helper'}
+              </button>
             </div>
 
             {/* Create account link */}
