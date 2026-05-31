@@ -1,7 +1,6 @@
 spring:
   autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+    exclude: ${SPRING_AUTOCONFIGURE_EXCLUDE:org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration}
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/towin}
     username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:postgres}}
@@ -21,6 +20,11 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  data:
+    redis:
+      host: ${REDIS_HOST:${SPRING_REDIS_HOST:localhost}}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
   servlet:
     multipart:
       max-file-size: 5MB
@@ -42,6 +46,8 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   kafka:
     enabled: ${APP_KAFKA_ENABLED:false}
+  redis:
+    enabled: ${APP_REDIS_ENABLED:false}
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
