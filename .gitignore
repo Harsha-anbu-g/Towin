@@ -33,3 +33,7 @@ docs-generated/
 
 # Local dev assets / reference images (not part of the app)
 assets/
+
+# Personal notes (kept local, not published)
+notes/me.txt
+notes/steps.md
