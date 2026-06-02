@@ -16,15 +16,40 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 
 ## 📸 A look inside
 
-| Elder Dashboard | Helper Dashboard |
-|:---:|:---:|
-| ![Elder dashboard showing the trust journey](docs/screenshots/elder-dashboard.png) | ![Helper dashboard with trust score](docs/screenshots/helper-dashboard.png) |
-| **Trust Score** | **Messaging** |
-| ![Trust score breakdown](docs/screenshots/trust.png) | ![Trust-gated chat](docs/screenshots/messages.png) |
-| **Admin Panel** | **Login** |
-| ![Admin moderation panel](docs/screenshots/admin.png) | ![Login with guest mode](docs/screenshots/login.png) |
-| **Daily Streak** | **How It Works** |
-| ![Daily check-in streak](docs/screenshots/Streak.png) | ![Step-by-step onboarding guide](docs/screenshots/how-it-works.png) |
+<table>
+  <tr>
+    <td align="center" width="50%"><b>Elder Dashboard</b></td>
+    <td align="center" width="50%"><b>Helper Dashboard</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/elder-dashboard.png" alt="Elder dashboard" /></td>
+    <td><img src="docs/screenshots/helper-dashboard.png" alt="Helper dashboard" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Trust Score</b></td>
+    <td align="center"><b>Messaging</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/trust.png" alt="Trust score breakdown" /></td>
+    <td><img src="docs/screenshots/messages.png" alt="Trust-gated messaging" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Profile & AWS S3 Photo Upload</b></td>
+    <td align="center"><b>Admin Panel</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/aws.png" alt="Profile page with AWS S3 photo upload" /></td>
+    <td><img src="docs/screenshots/admin.png" alt="Admin moderation panel" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Daily Streak</b></td>
+    <td align="center"><b>How It Works</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/Streak.png" alt="Daily check-in streak" /></td>
+    <td><img src="docs/screenshots/how-it-works.png" alt="How ToWin works guide" /></td>
+  </tr>
+</table>
 
 ---
 
@@ -48,7 +73,7 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 | **Backend** | Java 21 · Spring Boot 3 · Spring Security + JWT · Spring Data JPA / Hibernate · Flyway |
 | **Database** | PostgreSQL |
 | **Real-time** | WebSocket / STOMP (live messaging) |
-| **Cloud storage** | AWS S3 (profile photos & ID document uploads) |
+| **Cloud storage** | AWS S3 (profile photos & ID document uploads) — bucket `towin-uploads`, live in production |
 | **SMS** | Twilio (emergency SOS alerts & phone-OTP verification) |
 | **Messaging / cache** | Apache Kafka (async events) · Redis (caching) — feature-flagged: on locally, off in prod to save cost |
 | **Build & tooling** | Maven · Docker · Docker Compose |
