@@ -38,13 +38,21 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 
 ---
 
-## 🛠 Built with
+## 🛠 Tech stack
 
-**Frontend** — React 19 · Vite · React Router · TanStack Query
-**Backend** — Java 21 · Spring Boot 3 · Spring Security (JWT) · JPA · Flyway
-**Database** — PostgreSQL
-**Optional** — Redis (cache) · Kafka (events) — flag-gated, on locally, off in prod
-**Hosting** — Vercel (frontend) · Railway (backend + Postgres)
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 19 · Vite · React Router 7 · TanStack Query · Axios · Radix UI · Framer Motion · Lucide |
+| **Backend** | Java 21 · Spring Boot 3 · Spring Security + JWT · Spring Data JPA / Hibernate · Flyway |
+| **Database** | PostgreSQL |
+| **Real-time** | WebSocket / STOMP (live messaging) |
+| **Cloud storage** | AWS S3 (profile photos & ID document uploads) |
+| **SMS** | Twilio (emergency SOS alerts & phone-OTP verification) |
+| **Messaging / cache** | Apache Kafka (async events) · Redis (caching) — feature-flagged: on locally, off in prod to save cost |
+| **Build & tooling** | Maven · Docker · Docker Compose |
+| **Hosting / CI** | Vercel (frontend) · Railway (backend + Postgres) · GitHub |
+
+> **Architecture note for reviewers:** AWS S3, Twilio, Redis, and Kafka are all fully integrated in code. Redis and Kafka are gated behind `app.redis.enabled` / `app.kafka.enabled` so the app runs the complete stack locally (via Docker Compose) but uses an in-memory cache and in-process events in production — keeping the live demo free to host without removing the integrations.
 
 ---
 
