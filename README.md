@@ -2,23 +2,38 @@
 
 A social platform connecting elderly people with each other and with younger helpers — built around a **trust journey** that gradually unlocks contact and meeting capabilities as users earn each other's confidence.
 
-🌐 Live: [towin.vercel.app](https://towin.vercel.app)
+> ### 🚀 Try the live demo — no signup needed
+>
+> **[towin.vercel.app](https://towin.vercel.app)** — open the site and scroll to the bottom of the Login page. Hit **Continue as Elder** or **Continue as Helper** to jump straight in as a throwaway beta user. Every feature works the same as a real account.
 
 ---
 
-## What it does
+## Features
 
-- **Progressive trust connections** — pairs of users move through trust levels (message → phone → meet), with both parties confirming before progression.
-- **Need posting & applications** — elders post needs; helpers apply; accepting a helper auto-creates an active connection.
-- **Messaging** with WebSocket delivery and trust-gated phone reveal.
-- **Trust score** — phone/ID verification, completed services, reviews, and reports all feed a 0–100 score with auto-suspend triggers.
-- **Streaks** — daily check-in for elders.
-- **Emergency contacts & SOS** — inactivity checks and Twilio SMS escalation.
-- **Reviews & reports** for safety and accountability.
-- **Beta guest mode** — `Continue as Elder` / `Continue as Helper` buttons on Login/Register that mint a throwaway account so testers can try the app without signing up.
-- **Admin panel** for moderation.
+| | |
+|---|---|
+| ✅ Progressive trust connections | Two users move through trust levels (message → phone → meet) with mutual confirmation at each step |
+| ✅ Need posts & applications | Elders post tasks; helpers apply; accepting a helper auto-creates an active connection |
+| ✅ Real-time messaging | WebSocket-backed chat with trust-gated phone reveal |
+| ✅ Trust score (0–100) | Phone/ID verification, completed services, reviews, reports — auto-suspend on abuse |
+| ✅ Streaks | Daily elder check-in feeds into trust score |
+| ✅ Emergency contacts + SOS | Inactivity detection and Twilio SMS escalation |
+| ✅ Reviews & reports | Post-interaction safety + accountability surface |
+| ✅ Beta guest mode | One-click throwaway accounts for testers (no email/password) |
+| ✅ Admin panel | Moderation queue + manual ID verification |
+| ✅ Discovery | Helper / elder search with role-based filters |
 
 For the full product story see [`docs/ToWin-Business-Pitch.docx`](docs/ToWin-Business-Pitch.docx) and architecture details in [`docs/ToWin-Technical-Documentation.docx`](docs/ToWin-Technical-Documentation.docx).
+
+---
+
+## Screenshots
+
+| Login | Register |
+|---|---|
+| ![Login page with Continue as Guest buttons at bottom](docs/screenshots/login.png) | ![Register page with Continue as Guest buttons at bottom](docs/screenshots/register.png) |
+
+Both pages end with an **OR TRY AS GUEST (BETA)** divider and the two outline pills so beta testers can sidestep signup entirely.
 
 ---
 
