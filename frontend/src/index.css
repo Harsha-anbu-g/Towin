@@ -329,3 +329,25 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(0,102,204,0.12);
 }
+
+/* ─── Auth pages (Login / Register) responsive shell ─── */
+.auth-shell { min-height: 100svh; display: flex; }
+.auth-hero  { flex: 0 0 42%; min-height: 100svh; }
+.auth-form  { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 64px; background: var(--surface-pearl); }
+
+@media (max-width: 900px) {
+  .auth-shell { flex-direction: column; }
+  .auth-hero  { flex: 0 0 auto; min-height: 240px; padding: 32px 24px !important; }
+  .auth-hero h1 { font-size: 28px !important; }
+  .auth-hero p  { font-size: 15px !important; }
+  .auth-form  { padding: 32px 20px; }
+}
+
+@media (max-width: 480px) {
+  .auth-hero  { display: none; }
+  .auth-form  { padding: 24px 16px; }
+  .auth-form .auth-card { padding: 28px 22px !important; border-radius: 14px !important; }
+  .auth-form h2 { font-size: 26px !important; }
+  /* Register page inner band — its inline padding 40px 64px is too wide on phones */
+  .auth-form > div > div { padding-left: 16px !important; padding-right: 16px !important; }
+}

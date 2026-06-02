@@ -132,15 +132,13 @@ function LegalModal({ title, sections, onClose }) {
 
 function HeroPanel() {
   return (
-    <div style={{
-      flex: '0 0 42%',
+    <div className="auth-hero" style={{
       position: 'relative',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
       padding: '52px 44px',
-      minHeight: '100svh',
       background:
         'radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.55) 0%, transparent 55%),' +
         'radial-gradient(ellipse at 80% 85%, #BFD9EA 0%, transparent 60%),' +
@@ -302,18 +300,16 @@ export default function Register() {
   ];
 
   return (
-    <div style={{ minHeight: '100svh', display: 'flex' }}>
+    <div className="auth-shell">
       <HeroPanel />
 
       {/* Right panel */}
-      <div style={{
-        flex: '0 0 58%',
-        background: '#fafafc',
-        display: 'flex',
+      <div className="auth-form" style={{
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
         overflowY: 'auto',
+        padding: 0,
       }}>
         {/* Light hero band */}
         <div style={{

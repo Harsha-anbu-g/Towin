@@ -6,15 +6,13 @@ import api from '../api/axios';
 
 function HeroPanel() {
   return (
-    <div style={{
-      flex: '0 0 42%',
+    <div className="auth-hero" style={{
       position: 'relative',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
       padding: '52px 48px',
-      minHeight: '100svh',
       background:
         'radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.55) 0%, transparent 55%),' +
         'radial-gradient(ellipse at 80% 85%, #BFD9EA 0%, transparent 60%),' +
@@ -127,21 +125,14 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100svh', display: 'flex' }}>
+    <div className="auth-shell">
       <HeroPanel />
 
       {/* Right panel */}
-      <div style={{
-        flex: '0 0 54%',
-        background: '#fafafc',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px 64px',
-      }}>
+      <div className="auth-form">
         <div style={{ width: '100%', maxWidth: '380px' }}>
           {/* Form card */}
-          <div style={{
+          <div className="auth-card" style={{
             background: '#ffffff',
             borderRadius: '18px',
             padding: '40px 36px',
