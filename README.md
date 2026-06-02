@@ -16,13 +16,13 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 
 ## 📸 A look inside
 
-| Login | Trust Score |
+| Elder Dashboard | Helper Dashboard |
 |:---:|:---:|
-| ![Login](docs/screenshots/login.png) | ![Trust Score](docs/screenshots/trust.png) |
-
-| Elder Dashboard | How It Works |
-|:---:|:---:|
-| ![Dashboard](docs/screenshots/elder-dashboard.png) | ![How it works](docs/screenshots/how-it-works.png) |
+| ![Elder dashboard showing the trust journey](docs/screenshots/elder-dashboard.png) | ![Helper dashboard with trust score](docs/screenshots/helper-dashboard.png) |
+| **Trust Score** | **Messaging** |
+| ![Trust score breakdown](docs/screenshots/trust.png) | ![Trust-gated chat](docs/screenshots/messages.png) |
+| **Admin Panel** | **Login** |
+| ![Admin moderation panel](docs/screenshots/admin.png) | ![Login with guest mode](docs/screenshots/login.png) |
 
 ---
 
