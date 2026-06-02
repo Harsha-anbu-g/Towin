@@ -23,6 +23,8 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 | ![Trust score breakdown](docs/screenshots/trust.png) | ![Trust-gated chat](docs/screenshots/messages.png) |
 | **Admin Panel** | **Login** |
 | ![Admin moderation panel](docs/screenshots/admin.png) | ![Login with guest mode](docs/screenshots/login.png) |
+| **Daily Streak** | **How It Works** |
+| ![Daily check-in streak](docs/screenshots/Streak.png) | ![Step-by-step onboarding guide](docs/screenshots/how-it-works.png) |
 
 ---
 
