@@ -160,8 +160,9 @@ Per `TrustScoreService.recalculate(userId)`, scored 0–100:
 ### Roles
 - `ELDER` — posts needs, builds connections, can have emergency contacts, runs streaks.
 - `HELPER` — applies to needs, builds connections, accumulates completed-service trust.
-- `BOTH` — combined elder + helper capabilities.
 - `ADMIN` — moderation surface.
+
+> A `BOTH` value exists in the backend enum for a future "elder who also helps" capability, but it's not yet exposed in the registration UI.
 
 ---
 
