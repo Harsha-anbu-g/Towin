@@ -559,8 +559,32 @@ export default function Register() {
             </form>
           </div>
 
-          {/* Guest mode (beta) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0 14px' }}>
+          {/* Sign in link */}
+          <p style={{
+            textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
+            marginTop: '20px',
+            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+          }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
+              Sign In
+            </Link>
+          </p>
+          <div style={{ textAlign: 'center', marginTop: '14px' }}>
+            <Link to="/how-it-works" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
+              borderRadius: '9999px', padding: '11px 24px',
+              fontSize: '14px', fontWeight: 700,
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
+            }}>
+              How ToWin works
+            </Link>
+          </div>
+
+          {/* Guest mode (beta) — at the very bottom */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0 14px' }}>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
             <span style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>OR TRY AS GUEST (BETA)</span>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
@@ -598,30 +622,6 @@ export default function Register() {
             >
               {guestLoading === 'HELPER' ? 'Starting…' : 'Continue as Helper'}
             </button>
-          </div>
-
-          {/* Sign in link */}
-          <p style={{
-            textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
-            marginTop: '20px',
-            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-          }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
-              Sign In
-            </Link>
-          </p>
-          <div style={{ textAlign: 'center', marginTop: '14px' }}>
-            <Link to="/how-it-works" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
-              borderRadius: '9999px', padding: '11px 24px',
-              fontSize: '14px', fontWeight: 700,
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
-            }}>
-              How ToWin works
-            </Link>
           </div>
         </div>
       </div>
