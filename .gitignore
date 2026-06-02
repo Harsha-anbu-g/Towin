@@ -25,3 +25,11 @@ node_modules/
 dist/
 build/
 *.csv
+
+# Generated / tool output (not source)
+.playwright-mcp/
+graphify-out/
+docs-generated/
+
+# Local dev assets / reference images (not part of the app)
+assets/
