@@ -259,14 +259,46 @@ export default function Login() {
               </button>
             </form>
 
-            {/* OR divider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+            {/* Create account link */}
+            <p style={{
+              textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              marginTop: '20px',
+            }}>
+              Don&apos;t have an account?{' '}
+              <Link to="/register" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
+                Create one
+              </Link>
+            </p>
+            <div style={{ textAlign: 'center', marginTop: '14px' }}>
+              <Link to="/how-it-works" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
+                borderRadius: '9999px', padding: '11px 24px',
+                fontSize: '14px', fontWeight: 700,
+                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
+              }}>
+                How ToWin works
+              </Link>
+            </div>
+            <p style={{
+              textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              marginTop: '12px',
+            }}>
+              <Link to="/feedback" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
+                Share feedback
+              </Link>
+            </p>
+
+            {/* Guest mode (beta) — at the very bottom */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0 14px' }}>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
               <span style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>OR TRY AS GUEST (BETA)</span>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
             </div>
-
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => handleGuest('ELDER')}
@@ -300,38 +332,6 @@ export default function Login() {
                 {guestLoading === 'HELPER' ? 'Starting…' : 'Continue as Helper'}
               </button>
             </div>
-
-            {/* Create account link */}
-            <p style={{
-              textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            }}>
-              Don&apos;t have an account?{' '}
-              <Link to="/register" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
-                Create one
-              </Link>
-            </p>
-            <div style={{ textAlign: 'center', marginTop: '14px' }}>
-              <Link to="/how-it-works" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
-                borderRadius: '9999px', padding: '11px 24px',
-                fontSize: '14px', fontWeight: 700,
-                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
-              }}>
-                How ToWin works
-              </Link>
-            </div>
-            <p style={{
-              textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              marginTop: '12px',
-            }}>
-              <Link to="/feedback" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
-                Share feedback
-              </Link>
-            </p>
           </div>
         </div>
       </div>
