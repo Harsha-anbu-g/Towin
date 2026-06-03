@@ -619,23 +619,6 @@ export default function ProfileEdit() {
                   >
                     Sign Out
                   </button>
-                  <button
-                    onClick={() => alert('To delete your account, please contact support at support@towin.app')}
-                    style={{
-                      flex: 1,
-                      background: 'transparent',
-                      color: MUTED,
-                      border: `1.5px solid ${BORDER}`,
-                      borderRadius: '9999px',
-                      padding: '10px 0',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      fontFamily: SFText,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Delete Account
-                  </button>
                 </div>
               </div>
             </BlurFade>
