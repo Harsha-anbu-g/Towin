@@ -1,8 +1,8 @@
 const TIER_COLORS = {
-  'Community Champion': { bg: '#EAF5FB', color: '#3D8AB0', border: '#BFD9EA' },
-  'Highly Trusted':     { bg: '#EAF5FB', color: '#3D8AB0', border: '#BFD9EA' },
-  'Reliable':           { bg: '#EAF5FB', color: '#3D8AB0', border: '#BFD9EA' },
-  'Getting Started':    { bg: '#EAF5FB', color: '#4FA3CE', border: '#BFD9EA' },
+  'Community Champion': { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'Highly Trusted':     { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'Reliable':           { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'Getting Started':    { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
   'New Member':         { bg: '#f5f5f7', color: '#a0a0a5', border: '#e0e0e0' },
 };
 

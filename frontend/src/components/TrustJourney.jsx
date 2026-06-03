@@ -100,16 +100,16 @@ export default function TrustJourney({
         {/* Emoji + label */}
         <div style={{
           width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
-          background: isTrusted ? '#BFD9EA' : '#EAF5FB',
+          background: isTrusted ? '#e0e0e0' : '#f5f5f7',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isTrusted ? '#3D8AB0' : '#4FA3CE' }} />
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isTrusted ? '#4FA3CE' : '#4FA3CE' }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* H2: human label, not enum */}
           <span style={{
             fontSize: '13px', fontWeight: 600,
-            color: isTrusted ? '#3D8AB0' : '#1d1d1f',
+            color: isTrusted ? '#4FA3CE' : '#1d1d1f',
             fontFamily: SFT, letterSpacing: '-0.1px',
           }}>
             {current.label}
@@ -128,7 +128,7 @@ export default function TrustJourney({
         {/* Progress pill */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '6px',
-          background: '#EAF5FB',
+          background: '#f5f5f7',
           border: '1px solid #c3d9f5',
           borderRadius: '9999px', padding: '3px 10px', flexShrink: 0,
         }}>
@@ -211,7 +211,7 @@ export default function TrustJourney({
               </p>
               <button onClick={onConfirm} disabled={confirming} style={{
                 flexShrink: 0, padding: '7px 16px',
-                background: confirming ? '#BFD9EA' : '#4FA3CE',
+                background: confirming ? '#e0e0e0' : '#4FA3CE',
                 color: '#fff', border: 'none', borderRadius: '9999px',
                 fontSize: '12px', fontWeight: 600, fontFamily: SFT,
                 cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
@@ -224,13 +224,13 @@ export default function TrustJourney({
           {/* Elder: waiting for helper to accept */}
           {isElder && confirmedByMe && (
             <div style={{
-              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#EAF5FB',
+              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f5f5f7',
               display: 'flex', alignItems: 'center', gap: '8px',
             }}>
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
                 <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span style={{ fontSize: '12px', color: '#3D8AB0', fontFamily: SFT, fontWeight: 500 }}>
+              <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
                 Trust request sent — waiting for {otherUserName} to accept
               </span>
             </div>
@@ -254,12 +254,12 @@ export default function TrustJourney({
               padding: '10px 16px', borderTop: '1px solid #f0f0f5', background: '#eff6ff',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
             }}>
-              <p style={{ fontSize: '12px', color: '#3D8AB0', fontFamily: SFT, margin: 0, fontWeight: 500 }}>
+              <p style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, margin: 0, fontWeight: 500 }}>
                 {otherUserName} wants to advance your trust
               </p>
               <button onClick={onConfirm} disabled={confirming} style={{
                 flexShrink: 0, padding: '7px 16px',
-                background: confirming ? '#BFD9EA' : '#4FA3CE',
+                background: confirming ? '#e0e0e0' : '#4FA3CE',
                 color: '#fff', border: 'none', borderRadius: '9999px',
                 fontSize: '12px', fontWeight: 600, fontFamily: SFT,
                 cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
@@ -272,13 +272,13 @@ export default function TrustJourney({
           {/* Helper: already accepted */}
           {!isElder && confirmedByMe && (
             <div style={{
-              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#EAF5FB',
+              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f5f5f7',
               display: 'flex', alignItems: 'center', gap: '8px',
             }}>
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
                 <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span style={{ fontSize: '12px', color: '#3D8AB0', fontFamily: SFT, fontWeight: 500 }}>
+              <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
                 You accepted — trust advancing
               </span>
             </div>
@@ -307,7 +307,7 @@ export default function TrustJourney({
                 <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px' }}>
                   <div style={{
                     width: '15px', height: '15px', borderRadius: '50%', flexShrink: 0, marginTop: '1px',
-                    background: '#EAF5FB', border: '1px solid #BFD9EA',
+                    background: '#f5f5f7', border: '1px solid #BFD9EA',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
                     <svg width="6" height="5" viewBox="0 0 6 5" fill="none">
@@ -333,7 +333,7 @@ export default function TrustJourney({
                   <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px' }}>
                     <div style={{
                       width: '15px', height: '15px', borderRadius: '50%', flexShrink: 0, marginTop: '1px',
-                      background: '#EAF5FB', border: '1px solid #bfdbfe',
+                      background: '#f5f5f7', border: '1px solid #bfdbfe',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#4FA3CE' }} />
@@ -346,14 +346,14 @@ export default function TrustJourney({
               {/* H5: Confirm action with clear label — prevent accidental advance */}
               {confirmedByMe ? (
                 <div style={{
-                  background: '#EAF5FB', border: '1px solid #BFD9EA',
+                  background: '#f5f5f7', border: '1px solid #BFD9EA',
                   borderRadius: '9999px', padding: '6px 12px',
                   display: 'flex', alignItems: 'center', gap: '6px',
                 }}>
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
                     <path d="M1 4L3.5 6.5L9 1" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span style={{ fontSize: '11px', color: '#3D8AB0', fontWeight: 600, fontFamily: SFT }}>
+                  <span style={{ fontSize: '11px', color: '#4FA3CE', fontWeight: 600, fontFamily: SFT }}>
                     Confirmed — waiting for {otherUserName}
                   </span>
                 </div>
@@ -363,7 +363,7 @@ export default function TrustJourney({
                   disabled={confirming}
                   style={{
                     width: '100%', padding: '8px 14px',
-                    background: confirming ? '#BFD9EA' : '#4FA3CE',
+                    background: confirming ? '#e0e0e0' : '#4FA3CE',
                     color: '#fff', border: 'none', borderRadius: '9999px',
                     fontSize: '12px', fontWeight: 600, fontFamily: SFT,
                     cursor: confirming ? 'not-allowed' : 'pointer',
