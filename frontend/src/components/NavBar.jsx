@@ -87,10 +87,11 @@ export default function NavBar() {
         ToWin
       </Link>
 
-      {/* Nav links — H4: consistent navigation, same items every page */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+      {/* Nav links */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
+
+        {/* ── Core navigation ── */}
         <NavLink to="/dashboard" label="Dashboard" />
-        {/* H4: Messages always in nav — users expect it */}
         <div style={{ position: 'relative', display: 'inline-flex' }}>
           <NavLink to="/messages" label="Messages" />
           {unread > 0 && (
@@ -107,9 +108,51 @@ export default function NavBar() {
           )}
         </div>
         <NavLink to="/profile" label="Profile" />
-        <NavLink to="/trust" label="Trust Score" />
-        <NavLink to="/how-it-works" label="How ToWin works" />
-        {isElder && <NavLink to="/emergency-contacts" label="Emergency" />}
+
+        {/* ── Trust Score — stands on its own ── */}
+        <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
+        {(() => {
+          const active = pathname === '/trust';
+          return (
+            <Link to="/trust" style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              fontSize: '15px', fontFamily: SF, fontWeight: 600,
+              color: active ? '#fff' : '#4FA3CE',
+              background: active ? '#4FA3CE' : 'rgba(79,163,206,0.1)',
+              border: `1.5px solid ${active ? '#4FA3CE' : 'rgba(79,163,206,0.35)'}`,
+              borderRadius: '9999px',
+              padding: '6px 16px',
+              textDecoration: 'none',
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}>
+              ⭐ Trust Score
+            </Link>
+          );
+        })()}
+
+        {/* ── Utility / help links (subdued) ── */}
+        <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
+        {[
+          { to: '/how-it-works', label: '📖 Guide' },
+          ...(isElder ? [{ to: '/emergency-contacts', label: '🚨 Emergency' }] : []),
+        ].map(({ to, label }) => {
+          const active = pathname === to;
+          return (
+            <Link key={to} to={to} style={{
+              fontSize: '14px', fontFamily: SF, fontWeight: active ? 600 : 400,
+              color: active ? '#3D8AB0' : '#9a9a9f',
+              textDecoration: 'none',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              background: active ? '#EAF5FB' : 'transparent',
+              transition: 'color 0.12s, background 0.12s',
+              whiteSpace: 'nowrap',
+            }}>
+              {label}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Right actions */}
