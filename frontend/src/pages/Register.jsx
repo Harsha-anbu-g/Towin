@@ -584,45 +584,53 @@ export default function Register() {
             </Link>
           </div>
 
-          {/* Guest mode (beta) — at the very bottom */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0 14px' }}>
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-            <span style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>OR TRY AS GUEST (BETA)</span>
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              type="button"
-              onClick={() => handleGuest('ELDER')}
-              disabled={!!guestLoading}
-              style={{
-                flex: 1, height: '44px',
-                background: '#ffffff', color: '#4FA3CE',
-                border: '1.5px solid #4FA3CE', borderRadius: '9999px',
-                fontSize: '14px', fontWeight: 600,
-                cursor: guestLoading ? 'not-allowed' : 'pointer',
-                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                opacity: guestLoading && guestLoading !== 'ELDER' ? 0.6 : 1,
-              }}
-            >
-              {guestLoading === 'ELDER' ? 'Starting…' : 'Continue as Elder (Margaret)'}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleGuest('HELPER')}
-              disabled={!!guestLoading}
-              style={{
-                flex: 1, height: '44px',
-                background: '#ffffff', color: '#4FA3CE',
-                border: '1.5px solid #4FA3CE', borderRadius: '9999px',
-                fontSize: '14px', fontWeight: 600,
-                cursor: guestLoading ? 'not-allowed' : 'pointer',
-                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                opacity: guestLoading && guestLoading !== 'HELPER' ? 0.6 : 1,
-              }}
-            >
-              {guestLoading === 'HELPER' ? 'Starting…' : 'Continue as Helper (James)'}
-            </button>
+          {/* Demo accounts */}
+          <div style={{ marginTop: '24px' }}>
+            <p style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif', textAlign: 'center', marginBottom: '12px', letterSpacing: '0.3px' }}>
+              Or explore with a demo account
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {[
+                { role: 'ELDER', name: 'Margaret', desc: 'Elder · Trust Score 14', initial: 'M' },
+                { role: 'HELPER', name: 'James',    desc: 'Helper · Trust Score 32', initial: 'J' },
+              ].map(({ role, name, desc, initial }) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => handleGuest(role)}
+                  disabled={!!guestLoading}
+                  style={{
+                    flex: 1,
+                    background: '#f5f5f7',
+                    border: '1px solid #e8e8e8',
+                    borderRadius: '14px',
+                    padding: '14px 12px',
+                    cursor: guestLoading ? 'not-allowed' : 'pointer',
+                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
+                    textAlign: 'left',
+                    transition: 'background 0.15s',
+                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  }}
+                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.background = '#ebebed'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: '#e0e0e0', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '14px', fontWeight: 700, color: '#5a6470',
+                    }}>
+                      {guestLoading === role ? '…' : initial}
+                    </div>
+                    <div>
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>{name}</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a', marginTop: '1px' }}>{desc}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
