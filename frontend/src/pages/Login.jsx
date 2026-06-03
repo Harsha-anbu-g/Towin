@@ -309,7 +309,7 @@ export default function Login() {
                   opacity: guestLoading && guestLoading !== 'ELDER' ? 0.6 : 1,
                 }}
               >
-                {guestLoading === 'ELDER' ? 'Starting…' : 'Continue as Elder'}
+                {guestLoading === 'ELDER' ? 'Starting…' : 'Continue as Elder (Margaret)'}
               </button>
               <button
                 type="button"
@@ -325,7 +325,7 @@ export default function Login() {
                   opacity: guestLoading && guestLoading !== 'HELPER' ? 0.6 : 1,
                 }}
               >
-                {guestLoading === 'HELPER' ? 'Starting…' : 'Continue as Helper'}
+                {guestLoading === 'HELPER' ? 'Starting…' : 'Continue as Helper (James)'}
               </button>
             </div>
           </div>
