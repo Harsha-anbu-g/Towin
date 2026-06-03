@@ -97,7 +97,7 @@ export default function NavBar() {
           {unread > 0 && (
             <span style={{
               position: 'absolute', top: '6px', right: '6px',
-              background: '#cc0000', color: '#fff',
+              background: '#9b3535', color: '#fff',
               fontSize: '10px', fontWeight: 700, fontFamily: SF,
               borderRadius: '9999px', padding: '1px 5px',
               minWidth: '16px', textAlign: 'center',
@@ -172,7 +172,7 @@ export default function NavBar() {
               border: 'none',
               cursor: sending ? 'not-allowed' : 'pointer',
               transition: 'background 0.15s, transform 0.1s',
-              background: sosSent ? '#3D8AB0' : sending ? '#660000' : '#cc0000',
+              background: sosSent ? '#3D8AB0' : sending ? '#7a2a2a' : '#9b3535',
               color: '#fff',
               opacity: sending ? 0.7 : 1,
               transform: sending ? 'scale(0.97)' : 'scale(1)',

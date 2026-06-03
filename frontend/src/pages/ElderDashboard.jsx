@@ -319,6 +319,7 @@ export default function ElderDashboard() {
     ['connections', 'Connections', connBadge],
     ['discover', 'Find Helpers', 0],
     ['needs', 'My Requests', requestsBadge],
+    ['post', 'Post Request', 0],
   ];
 
   return (
@@ -361,34 +362,6 @@ export default function ElderDashboard() {
               );
             })}
 
-            {/* Post Request — primary CTA, visually distinct */}
-            <button
-              onClick={() => setTab('post')}
-              style={{
-                marginLeft: 'auto',
-                height: '44px', padding: '0 22px',
-                fontSize: '15px', fontWeight: 700,
-                letterSpacing: '-0.1px',
-                color: tab === 'post' ? '#ffffff' : '#1d5c2e',
-                background: tab === 'post'
-                  ? '#1d5c2e'
-                  : 'linear-gradient(135deg, #e8f5ec 0%, #d4eeda 100%)',
-                border: '1.5px solid #1d5c2e',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                fontFamily: 'inherit',
-                display: 'flex', alignItems: 'center', gap: '7px',
-                flexShrink: 0,
-                transition: 'background 0.15s, color 0.15s',
-                boxShadow: tab === 'post' ? '0 2px 10px rgba(29,92,46,0.25)' : 'none',
-              }}
-              onMouseEnter={e => { if (tab !== 'post') e.currentTarget.style.background = '#c6e8cc'; }}
-              onMouseLeave={e => { if (tab !== 'post') e.currentTarget.style.background = 'linear-gradient(135deg, #e8f5ec 0%, #d4eeda 100%)'; }}
-            >
-              <span style={{ fontSize: '18px', lineHeight: 1, fontWeight: 400 }}>+</span>
-              Post Request
-            </button>
           </div>
         </div>
       </div>
