@@ -240,17 +240,22 @@ export default function Register() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [guestLoading, setGuestLoading] = useState('');
 
+  const DEMO = {
+    ELDER:  { email: 'elder@gmail.com',  password: '12345678' },
+    HELPER: { email: 'helper@gmail.com', password: '123456789' },
+  };
+
   const handleGuest = async (role) => {
     setGuestLoading(role);
     setError('');
     try {
-      const { data } = await api.post('/auth/guest', { role });
+      const { data } = await api.post('/auth/login', DEMO[role]);
       login(data.token, data.role, data.userId);
       navigate(
         (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard'
       );
     } catch {
-      setError('Could not start guest session. Please try again.');
+      setError('Could not start demo session. Please try again.');
     } finally {
       setGuestLoading('');
     }
