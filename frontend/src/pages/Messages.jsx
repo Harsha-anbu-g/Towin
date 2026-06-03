@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
-
-const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
 const TRUST_LABELS = {
   DISCOVERED: 'Just Connected',
@@ -18,11 +14,11 @@ const TRUST_LABELS = {
 };
 
 const TRUST_BANNERS = {
-  PHONE_CALL: { text: 'Ready for a phone call? Share your number when comfortable.', bg: '#eff6ff', border: '#bfdbfe', color: '#3D8AB0' },
-  VIDEO_CALL:  { text: 'Time for a video call? Exchange details when ready.',         bg: '#EAF5FB', border: '#BFD9EA', color: '#3D8AB0' },
-  VERIFIED:    { text: 'Both of you are verified. Trust is growing.',                  bg: '#faf5ff', border: '#e9d5ff', color: '#7c3aed' },
-  FIRST_MEET:  { text: 'Planning your first meet? Choose a public place.',             bg: '#fff7ed', border: '#fed7aa', color: '#c2410c' },
-  TRUSTED:     { text: 'Fully trusted connection. Enjoy your friendship.',             bg: '#EAF5FB', border: '#BFD9EA', color: '#3D8AB0' },
+  PHONE_CALL: { text: 'Ready for a phone call? Share your number when comfortable.' },
+  VIDEO_CALL:  { text: 'Time for a video call? Exchange details when ready.' },
+  VERIFIED:    { text: 'Both of you are verified. Trust is growing.' },
+  FIRST_MEET:  { text: 'Planning your first meet? Choose a public place.' },
+  TRUSTED:     { text: 'Fully trusted connection. Enjoy your friendship.' },
 };
 
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
@@ -43,21 +39,14 @@ export default function Messages() {
   const [loadError, setLoadError] = useState('');
   const [otherName, setOtherName] = useState('');
   const [otherUserId, setOtherUserId] = useState(null);
+  const [otherPhotoUrl, setOtherPhotoUrl] = useState(null);
+  const [otherTrustScore, setOtherTrustScore] = useState(null);
   const [trustLevel, setTrustLevel] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [reportForm, setReportForm] = useState({ reason: 'Inappropriate Behavior', description: '' });
   const [reporting, setReporting] = useState(false);
   const [reportMsg, setReportMsg] = useState('');
   const bottomRef = useRef(null);
-
-  const AVATAR_PHOTOS = [
-    'photo-1544005313-94ddf0286df2',
-    'photo-1507679799987-c73779587ccf',
-    'photo-1559839734-2b71ea197ec2',
-    'photo-1438761681033-6461ffad8d80',
-    'photo-1534528741775-53994a69daeb',
-  ];
-  const avatarId = AVATAR_PHOTOS[connectionId?.charCodeAt(0) % AVATAR_PHOTOS.length] ?? AVATAR_PHOTOS[0];
 
   useEffect(() => {
     api.get('/connections').then(r => {
@@ -66,6 +55,12 @@ export default function Messages() {
         setOtherName(conn.otherUserName || 'User');
         setOtherUserId(conn.otherUserId);
         setTrustLevel(conn.currentTrustLevel);
+        if (conn.otherUserId) {
+          api.get(`/profile/${conn.otherUserId}`).then(p => {
+            setOtherPhotoUrl(p.data.photoUrl || null);
+            setOtherTrustScore(p.data.trustScore ?? null);
+          }).catch(() => {});
+        }
       }
     }).catch(() => {});
     loadMessages();
@@ -162,52 +157,34 @@ export default function Messages() {
           Back
         </button>
 
-        <div style={{
-          width: '44px',
-          height: '44px',
-          borderRadius: '50%',
-          overflow: 'hidden',
-          flexShrink: 0,
-          border: '2px solid #e0e0e0',
-        }}>
-          <LazyLoadImage
-            src={unsplash(avatarId, 88, 88)}
-            alt={otherName}
-            effect="blur"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-          />
-        </div>
+        {/* Avatar — real photo or initials */}
+        {otherPhotoUrl ? (
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid #e0e0e0' }}>
+            <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
+        ) : (
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '15px', fontWeight: 700, color: '#5a6470', fontFamily: SF }}>
+            {initials(otherName)}
+          </div>
+        )}
 
         <div style={{ flex: 1 }}>
-          <p style={{
-            fontWeight: 600,
-            fontSize: '17px',
-            color: '#1d1d1f',
-            fontFamily: SF,
-            letterSpacing: '-0.2px',
-          }}>{otherName || 'Conversation'}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4FA3CE' }} />
-            <p style={{ fontSize: '12px', color: '#7a7a7a' }}>
-              {trustLevel ? (TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')) : 'Online'}
-            </p>
+          <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.2px', margin: 0 }}>
+            {otherName || 'Conversation'}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
+            <span style={{ fontSize: '12px', color: '#7a7a7a' }}>
+              {trustLevel ? (TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')) : ''}
+            </span>
+            {otherTrustScore != null && (
+              <span style={{ fontSize: '12px', color: '#7a7a7a' }}>· Trust {otherTrustScore}</span>
+            )}
           </div>
         </div>
 
         <button
           onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
-          style={{
-            fontSize: '13px',
-            color: '#cc3333',
-            background: 'rgba(204,51,51,0.08)',
-            border: '1px solid rgba(204,51,51,0.2)',
-            borderRadius: '9999px',
-            padding: '6px 14px',
-            cursor: 'pointer',
-            fontFamily: SFText,
-            fontWeight: 600,
-          }}
+          style={{ fontSize: '13px', color: '#7a7a7a', background: 'transparent', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
         >
           Report
         </button>
@@ -215,12 +192,8 @@ export default function Messages() {
 
       {/* Trust level banner */}
       {banner && (
-        <div style={{
-          background: banner.bg,
-          borderBottom: `1px solid ${banner.border}`,
-          padding: '10px 20px',
-        }}>
-          <p style={{ fontSize: '13px', color: banner.color, fontWeight: 500, fontFamily: SFText }}>
+        <div style={{ background: '#f5f5f7', borderBottom: '1px solid #e0e0e0', padding: '10px 20px' }}>
+          <p style={{ fontSize: '13px', color: '#7a7a7a', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
             {banner.text}
           </p>
         </div>
@@ -290,22 +263,15 @@ export default function Messages() {
       }}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', marginTop: '64px' }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              margin: '0 auto 20px',
-              border: '3px solid #e0e0e0',
-            }}>
-              <LazyLoadImage
-                src={unsplash(avatarId, 160, 160)}
-                alt={otherName}
-                effect="blur"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-              />
-            </div>
+            {otherPhotoUrl ? (
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 20px', border: '1px solid #e0e0e0' }}>
+                <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              </div>
+            ) : (
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', fontWeight: 700, color: '#5a6470', fontFamily: SF }}>
+                {initials(otherName)}
+              </div>
+            )}
             <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '6px', fontFamily: SF }}>
               {otherName}
             </p>
@@ -342,21 +308,15 @@ export default function Messages() {
                 marginBottom: '2px',
               }}>
                 {!isMe && (
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    flexShrink: 0,
-                  }}>
-                    <LazyLoadImage
-                      src={unsplash(avatarId, 56, 56)}
-                      alt=""
-                      effect="blur"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                      wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-                    />
-                  </div>
+                  otherPhotoUrl ? (
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+                      <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+                  ) : (
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '10px', fontWeight: 700, color: '#5a6470', fontFamily: SF }}>
+                      {initials(otherName)}
+                    </div>
+                  )
                 )}
                 <div style={{
                   maxWidth: '68%',
