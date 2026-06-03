@@ -18,7 +18,7 @@ function TabBadge({ count }) {
       marginLeft: '8px', verticalAlign: 'middle',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-      background: '#cc0000', color: '#fff', fontSize: '13px', fontWeight: 700,
+      background: '#5a6470', color: '#fff', fontSize: '13px', fontWeight: 700,
       borderRadius: '9999px', lineHeight: 1,
     }}>{count}</span>
   );
@@ -58,18 +58,14 @@ const COMMUNITY_PHOTOS = [
 ];
 
 const statusStyle = (status) => {
-  const map = {
-    OPEN:      { bg: '#dbeafe', color: '#3D8AB0' },
-    ASSIGNED:  { bg: '#fef3c7', color: '#92400e' },
-    COMPLETED: { bg: '#EAF5FB', color: '#3D8AB0' },
-    CANCELLED: { bg: '#f3f4f6', color: '#6b7280' },
-    ACTIVE:    { bg: '#EAF5FB', color: '#3D8AB0' },
-    PENDING:   { bg: '#fef3c7', color: '#92400e' },
-    DECLINED:  { bg: '#fee2e2', color: '#991b1b' },
+  const active = ['OPEN', 'ACTIVE', 'ASSIGNED', 'PENDING'].includes(status);
+  return {
+    background: active ? '#f5f5f7' : '#f3f4f6',
+    color: active ? '#4FA3CE' : '#7a7a7a',
+    fontSize: '11px', fontWeight: 600,
+    padding: '3px 10px', borderRadius: '9999px',
+    letterSpacing: '0.3px', textTransform: 'uppercase',
   };
-  const s = map[status] ?? { bg: '#f3f4f6', color: '#6b7280' };
-  return { background: s.bg, color: s.color, fontSize: '11px', fontWeight: 600,
-    padding: '3px 10px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' };
 };
 
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
@@ -398,11 +394,11 @@ export default function ElderDashboard() {
                 {profile?.trustScore != null && (
                   <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: '8px',
-                    background: '#EAF5FB', border: '1px solid #BFD9EA',
+                    background: '#f5f5f7', border: '1px solid #BFD9EA',
                     borderRadius: '9999px', padding: '6px 16px',
                   }}>
-                    <span style={{ fontSize: '13px', color: '#3D8AB0', fontWeight: 500 }}>Trust Score</span>
-                    <span style={{ fontSize: '15px', color: '#3D8AB0', fontWeight: 700 }}>{profile.trustScore}</span>
+                    <span style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 500 }}>Trust Score</span>
+                    <span style={{ fontSize: '15px', color: '#4FA3CE', fontWeight: 700 }}>{profile.trustScore}</span>
                   </div>
                 )}
               </div>
@@ -420,7 +416,7 @@ export default function ElderDashboard() {
 
               {!loading && connections.filter(c => c.status === 'ACTIVE').length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '56px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EAF5FB', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                   </div>
                   <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>No active connections yet</p>
@@ -442,9 +438,9 @@ export default function ElderDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '4px' }}>
                     <div style={{
                       width: '44px', height: '44px', borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
+                      background: '#e8e8ed',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
+                      fontSize: '15px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                     }}>
                       {initials(conn.otherUserName)}
                     </div>
@@ -505,7 +501,7 @@ export default function ElderDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{
                             width: '38px', height: '38px', borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #4FA3CE, #4FA3CE)',
+                            background: '#e8e8ed',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '13px', fontWeight: 700, color: '#fff',
                           }}>
@@ -550,7 +546,7 @@ export default function ElderDashboard() {
               )}
               {!loading && connections.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EAF5FB', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No helpers yet</p>
@@ -567,9 +563,9 @@ export default function ElderDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
                       <div style={{
                         width: '48px', height: '48px', borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
+                        background: '#e8e8ed',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
+                        fontSize: '16px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                       }}>
                         {initials(conn.otherUserName)}
                       </div>
@@ -593,8 +589,8 @@ export default function ElderDashboard() {
                         </button>
                       )}
                       {reviewedConns.has(conn.id) && (
-                        <span style={{ fontSize: '12px', color: '#3D8AB0', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#3D8AB0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <span style={{ fontSize: '12px', color: '#4FA3CE', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#4FA3CE" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
                           Reviewed
                         </span>
                       )}
@@ -706,9 +702,9 @@ export default function ElderDashboard() {
                       <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
                         <div style={{
                           width: '52px', height: '52px', borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
+                          background: '#e8e8ed',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '17px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
+                          fontSize: '17px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                         }}>
                           {helper.name ? helper.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
                         </div>
@@ -725,7 +721,7 @@ export default function ElderDashboard() {
                           {helper.skillsOffered?.length > 0 && (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
                               {helper.skillsOffered.map(s => (
-                                <span key={s} style={{ fontSize: '12px', background: '#EAF5FB', color: '#3D8AB0', padding: '2px 8px', borderRadius: '9999px' }}>{s}</span>
+                                <span key={s} style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '2px 8px', borderRadius: '9999px' }}>{s}</span>
                               ))}
                             </div>
                           )}
@@ -733,12 +729,12 @@ export default function ElderDashboard() {
                       </div>
                       <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: '12px', background: '#EAF5FB', color: '#3D8AB0', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
+                          <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
                         ) : sent ? (
                           <span style={{
                             fontSize: '12px', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600,
-                            background: sent.includes('!') ? '#EAF5FB' : '#fee2e2',
-                            color: sent.includes('!') ? '#3D8AB0' : '#991b1b',
+                            background: sent.includes('!') ? '#f5f5f7' : '#f3f4f6',
+                            color: sent.includes('!') ? '#4FA3CE' : '#5a6470',
                           }}>{sent}</span>
                         ) : (
                           <button onClick={() => connectToHelper(helper.userId)} disabled={connectingTo === helper.userId}
@@ -779,7 +775,7 @@ export default function ElderDashboard() {
               )}
               {!loading && myNeeds.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EAF5FB', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests yet</p>
@@ -802,7 +798,7 @@ export default function ElderDashboard() {
                       <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#7a7a7a', padding: '3px 10px', borderRadius: '9999px' }}>{need.category}</span>
                         {need.urgency === 'URGENT' && (
-                          <span style={{ fontSize: '12px', background: '#fee2e2', color: '#991b1b', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
+                          <span style={{ fontSize: '12px', background: '#f3f4f6', color: '#5a6470', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
                         )}
                       </div>
                     </div>
@@ -834,14 +830,14 @@ export default function ElderDashboard() {
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>
                       {cancelConfirm === need.id ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid #fee2e2', paddingTop: '10px', marginTop: '0', background: '#fef2f2', borderRadius: '10px', padding: '10px 12px' }}>
-                          <span style={{ fontSize: '13px', color: '#991b1b', flex: 1 }}>Cancel this request?</span>
-                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: '#cc0000', border: 'none', borderRadius: '9999px', padding: '5px 14px', cursor: 'pointer' }}>Yes, cancel</button>
+                          <span style={{ fontSize: '13px', color: '#5a6470', flex: 1 }}>Cancel this request?</span>
+                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: '#5a6470', border: 'none', borderRadius: '9999px', padding: '5px 14px', cursor: 'pointer' }}>Yes, cancel</button>
                           <button onClick={() => setCancelConfirm(null)} style={{ fontSize: '12px', color: '#7a7a7a', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '5px 12px', cursor: 'pointer' }}>Keep</button>
                         </div>
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <p style={{ fontSize: '13px', color: '#a0a0a5', margin: 0 }}>No applicants yet</p>
-                          <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
+                          <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: '12px', color: '#5a6470', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
                             Cancel
                           </button>
                         </div>
@@ -876,7 +872,7 @@ export default function ElderDashboard() {
                           <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
                             placeholder="Add a comment (optional)" rows={2}
                             style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical' }} />
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff3b30', cursor: 'pointer' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#7a7a7a', cursor: 'pointer' }}>
                             <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
                             Flag a safety concern
                           </label>
@@ -895,7 +891,7 @@ export default function ElderDashboard() {
                     </div>
                   )}
                   {need.status === 'COMPLETED' && reviewedNeeds.has(need.id) && (
-                    <p style={{ fontSize: '13px', color: '#3D8AB0', fontWeight: 500, borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>Review submitted</p>
+                    <p style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 500, borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>Review submitted</p>
                   )}
                 </div>
               ))}
@@ -957,7 +953,7 @@ export default function ElderDashboard() {
                     </button>
                   )}
                 </div>
-                {postMsg && <p style={{ fontSize: '14px', color: postMsg.includes('!') ? '#3D8AB0' : '#991b1b', fontWeight: 500 }}>{postMsg}</p>}
+                {postMsg && <p style={{ fontSize: '14px', color: postMsg.includes('!') ? '#4FA3CE' : '#5a6470', fontWeight: 500 }}>{postMsg}</p>}
                 <button type="submit" disabled={posting} className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '17px' }}>
                   {posting ? 'Posting...' : 'Post Request'}
                 </button>

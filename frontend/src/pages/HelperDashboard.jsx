@@ -18,7 +18,7 @@ function TabBadge({ count }) {
       marginLeft: '8px', verticalAlign: 'middle',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-      background: '#cc0000', color: '#fff', fontSize: '13px', fontWeight: 700,
+      background: '#5a6470', color: '#fff', fontSize: '13px', fontWeight: 700,
       borderRadius: '9999px', lineHeight: 1,
     }}>{count}</span>
   );
@@ -59,9 +59,9 @@ const COMMUNITY_PHOTOS = [
 
 const statusStyle = (status) => {
   const map = {
-    ACTIVE:  { bg: '#EAF5FB', color: '#3D8AB0' },
-    PENDING: { bg: '#fef3c7', color: '#92400e' },
-    DECLINED: { bg: '#fee2e2', color: '#991b1b' },
+    ACTIVE:  { bg: '#f5f5f7', color: '#4FA3CE' },
+    PENDING: { bg: '#f3f4f6', color: '#5a6470' },
+    DECLINED: { bg: '#f3f4f6', color: '#5a6470' },
   };
   const s = map[status] ?? { bg: '#f3f4f6', color: '#6b7280' };
   return { background: s.bg, color: s.color, fontSize: '11px', fontWeight: 600,
@@ -354,7 +354,7 @@ export default function HelperDashboard() {
 
               {!loading && connections.filter(c => c.status === 'ACTIVE').length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '56px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EAF5FB', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                   </div>
                   <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>No active connections yet</p>
@@ -378,7 +378,7 @@ export default function HelperDashboard() {
                       width: '44px', height: '44px', borderRadius: '50%',
                       background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
+                      fontSize: '15px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                     }}>
                       {initials(conn.otherUserName)}
                     </div>
@@ -423,7 +423,7 @@ export default function HelperDashboard() {
                             width: '38px', height: '38px', borderRadius: '50%',
                             background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '13px', fontWeight: 700, color: '#3D8AB0',
+                            fontSize: '13px', fontWeight: 700, color: '#4FA3CE',
                           }}>
                             {initials(conn.otherUserName)}
                           </div>
@@ -463,7 +463,7 @@ export default function HelperDashboard() {
               )}
               {!loading && connections.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EAF5FB', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
@@ -485,7 +485,7 @@ export default function HelperDashboard() {
                         width: '48px', height: '48px', borderRadius: '50%',
                         background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
+                        fontSize: '16px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                       }}>
                         {initials(conn.otherUserName)}
                       </div>
@@ -509,7 +509,7 @@ export default function HelperDashboard() {
                             </button>
                           )}
                           {reviewedConns.has(conn.id) && (
-                            <span style={{ fontSize: '12px', color: '#3D8AB0', fontWeight: 500 }}>Reviewed</span>
+                            <span style={{ fontSize: '12px', color: '#4FA3CE', fontWeight: 500 }}>Reviewed</span>
                           )}
                         </>
                       )}
@@ -554,7 +554,7 @@ export default function HelperDashboard() {
                       <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
                         placeholder="Any comments? (optional)" rows={2}
                         style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: '14px', outline: 'none', fontFamily: 'inherit' }} />
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff3b30', cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#7a7a7a', cursor: 'pointer' }}>
                         <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
                         Report a safety concern
                       </label>
@@ -588,7 +588,7 @@ export default function HelperDashboard() {
               <RadiusBar />
               {needs.length === 0 && locationStatus !== 'asking' && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f5f5f7', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
@@ -614,7 +614,7 @@ export default function HelperDashboard() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
                         <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#7a7a7a', padding: '3px 10px', borderRadius: '9999px' }}>{need.category}</span>
                         {need.urgency === 'URGENT' && (
-                          <span style={{ fontSize: '12px', background: '#fee2e2', color: '#991b1b', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
+                          <span style={{ fontSize: '12px', background: '#f3f4f6', color: '#5a6470', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
                         )}
                         {need.distanceKm != null && (
                           <span style={{ fontSize: '12px', color: '#a0a0a5', padding: '3px 0' }}>{need.distanceKm} km away</span>
@@ -627,20 +627,20 @@ export default function HelperDashboard() {
                         className={applyMsg[need.id]?.includes('!') ? '' : 'btn-primary'}
                         style={applyMsg[need.id]?.includes('!') ? {
                           fontSize: '13px', padding: '8px 18px', borderRadius: '9999px', border: 'none',
-                          background: '#EAF5FB', color: '#3D8AB0', cursor: 'default', fontWeight: 600
+                          background: '#f5f5f7', color: '#4FA3CE', cursor: 'default', fontWeight: 600
                         } : { padding: '8px 18px', fontSize: '13px' }}>
                         {applying === need.id ? '...' : applyMsg[need.id] || 'Apply'}
                       </button>
                       {applyMsg[need.id]?.includes('!') && (
                         <button onClick={() => withdrawApplication(need.id)}
-                          style={{ fontSize: '11px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
+                          style={{ fontSize: '11px', color: '#5a6470', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
                           Withdraw
                         </button>
                       )}
                     </div>
                   </div>
                   {applyMsg[need.id] && !applyMsg[need.id].includes('!') && (
-                    <p style={{ fontSize: '12px', color: '#991b1b', marginTop: '8px' }}>{applyMsg[need.id]}</p>
+                    <p style={{ fontSize: '12px', color: '#5a6470', marginTop: '8px' }}>{applyMsg[need.id]}</p>
                   )}
                 </div>
               ))}
@@ -653,7 +653,7 @@ export default function HelperDashboard() {
               <RadiusBar />
               {elders.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f5f5f7', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
                     </svg>
@@ -677,7 +677,7 @@ export default function HelperDashboard() {
                           width: '52px', height: '52px', borderRadius: '50%',
                           background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '17px', fontWeight: 700, color: '#3D8AB0', flexShrink: 0,
+                          fontSize: '17px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                         }}>
                           {elder.name ? elder.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
                         </div>
@@ -694,7 +694,7 @@ export default function HelperDashboard() {
                           {elder.interests?.length > 0 && (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
                               {elder.interests.map(interest => (
-                                <span key={interest} style={{ fontSize: '12px', background: '#dbeafe', color: '#3D8AB0', padding: '2px 8px', borderRadius: '9999px' }}>{interest}</span>
+                                <span key={interest} style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '2px 8px', borderRadius: '9999px' }}>{interest}</span>
                               ))}
                             </div>
                           )}
@@ -702,12 +702,12 @@ export default function HelperDashboard() {
                       </div>
                       <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: '12px', background: '#EAF5FB', color: '#3D8AB0', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
+                          <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
                         ) : sent ? (
                           <span style={{
                             fontSize: '12px', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600,
-                            background: sent.includes('!') ? '#EAF5FB' : '#fee2e2',
-                            color: sent.includes('!') ? '#3D8AB0' : '#991b1b',
+                            background: sent.includes('!') ? '#f5f5f7' : '#f3f4f6',
+                            color: sent.includes('!') ? '#4FA3CE' : '#5a6470',
                           }}>{sent}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}

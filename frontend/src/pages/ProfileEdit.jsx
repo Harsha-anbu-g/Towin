@@ -14,7 +14,7 @@ const SKY = '#4FA3CE';
 const SKY_TINT = 'rgba(79,163,206,0.10)';
 const SKY_BORDER = 'rgba(79,163,206,0.22)';
 const LEAF = '#4FA3CE';
-const LEAF_DARK = '#3D8AB0';
+const LEAF_DARK = '#4FA3CE';
 const LEAF_TINT = 'rgba(79,163,206,0.10)';
 const LEAF_BORDER = 'rgba(79,163,206,0.22)';
 const MUTED = '#a0a0a5';
@@ -205,7 +205,7 @@ export default function ProfileEdit() {
   }
 
   const verBadge = (ok, pts) => ok
-    ? <span style={{ fontSize: '11px', background: 'rgba(79,163,206,0.10)', color: '#3D8AB0', border: '1px solid rgba(79,163,206,0.20)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
+    ? <span style={{ fontSize: '11px', background: 'rgba(79,163,206,0.10)', color: '#4FA3CE', border: '1px solid rgba(79,163,206,0.20)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
     : null;
 
   const card = {
@@ -290,7 +290,7 @@ export default function ProfileEdit() {
                 {uploadingPhoto ? 'Uploading…' : 'Upload'}
               </button>
             )}
-            {photoMsg && <p style={{ fontSize: '13px', color: '#3D8AB0', marginTop: '6px' }}>{photoMsg}</p>}
+            {photoMsg && <p style={{ fontSize: '13px', color: '#4FA3CE', marginTop: '6px' }}>{photoMsg}</p>}
           </div>
 
           <h1 style={{
@@ -433,7 +433,7 @@ export default function ProfileEdit() {
                   </FieldRow>
 
                   {msg && (
-                    <p style={{ fontSize: '14px', color: msg.includes('saved') ? '#3D8AB0' : '#cc0000', fontWeight: 500, marginTop: '8px' }}>
+                    <p style={{ fontSize: '14px', color: msg.includes('saved') ? '#4FA3CE' : '#5a6470', fontWeight: 500, marginTop: '8px' }}>
                       {msg}
                     </p>
                   )}
@@ -552,7 +552,7 @@ export default function ProfileEdit() {
                       </div>
                     )
                   )}
-                  {otpMsg && <p style={{ fontSize: '13px', color: otpMsg.includes('verified') || otpMsg.includes('updated') ? '#3D8AB0' : '#cc0000', fontWeight: 500 }}>{otpMsg}</p>}
+                  {otpMsg && <p style={{ fontSize: '13px', color: otpMsg.includes('verified') || otpMsg.includes('updated') ? '#4FA3CE' : '#5a6470', fontWeight: 500 }}>{otpMsg}</p>}
                 </div>
 
                 {/* ID */}

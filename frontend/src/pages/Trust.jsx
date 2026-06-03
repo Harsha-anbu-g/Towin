@@ -7,11 +7,11 @@ import api from '../api/axios';
 const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SKY = '#4FA3CE';
-const BLUE = '#3D8AB0';
-const BG   = '#EAF5FB';
+const BLUE = '#4FA3CE';
+const BG   = '#f5f5f7';
 
 const TIER_COLORS = {
-  'Community Champion': { bg: '#FFF7E6', color: '#92400e', border: '#FDE68A' },
+  'Community Champion': { bg: '#FFF7E6', color: '#5a6470', border: '#FDE68A' },
   'Highly Trusted':     { bg: BG, color: BLUE, border: '#A8D4EC' },
   'Reliable':           { bg: BG, color: BLUE, border: '#A8D4EC' },
   'Getting Started':    { bg: '#F3F4F6', color: '#5a6470', border: '#D1D5DB' },
@@ -121,7 +121,7 @@ function BasicCard({ basic, onGoToProfile }) {
             display: 'flex', alignItems: 'flex-start', gap: '10px',
             padding: '12px 14px', borderRadius: '12px',
             background: f.completed ? BG : '#fafafa',
-            border: `1px solid ${f.completed ? '#BFD9EA' : '#f0f0f0'}`,
+            border: `1px solid ${f.completed ? '#e0e0e0' : '#f0f0f0'}`,
           }}>
             <span style={{ fontSize: '15px', marginTop: '1px', color: f.completed ? BLUE : '#c0c0c8' }}>
               {f.completed ? '✓' : '○'}
