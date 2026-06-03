@@ -68,7 +68,23 @@ export default function Streaks() {
       .catch(() => {});
   }, []);
 
-  const alreadyDone = streak?.alreadyCheckedIn;
+  const [checkingIn, setCheckingIn] = useState(false);
+  const [justCheckedIn, setJustCheckedIn] = useState(false);
+  const alreadyDone = streak?.alreadyCheckedIn || justCheckedIn;
+
+  async function handleCheckIn() {
+    setCheckingIn(true);
+    try {
+      const r = await api.post('/streaks/checkin');
+      setStreak(r.data);
+      setJustCheckedIn(true);
+    } catch {
+      // already checked in or error — still reveal options
+      setJustCheckedIn(true);
+    } finally {
+      setCheckingIn(false);
+    }
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100svh', fontFamily: SFT }}>
@@ -215,16 +231,17 @@ export default function Streaks() {
           {/* Action */}
           {!loading && (
             alreadyDone ? (
-              <>
+              /* Already checked in — show two options */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{
-                  background: '#EAF5FB', border: '1px solid #BFD9EA',
-                  borderRadius: '14px', padding: '16px 20px',
-                  textAlign: 'center', marginBottom: '20px',
+                  background: '#f5f5f7', border: '1px solid #e0e0e0',
+                  borderRadius: '14px', padding: '14px 20px',
+                  textAlign: 'center',
                 }}>
-                  <p style={{ fontSize: '16px', color: '#3D8AB0', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
+                  <p style={{ fontSize: '15px', color: '#5a6470', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
                     You have already checked in today.
                   </p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a', fontFamily: SFT, margin: '4px 0 0' }}>
+                  <p style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: SFT, margin: '4px 0 0' }}>
                     See you again tomorrow. Keep it going!
                   </p>
                 </div>
@@ -233,34 +250,44 @@ export default function Streaks() {
                   style={{
                     width: '100%', background: SKY, color: '#fff',
                     border: 'none', borderRadius: '9999px',
-                    padding: '18px 0', fontSize: '18px', fontWeight: 700,
+                    padding: '18px 0', fontSize: '17px', fontWeight: 700,
                     fontFamily: SFT, cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
                   }}
                 >
                   Continue to Dashboard
                 </button>
-              </>
-            ) : (
-              <>
                 <button
                   onClick={() => navigate('/game')}
+                  style={{
+                    width: '100%', background: '#ffffff', color: '#1d1d1f',
+                    border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                    padding: '16px 0', fontSize: '16px', fontWeight: 600,
+                    fontFamily: SFT, cursor: 'pointer',
+                  }}
+                >
+                  Play the game
+                </button>
+              </div>
+            ) : (
+              /* Not checked in yet — single button */
+              <>
+                <button
+                  onClick={handleCheckIn}
+                  disabled={checkingIn}
                   style={{
                     width: '100%', background: '#1d1d1f', color: '#fff',
                     border: 'none', borderRadius: '9999px',
                     padding: '22px 0', fontSize: '20px', fontWeight: 700,
-                    fontFamily: SFT, cursor: 'pointer',
-                    marginBottom: '16px', letterSpacing: '-0.2px',
+                    fontFamily: SFT, cursor: checkingIn ? 'not-allowed' : 'pointer',
+                    letterSpacing: '-0.2px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    opacity: checkingIn ? 0.7 : 1,
                   }}
                 >
-                  I'm here today
+                  {checkingIn ? 'Checking in…' : "I'm here today"}
                 </button>
-                <p style={{
-                  textAlign: 'center', fontSize: '14px', color: '#a0a0a5',
-                  fontFamily: SFT, lineHeight: 1.5,
-                }}>
-                  Tap the button to log today and keep your streak alive.
+                <p style={{ textAlign: 'center', fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, lineHeight: 1.5, marginTop: '12px' }}>
+                  Tap to log today and keep your streak alive.
                 </p>
               </>
             )
