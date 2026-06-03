@@ -51,12 +51,7 @@ export default function PeekabooGame() {
   const [phase, setPhase]       = useState('playing');
   const checkedIn = useRef(false);
 
-  useEffect(() => {
-    if (!checkedIn.current) {
-      checkedIn.current = true;
-      api.post('/streaks/checkin').catch(() => {});
-    }
-  }, []);
+  // Check-in happens on the Streaks page before entering the game
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -210,8 +205,8 @@ export default function PeekabooGame() {
 
         {/* Skip */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <button onClick={() => navigate('/streaks')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, textDecoration: 'underline', padding: '8px' }}>
-            Skip game
+          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, textDecoration: 'underline', padding: '8px' }}>
+            Skip to Dashboard
           </button>
         </div>
       </div>
@@ -229,8 +224,8 @@ export default function PeekabooGame() {
                 ? `All ${PAIRS} pairs matched. Your streak keeps going!`
                 : `You got ${matchedCount} of ${PAIRS}. Streak still counts!`}
             </p>
-            <button onClick={() => navigate('/streaks')} style={{ width: '100%', background: GREEN, color: '#fff', border: 'none', borderRadius: '9999px', padding: '16px 0', fontSize: '17px', fontWeight: 700, fontFamily: SFT, cursor: 'pointer', boxShadow: '0 4px 16px rgba(26,92,46,0.3)' }}>
-              See my streak →
+            <button onClick={() => navigate('/dashboard')} style={{ width: '100%', background: GREEN, color: '#fff', border: 'none', borderRadius: '9999px', padding: '16px 0', fontSize: '17px', fontWeight: 700, fontFamily: SFT, cursor: 'pointer', boxShadow: '0 4px 16px rgba(26,92,46,0.3)' }}>
+              Continue to Dashboard
             </button>
           </div>
         </div>
