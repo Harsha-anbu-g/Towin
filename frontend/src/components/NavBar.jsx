@@ -126,7 +126,7 @@ export default function NavBar() {
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
             }}>
-              ⭐ Trust Score
+              Trust Score
             </Link>
           );
         })()}
@@ -134,8 +134,8 @@ export default function NavBar() {
         {/* ── Utility / help links (subdued) ── */}
         <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
         {[
-          { to: '/how-it-works', label: '📖 Guide' },
-          ...(isElder ? [{ to: '/emergency-contacts', label: '🚨 Emergency' }] : []),
+          { to: '/how-it-works', label: 'Guide' },
+          ...(isElder ? [{ to: '/emergency-contacts', label: 'Emergency' }] : []),
         ].map(({ to, label }) => {
           const active = pathname === to;
           return (

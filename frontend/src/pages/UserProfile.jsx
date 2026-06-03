@@ -229,7 +229,7 @@ export default function UserProfile() {
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 {profile.city && (
                   <span style={{ fontFamily: SF, fontSize: '13px', color: '#7a7a7a', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    📍 {profile.city}
+                    {profile.city}
                   </span>
                 )}
                 {profile.age && (
