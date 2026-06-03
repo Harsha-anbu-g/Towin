@@ -326,41 +326,46 @@ export default function ElderDashboard() {
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
-      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '32px 40px 64px' }}>
-
-        {/* Prominent tab bar — the primary navigation of the dashboard */}
-        <div style={{
-          display: 'flex', gap: '10px', flexWrap: 'wrap',
-          marginBottom: '32px',
-        }}>
-          {tabs.map(([id, label, badge]) => {
-            const active = tab === id;
-            return (
-              <button key={id} onClick={() => setTab(id)} style={{
-                flex: '1 1 auto', minWidth: '160px',
-                height: '64px', padding: '0 24px',
-                fontSize: '18px', letterSpacing: '-0.2px',
-                fontWeight: active ? 700 : 500,
-                color: active ? '#ffffff' : '#1d1d1f',
-                background: active ? '#4FA3CE' : '#ffffff',
-                border: active ? '1px solid #4FA3CE' : '1px solid #e0e0e0',
-                borderRadius: '16px',
-                cursor: 'pointer',
-                transition: 'background 0.18s ease, color 0.18s ease, border-color 0.18s ease',
-                whiteSpace: 'nowrap',
-                fontFamily: 'inherit',
-                boxShadow: active ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
-              }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f7'; }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.background = '#ffffff'; }}
-              >
-                {label}
-                <TabBadge count={badge} />
-              </button>
-            );
-          })}
+      {/* ── Sticky tab bar — always visible when scrolling ── */}
+      <div style={{
+        position: 'sticky', top: '72px', zIndex: 50,
+        background: '#ffffff',
+        borderBottom: '1px solid #ececef',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+      }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 40px' }}>
+          <div style={{ display: 'flex', gap: '6px', padding: '10px 0' }}>
+            {tabs.map(([id, label, badge]) => {
+              const active = tab === id;
+              return (
+                <button key={id} onClick={() => setTab(id)} style={{
+                  flex: '1 1 auto',
+                  height: '44px', padding: '0 18px',
+                  fontSize: '15px', letterSpacing: '-0.1px',
+                  fontWeight: active ? 700 : 500,
+                  color: active ? '#ffffff' : '#5a6470',
+                  background: active ? '#4FA3CE' : 'transparent',
+                  border: active ? '1px solid #4FA3CE' : '1px solid transparent',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s, color 0.15s',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'inherit',
+                  position: 'relative',
+                }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f0f0f3'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  {label}
+                  <TabBadge count={badge} />
+                </button>
+              );
+            })}
+          </div>
         </div>
+      </div>
 
+      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '28px 40px 64px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Overview tab */}
