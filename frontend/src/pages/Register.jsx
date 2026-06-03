@@ -591,9 +591,9 @@ export default function Register() {
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
               {[
-                { role: 'ELDER', name: 'Margaret', desc: 'Elder · Trust Score 14', initial: 'M' },
-                { role: 'HELPER', name: 'James',    desc: 'Helper · Trust Score 32', initial: 'J' },
-              ].map(({ role, name, desc, initial }) => (
+                { role: 'ELDER', title: 'Elder', name: 'Margaret · Trust Score 14', initial: 'M' },
+                { role: 'HELPER', title: 'Helper', name: 'James · Trust Score 32', initial: 'J' },
+              ].map(({ role, title, name, initial }) => (
                 <button
                   key={role}
                   type="button"
@@ -624,8 +624,8 @@ export default function Register() {
                       {guestLoading === role ? '…' : initial}
                     </div>
                     <div>
-                      <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>{name}</p>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a', marginTop: '1px' }}>{desc}</p>
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1d1d1f' }}>{title}</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a', marginTop: '1px' }}>{name}</p>
                     </div>
                   </div>
                 </button>
