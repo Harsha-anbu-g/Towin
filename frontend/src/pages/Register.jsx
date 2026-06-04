@@ -278,13 +278,13 @@ export default function Register() {
     setError('');
     const errs = {};
     if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
-    if (form.phone.length < 7) errs.phone = 'Enter a valid phone number';
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
-      const { email, phone, password, role } = form;
+      const { email, password, role } = form;
+      const phone = `+1000${Date.now().toString().slice(-7)}`;
       const { data } = await api.post('/auth/register', { email, phone, password, role });
       login(data.token, data.role, data.userId);
       navigate(
@@ -426,25 +426,6 @@ export default function Register() {
                 {fieldErrors.email && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
               </div>
 
-              {/* Phone */}
-              <div>
-                <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
-                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                }}>
-                  Phone number
-                </label>
-                <input
-                  type="tel" required
-                  className="field"
-                  value={form.phone}
-                  onChange={e => { setForm({ ...form, phone: e.target.value }); setFieldErrors(f => ({ ...f, phone: '' })); }}
-                  placeholder="+1 555 000 0000"
-                  style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
-                />
-                {fieldErrors.phone && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.phone}</p>}
-              </div>
 
               {/* Password */}
               <div>

@@ -434,14 +434,22 @@ export default function HelperDashboard() {
                             </p>
                           </div>
                         </div>
-                        {!conn.initiatedByMe && (
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                              className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
-                            <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                              className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          {conn.otherUserId && (
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)}
+                              style={{ padding: '7px 14px', fontSize: '13px', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', cursor: 'pointer', color: '#5a6470', fontFamily: 'inherit', fontWeight: 500 }}>
+                              View Profile
+                            </button>
+                          )}
+                          {!conn.initiatedByMe && (
+                            <>
+                              <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
+                                className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
+                              <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
+                                className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
