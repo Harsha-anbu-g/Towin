@@ -8,8 +8,47 @@ import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { useSeenIds } from '../lib/useSeenIds';
+
+function TabBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span style={{
+      marginLeft: '8px', verticalAlign: 'middle',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
+      background: '#5a6470', color: '#fff', fontSize: '13px', fontWeight: 700,
+      borderRadius: '9999px', lineHeight: 1,
+    }}>{count}</span>
+  );
+}
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+function StarPicker({ value, onChange }) {
+  const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+  return (
+    <div style={{ display: 'flex', gap: '8px' }}>
+      {[1,2,3,4,5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '32px', padding: '0',
+            color: n <= value ? '#F5B400' : '#e0e0e0',
+            transition: 'color 0.1s',
+            fontFamily: SFT,
+          }}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const COMMUNITY_PHOTOS = [
   { id: 'photo-1529156069898-49953e39b3ac', label: 'Community' },
@@ -20,9 +59,9 @@ const COMMUNITY_PHOTOS = [
 
 const statusStyle = (status) => {
   const map = {
-    ACTIVE:  { bg: '#dcfce7', color: '#166534' },
-    PENDING: { bg: '#fef3c7', color: '#92400e' },
-    DECLINED: { bg: '#fee2e2', color: '#991b1b' },
+    ACTIVE:  { bg: '#f5f5f7', color: '#4FA3CE' },
+    PENDING: { bg: '#f3f4f6', color: '#5a6470' },
+    DECLINED: { bg: '#f3f4f6', color: '#5a6470' },
   };
   const s = map[status] ?? { bg: '#f3f4f6', color: '#6b7280' };
   return { background: s.bg, color: s.color, fontSize: '11px', fontWeight: 600,
@@ -34,6 +73,9 @@ const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(
 export default function HelperDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const seenConn = useSeenIds(user?.userId, 'connections');
+  const seenNeeds = useSeenIds(user?.userId, 'needs');
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
@@ -144,6 +186,14 @@ export default function HelperDashboard() {
     finally { setRespondingConn(null); }
   }
 
+  async function endConnection(connId) {
+    try {
+      await api.delete(`/connections/${connId}`);
+      toast.info('Connection ended.');
+      await loadConnections();
+    } catch (err) { toast.error(err?.response?.data?.message || 'Could not end connection.'); }
+  }
+
   async function confirmTrust(connId) {
     setConfirmingTrust(connId);
     try {
@@ -172,12 +222,23 @@ export default function HelperDashboard() {
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
   const connectedElderIds = new Set(connections.map(c => c.otherUserId));
-  const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+
+  const connTokens = connections.map(c => `${c.id}:${c.status}`);
+  const needTokens = needs.map(n => n.id);
+  const connBadge = seenConn.unseenCount(connTokens);
+  const browseBadge = seenNeeds.unseenCount(needTokens);
+
+  useEffect(() => {
+    if (tab === 'connections') seenConn.markSeen(connTokens);
+    if (tab === 'browse') seenNeeds.markSeen(needTokens);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, connections, needs]);
+
   const tabs = [
-    ['overview', 'Overview'],
-    ['connections', `Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
-    ['browse', 'Browse Needs'],
-    ['discover', 'Discover Elders'],
+    ['overview', 'Overview', 0],
+    ['connections', 'Connections', connBadge],
+    ['browse', 'Browse Needs', browseBadge],
+    ['discover', 'Discover Elders', 0],
   ];
 
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
@@ -204,58 +265,47 @@ export default function HelperDashboard() {
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
-      {/* Hero section */}
-      <div style={{ background: '#fafafc', borderBottom: '1px solid #e0e0e0', padding: '48px 80px 40px' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-          <h1 style={{
-            fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-            fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
-            letterSpacing: '-0.5px', margin: '0 0 8px',
-          }}>
-            Hello{profile?.name ? `, ${profile.name.split(' ')[0]}.` : '.'}
-          </h1>
-          <p style={{ fontSize: '17px', color: '#7a7a7a', margin: '0 0 24px', fontWeight: 300 }}>
-            Ready to make a difference today?
-          </p>
-
-          {/* Stats row */}
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            {profile?.trustScore != null && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1.5px solid #0066cc', borderRadius: '9999px', padding: '8px 18px', background: '#f0f6ff' }}>
-                <span style={{ fontSize: '13px', color: '#0066cc', fontWeight: 500 }}>Trust Score</span>
-                <span style={{ fontSize: '15px', color: '#0066cc', fontWeight: 700 }}>{profile.trustScore}</span>
-              </div>
-            )}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '9999px', padding: '8px 18px', background: '#dcfce7' }}>
-              <span style={{ fontSize: '13px', color: '#166534', fontWeight: 500 }}>Help sessions</span>
-              <span style={{ fontSize: '15px', color: '#166534', fontWeight: 700 }}>{activeConnections.length}</span>
-            </div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '9999px', padding: '8px 18px', background: '#fef3c7' }}>
-              <span style={{ fontSize: '13px', color: '#92400e', fontWeight: 500 }}>Pending requests</span>
-              <span style={{ fontSize: '15px', color: '#92400e', fontWeight: 700 }}>{pendingIncoming.length}</span>
-            </div>
+      {/* ── Sticky tab bar ── */}
+      <div style={{
+        position: 'sticky', top: '72px', zIndex: 50,
+        background: '#ffffff',
+        borderBottom: '1px solid #ececef',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+      }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 40px' }}>
+          <div style={{ display: 'flex', gap: '6px', padding: '10px 0' }}>
+            {tabs.map(([id, label, badge]) => {
+              const active = tab === id;
+              return (
+                <button key={id} onClick={() => setTab(id)} style={{
+                  flex: '1 1 auto',
+                  height: '44px', padding: '0 18px',
+                  fontSize: '15px', letterSpacing: '-0.1px',
+                  fontWeight: active ? 700 : 500,
+                  color: active ? '#ffffff' : '#5a6470',
+                  background: active ? '#4FA3CE' : 'transparent',
+                  border: active ? '1px solid #4FA3CE' : '1px solid transparent',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s, color 0.15s',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'inherit',
+                  position: 'relative',
+                }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f0f0f3'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  {label}
+                  <TabBadge count={badge} />
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 80px 64px' }}>
-
-        {/* Tab bar */}
-        <div style={{ background: '#fafafc', borderBottom: '1px solid #e0e0e0', margin: '0 -80px', padding: '0 80px', display: 'flex', gap: 0 }}>
-          {tabs.map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)} style={{
-              height: '48px', padding: '0 20px', fontSize: '14px',
-              fontWeight: tab === id ? 600 : 400,
-              color: tab === id ? '#0066cc' : '#7a7a7a',
-              background: 'none', border: 'none',
-              borderBottom: tab === id ? '2px solid #0066cc' : '2px solid transparent',
-              cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
-              marginBottom: '-1px', fontFamily: 'inherit',
-            }}>{label}</button>
-          ))}
-        </div>
-
-        <div style={{ paddingTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '28px 40px 64px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Overview tab */}
           {tab === 'overview' && (
@@ -268,6 +318,32 @@ export default function HelperDashboard() {
                 Track how your relationships are growing with each elder.
               </p>
 
+              {/* Trust Score card */}
+              <div
+                onClick={() => navigate('/trust')}
+                style={{
+                  background: '#ffffff', borderRadius: '16px',
+                  border: '1px solid #e0e0e0', padding: '20px 24px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  cursor: 'pointer', marginBottom: '16px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                  transition: 'box-shadow 0.15s',
+                }}
+              >
+                <div>
+                  <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#a0a0a5', margin: '0 0 4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    Trust Score
+                  </p>
+                  <p style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 800, color: '#1d1d1f', margin: 0, letterSpacing: '-0.5px' }}>
+                    {profile?.trustScore ?? '—'}
+                  </p>
+                  <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#4FA3CE', margin: '2px 0 0', fontWeight: 600 }}>
+                    {profile?.trustTier ?? 'New Member'}
+                  </p>
+                </div>
+                <div style={{ fontSize: '28px', color: '#ececef' }}>→</div>
+              </div>
+
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
@@ -278,7 +354,9 @@ export default function HelperDashboard() {
 
               {!loading && connections.filter(c => c.status === 'ACTIVE').length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '56px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '14px' }}>🌱</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                  </div>
                   <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>No active connections yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '24px', maxWidth: '280px', margin: '0 auto 24px' }}>
                     Connect with an elder to start building trust together.
@@ -298,9 +376,9 @@ export default function HelperDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '4px' }}>
                     <div style={{
                       width: '44px', height: '44px', borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                      background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                      fontSize: '15px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                     }}>
                       {initials(conn.otherUserName)}
                     </div>
@@ -308,8 +386,8 @@ export default function HelperDashboard() {
                       <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
                       <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '2px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
                       {conn.otherUserPhone && (
-                        <p style={{ fontSize: '13px', color: '#0066cc', margin: '4px 0 0', fontWeight: 500 }}>
-                          📞 {conn.otherUserPhone}
+                        <p style={{ fontSize: '13px', color: '#4FA3CE', margin: '4px 0 0', fontWeight: 500 }}>
+                          {conn.otherUserPhone}
                         </p>
                       )}
                     </div>
@@ -343,9 +421,9 @@ export default function HelperDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{
                             width: '38px', height: '38px', borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                            background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '13px', fontWeight: 700, color: '#fff',
+                            fontSize: '13px', fontWeight: 700, color: '#4FA3CE',
                           }}>
                             {initials(conn.otherUserName)}
                           </div>
@@ -356,14 +434,22 @@ export default function HelperDashboard() {
                             </p>
                           </div>
                         </div>
-                        {!conn.initiatedByMe && (
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                              className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
-                            <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                              className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          {conn.otherUserId && (
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)}
+                              style={{ padding: '7px 14px', fontSize: '13px', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', cursor: 'pointer', color: '#5a6470', fontFamily: 'inherit', fontWeight: 500 }}>
+                              View Profile
+                            </button>
+                          )}
+                          {!conn.initiatedByMe && (
+                            <>
+                              <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
+                                className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
+                              <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
+                                className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -385,7 +471,9 @@ export default function HelperDashboard() {
               )}
               {!loading && connections.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>👥</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Discover elders near you and send a connection request to get started.</p>
                   <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
@@ -403,9 +491,9 @@ export default function HelperDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
                       <div style={{
                         width: '48px', height: '48px', borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                        background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                        fontSize: '16px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                       }}>
                         {initials(conn.otherUserName)}
                       </div>
@@ -429,7 +517,7 @@ export default function HelperDashboard() {
                             </button>
                           )}
                           {reviewedConns.has(conn.id) && (
-                            <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>Reviewed</span>
+                            <span style={{ fontSize: '12px', color: '#4FA3CE', fontWeight: 500 }}>Reviewed</span>
                           )}
                         </>
                       )}
@@ -444,28 +532,29 @@ export default function HelperDashboard() {
                       <span style={statusStyle(conn.status === 'PENDING' && conn.initiatedByMe ? 'PENDING' : conn.status)}>
                         {{ ACTIVE: 'Connected', PENDING: 'Request Sent' }[conn.status] || conn.status}
                       </span>
+                      {conn.status === 'ACTIVE' && (
+                        <button
+                          onClick={() => { if (window.confirm('End this connection?')) endConnection(conn.id); }}
+                          style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                          End
+                        </button>
+                      )}
                     </div>
                   </div>
 
                   {reviewingConn === conn.id && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>Rate {conn.otherUserName || 'this elder'}</p>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {[1,2,3,4,5].map(s => (
-                          <button key={s} onClick={() => setReviewForm(f => ({...f, rating: s}))}
-                            style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', color: s <= reviewForm.rating ? '#ff9500' : '#d1d5db', transition: 'transform 0.1s' }}
-                            onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}
-                            onMouseLeave={e => e.target.style.transform = 'scale(1)'}>★</button>
-                        ))}
-                      </div>
+                      <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {REVIEW_TAGS.map(t => (
                           <button key={t} onClick={() => setReviewForm(f => ({
                             ...f, tags: f.tags.includes(t) ? f.tags.filter(x => x !== t) : [...f.tags, t]
                           }))} style={{
                             fontSize: '13px', padding: '5px 14px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
-                            borderColor: reviewForm.tags.includes(t) ? '#0066cc' : '#e0e0e0',
-                            background: reviewForm.tags.includes(t) ? '#0066cc' : '#fff',
+                            borderColor: reviewForm.tags.includes(t) ? '#4FA3CE' : '#e0e0e0',
+                            background: reviewForm.tags.includes(t) ? '#4FA3CE' : '#fff',
                             color: reviewForm.tags.includes(t) ? '#fff' : '#7a7a7a',
                           }}>{t}</button>
                         ))}
@@ -473,7 +562,7 @@ export default function HelperDashboard() {
                       <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
                         placeholder="Any comments? (optional)" rows={2}
                         style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: '14px', outline: 'none', fontFamily: 'inherit' }} />
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff3b30', cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#7a7a7a', cursor: 'pointer' }}>
                         <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
                         Report a safety concern
                       </label>
@@ -507,8 +596,8 @@ export default function HelperDashboard() {
               <RadiusBar />
               {needs.length === 0 && locationStatus !== 'asking' && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f5f5f7', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                   </div>
@@ -533,7 +622,7 @@ export default function HelperDashboard() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
                         <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#7a7a7a', padding: '3px 10px', borderRadius: '9999px' }}>{need.category}</span>
                         {need.urgency === 'URGENT' && (
-                          <span style={{ fontSize: '12px', background: '#fee2e2', color: '#991b1b', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
+                          <span style={{ fontSize: '12px', background: '#f3f4f6', color: '#5a6470', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
                         )}
                         {need.distanceKm != null && (
                           <span style={{ fontSize: '12px', color: '#a0a0a5', padding: '3px 0' }}>{need.distanceKm} km away</span>
@@ -546,20 +635,20 @@ export default function HelperDashboard() {
                         className={applyMsg[need.id]?.includes('!') ? '' : 'btn-primary'}
                         style={applyMsg[need.id]?.includes('!') ? {
                           fontSize: '13px', padding: '8px 18px', borderRadius: '9999px', border: 'none',
-                          background: '#dcfce7', color: '#166534', cursor: 'default', fontWeight: 600
+                          background: '#f5f5f7', color: '#4FA3CE', cursor: 'default', fontWeight: 600
                         } : { padding: '8px 18px', fontSize: '13px' }}>
                         {applying === need.id ? '...' : applyMsg[need.id] || 'Apply'}
                       </button>
                       {applyMsg[need.id]?.includes('!') && (
                         <button onClick={() => withdrawApplication(need.id)}
-                          style={{ fontSize: '11px', color: '#cc0000', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
+                          style={{ fontSize: '11px', color: '#5a6470', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
                           Withdraw
                         </button>
                       )}
                     </div>
                   </div>
                   {applyMsg[need.id] && !applyMsg[need.id].includes('!') && (
-                    <p style={{ fontSize: '12px', color: '#991b1b', marginTop: '8px' }}>{applyMsg[need.id]}</p>
+                    <p style={{ fontSize: '12px', color: '#5a6470', marginTop: '8px' }}>{applyMsg[need.id]}</p>
                   )}
                 </div>
               ))}
@@ -572,8 +661,8 @@ export default function HelperDashboard() {
               <RadiusBar />
               {elders.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dbeafe', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f5f5f7', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
                     </svg>
                   </div>
@@ -594,9 +683,9 @@ export default function HelperDashboard() {
                       <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
                         <div style={{
                           width: '52px', height: '52px', borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #0066cc, #5856d6)',
+                          background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '17px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                          fontSize: '17px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                         }}>
                           {elder.name ? elder.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
                         </div>
@@ -613,20 +702,20 @@ export default function HelperDashboard() {
                           {elder.interests?.length > 0 && (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
                               {elder.interests.map(interest => (
-                                <span key={interest} style={{ fontSize: '12px', background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px', borderRadius: '9999px' }}>{interest}</span>
+                                <span key={interest} style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '2px 8px', borderRadius: '9999px' }}>{interest}</span>
                               ))}
                             </div>
                           )}
                         </div>
                       </div>
-                      <div style={{ flexShrink: 0 }}>
+                      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: '12px', background: '#dcfce7', color: '#166534', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
+                          <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
                         ) : sent ? (
                           <span style={{
                             fontSize: '12px', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600,
-                            background: sent.includes('!') ? '#dcfce7' : '#fee2e2',
-                            color: sent.includes('!') ? '#166534' : '#991b1b',
+                            background: sent.includes('!') ? '#f5f5f7' : '#f3f4f6',
+                            color: sent.includes('!') ? '#4FA3CE' : '#5a6470',
                           }}>{sent}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
@@ -634,6 +723,16 @@ export default function HelperDashboard() {
                             {connectingTo === elder.userId ? '...' : 'Connect'}
                           </button>
                         )}
+                        <button
+                          onClick={() => navigate(`/user/${elder.userId}`)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, fontSize: '12px', color: '#4FA3CE', fontWeight: 600,
+                            padding: '4px 0',
+                          }}
+                        >
+                          View Profile
+                        </button>
                       </div>
                     </div>
                   </div>

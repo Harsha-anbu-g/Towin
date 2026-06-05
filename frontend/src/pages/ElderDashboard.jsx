@@ -8,8 +8,47 @@ import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { useSeenIds } from '../lib/useSeenIds';
+
+function TabBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span style={{
+      marginLeft: '8px', verticalAlign: 'middle',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
+      background: '#5a6470', color: '#fff', fontSize: '13px', fontWeight: 700,
+      borderRadius: '9999px', lineHeight: 1,
+    }}>{count}</span>
+  );
+}
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+function StarPicker({ value, onChange }) {
+  const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+  return (
+    <div style={{ display: 'flex', gap: '8px' }}>
+      {[1,2,3,4,5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '32px', padding: '0',
+            color: n <= value ? '#F5B400' : '#e0e0e0',
+            transition: 'color 0.1s',
+            fontFamily: SFT,
+          }}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const COMMUNITY_PHOTOS = [
   { id: 'photo-1576765974256-9b879d60a571', label: 'Elder with helper' },
@@ -19,25 +58,55 @@ const COMMUNITY_PHOTOS = [
 ];
 
 const statusStyle = (status) => {
-  const map = {
-    OPEN:      { bg: '#dbeafe', color: '#1d4ed8' },
-    ASSIGNED:  { bg: '#fef3c7', color: '#92400e' },
-    COMPLETED: { bg: '#dcfce7', color: '#166534' },
-    CANCELLED: { bg: '#f3f4f6', color: '#6b7280' },
-    ACTIVE:    { bg: '#dcfce7', color: '#166534' },
-    PENDING:   { bg: '#fef3c7', color: '#92400e' },
-    DECLINED:  { bg: '#fee2e2', color: '#991b1b' },
+  const active = ['OPEN', 'ACTIVE', 'ASSIGNED', 'PENDING'].includes(status);
+  return {
+    background: active ? '#f5f5f7' : '#f3f4f6',
+    color: active ? '#4FA3CE' : '#7a7a7a',
+    fontSize: '11px', fontWeight: 600,
+    padding: '3px 10px', borderRadius: '9999px',
+    letterSpacing: '0.3px', textTransform: 'uppercase',
   };
-  const s = map[status] ?? { bg: '#f3f4f6', color: '#6b7280' };
-  return { background: s.bg, color: s.color, fontSize: '11px', fontWeight: 600,
-    padding: '3px 10px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' };
 };
 
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
+const inputStyle = {
+  width: '100%',
+  boxSizing: 'border-box',
+  border: '1px solid #e0e0e0',
+  borderRadius: '12px',
+  padding: '12px 16px',
+  fontSize: '15px',
+  fontFamily: 'inherit',
+  color: '#1d1d1f',
+  background: '#ffffff',
+  outline: 'none',
+  transition: 'border-color 0.15s, box-shadow 0.15s',
+};
+const focusIn = (e) => { e.target.style.borderColor = '#4FA3CE'; e.target.style.boxShadow = '0 0 0 3px rgba(79,163,206,0.15)'; };
+const focusOut = (e) => { e.target.style.borderColor = '#e0e0e0'; e.target.style.boxShadow = 'none'; };
+
+function FormField({ label, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <label style={{
+        fontSize: '13px',
+        fontWeight: 600,
+        color: '#7a7a7a',
+        textTransform: 'uppercase',
+        letterSpacing: '0.4px',
+      }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
 export default function ElderDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const seenConn = useSeenIds(user?.userId, 'connections');
+  const seenApplicants = useSeenIds(user?.userId, 'applicants');
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
@@ -58,6 +127,10 @@ export default function ElderDashboard() {
   const [locationStatus, setLocationStatus] = useState('idle');
   const [loading, setLoading] = useState(true);
   const [cancelConfirm, setCancelConfirm] = useState(null);
+  const [helpers, setHelpers] = useState([]);
+  const [radiusKm, setRadiusKm] = useState(25);
+  const [connectingTo, setConnectingTo] = useState(null);
+  const [connectMsg, setConnectMsg] = useState({});
 
   async function loadConnections() {
     setLoading(true);
@@ -80,7 +153,37 @@ export default function ElderDashboard() {
   useEffect(() => {
     if (tab === 'needs') loadNeeds();
     if (tab === 'connections') loadConnections();
-  }, [tab]);
+    if (tab === 'discover') loadHelpers();
+  }, [tab, radiusKm]);
+
+  async function loadHelpers(loc) {
+    const coords = loc ?? location;
+    try {
+      const res = coords
+        ? await api.get(`/discover/helpers?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`)
+        : await api.get('/discover/helpers');
+      setHelpers(res.data || []);
+    } catch {}
+  }
+
+  async function connectToHelper(helperId) {
+    setConnectingTo(helperId);
+    try {
+      await api.post('/connections/request', { targetUserId: helperId });
+      setConnectMsg(prev => ({ ...prev, [helperId]: 'Request sent!' }));
+      await loadConnections();
+    } catch (err) {
+      setConnectMsg(prev => ({ ...prev, [helperId]: err?.response?.data?.message || 'Could not connect.' }));
+    } finally { setConnectingTo(null); }
+  }
+
+  async function endConnection(connId) {
+    try {
+      await api.delete(`/connections/${connId}`);
+      toast.info('Connection ended.');
+      await loadConnections();
+    } catch (err) { toast.error(err?.response?.data?.message || 'Could not end connection.'); }
+  }
 
   function requestLocation() {
     if (!navigator.geolocation) { setLocationStatus('denied'); return; }
@@ -91,6 +194,7 @@ export default function ElderDashboard() {
         setLocation(loc);
         setLocationStatus('granted');
         api.put('/profile/location', { locationLat: loc.lat, locationLng: loc.lng }).catch(() => {});
+        loadHelpers(loc);
       },
       () => setLocationStatus('denied')
     );
@@ -152,7 +256,7 @@ export default function ElderDashboard() {
     setAccepting(`${needId}-${helperId}`);
     try {
       await api.post(`/needs/${needId}/accept/${helperId}`);
-      await loadNeeds();
+      await Promise.all([loadNeeds(), loadConnections()]);
       toast.success('Helper accepted!');
     }
     catch { toast.error('Could not accept helper. Try again.'); }
@@ -193,90 +297,111 @@ export default function ElderDashboard() {
 
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
-  const pendingIncoming = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
-  const tabs = [
-    ['overview', 'Overview'],
-    ['connections', `Connections${pendingIncoming.length > 0 ? ` (${pendingIncoming.length})` : ''}`],
-    ['needs', 'My Requests'],
-    ['post', 'Post Request'],
-  ];
+  const connectedHelperIds = new Set(connections.map(c => c.otherUserId));
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning.' : hour < 17 ? 'Good afternoon.' : 'Good evening.';
+  const connTokens = connections.map(c => `${c.id}:${c.status}`);
+  const applicantTokens = myNeeds.flatMap(n => (n.applications || []).map(a => `${n.id}:${a.helperId}`));
+  const connBadge = seenConn.unseenCount(connTokens);
+  const requestsBadge = seenApplicants.unseenCount(applicantTokens);
+
+  useEffect(() => {
+    if (tab === 'connections') seenConn.markSeen(connTokens);
+    if (tab === 'needs') seenApplicants.markSeen(applicantTokens);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, connections, myNeeds]);
+
+  const tabs = [
+    ['overview', 'Overview', 0],
+    ['connections', 'Connections', connBadge],
+    ['discover', 'Find Helpers', 0],
+    ['needs', 'My Requests', requestsBadge],
+    ['post', 'Post Request', 0],
+  ];
 
   return (
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
-      {/* Hero section */}
-      <div style={{ background: '#1d1d1f', padding: '60px 80px 48px', position: 'relative' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '32px', flexWrap: 'wrap' }}>
-          <div>
-            <h1 style={{
-              fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-              fontSize: '48px', fontWeight: 600, color: '#ffffff',
-              letterSpacing: '-0.5px', margin: 0, lineHeight: 1.1,
-            }}>
-              {greeting}
-            </h1>
-            <p style={{ fontSize: '20px', fontWeight: 300, color: '#cccccc', marginTop: '12px', lineHeight: 1.4 }}>
-              {profile
-                ? `${connections.filter(c => c.status === 'ACTIVE').length} active helper${connections.filter(c => c.status === 'ACTIVE').length !== 1 ? 's' : ''} · ${pendingIncoming.length} new request${pendingIncoming.length !== 1 ? 's' : ''}`
-                : 'Welcome to ToWin'}
-            </p>
-            {profile?.trustScore != null && (
-              <div style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(0,102,204,0.25)', border: '1px solid rgba(0,102,204,0.5)', borderRadius: '9999px', padding: '6px 16px' }}>
-                <span style={{ fontSize: '13px', color: '#60a5fa', fontWeight: 500 }}>Trust Score</span>
-                <span style={{ fontSize: '15px', color: '#ffffff', fontWeight: 700 }}>{profile.trustScore}</span>
-              </div>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
-            <button onClick={() => setTab('connections')} className="btn-primary" style={{ padding: '11px 24px', fontSize: '15px' }}>
-              Find a Helper
-            </button>
-            <button onClick={() => setTab('connections')} style={{
-              padding: '11px 24px', fontSize: '15px', borderRadius: '9999px',
-              border: '1px solid rgba(255,255,255,0.4)', background: 'transparent',
-              color: '#ffffff', cursor: 'pointer', fontFamily: 'inherit',
-              transition: 'background 0.15s',
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              Messages
-            </button>
+      {/* ── Sticky tab bar — always visible when scrolling ── */}
+      <div style={{
+        position: 'sticky', top: '72px', zIndex: 50,
+        background: '#ffffff',
+        borderBottom: '1px solid #ececef',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+      }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 40px' }}>
+          <div style={{ display: 'flex', gap: '6px', padding: '10px 0', alignItems: 'center' }}>
+            {tabs.map(([id, label, badge]) => {
+              const active = tab === id;
+              return (
+                <button key={id} onClick={() => setTab(id)} style={{
+                  flex: '1 1 auto',
+                  height: '44px', padding: '0 18px',
+                  fontSize: '15px', letterSpacing: '-0.1px',
+                  fontWeight: active ? 700 : 500,
+                  color: active ? '#ffffff' : '#5a6470',
+                  background: active ? '#4FA3CE' : 'transparent',
+                  border: active ? '1px solid #4FA3CE' : '1px solid transparent',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s, color 0.15s',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'inherit',
+                  position: 'relative',
+                }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f0f0f3'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  {label}
+                  <TabBadge count={badge} />
+                </button>
+              );
+            })}
+
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 80px 64px' }}>
-
-        {/* Tab bar */}
-        <div style={{ background: '#fafafc', borderBottom: '1px solid #e0e0e0', margin: '0 -80px', padding: '0 80px', display: 'flex', gap: 0 }}>
-          {tabs.map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)} style={{
-              height: '48px', padding: '0 20px', fontSize: '14px',
-              fontWeight: tab === id ? 600 : 400,
-              color: tab === id ? '#0066cc' : '#7a7a7a',
-              background: 'none', border: 'none',
-              borderBottom: tab === id ? '2px solid #0066cc' : '2px solid transparent',
-              cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
-              marginBottom: '-1px', fontFamily: 'inherit',
-            }}>
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ paddingTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '28px 40px 64px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Overview tab */}
           {tab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
-                Your Trust Journey
-              </h2>
+              {profile?.name && (() => {
+                const h = new Date().getHours();
+                const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+                const firstName = profile.name.split(' ')[0];
+                return (
+                  <div style={{ marginBottom: '-8px' }}>
+                    <p style={{
+                      fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+                      fontSize: '32px', fontWeight: 600, color: '#1d1d1f',
+                      letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
+                    }}>
+                      {greet}, {firstName}
+                    </p>
+                    <p style={{ fontSize: '15px', color: '#7a7a7a', margin: '6px 0 0' }}>
+                      Welcome back. Here's how your community is doing today.
+                    </p>
+                  </div>
+                );
+              })()}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+                  Your Trust Journey
+                </h2>
+                {profile?.trustScore != null && (
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    background: '#f5f5f7', border: '1px solid #BFD9EA',
+                    borderRadius: '9999px', padding: '6px 16px',
+                  }}>
+                    <span style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 500 }}>Trust Score</span>
+                    <span style={{ fontSize: '15px', color: '#4FA3CE', fontWeight: 700 }}>{profile.trustScore}</span>
+                  </div>
+                )}
+              </div>
               <p style={{ fontSize: '15px', color: '#7a7a7a', margin: '-16px 0 0' }}>
                 See how your relationships are growing with each helper.
               </p>
@@ -291,7 +416,9 @@ export default function ElderDashboard() {
 
               {!loading && connections.filter(c => c.status === 'ACTIVE').length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '56px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '14px' }}>🌱</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                  </div>
                   <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>No active connections yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '24px', maxWidth: '280px', margin: '0 auto 24px' }}>
                     Once a helper connects with you, you'll see your trust progress here.
@@ -311,9 +438,9 @@ export default function ElderDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '4px' }}>
                     <div style={{
                       width: '44px', height: '44px', borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #34c759, #30d158)',
+                      background: '#e8e8ed',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                      fontSize: '15px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                     }}>
                       {initials(conn.otherUserName)}
                     </div>
@@ -321,14 +448,32 @@ export default function ElderDashboard() {
                       <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Helper'}</p>
                       <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '2px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
                       {conn.otherUserPhone && (
-                        <p style={{ fontSize: '13px', color: '#0066cc', margin: '4px 0 0', fontWeight: 500 }}>
-                          📞 {conn.otherUserPhone}
+                        <p style={{ fontSize: '13px', color: '#4FA3CE', margin: '4px 0 0', fontWeight: 500 }}>
+                          {conn.otherUserPhone}
                         </p>
                       )}
                     </div>
-                    <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px', flexShrink: 0 }}>
-                      Message
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
+                      <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px' }}>
+                        Message
+                      </button>
+                      <button
+                        onClick={() => navigate(`/user/${conn.otherUserId}`)}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
+                          fontSize: '12px', color: '#4FA3CE', fontWeight: 600, padding: '2px 0',
+                        }}
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => { if (window.confirm('End this connection?')) endConnection(conn.id); }}
+                        style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        End
+                      </button>
+                    </div>
                   </div>
                   <TrustJourney
                     currentTrustLevel={conn.currentTrustLevel}
@@ -356,7 +501,7 @@ export default function ElderDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{
                             width: '38px', height: '38px', borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #0066cc, #2997ff)',
+                            background: '#e8e8ed',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '13px', fontWeight: 700, color: '#fff',
                           }}>
@@ -369,14 +514,22 @@ export default function ElderDashboard() {
                             </p>
                           </div>
                         </div>
-                        {!conn.initiatedByMe && (
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                              className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
-                            <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                              className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          {conn.otherUserId && (
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)}
+                              style={{ padding: '7px 14px', fontSize: '13px', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', cursor: 'pointer', color: '#5a6470', fontFamily: 'inherit', fontWeight: 500 }}>
+                              View Profile
+                            </button>
+                          )}
+                          {!conn.initiatedByMe && (
+                            <>
+                              <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
+                                className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
+                              <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
+                                className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -401,7 +554,9 @@ export default function ElderDashboard() {
               )}
               {!loading && connections.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>🤝</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No helpers yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>Helpers in your area will send you connection requests. You'll see them here.</p>
                 </div>
@@ -416,9 +571,9 @@ export default function ElderDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
                       <div style={{
                         width: '48px', height: '48px', borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #34c759, #30d158)',
+                        background: '#e8e8ed',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                        fontSize: '16px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
                       }}>
                         {initials(conn.otherUserName)}
                       </div>
@@ -442,7 +597,10 @@ export default function ElderDashboard() {
                         </button>
                       )}
                       {reviewedConns.has(conn.id) && (
-                        <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>✓ Reviewed</span>
+                        <span style={{ fontSize: '12px', color: '#4FA3CE', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#4FA3CE" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          Reviewed
+                        </span>
                       )}
                       {conn.status === 'PENDING' && !conn.initiatedByMe && (
                         <>
@@ -475,21 +633,16 @@ export default function ElderDashboard() {
                   {reviewingConn === conn.id && (
                     <div style={{ marginTop: '14px', padding: '16px', background: '#fafafc', borderRadius: '12px', border: '1px solid #e8e8ed' }}>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '12px' }}>Rate {conn.otherUserName}</p>
-                      <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-                        {[1,2,3,4,5].map(s => (
-                          <button key={s} type="button" onClick={() => setReviewForm(f => ({...f, rating: s}))}
-                            style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', color: s <= reviewForm.rating ? '#ff9500' : '#d1d5db' }}>
-                            ★
-                          </button>
-                        ))}
+                      <div style={{ marginBottom: '12px' }}>
+                        <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
                         {['Punctual','Kind','Trustworthy','Patient','Helpful'].map(tag => (
                           <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
                             fontSize: '12px', padding: '4px 12px', borderRadius: '9999px', cursor: 'pointer',
                             border: '1px solid', transition: 'all 0.15s',
-                            borderColor: reviewForm.tags.includes(tag) ? '#0066cc' : '#d2d2d7',
-                            background: reviewForm.tags.includes(tag) ? '#0066cc' : '#fff',
+                            borderColor: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#d2d2d7',
+                            background: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#fff',
                             color: reviewForm.tags.includes(tag) ? '#fff' : '#7a7a7a',
                           }}>{tag}</button>
                         ))}
@@ -510,6 +663,111 @@ export default function ElderDashboard() {
             </div>
           )}
 
+          {/* Find Helpers tab */}
+          {tab === 'discover' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 6px' }}>
+                  Find Helpers
+                </h2>
+                <p style={{ fontSize: '15px', color: '#7a7a7a', margin: 0 }}>
+                  Browse helpers in your area and reach out to connect.
+                </p>
+              </div>
+
+              {/* Radius bar */}
+              <div style={{ background: '#ffffff', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
+                <p style={{ fontSize: '13px', color: '#7a7a7a', margin: 0 }}>
+                  {locationStatus === 'asking' && 'Getting your location…'}
+                  {locationStatus === 'granted' && `Showing within ${radiusKm} km of you`}
+                  {locationStatus === 'denied' && 'Location unavailable — showing all helpers'}
+                  {locationStatus === 'idle' && 'Detecting location…'}
+                </p>
+                {locationStatus === 'granted' && (
+                  <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
+                    style={{ border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '5px 12px', fontSize: '13px', outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                    {[5, 10, 25, 50, 100].map(v => <option key={v} value={v}>{v} km</option>)}
+                  </select>
+                )}
+              </div>
+
+              {helpers.length === 0 && (
+                <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0', padding: '48px 24px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No helpers found nearby</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Try a larger radius or check back later.</p>
+                </div>
+              )}
+
+              {helpers.map((helper, i) => {
+                const alreadyConnected = connectedHelperIds.has(helper.userId);
+                const sent = connectMsg[helper.userId];
+                return (
+                  <div key={helper.userId} style={{
+                    background: '#ffffff', borderRadius: '18px', padding: '20px',
+                    border: '1px solid #e0e0e0',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+                      <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
+                        <div style={{
+                          width: '52px', height: '52px', borderRadius: '50%',
+                          background: '#e8e8ed',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '17px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
+                        }}>
+                          {helper.name ? helper.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{helper.name || 'Helper'}</p>
+                            <TrustBadge tier={helper.trustTier} score={helper.trustScore} />
+                          </div>
+                          {helper.city && <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '3px 0 0' }}>{helper.city}</p>}
+                          {helper.distanceKm > 0 && (
+                            <p style={{ fontSize: '12px', color: '#a0a0a5', margin: '2px 0 0' }}>{Math.round(helper.distanceKm * 10) / 10} km away</p>
+                          )}
+                          {helper.bio && <p style={{ fontSize: '14px', color: '#7a7a7a', margin: '6px 0 0', lineHeight: 1.5 }}>{helper.bio}</p>}
+                          {helper.skillsOffered?.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
+                              {helper.skillsOffered.map(s => (
+                                <span key={s} style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '2px 8px', borderRadius: '9999px' }}>{s}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+                        {alreadyConnected ? (
+                          <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
+                        ) : sent ? (
+                          <span style={{
+                            fontSize: '12px', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600,
+                            background: sent.includes('!') ? '#f5f5f7' : '#f3f4f6',
+                            color: sent.includes('!') ? '#4FA3CE' : '#5a6470',
+                          }}>{sent}</span>
+                        ) : (
+                          <button onClick={() => connectToHelper(helper.userId)} disabled={connectingTo === helper.userId}
+                            className="btn-primary" style={{ padding: '8px 18px', fontSize: '13px' }}>
+                            {connectingTo === helper.userId ? '…' : 'Connect'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => navigate(`/user/${helper.userId}`)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
+                            fontSize: '12px', color: '#4FA3CE', fontWeight: 600, padding: '2px 0',
+                          }}
+                        >
+                          View Profile
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* My Requests tab */}
           {tab === 'needs' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -525,7 +783,9 @@ export default function ElderDashboard() {
               )}
               {!loading && myNeeds.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>📋</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                  </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>Post a request and helpers near you will offer to assist. It only takes a minute.</p>
                   <button onClick={() => setTab('post')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
@@ -546,7 +806,7 @@ export default function ElderDashboard() {
                       <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#7a7a7a', padding: '3px 10px', borderRadius: '9999px' }}>{need.category}</span>
                         {need.urgency === 'URGENT' && (
-                          <span style={{ fontSize: '12px', background: '#fee2e2', color: '#991b1b', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
+                          <span style={{ fontSize: '12px', background: '#f3f4f6', color: '#5a6470', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
                         )}
                       </div>
                     </div>
@@ -578,14 +838,14 @@ export default function ElderDashboard() {
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>
                       {cancelConfirm === need.id ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid #fee2e2', paddingTop: '10px', marginTop: '0', background: '#fef2f2', borderRadius: '10px', padding: '10px 12px' }}>
-                          <span style={{ fontSize: '13px', color: '#991b1b', flex: 1 }}>Cancel this request?</span>
-                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: '#cc0000', border: 'none', borderRadius: '9999px', padding: '5px 14px', cursor: 'pointer' }}>Yes, cancel</button>
+                          <span style={{ fontSize: '13px', color: '#5a6470', flex: 1 }}>Cancel this request?</span>
+                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: '#5a6470', border: 'none', borderRadius: '9999px', padding: '5px 14px', cursor: 'pointer' }}>Yes, cancel</button>
                           <button onClick={() => setCancelConfirm(null)} style={{ fontSize: '12px', color: '#7a7a7a', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '5px 12px', cursor: 'pointer' }}>Keep</button>
                         </div>
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <p style={{ fontSize: '13px', color: '#a0a0a5', margin: 0 }}>No applicants yet</p>
-                          <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: '12px', color: '#cc0000', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
+                          <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: '12px', color: '#5a6470', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
                             Cancel
                           </button>
                         </div>
@@ -595,7 +855,7 @@ export default function ElderDashboard() {
                   {need.status === 'ASSIGNED' && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
                       <button onClick={() => completeNeed(need.id)} className="btn-primary"
-                        style={{ width: '100%', background: '#34c759', padding: '11px', fontSize: '15px' }}>
+                        style={{ width: '100%', background: '#4FA3CE', padding: '11px', fontSize: '15px' }}>
                         Mark as Complete
                       </button>
                     </div>
@@ -605,21 +865,14 @@ export default function ElderDashboard() {
                       {reviewingNeed === need.id ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>Rate your helper</p>
-                          <div style={{ display: 'flex', gap: '6px' }}>
-                            {[1,2,3,4,5].map(s => (
-                              <button key={s} type="button" onClick={() => setReviewForm(f => ({...f, rating: s}))}
-                                style={{ fontSize: '28px', background: 'none', border: 'none', cursor: 'pointer', color: s <= reviewForm.rating ? '#ff9500' : '#d1d5db', transition: 'transform 0.1s' }}
-                                onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}
-                                onMouseLeave={e => e.target.style.transform = 'scale(1)'}>★</button>
-                            ))}
-                          </div>
+                          <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             {REVIEW_TAGS.map(tag => (
                               <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
                                 fontSize: '13px', padding: '5px 14px', borderRadius: '9999px',
                                 border: '1px solid', transition: 'all 0.15s',
-                                borderColor: reviewForm.tags.includes(tag) ? '#0066cc' : '#d2d2d7',
-                                background: reviewForm.tags.includes(tag) ? '#0066cc' : '#fff',
+                                borderColor: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#d2d2d7',
+                                background: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#fff',
                                 color: reviewForm.tags.includes(tag) ? '#fff' : '#7a7a7a', cursor: 'pointer',
                               }}>{tag}</button>
                             ))}
@@ -627,7 +880,7 @@ export default function ElderDashboard() {
                           <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
                             placeholder="Add a comment (optional)" rows={2}
                             style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical' }} />
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ff3b30', cursor: 'pointer' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#7a7a7a', cursor: 'pointer' }}>
                             <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
                             Flag a safety concern
                           </label>
@@ -646,7 +899,7 @@ export default function ElderDashboard() {
                     </div>
                   )}
                   {need.status === 'COMPLETED' && reviewedNeeds.has(need.id) && (
-                    <p style={{ fontSize: '13px', color: '#166534', fontWeight: 500, borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>Review submitted</p>
+                    <p style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 500, borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>Review submitted</p>
                   )}
                 </div>
               ))}
@@ -663,52 +916,52 @@ export default function ElderDashboard() {
               }}>
                 Post a Help Request
               </h2>
-              <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                <div className="field">
-                  <label className="field-label">What do you need?</label>
+              <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+                <FormField label="What do you need?">
                   <input value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
-                    placeholder="e.g. Help with grocery shopping" className="input-field" required />
-                </div>
-                <div className="field">
-                  <label className="field-label">Description</label>
+                    placeholder="e.g. Help with grocery shopping" style={inputStyle} required
+                    onFocus={focusIn} onBlur={focusOut} />
+                </FormField>
+                <FormField label="Description">
                   <textarea value={needForm.description} onChange={e => setNeedForm(f => ({...f, description: e.target.value}))}
                     placeholder="Add more details..." rows={3}
-                    style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', fontFamily: 'inherit', resize: 'vertical', transition: 'border-color 0.15s, box-shadow 0.15s' }}
-                    onFocus={e => { e.target.style.borderColor = '#0066cc'; e.target.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.12)'; }}
-                    onBlur={e => { e.target.style.borderColor = '#e0e0e0'; e.target.style.boxShadow = 'none'; }} />
-                </div>
+                    style={{ ...inputStyle, resize: 'vertical' }}
+                    onFocus={focusIn} onBlur={focusOut} />
+                </FormField>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                  <div className="field">
-                    <label className="field-label">Category</label>
+                  <FormField label="Category">
                     <select value={needForm.category} onChange={e => setNeedForm(f => ({...f, category: e.target.value}))}
-                      style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', background: '#fff', fontFamily: 'inherit', transition: 'border-color 0.15s' }}>
+                      style={inputStyle} onFocus={focusIn} onBlur={focusOut}>
                       <option value="COMPANIONSHIP">Companionship</option>
                       <option value="TRANSPORTATION">Transportation</option>
                       <option value="ERRANDS">Errands</option>
                       <option value="CLEANING">Cleaning</option>
                       <option value="OTHER">Other</option>
                     </select>
-                  </div>
-                  <div className="field">
-                    <label className="field-label">Urgency</label>
+                  </FormField>
+                  <FormField label="Urgency">
                     <select value={needForm.urgency} onChange={e => setNeedForm(f => ({...f, urgency: e.target.value}))}
-                      style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 16px', fontSize: '15px', outline: 'none', background: '#fff', fontFamily: 'inherit' }}>
+                      style={inputStyle} onFocus={focusIn} onBlur={focusOut}>
                       <option value="NORMAL">Normal</option>
                       <option value="URGENT">Urgent</option>
                     </select>
-                  </div>
+                  </FormField>
                 </div>
-                <div style={{ background: '#f0f6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#1d4ed8' }}>
-                  {locationStatus === 'asking' && 'Getting your location...'}
-                  {locationStatus === 'granted' && 'Location captured — helpers nearby will see your request first.'}
-                  {locationStatus === 'denied' && 'Location not available — request will still be visible to all helpers.'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', fontSize: '13px', color: '#7a7a7a' }}>
+                  <span style={{
+                    width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
+                    background: locationStatus === 'granted' ? '#4FA3CE' : locationStatus === 'denied' ? '#d0d0d5' : '#e0e0e0',
+                  }} />
+                  {locationStatus === 'asking' && 'Getting your location…'}
+                  {locationStatus === 'granted' && 'Location on — nearby helpers will be matched first.'}
+                  {locationStatus === 'denied' && 'Location off — your request will still reach all helpers.'}
                   {locationStatus === 'idle' && (
-                    <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#1d4ed8', padding: 0, textDecoration: 'underline' }}>
-                      Allow location so nearby helpers find you faster
+                    <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#4FA3CE', padding: 0, fontWeight: 600 }}>
+                      Share location to reach nearby helpers first
                     </button>
                   )}
                 </div>
-                {postMsg && <p style={{ fontSize: '14px', color: postMsg.includes('!') ? '#166534' : '#991b1b', fontWeight: 500 }}>{postMsg}</p>}
+                {postMsg && <p style={{ fontSize: '14px', color: postMsg.includes('!') ? '#4FA3CE' : '#5a6470', fontWeight: 500 }}>{postMsg}</p>}
                 <button type="submit" disabled={posting} className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: '17px' }}>
                   {posting ? 'Posting...' : 'Post Request'}
                 </button>

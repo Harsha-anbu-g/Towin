@@ -55,6 +55,22 @@ public class HelperProfile {
     @Builder.Default
     private BackgroundCheckStatus backgroundCheckStatus = BackgroundCheckStatus.NONE;
 
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(columnDefinition = "text[]")
+    private String[] hobbies;
+
+    @Column(name = "occupation")
+    private String occupation;
+
+    @Column(name = "facebook_url")
+    private String facebookUrl;
+
+    @Column(name = "instagram_url")
+    private String instagramUrl;
+
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

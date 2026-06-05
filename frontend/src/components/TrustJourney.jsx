@@ -10,7 +10,6 @@ const LEVELS = [
     key: 'DISCOVERED',
     label: 'Just Connected',
     short: 'Connected',
-    emoji: '👋',
     unlocks: ['View their profile', 'Send a connection request'],
     nextAction: 'Both tap "Advance to Messaging" to start chatting',
   },
@@ -18,7 +17,6 @@ const LEVELS = [
     key: 'MESSAGING',
     label: 'Messaging',
     short: 'Messaging',
-    emoji: '💬',
     unlocks: ['Send and receive messages', 'Share photos in chat'],
     nextAction: 'Both agree you\'re comfortable sharing phone numbers',
   },
@@ -26,7 +24,6 @@ const LEVELS = [
     key: 'PHONE_CALL',
     label: 'Phone Ready',
     short: 'Phone',
-    emoji: '📞',
     unlocks: ['Exchange phone numbers', 'Call each other directly'],
     nextAction: 'Both agree you\'re comfortable with a video call',
   },
@@ -34,7 +31,6 @@ const LEVELS = [
     key: 'VIDEO_CALL',
     label: 'Video Ready',
     short: 'Video',
-    emoji: '📹',
     unlocks: ['Video calls', 'See each other face to face'],
     nextAction: 'Both confirm your identities are verified',
   },
@@ -42,7 +38,6 @@ const LEVELS = [
     key: 'VERIFIED',
     label: 'Verified',
     short: 'Verified',
-    emoji: '✓',
     unlocks: ['Verified badge on your profile', 'Higher community trust score'],
     nextAction: 'Both agree to plan your first in-person meeting',
   },
@@ -50,7 +45,6 @@ const LEVELS = [
     key: 'FIRST_MEET',
     label: 'Ready to Meet',
     short: 'Meet',
-    emoji: '🤝',
     unlocks: ['Plan in-person visits', 'Emergency contact access'],
     nextAction: 'Both confirm a fully trusted friendship',
   },
@@ -58,7 +52,6 @@ const LEVELS = [
     key: 'TRUSTED',
     label: 'Fully Trusted',
     short: 'Trusted',
-    emoji: '⭐',
     unlocks: ['Community Champion status', 'Leave & receive reviews', 'Max trust score boost'],
     nextAction: null,
   },
@@ -96,7 +89,7 @@ export default function TrustJourney({
         onClick={() => setExpanded(v => !v)}
         style={{
           width: '100%', border: 'none', cursor: 'pointer',
-          background: isTrusted ? '#1d1d1f' : '#fafafc',
+          background: '#fafafc',
           padding: '12px 16px',
           display: 'flex', alignItems: 'center', gap: '10px',
           textAlign: 'left',
@@ -105,12 +98,18 @@ export default function TrustJourney({
         }}
       >
         {/* Emoji + label */}
-        <span style={{ fontSize: '18px', flexShrink: 0 }}>{current.emoji}</span>
+        <div style={{
+          width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
+          background: isTrusted ? '#e0e0e0' : '#f5f5f7',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isTrusted ? '#4FA3CE' : '#4FA3CE' }} />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* H2: human label, not enum */}
           <span style={{
             fontSize: '13px', fontWeight: 600,
-            color: isTrusted ? '#ffffff' : '#1d1d1f',
+            color: isTrusted ? '#4FA3CE' : '#1d1d1f',
             fontFamily: SFT, letterSpacing: '-0.1px',
           }}>
             {current.label}
@@ -129,18 +128,18 @@ export default function TrustJourney({
         {/* Progress pill */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '6px',
-          background: isTrusted ? 'rgba(255,255,255,0.1)' : '#f0f6ff',
-          border: `1px solid ${isTrusted ? 'rgba(255,255,255,0.15)' : '#c3d9f5'}`,
+          background: '#f5f5f7',
+          border: '1px solid #c3d9f5',
           borderRadius: '9999px', padding: '3px 10px', flexShrink: 0,
         }}>
           <div style={{
             width: '5px', height: '5px', borderRadius: '50%',
-            background: isTrusted ? '#34c759' : '#0066cc',
-            boxShadow: `0 0 5px ${isTrusted ? '#34c759' : '#0066cc'}99`,
+            background: '#4FA3CE',
+            boxShadow: '0 0 5px #4FA3CE99',
           }} />
           <span style={{
             fontSize: '12px', fontWeight: 600,
-            color: isTrusted ? '#ffffff' : '#0066cc',
+            color: '#4FA3CE',
             fontFamily: SFT,
           }}>{pct}%</span>
         </div>
@@ -154,12 +153,12 @@ export default function TrustJourney({
             transition: 'transform 0.2s',
           }}
         >
-          <path d="M2 4L6 8L10 4" stroke={isTrusted ? 'rgba(255,255,255,0.5)' : '#a0a0a5'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 4L6 8L10 4" stroke={isTrusted ? '#1d1d1f' : '#a0a0a5'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
 
       {/* ── Slider progress bar — always visible ── */}
-      <div style={{ padding: '16px 20px 4px', background: isTrusted ? '#1d1d1f' : '#fafafc' }}>
+      <div style={{ padding: '16px 20px 4px', background: '#fafafc' }}>
         <Slider
           value={[idx]}
           min={0}
@@ -167,7 +166,11 @@ export default function TrustJourney({
           step={1}
           disabled
           showTooltip
-          tooltipContent={(v) => `${LEVELS[v]?.emoji} ${LEVELS[v]?.label}`}
+          tooltipContent={(v) => LEVELS[v]?.label}
+          trackClassName="!h-3 !bg-[#e4eef5]"
+          rangeClassName="!bg-[#4FA3CE]"
+          thumbClassName="!h-14 !w-14"
+          thumbContent={<img src="/tortoise-logo.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain', transform: 'rotate(90deg)' }} />}
         />
         <span
           className="mt-2 flex w-full items-center justify-between gap-1 px-2.5"
@@ -177,23 +180,17 @@ export default function TrustJourney({
             <span key={level.key} className="flex w-0 flex-col items-center justify-center gap-1">
               <span style={{
                 height: '4px', width: '1px',
-                background: i <= idx
-                  ? (isTrusted ? '#34c759' : '#0066cc')
-                  : (isTrusted ? 'rgba(255,255,255,0.2)' : '#d1d1d6'),
+                background: i <= idx ? '#1d1d1f' : '#d1d1d6',
                 display: 'block',
               }} />
               <span style={{
                 fontSize: '9px',
                 fontWeight: i === idx ? 700 : i < idx ? 500 : 400,
-                color: i === idx
-                  ? (isTrusted ? '#34c759' : '#0066cc')
-                  : i < idx
-                    ? (isTrusted ? 'rgba(255,255,255,0.7)' : '#1d1d1f')
-                    : (isTrusted ? 'rgba(255,255,255,0.3)' : '#a0a0a5'),
+                color: i === idx ? '#1d1d1f' : i < idx ? '#1d1d1f' : '#a0a0a5',
                 fontFamily: SFT,
                 whiteSpace: 'nowrap',
               }}>
-                {level.emoji}
+                {level.short}
               </span>
             </span>
           ))}
@@ -214,7 +211,7 @@ export default function TrustJourney({
               </p>
               <button onClick={onConfirm} disabled={confirming} style={{
                 flexShrink: 0, padding: '7px 16px',
-                background: confirming ? '#a0c4e8' : '#0066cc',
+                background: confirming ? '#e0e0e0' : '#4FA3CE',
                 color: '#fff', border: 'none', borderRadius: '9999px',
                 fontSize: '12px', fontWeight: 600, fontFamily: SFT,
                 cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
@@ -227,13 +224,13 @@ export default function TrustJourney({
           {/* Elder: waiting for helper to accept */}
           {isElder && confirmedByMe && (
             <div style={{
-              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f0fdf4',
+              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f5f5f7',
               display: 'flex', alignItems: 'center', gap: '8px',
             }}>
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-                <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span style={{ fontSize: '12px', color: '#166534', fontFamily: SFT, fontWeight: 500 }}>
+              <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
                 Trust request sent — waiting for {otherUserName} to accept
               </span>
             </div>
@@ -257,12 +254,12 @@ export default function TrustJourney({
               padding: '10px 16px', borderTop: '1px solid #f0f0f5', background: '#eff6ff',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
             }}>
-              <p style={{ fontSize: '12px', color: '#1d4ed8', fontFamily: SFT, margin: 0, fontWeight: 500 }}>
+              <p style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, margin: 0, fontWeight: 500 }}>
                 {otherUserName} wants to advance your trust
               </p>
               <button onClick={onConfirm} disabled={confirming} style={{
                 flexShrink: 0, padding: '7px 16px',
-                background: confirming ? '#a0c4e8' : '#0066cc',
+                background: confirming ? '#e0e0e0' : '#4FA3CE',
                 color: '#fff', border: 'none', borderRadius: '9999px',
                 fontSize: '12px', fontWeight: 600, fontFamily: SFT,
                 cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
@@ -275,13 +272,13 @@ export default function TrustJourney({
           {/* Helper: already accepted */}
           {!isElder && confirmedByMe && (
             <div style={{
-              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f0fdf4',
+              padding: '8px 16px', borderTop: '1px solid #f0f0f5', background: '#f5f5f7',
               display: 'flex', alignItems: 'center', gap: '8px',
             }}>
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-                <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span style={{ fontSize: '12px', color: '#166534', fontFamily: SFT, fontWeight: 500 }}>
+              <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
                 You accepted — trust advancing
               </span>
             </div>
@@ -301,20 +298,20 @@ export default function TrustJourney({
           {/* NOW unlocked */}
           <div style={{ background: '#ffffff', padding: '14px 16px' }}>
             <p style={{
-              fontSize: '10px', fontWeight: 700, color: '#34c759',
+              fontSize: '10px', fontWeight: 700, color: '#4FA3CE',
               textTransform: 'uppercase', letterSpacing: '0.7px',
               marginBottom: '8px', fontFamily: SFT,
-            }}>✦ You can now</p>
+            }}>Now available</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {current.unlocks.map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px' }}>
                   <div style={{
                     width: '15px', height: '15px', borderRadius: '50%', flexShrink: 0, marginTop: '1px',
-                    background: '#f0fdf4', border: '1px solid #bbf7d0',
+                    background: '#f5f5f7', border: '1px solid #BFD9EA',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
                     <svg width="6" height="5" viewBox="0 0 6 5" fill="none">
-                      <path d="M0.8 2.5L2.3 4L5.2 1" stroke="#22c55e" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M0.8 2.5L2.3 4L5.2 1" stroke="#1d1d1f" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                   <span style={{ fontSize: '12px', color: '#1d1d1f', fontFamily: SFT, lineHeight: 1.45 }}>{item}</span>
@@ -327,19 +324,19 @@ export default function TrustJourney({
           {next && (
             <div style={{ background: '#fafafc', padding: '14px 16px' }}>
               <p style={{
-                fontSize: '10px', fontWeight: 700, color: '#0066cc',
+                fontSize: '10px', fontWeight: 700, color: '#4FA3CE',
                 textTransform: 'uppercase', letterSpacing: '0.7px',
                 marginBottom: '8px', fontFamily: SFT,
-              }}>→ Unlock next</p>
+              }}>Unlock next</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                 {next.unlocks.map(item => (
                   <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px' }}>
                     <div style={{
                       width: '15px', height: '15px', borderRadius: '50%', flexShrink: 0, marginTop: '1px',
-                      background: '#f0f6ff', border: '1px solid #bfdbfe',
+                      background: '#f5f5f7', border: '1px solid #bfdbfe',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0066cc' }} />
+                      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#4FA3CE' }} />
                     </div>
                     <span style={{ fontSize: '12px', color: '#7a7a7a', fontFamily: SFT, lineHeight: 1.45 }}>{item}</span>
                   </div>
@@ -349,14 +346,14 @@ export default function TrustJourney({
               {/* H5: Confirm action with clear label — prevent accidental advance */}
               {confirmedByMe ? (
                 <div style={{
-                  background: '#f0fdf4', border: '1px solid #bbf7d0',
+                  background: '#f5f5f7', border: '1px solid #BFD9EA',
                   borderRadius: '9999px', padding: '6px 12px',
                   display: 'flex', alignItems: 'center', gap: '6px',
                 }}>
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1 4L3.5 6.5L9 1" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 600, fontFamily: SFT }}>
+                  <span style={{ fontSize: '11px', color: '#4FA3CE', fontWeight: 600, fontFamily: SFT }}>
                     Confirmed — waiting for {otherUserName}
                   </span>
                 </div>
@@ -366,7 +363,7 @@ export default function TrustJourney({
                   disabled={confirming}
                   style={{
                     width: '100%', padding: '8px 14px',
-                    background: confirming ? '#a0c4e8' : '#0066cc',
+                    background: confirming ? '#e0e0e0' : '#4FA3CE',
                     color: '#fff', border: 'none', borderRadius: '9999px',
                     fontSize: '12px', fontWeight: 600, fontFamily: SFT,
                     cursor: confirming ? 'not-allowed' : 'pointer',
@@ -387,7 +384,15 @@ export default function TrustJourney({
               background: '#1d1d1f', padding: '14px 16px',
               display: 'flex', alignItems: 'center', gap: '10px',
             }}>
-              <span style={{ fontSize: '20px' }}>⭐</span>
+              <div style={{
+                width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+                background: 'rgba(255,255,255,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 1L8.8 5.2L13.5 5.6L10.1 8.6L11.1 13.2L7 10.8L2.9 13.2L3.9 8.6L0.5 5.6L5.2 5.2L7 1Z" fill="rgba(255,255,255,0.9)" stroke="none"/>
+                </svg>
+              </div>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', margin: '0 0 2px', fontFamily: SF }}>
                   Community Champion

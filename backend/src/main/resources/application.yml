@@ -1,8 +1,10 @@
 spring:
+  autoconfigure:
+    exclude: ${SPRING_AUTOCONFIGURE_EXCLUDE:org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration}
   datasource:
-    url: jdbc:postgresql://localhost:5432/towin
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:0000}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/towin}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:0000}}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -20,19 +22,9 @@ spring:
     locations: classpath:db/migration
   data:
     redis:
-      host: ${SPRING_REDIS_HOST:localhost}
-      port: 6379
-  kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      group-id: towin-notifications
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.towin.common.messaging"
+      host: ${REDIS_HOST:${SPRING_REDIS_HOST:localhost}}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
   servlet:
     multipart:
       max-file-size: 5MB
@@ -52,6 +44,10 @@ app:
   jwt:
     secret: ${JWT_SECRET:your-256-bit-secret-change-this-in-production-must-be-long}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  kafka:
+    enabled: ${APP_KAFKA_ENABLED:false}
+  redis:
+    enabled: ${APP_REDIS_ENABLED:false}
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
@@ -59,4 +55,4 @@ twilio:
   from-number: ${TWILIO_FROM_NUMBER:}
 
 server:
-  port: 8080
+  port: ${PORT:8080}

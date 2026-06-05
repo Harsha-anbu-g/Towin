@@ -19,6 +19,7 @@ public class ProfileService {
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
+    private final TrustScoreService trustScoreService;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -37,8 +38,16 @@ public class ProfileService {
         if (request.getLookingFor() != null) {
             profile.setLookingFor(request.getLookingFor());
         }
+        profile.setFacebookUrl(request.getFacebookUrl());
+        profile.setInstagramUrl(request.getInstagramUrl());
+        profile.setOccupation(request.getOccupation());
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+            userRepository.save(user);
+        }
 
         elderProfileRepository.save(profile);
+        trustScoreService.recalculate(userId);
         return buildProfileResponse(user, profile, null);
     }
 
@@ -58,8 +67,14 @@ public class ProfileService {
         profile.setLanguages(request.getLanguages());
         profile.setAvailabilityDays(request.getAvailabilityDays());
         profile.setAvailabilityTimes(request.getAvailabilityTimes());
+        profile.setHobbies(request.getHobbies());
+        profile.setOccupation(request.getOccupation());
+        profile.setFacebookUrl(request.getFacebookUrl());
+        profile.setInstagramUrl(request.getInstagramUrl());
+        profile.setDateOfBirth(request.getDateOfBirth());
 
         helperProfileRepository.save(profile);
+        trustScoreService.recalculate(userId);
         return buildProfileResponse(user, null, profile);
     }
 
@@ -122,7 +137,8 @@ public class ProfileService {
                 .verificationStatus(user.getVerificationStatus().name())
                 .phoneVerified(user.isPhoneVerified())
                 .phone(user.getPhone())
-                .city(user.getCity());
+                .city(user.getCity())
+                .dateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
 
         if (elder != null) {
             builder.name(elder.getName())
@@ -131,7 +147,10 @@ public class ProfileService {
                     .bio(elder.getBio())
                     .interests(elder.getInterests())
                     .languages(elder.getLanguages())
-                    .lookingFor(elder.getLookingFor().name());
+                    .lookingFor(elder.getLookingFor().name())
+                    .facebookUrl(elder.getFacebookUrl())
+                    .instagramUrl(elder.getInstagramUrl())
+                    .occupation(elder.getOccupation());
         }
 
         if (helper != null) {
@@ -143,7 +162,11 @@ public class ProfileService {
                     .skillsOffered(helper.getSkillsOffered())
                     .availabilityDays(helper.getAvailabilityDays())
                     .availabilityTimes(helper.getAvailabilityTimes())
-                    .backgroundCheckStatus(helper.getBackgroundCheckStatus().name());
+                    .backgroundCheckStatus(helper.getBackgroundCheckStatus().name())
+                    .hobbies(helper.getHobbies())
+                    .occupation(helper.getOccupation())
+                    .facebookUrl(helper.getFacebookUrl())
+                    .instagramUrl(helper.getInstagramUrl());
         }
 
         return builder.build();

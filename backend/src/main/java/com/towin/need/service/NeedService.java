@@ -2,9 +2,16 @@ package com.towin.need.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.enums.ApplicationStatus;
+import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.ConnectionType;
 import com.towin.common.enums.NeedStatus;
+import com.towin.common.enums.TrustLevel;
+import com.towin.common.messaging.ConnectionEvent;
+import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
+import com.towin.connection.entity.Connection;
+import com.towin.connection.repository.ConnectionRepository;
 import com.towin.need.dto.ApplicantDto;
 import com.towin.need.dto.ApplyRequest;
 import com.towin.need.dto.NeedRequest;
@@ -23,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,6 +44,8 @@ public class NeedService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final TrustScoreService trustScoreService;
+    private final ConnectionRepository connectionRepository;
+    private final Optional<ConnectionEventProducer> connectionEventProducer;
 
     @Transactional
     public NeedResponse postNeed(UUID elderId, NeedRequest request) {
@@ -137,6 +147,32 @@ public class NeedService {
                 });
 
         need.setStatus(NeedStatus.ASSIGNED);
+
+        User helper = application.getHelper();
+        Connection connection = connectionRepository.findBetweenUsers(elderId, helper.getId())
+                .orElseGet(() -> Connection.builder()
+                        .userA(need.getElder())
+                        .userB(helper)
+                        .type(ConnectionType.SERVICE)
+                        .initiatedBy(need.getElder())
+                        .currentTrustLevel(TrustLevel.DISCOVERED)
+                        .status(ConnectionStatus.ACTIVE)
+                        .build());
+        connection.setStatus(ConnectionStatus.ACTIVE);
+        if (connection.getCurrentTrustLevel() == null) {
+            connection.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        }
+        connection.setConfirmedByUser(need.getElder().getId(), false);
+        connection.setConfirmedByUser(helper.getId(), false);
+        Connection savedConn = connectionRepository.save(connection);
+
+        connectionEventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
+                .type(ConnectionEvent.Type.REQUEST_ACCEPTED)
+                .connectionId(savedConn.getId())
+                .senderId(elderId)
+                .recipientId(helper.getId())
+                .build()));
+
         return toResponse(needRepository.save(need), null);
     }
 

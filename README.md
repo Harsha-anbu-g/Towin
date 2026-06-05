@@ -1,109 +1,144 @@
-# ToWin
+<div align="center">
 
-A social platform connecting elderly people with each other and with younger helpers — built around a **trust journey** that gradually unlocks contact and meeting capabilities as users earn each other's confidence.
+# 🐢 ToWin
 
----
+### Connecting generations, building trust.
 
-## What it does
+A social platform where **elders** and **younger helpers** meet, talk, and grow trust at their own pace.
 
-- **Connections with progressive trust** — pairs of users move through trust levels (message → phone → meet), with both parties having to confirm before progression.
-- **Need posting & applications** — elders post needs; helpers apply.
-- **Messaging** with WebSocket delivery and trust-gated phone reveal.
-- **Emergency contacts & SOS** — inactivity checks and emergency contact escalation.
-- **Reviews & reports** for safety and accountability.
-- **Admin panel** for moderation.
+**[🚀 Try the live demo →](https://towin.vercel.app)**
 
-For the full product story see [`docs/ToWin-Business-Pitch.docx`](docs/ToWin-Business-Pitch.docx) and architecture details in [`docs/ToWin-Technical-Documentation.docx`](docs/ToWin-Technical-Documentation.docx).
+*No signup needed — scroll to the bottom of the login page and click **Continue as Elder** or **Continue as Helper**.*
+
+</div>
 
 ---
 
-## Tech stack
+## 📸 A look inside
 
-**Backend** — Java 21, Spring Boot, Spring Security (JWT), Spring Data JPA, PostgreSQL, Flyway, Redis, Kafka, AWS S3.
-
-**Frontend** — React 19, Vite, Tailwind CSS v4, React Router 7, TanStack Query, Radix UI, Framer Motion.
-
-**Infra** — Docker Compose (Postgres, Redis, Zookeeper, Kafka, app).
+<table>
+  <tr>
+    <td align="center" width="50%"><b>Elder Dashboard</b></td>
+    <td align="center" width="50%"><b>Helper Dashboard</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/elder-dashboard.png" alt="Elder dashboard" /></td>
+    <td><img src="docs/screenshots/helper-dashboard.png" alt="Helper dashboard" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Trust Score</b></td>
+    <td align="center"><b>Messaging</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/trust.png" alt="Trust score breakdown" /></td>
+    <td><img src="docs/screenshots/messages.png" alt="Trust-gated messaging" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Profile & AWS S3 Photo Upload</b></td>
+    <td align="center"><b>Admin Panel</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/aws.png" alt="Profile page with AWS S3 photo upload" /></td>
+    <td><img src="docs/screenshots/admin.png" alt="Admin moderation panel" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Daily Streak</b></td>
+    <td align="center"><b>How It Works</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/Streak.png" alt="Daily check-in streak" /></td>
+    <td><img src="docs/screenshots/how-it-works.png" alt="How ToWin works guide" /></td>
+  </tr>
+</table>
 
 ---
 
-## Repository layout
+## ✨ What you can do
+
+- 🤝 **Build trust gradually** — connections move through levels (message → phone → meet), and **both people** confirm each step.
+- 📝 **Post & answer needs** — elders post tasks, helpers apply, accepting one starts a connection.
+- 💬 **Chat in real time** — WebSocket messaging; phone numbers stay hidden until trust is earned.
+- ⭐ **Earn a trust score** — verification, completed help, and reviews build a 0–100 score.
+- 🔥 **Keep a streak** — daily elder check-ins.
+- 🚨 **Stay safe** — emergency contacts, SOS, reviews, and reports.
+- 👀 **Try it instantly** — one-click guest mode for beta testers.
+
+---
+
+## 🛠 Tech stack
+
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 19 · Vite · React Router 7 · TanStack Query · Axios · Radix UI · Framer Motion · Lucide |
+| **Backend** | Java 21 · Spring Boot 3 · Spring Security + JWT · Spring Data JPA / Hibernate · Flyway |
+| **Database** | PostgreSQL |
+| **Real-time** | WebSocket / STOMP (live messaging) |
+| **Cloud storage** | AWS S3 (profile photos & ID document uploads) — bucket `towin-uploads`, live in production |
+| **SMS** | Twilio (emergency SOS alerts & phone-OTP verification) |
+| **Messaging / cache** | Apache Kafka (async events) · Redis (caching) — feature-flagged: on locally, off in prod to save cost |
+| **Build & tooling** | Maven · Docker · Docker Compose |
+| **Hosting / CI** | Vercel (frontend) · Railway (backend + Postgres) · GitHub |
+
+> **Architecture note for reviewers:** AWS S3, Twilio, Redis, and Kafka are all fully integrated in code. Redis and Kafka are gated behind `app.redis.enabled` / `app.kafka.enabled` so the app runs the complete stack locally (via Docker Compose) but uses an in-memory cache and in-process events in production — keeping the live demo free to host without removing the integrations.
+
+---
+
+## 🚀 Run it locally
+
+```bash
+# 1. Start the database (Redis + Kafka optional)
+docker compose up -d postgres
+
+# 2. Backend → http://localhost:8080
+cd backend && ./mvnw spring-boot:run
+
+# 3. Frontend → http://localhost:5173
+cd frontend && npm install && npm run dev
+```
+
+Flyway runs the migrations automatically on boot. Copy `.env.example` to `.env` first and fill in the secrets.
+
+> Want the full Redis + Kafka stack for a demo? Run `docker compose up -d` — both are enabled locally via `APP_REDIS_ENABLED` / `APP_KAFKA_ENABLED`.
+
+---
+
+## 📁 Project structure
 
 ```
 ToWin/
-├── backend/                 Spring Boot service
-│   └── src/main/java/com/towin/
-│       ├── auth/            registration, login, JWT
-│       ├── profile/         elder & helper profiles
-│       ├── connection/      trust-level state machine
-│       ├── trust/           trust score + progression log
-│       ├── messaging/       chat + WebSocket
-│       ├── need/            need posts & applications
-│       ├── emergency/       SOS + emergency contacts
-│       ├── review/          post-interaction reviews
-│       ├── report/          user reports
-│       ├── admin/           admin endpoints
-│       ├── discovery/       helper / need search
-│       └── common/          security, S3, trust service, shared entities
-├── frontend/                React + Vite SPA
-├── docs/
-│   ├── superpowers/         specs and plans
-│   ├── ToWin-Business-Pitch.docx
-│   └── ToWin-Technical-Documentation.docx
+├── backend/      Spring Boot API (auth, trust, needs, messaging, streaks…)
+├── frontend/     React + Vite SPA
+├── docs/         Deployment runbook, specs, screenshots
 └── docker-compose.yml
 ```
 
 ---
 
-## Running locally
+## 🧠 How the trust score works
 
-### 1. Prerequisites
-- Java 21, Maven
-- Node 20+, npm
-- Docker (for Postgres / Redis / Kafka via compose)
+| Factor | Points |
+|---|---|
+| Phone verified | +10 |
+| ID verified | +20 |
+| Each trusted connection *(max +25)* | +5 |
+| Each completed help *(max +15)* | +3 |
+| Average review rating | 0–10 |
+| Active 30+ days | +5 |
+| Each report received | −15 |
 
-### 2. Configure environment
-Copy `.env.example` to `.env` and fill in values (DB credentials, JWT secret, S3, etc.):
-```bash
-cp .env.example .env
-```
+Scored 0–100, with auto-suspend on abuse.
 
-### 3. Start infra
-```bash
-docker compose up -d postgres redis kafka
-```
-
-### 4. Backend
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-Flyway migrations run automatically on boot. The API listens on `http://localhost:8080`.
-
-### 5. Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Vite serves on `http://localhost:5173`.
+**Roles:** `ELDER` · `HELPER` · `ADMIN` *(a `BOTH` role is reserved for a future feature)*
 
 ---
 
-## Key concepts
+## 📚 More docs
 
-### Trust journey
-A `Connection` between two users carries a `currentTrustLevel`. To advance, **both users** must confirm at the current step; on advancement, confirmations reset and the next level's contact channel unlocks (e.g. phone number is exposed in `ConnectionResponse` once `PHONE_CALL` is reached).
+- **[Deployment runbook](docs/DEPLOYMENT.md)** — hosting, env vars, dump/restore, recovery
+- **[Specs & plans](docs/superpowers/)**
+- **[Business pitch](docs/ToWin-Business-Pitch.docx)** · **[Technical doc](docs/ToWin-Technical-Documentation.docx)**
 
-### Roles
-- `ELDER` — posts needs, builds connections, can have emergency contacts.
-- `HELPER` — applies to needs, builds connections.
-- `ADMIN` — moderation surface.
-
----
-
-## Documentation
-
-- **Specs & plans:** [`docs/superpowers/`](docs/superpowers/)
-- **Business pitch (Word):** [`docs/ToWin-Business-Pitch.docx`](docs/ToWin-Business-Pitch.docx)
-- **Technical documentation (Word):** [`docs/ToWin-Technical-Documentation.docx`](docs/ToWin-Technical-Documentation.docx)
+<div align="center">
+<br>
+Built with care for older adults and the people who help them. 🐢
+</div>

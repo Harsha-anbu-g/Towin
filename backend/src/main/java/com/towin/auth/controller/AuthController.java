@@ -29,6 +29,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/guest")
+    public ResponseEntity<AuthResponse> guest(@Valid @RequestBody GuestLoginRequest request) {
+        return ResponseEntity.ok(authService.guestLogin(request.getRole()));
+    }
+
     @PostMapping("/verify-id")
     public ResponseEntity<VerifyIdResponse> verifyId(
             Authentication auth,

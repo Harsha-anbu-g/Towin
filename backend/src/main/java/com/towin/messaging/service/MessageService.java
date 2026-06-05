@@ -46,6 +46,13 @@ public class MessageService {
         return toResponse(messageRepository.save(message));
     }
 
+    public int totalUnreadCount(UUID userId) {
+        return connectionRepository.findAllByUser(userId).stream()
+                .mapToInt(c -> (int) messageRepository
+                        .countByConnectionIdAndSenderIdNotAndSeenAtIsNull(c.getId(), userId))
+                .sum();
+    }
+
     @Transactional
     public void markSeen(UUID connectionId, UUID userId) {
         getAuthorizedConnection(connectionId, userId);

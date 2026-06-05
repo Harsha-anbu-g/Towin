@@ -28,9 +28,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
 
-    @Mock MessageRepository messageRepository;
-    @Mock ConnectionRepository connectionRepository;
-    @InjectMocks MessageService messageService;
+    @Mock
+    MessageRepository messageRepository;
+    @Mock
+    ConnectionRepository connectionRepository;
+    @InjectMocks
+    MessageService messageService;
 
     private User userA;
     private User userB;

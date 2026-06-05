@@ -1,27 +1,43 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import { Phone, ShieldCheck, Star as StarIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import TrustBadge from '../components/TrustBadge';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 
-const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
-
-const LIFESTYLE_PHOTOS = [
-  { id: 'photo-1576765974256-9b879d60a571', cap: 'Building trust' },
-  { id: 'photo-1529156069898-49953e39b3ac', cap: 'Community' },
-  { id: 'photo-1573497491208-6b1acb260507', cap: 'Helping hands' },
-];
-
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
+const SKY = '#4FA3CE';
+const SKY_TINT = 'rgba(79,163,206,0.10)';
+const SKY_BORDER = 'rgba(79,163,206,0.22)';
+const LEAF = '#4FA3CE';
+const LEAF_DARK = '#4FA3CE';
+const LEAF_TINT = 'rgba(79,163,206,0.10)';
+const LEAF_BORDER = 'rgba(79,163,206,0.22)';
+const MUTED = '#a0a0a5';
+const BORDER = '#e0e0e0';
+
+const STAR_GOLD = '#F5B400';
+
+function computeAge(dobStr) {
+  if (!dobStr) return null;
+  const dob = new Date(dobStr);
+  const now = new Date();
+  const totalDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
+  let years = now.getFullYear() - dob.getFullYear();
+  let months = now.getMonth() - dob.getMonth();
+  let days = now.getDate() - dob.getDate();
+  if (days < 0) { months -= 1; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+  if (months < 0) { years -= 1; months += 12; }
+  return { totalDays, years, months, days };
+}
+
 function Stars({ rating }) {
   return (
-    <span style={{ color: '#f59e0b', letterSpacing: '-2px', fontSize: '16px' }}>
+    <span style={{ color: STAR_GOLD, letterSpacing: '-2px', fontSize: '16px' }}>
       {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
     </span>
   );
@@ -53,6 +69,7 @@ export default function ProfileEdit() {
     name: '', age: '', bio: '',
     interests: '', languages: '', lookingFor: 'BOTH',
     skillsOffered: '', availabilityDays: '', availabilityTimes: '',
+    hobbies: '', occupation: '', facebookUrl: '', instagramUrl: '', dateOfBirth: '',
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -72,15 +89,6 @@ export default function ProfileEdit() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoMsg, setPhotoMsg] = useState('');
 
-  const [notifPrefs, setNotifPrefs] = useState({
-    messages: true,
-    connectionRequests: true,
-    safetyAlerts: false,
-    weeklyDigest: false,
-  });
-
-  const toggleNotif = (key) => setNotifPrefs(p => ({ ...p, [key]: !p[key] }));
-
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
     api.get('/profile/me').then(r => {
@@ -96,6 +104,11 @@ export default function ProfileEdit() {
         skillsOffered: (p.skillsOffered || []).join(', '),
         availabilityDays: (p.availabilityDays || []).join(', '),
         availabilityTimes: (p.availabilityTimes || []).join(', '),
+        hobbies: (p.hobbies || []).join(', '),
+        occupation: p.occupation || '',
+        facebookUrl: p.facebookUrl || '',
+        instagramUrl: p.instagramUrl || '',
+        dateOfBirth: p.dateOfBirth || '',
       });
     }).catch(() => {});
   }, []);
@@ -161,17 +174,29 @@ export default function ProfileEdit() {
 
   async function save(e) {
     e.preventDefault(); setSaving(true); setMsg('');
+    const computedAge = form.dateOfBirth
+      ? (computeAge(form.dateOfBirth)?.years ?? Number(form.age))
+      : Number(form.age);
     try {
       if (isElder) {
         await api.put('/profile/elder', {
-          name: form.name, age: Number(form.age), bio: form.bio,
+          name: form.name, age: computedAge, bio: form.bio,
           interests: toArr(form.interests), languages: toArr(form.languages), lookingFor: form.lookingFor,
+          facebookUrl: form.facebookUrl || null,
+          instagramUrl: form.instagramUrl || null,
+          occupation: form.occupation || null,
+          dateOfBirth: form.dateOfBirth || null,
         });
       } else {
         await api.put('/profile/helper', {
-          name: form.name, age: Number(form.age), bio: form.bio,
+          name: form.name, age: computedAge, bio: form.bio,
           skillsOffered: toArr(form.skillsOffered), languages: toArr(form.languages),
           availabilityDays: toArr(form.availabilityDays), availabilityTimes: toArr(form.availabilityTimes),
+          hobbies: toArr(form.hobbies),
+          occupation: form.occupation,
+          facebookUrl: form.facebookUrl,
+          instagramUrl: form.instagramUrl,
+          dateOfBirth: form.dateOfBirth || null,
         });
       }
       setMsg('Profile saved.');
@@ -180,7 +205,7 @@ export default function ProfileEdit() {
   }
 
   const verBadge = (ok, pts) => ok
-    ? <span style={{ fontSize: '11px', background: 'rgba(52,199,89,0.1)', color: '#1a7a3c', border: '1px solid rgba(52,199,89,0.2)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
+    ? <span style={{ fontSize: '11px', background: 'rgba(79,163,206,0.10)', color: '#4FA3CE', border: '1px solid rgba(79,163,206,0.20)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
     : null;
 
   const card = {
@@ -197,15 +222,15 @@ export default function ProfileEdit() {
   );
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
       <NavBar />
 
-      {/* Hero section */}
+      {/* Hero section — calm sky-blue, matches app theme */}
       <BlurFade delay={1}>
         <div style={{
-          background: '#fafafc',
-          borderBottom: '1px solid #e0e0e0',
-          padding: '40px 24px 32px',
+          background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
+          borderBottom: '1px solid #DCEBF4',
+          padding: '48px 24px 36px',
           textAlign: 'center',
         }}>
           {/* Avatar circle */}
@@ -213,10 +238,11 @@ export default function ProfileEdit() {
             width: '100px',
             height: '100px',
             borderRadius: '50%',
-            border: '3px solid #e0e0e0',
+            border: '3px solid #ffffff',
+            boxShadow: '0 4px 16px rgba(79,163,206,0.18)',
             overflow: 'hidden',
             margin: '0 auto 16px',
-            background: profileData?.photoUrl ? 'transparent' : (isElder ? 'linear-gradient(135deg,#0055aa,#5856d6)' : 'linear-gradient(135deg,#065f46,#0066cc)'),
+            background: profileData?.photoUrl ? 'transparent' : `linear-gradient(135deg, ${SKY}, ${LEAF})`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -238,7 +264,7 @@ export default function ProfileEdit() {
             <label htmlFor="photo-upload" style={{
               fontSize: '14px',
               fontWeight: 600,
-              color: '#0066cc',
+              color: '#4FA3CE',
               cursor: 'pointer',
               background: 'rgba(0,102,204,0.08)',
               border: '1px solid rgba(0,102,204,0.2)',
@@ -251,7 +277,7 @@ export default function ProfileEdit() {
             {photoFile && (
               <button onClick={uploadPhoto} disabled={uploadingPhoto} style={{
                 marginLeft: '8px',
-                background: '#0066cc',
+                background: '#4FA3CE',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '9999px',
@@ -264,7 +290,7 @@ export default function ProfileEdit() {
                 {uploadingPhoto ? 'Uploading…' : 'Upload'}
               </button>
             )}
-            {photoMsg && <p style={{ fontSize: '13px', color: '#1a7a3c', marginTop: '6px' }}>{photoMsg}</p>}
+            {photoMsg && <p style={{ fontSize: '13px', color: '#4FA3CE', marginTop: '6px' }}>{photoMsg}</p>}
           </div>
 
           <h1 style={{
@@ -303,10 +329,30 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Age">
-                    <input {...f('age')} type="number"
-                      placeholder={isElder ? '50–120' : '18–80'}
-                      min={isElder ? 50 : 18} max={isElder ? 120 : 80} required
-                      style={{ width: '100%', boxSizing: 'border-box' }} />
+                    {form.dateOfBirth ? (() => {
+                      const age = computeAge(form.dateOfBirth);
+                      return age ? (
+                        <div style={{
+                          padding: '10px 14px', borderRadius: '12px',
+                          background: '#f5f5f7', border: '1.5px solid #e0e0e0',
+                          fontSize: '14px', color: '#1d1d1f', lineHeight: 1.6,
+                        }}>
+                          <span style={{ fontWeight: 700, fontSize: '20px', color: '#1a5c2e' }}>
+                            {age.years}
+                          </span>
+                          <span style={{ color: '#7a7a7a' }}> years old</span>
+                          <br />
+                          <span style={{ fontSize: '12px', color: '#a0a0a5' }}>
+                            {age.totalDays.toLocaleString()} days · {age.months} mo {age.days} d
+                          </span>
+                        </div>
+                      ) : null;
+                    })() : (
+                      <input {...f('age')} type="number"
+                        placeholder="Your age"
+                        min={1} max={150}
+                        style={{ width: '100%', boxSizing: 'border-box' }} />
+                    )}
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Bio">
@@ -342,7 +388,6 @@ export default function ProfileEdit() {
                         <select {...f('lookingFor')} className="field" style={{ width: '100%', boxSizing: 'border-box' }}>
                           <option value="FRIENDSHIP">Friendship</option>
                           <option value="HELP">Help</option>
-                          <option value="BOTH">Both</option>
                         </select>
                       </FieldRow>
                     </>
@@ -362,11 +407,33 @@ export default function ProfileEdit() {
                       <FieldRow label="Availability Times">
                         <input {...f('availabilityTimes')} placeholder="Morning, Afternoon" style={{ width: '100%', boxSizing: 'border-box' }} />
                       </FieldRow>
+                      <Divider />
+                      <FieldRow label="Hobbies">
+                        <input {...f('hobbies')} placeholder="Reading, Hiking, Cooking" style={{ width: '100%', boxSizing: 'border-box' }} />
+                      </FieldRow>
                     </>
                   )}
 
+                  {/* Shared fields — all roles */}
+                  <Divider />
+                  <FieldRow label="Date of Birth">
+                    <input {...f('dateOfBirth')} type="date" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+                  <Divider />
+                  <FieldRow label="Occupation">
+                    <input {...f('occupation')} placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+                  <Divider />
+                  <FieldRow label="Facebook URL">
+                    <input {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+                  <Divider />
+                  <FieldRow label="Instagram URL">
+                    <input {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+
                   {msg && (
-                    <p style={{ fontSize: '14px', color: msg.includes('saved') ? '#1a7a3c' : '#cc0000', fontWeight: 500, marginTop: '8px' }}>
+                    <p style={{ fontSize: '14px', color: msg.includes('saved') ? '#4FA3CE' : '#5a6470', fontWeight: 500, marginTop: '8px' }}>
                       {msg}
                     </p>
                   )}
@@ -377,7 +444,7 @@ export default function ProfileEdit() {
                     style={{
                       marginTop: '20px',
                       width: '100%',
-                      background: '#0066cc',
+                      background: '#4FA3CE',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '9999px',
@@ -393,9 +460,51 @@ export default function ProfileEdit() {
                 </form>
               </div>
             </BlurFade>
+          </div>
+
+          {/* RIGHT: Reviews + Verification + Account */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+            {/* Reviews received */}
+            <BlurFade delay={4}>
+              <div style={card}>
+                <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
+                  Reviews Received {reviews.length > 0 && (
+                    <span style={{ fontSize: '16px', fontWeight: 400, color: '#a0a0a5' }}>({reviews.length})</span>
+                  )}
+                </p>
+                {reviews.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: LEAF_TINT, border: `1px solid ${LEAF_BORDER}`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <StarIcon size={20} color={STAR_GOLD} strokeWidth={2} fill={STAR_GOLD} />
+                    </div>
+                    <p style={{ fontSize: '14px', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {reviews.map(r => (
+                    <div key={r.id} style={{ border: '1px solid #e0e0e0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>{r.reviewerName}</p>
+                        <Stars rating={r.rating} />
+                      </div>
+                      {r.tags?.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {r.tags.map(t => (
+                            <span key={t} style={{ fontSize: '11px', background: 'rgba(0,102,204,0.08)', color: '#4FA3CE', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
+                          ))}
+                        </div>
+                      )}
+                      {r.comment && <p style={{ fontSize: '14px', color: '#7a7a7a', lineHeight: 1.6 }}>{r.comment}</p>}
+                      <p style={{ fontSize: '12px', color: '#a0a0a5' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </BlurFade>
 
             {/* Verification card */}
-            <BlurFade delay={3}>
+            <BlurFade delay={4}>
               <div style={card}>
                 {sectionHeader('Verification')}
 
@@ -403,10 +512,8 @@ export default function ProfileEdit() {
                 <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '18px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(0,102,204,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066cc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.89 11a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.78 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-                        </svg>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: SKY_TINT, border: `1px solid ${SKY_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Phone size={18} color={SKY} strokeWidth={2} />
                       </div>
                       <div>
                         <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>Phone Number</p>
@@ -441,21 +548,19 @@ export default function ProfileEdit() {
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <input value={otp} onChange={e => setOtp(e.target.value)} placeholder="6-digit code" className="field" style={{ flex: 1 }} />
                         <button onClick={confirmOtp} disabled={verifyingPhone || otp.length < 6}
-                          className="primary-btn" style={{ background: '#34c759', fontSize: '13px' }}>Confirm</button>
+                          className="primary-btn" style={{ background: '#4FA3CE', fontSize: '13px' }}>Confirm</button>
                       </div>
                     )
                   )}
-                  {otpMsg && <p style={{ fontSize: '13px', color: otpMsg.includes('verified') || otpMsg.includes('updated') ? '#1a7a3c' : '#cc0000', fontWeight: 500 }}>{otpMsg}</p>}
+                  {otpMsg && <p style={{ fontSize: '13px', color: otpMsg.includes('verified') || otpMsg.includes('updated') ? '#4FA3CE' : '#5a6470', fontWeight: 500 }}>{otpMsg}</p>}
                 </div>
 
                 {/* ID */}
                 <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-                        </svg>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: SKY_TINT, border: `1px solid ${SKY_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ShieldCheck size={18} color={SKY} strokeWidth={2} />
                       </div>
                       <div>
                         <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>ID Document</p>
@@ -465,7 +570,7 @@ export default function ProfileEdit() {
                     {profileData?.verificationStatus === 'VERIFIED'
                       ? verBadge(true, 20)
                       : profileData?.verificationStatus === 'PENDING'
-                      ? <span style={{ fontSize: '11px', background: 'rgba(245,158,11,0.1)', color: '#b45309', border: '1px solid rgba(245,158,11,0.25)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Under review</span>
+                      ? <span style={{ fontSize: '11px', background: SKY_TINT, color: SKY, border: `1px solid ${SKY_BORDER}`, padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Under review</span>
                       : <span style={{ fontSize: '11px', background: 'rgba(160,160,165,0.1)', color: '#a0a0a5', border: '1px solid #e0e0e0', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not submitted</span>
                     }
                   </div>
@@ -480,149 +585,20 @@ export default function ProfileEdit() {
                       )}
                     </div>
                   )}
-                  {idMsg && <p style={{ fontSize: '13px', color: idMsg.includes('pending') ? '#f59e0b' : '#cc0000', fontWeight: 500 }}>{idMsg}</p>}
-                </div>
-              </div>
-            </BlurFade>
-          </div>
-
-          {/* RIGHT: Preferences, notifications, danger zone */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-            {/* Community photos strip */}
-            <BlurFade delay={2}>
-              <div style={card}>
-                <p style={{ fontSize: '12px', fontWeight: 600, color: '#a0a0a5', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '14px' }}>
-                  Our Community
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  {LIFESTYLE_PHOTOS.map(({ id, cap }) => (
-                    <div key={id} style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '1', position: 'relative' }}>
-                      <LazyLoadImage
-                        src={unsplash(id, 200, 200)}
-                        alt={cap}
-                        effect="blur"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        wrapperProps={{ style: { width: '100%', height: '100%', display: 'block' } }}
-                      />
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent)', padding: '6px 8px' }}>
-                        <p style={{ fontSize: '10px', color: '#fff', fontWeight: 600 }}>{cap}</p>
-                      </div>
-                    </div>
-                  ))}
+                  {idMsg && <p style={{ fontSize: '13px', color: idMsg.includes('pending') ? SKY : MUTED, fontWeight: 500 }}>{idMsg}</p>}
                 </div>
               </div>
             </BlurFade>
 
-            {/* Notifications card */}
-            <BlurFade delay={3}>
-              <div style={card}>
-                {sectionHeader('Notifications')}
-                {[
-                  { label: 'New messages', sub: 'Get notified when someone messages you', key: 'messages' },
-                  { label: 'Connection requests', sub: 'When someone wants to connect', key: 'connectionRequests' },
-                  { label: 'Safety alerts', sub: 'Emergency and trust notifications', key: 'safetyAlerts' },
-                  { label: 'Weekly digest', sub: 'Summary of your community activity', key: 'weeklyDigest' },
-                ].map((row, idx, arr) => {
-                  const on = notifPrefs[row.key];
-                  return (
-                    <div key={row.key}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '14px 0',
-                      }}>
-                        <div>
-                          <p style={{ fontSize: '15px', fontWeight: 500, color: '#1d1d1f', marginBottom: '2px' }}>
-                            {row.label}
-                          </p>
-                          <p style={{ fontSize: '13px', color: '#7a7a7a' }}>{row.sub}</p>
-                        </div>
-                        {/* iOS-style toggle */}
-                        <div
-                          role="switch"
-                          aria-checked={on}
-                          onClick={() => toggleNotif(row.key)}
-                          style={{
-                            width: '51px',
-                            height: '31px',
-                            borderRadius: '9999px',
-                            background: on ? '#34c759' : '#e0e0e0',
-                            position: 'relative',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                            transition: 'background 0.2s',
-                          }}>
-                          <div style={{
-                            position: 'absolute',
-                            top: '2px',
-                            left: on ? '20px' : '2px',
-                            width: '27px',
-                            height: '27px',
-                            borderRadius: '50%',
-                            background: '#ffffff',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            transition: 'left 0.2s',
-                          }} />
-                        </div>
-                      </div>
-                      {idx < arr.length - 1 && <Divider />}
-                    </div>
-                  );
-                })}
-              </div>
-            </BlurFade>
-
-            {/* Reviews received */}
-            <BlurFade delay={4}>
-              <div style={card}>
-                <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
-                  Reviews Received {reviews.length > 0 && (
-                    <span style={{ fontSize: '16px', fontWeight: 400, color: '#a0a0a5' }}>({reviews.length})</span>
-                  )}
-                </p>
-                {reviews.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(245,158,11,0.1)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                      </svg>
-                    </div>
-                    <p style={{ fontSize: '14px', color: '#a0a0a5' }}>No reviews yet. Complete a service to receive your first review.</p>
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {reviews.map(r => (
-                    <div key={r.id} style={{ border: '1px solid #e0e0e0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>{r.reviewerName}</p>
-                        <Stars rating={r.rating} />
-                      </div>
-                      {r.tags?.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                          {r.tags.map(t => (
-                            <span key={t} style={{ fontSize: '11px', background: 'rgba(0,102,204,0.08)', color: '#0066cc', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
-                          ))}
-                        </div>
-                      )}
-                      {r.comment && <p style={{ fontSize: '14px', color: '#7a7a7a', lineHeight: 1.6 }}>{r.comment}</p>}
-                      <p style={{ fontSize: '12px', color: '#a0a0a5' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </BlurFade>
-
-            {/* Danger zone */}
+            {/* Account */}
             <BlurFade delay={5}>
               <div style={{
                 background: '#ffffff',
                 borderRadius: '18px',
                 padding: '20px 24px',
-                border: '1.5px solid #ffe0e0',
+                border: `1px solid ${BORDER}`,
               }}>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '14px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '14px' }}>
                   Account
                 </p>
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -630,9 +606,9 @@ export default function ProfileEdit() {
                     onClick={() => { logout(); navigate('/login'); }}
                     style={{
                       flex: 1,
-                      background: 'transparent',
-                      color: '#0066cc',
-                      border: '1.5px solid rgba(0,102,204,0.3)',
+                      background: SKY,
+                      color: '#ffffff',
+                      border: 'none',
                       borderRadius: '9999px',
                       padding: '10px 0',
                       fontSize: '14px',
@@ -642,23 +618,6 @@ export default function ProfileEdit() {
                     }}
                   >
                     Sign Out
-                  </button>
-                  <button
-                    onClick={() => alert('To delete your account, please contact support at support@towin.app')}
-                    style={{
-                      flex: 1,
-                      background: 'transparent',
-                      color: '#cc0000',
-                      border: '1.5px solid rgba(204,0,0,0.3)',
-                      borderRadius: '9999px',
-                      padding: '10px 0',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      fontFamily: SFText,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Delete Account
                   </button>
                 </div>
               </div>

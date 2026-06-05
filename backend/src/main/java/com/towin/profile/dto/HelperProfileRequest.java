@@ -18,4 +18,9 @@ public class HelperProfileRequest {
     private String[] languages;
     private String[] availabilityDays;
     private String[] availabilityTimes;
+    private String[] hobbies;
+    private String occupation;
+    private String facebookUrl;
+    private String instagramUrl;
+    private java.time.LocalDate dateOfBirth;
 }
