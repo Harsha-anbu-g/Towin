@@ -567,7 +567,7 @@ export default function Register() {
 
           {/* Demo accounts */}
           <div style={{ marginTop: '24px' }}>
-            <p style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif', textAlign: 'center', marginBottom: '12px', letterSpacing: '0.3px' }}>
+            <p style={{ fontSize: '15px', color: '#3a3a3a', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif', textAlign: 'center', marginBottom: '12px', letterSpacing: '0.3px', fontWeight: '800' }}>
               Or explore with a demo account
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>

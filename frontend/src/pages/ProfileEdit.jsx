@@ -128,8 +128,8 @@ export default function ProfileEdit() {
       const r = await api.get('/profile/me');
       setProfileData(r.data);
       setEditingPhone(false);
-      setOtpMsg('Phone number updated. Please verify it.');
       setPhoneOtpSent(false);
+      await requestOtp();
     } catch (err) { setOtpMsg(err?.response?.data?.message || 'Could not update number.'); }
   }
 
@@ -315,7 +315,7 @@ export default function ProfileEdit() {
       </BlurFade>
 
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 24px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div className="profile-edit-grid">
 
           {/* LEFT: Personal info form */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

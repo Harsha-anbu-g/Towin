@@ -330,6 +330,42 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   box-shadow: 0 0 0 3px rgba(0,102,204,0.12);
 }
 
+/* ─── Dashboard tab bar — horizontally scrollable on mobile ─── */
+.dash-tab-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+.dash-tab-scroll {
+  display: flex;
+  gap: 6px;
+  padding: 10px 0;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.dash-tab-scroll::-webkit-scrollbar { display: none; }
+
+.dash-content {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 40px 64px;
+}
+
+/* ─── ProfileEdit responsive 2-col grid ─── */
+.profile-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .dash-tab-wrap  { padding: 0 12px; }
+  .dash-content   { padding: 16px 12px 80px; }
+  .profile-edit-grid { grid-template-columns: 1fr; }
+}
+
 /* ─── Auth pages (Login / Register) responsive shell ─── */
 .auth-shell { min-height: 100svh; display: flex; }
 .auth-hero  { flex: 0 0 42%; min-height: 100svh; }
