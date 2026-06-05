@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
-import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import ElderDashboard from './pages/ElderDashboard';
@@ -9,8 +8,17 @@ import HelperDashboard from './pages/HelperDashboard';
 import ProfileEdit from './pages/ProfileEdit';
 import EmergencyContacts from './pages/EmergencyContacts';
 import Messages from './pages/Messages';
+import MessagesInbox from './pages/MessagesInbox';
 import Admin from './pages/Admin';
 import AdminRoute from './components/AdminRoute';
+import Trust from './pages/Trust';
+import Streaks from './pages/Streaks';
+import UserProfile from './pages/UserProfile';
+import PeekabooGame from './pages/PeekabooGame';
+import BetaBanner from './components/BetaBanner';
+import FeedbackWidget from './components/FeedbackWidget';
+import Feedback from './pages/Feedback';
+import Guide from './pages/Guide';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -34,22 +42,30 @@ function DashboardRouter() {
 function App() {
   return (
     <ToastProvider>
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
-          <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
-          <Route path="/messages" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
-          <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <BetaBanner />
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/how-it-works" element={<Guide />} />
+            <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
+            <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
+            <Route path="/messages" element={<PrivateRoute><MessagesInbox /></PrivateRoute>} />
+            <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
+            <Route path="/streaks" element={<ElderOnly><Streaks /></ElderOnly>} />
+            <Route path="/game" element={<PrivateRoute><PeekabooGame /></PrivateRoute>} />
+            <Route path="/trust" element={<PrivateRoute><Trust /></PrivateRoute>} />
+            <Route path="/user/:id" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+            <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+          <FeedbackWidget />
+        </BrowserRouter>
+      </AuthProvider>
     </ToastProvider>
   );
 }

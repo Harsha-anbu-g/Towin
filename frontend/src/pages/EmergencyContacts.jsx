@@ -11,8 +11,8 @@ const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 const ROLE_ACCENT = {
-  GP: '#0066cc',
-  Doctor: '#0066cc',
+  GP: '#4FA3CE',
+  Doctor: '#4FA3CE',
   Family: '#7a7a7a',
   Neighbour: '#0a9396',
   Neighbor: '#0a9396',
@@ -24,12 +24,25 @@ const roleAccent = (rel) => {
   return key ? ROLE_ACCENT[key] : '#a0a0a5';
 };
 
-const ROLE_EMOJI = { GP: '👨‍⚕️', Doctor: '👨‍⚕️', Family: '👨‍👩‍👧', Neighbour: '🏡', Neighbor: '🏡', Friend: '👋' };
-const roleEmoji = (rel) => {
-  if (!rel) return '👤';
-  const key = Object.keys(ROLE_EMOJI).find(k => rel.toLowerCase().includes(k.toLowerCase()));
-  return key ? ROLE_EMOJI[key] : '👤';
-};
+// Simple WhatsApp-style default avatar (human silhouette in a circle)
+const DefaultAvatar = ({ color = '#4FA3CE', size = 52 }) => (
+  <div style={{
+    width: `${size}px`,
+    height: `${size}px`,
+    borderRadius: '50%',
+    background: `${color}1A`,
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  }}>
+    <svg width={size * 0.75} height={size * 0.75} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M12 14c-4.4 0-8 2.7-8 6v2h16v-2c0-3.3-3.6-6-8-6z" />
+    </svg>
+  </div>
+);
 
 export default function EmergencyContacts() {
   const [contacts, setContacts] = useState([]);
@@ -39,9 +52,6 @@ export default function EmergencyContacts() {
   const [sosMsg, setSosMsg] = useState('');
   const [sosSent, setSosSent] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [safetyToggles, setSafetyToggles] = useState({ shareLocation: true, autoAlert: true });
-  const toggleSafety = (key) => setSafetyToggles(p => ({ ...p, [key]: !p[key] }));
-
   useEffect(() => {
     api.get('/emergency/contacts').then(r => setContacts(r.data)).catch(() => {});
   }, []);
@@ -82,10 +92,11 @@ export default function EmergencyContacts() {
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
       <NavBar />
 
-      {/* Hero tile */}
+      {/* Hero tile — calm sky-blue, matches dashboard theme */}
       <BlurFade delay={1}>
         <div style={{
-          background: '#1d1d1f',
+          background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
+          borderBottom: '1px solid #DCEBF4',
           padding: '64px 24px 48px',
           textAlign: 'center',
         }}>
@@ -93,20 +104,22 @@ export default function EmergencyContacts() {
             width: '64px',
             height: '64px',
             borderRadius: '16px',
-            background: 'rgba(204,0,0,0.15)',
+            background: '#ffffff',
+            border: '1px solid #BFD9EA',
             margin: '0 auto 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(79,163,206,0.15)',
           }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cc0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
           <h1 style={{
             fontSize: '48px',
             fontWeight: 700,
-            color: '#ffffff',
+            color: '#1d1d1f',
             fontFamily: SF,
             letterSpacing: '-1px',
             marginBottom: '12px',
@@ -114,7 +127,7 @@ export default function EmergencyContacts() {
           }}>
             Emergency Contacts
           </h1>
-          <p style={{ fontSize: '17px', color: '#cccccc', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '17px', color: '#5a6b75', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
             We'll alert these people if you don't check in for several days.
           </p>
         </div>
@@ -128,7 +141,7 @@ export default function EmergencyContacts() {
             style={{
               display: 'block',
               width: '100%',
-              background: sosSent ? '#1a7a3c' : '#cc0000',
+              background: sosSent ? '#3D8AB0' : '#cc0000',
               color: '#ffffff',
               border: 'none',
               borderRadius: '9999px',
@@ -142,7 +155,7 @@ export default function EmergencyContacts() {
               boxShadow: sosSent ? '0 4px 24px rgba(26,122,60,0.3)' : '0 4px 24px rgba(204,0,0,0.35)',
             }}
           >
-            {sosSent ? '✓ SOS Sent' : 'SOS — Call All Contacts Now'}
+            {sosSent ? 'SOS Sent' : 'SOS — Call All Contacts Now'}
           </button>
           {sosMsg && (
             <p style={{
@@ -150,7 +163,7 @@ export default function EmergencyContacts() {
               marginTop: '12px',
               fontSize: '14px',
               fontWeight: 500,
-              color: sosSent ? '#1a7a3c' : '#cc0000',
+              color: sosSent ? '#3D8AB0' : '#cc0000',
             }}>
               {sosMsg}
             </p>
@@ -185,7 +198,7 @@ export default function EmergencyContacts() {
               <button
                 onClick={() => setShowAddForm(v => !v)}
                 style={{
-                  background: '#0066cc',
+                  background: '#4FA3CE',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '9999px',
@@ -238,7 +251,6 @@ export default function EmergencyContacts() {
         {/* Contact cards */}
         {contacts.map((c, i) => {
           const accent = roleAccent(c.relationship);
-          const emoji = roleEmoji(c.relationship);
           return (
             <BlurFade key={c.id} delay={4 + i * 0.5}>
               <div style={{
@@ -246,25 +258,14 @@ export default function EmergencyContacts() {
                 borderRadius: '18px',
                 overflow: 'hidden',
                 marginBottom: '14px',
+                border: '1px solid #ececef',
               }}>
                 {/* Colored top accent bar */}
                 <div style={{ height: '4px', background: accent }} />
                 <div style={{ padding: '20px 24px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                    {/* Avatar emoji */}
-                    <div style={{
-                      width: '52px',
-                      height: '52px',
-                      borderRadius: '14px',
-                      background: `${accent}15`,
-                      flexShrink: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px',
-                    }}>
-                      {emoji}
-                    </div>
+                    {/* Default human-silhouette avatar */}
+                    <DefaultAvatar color={accent} size={52} />
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, marginBottom: '4px' }}>
                         {c.name}
@@ -285,7 +286,7 @@ export default function EmergencyContacts() {
                   <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
                     <a href={`tel:${c.phone}`} style={{
                       flex: 1,
-                      background: '#cc0000',
+                      background: '#4FA3CE',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '9999px',
@@ -374,7 +375,7 @@ export default function EmergencyContacts() {
                   </div>
                 </div>
                 {msg && (
-                  <p style={{ fontSize: '14px', color: msg.includes('added') ? '#1a7a3c' : '#cc0000', fontWeight: 500 }}>
+                  <p style={{ fontSize: '14px', color: msg.includes('added') ? '#3D8AB0' : '#cc0000', fontWeight: 500 }}>
                     {msg}
                   </p>
                 )}
@@ -384,7 +385,7 @@ export default function EmergencyContacts() {
                     disabled={adding}
                     style={{
                       flex: 1,
-                      background: '#0066cc',
+                      background: '#4FA3CE',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '9999px',
@@ -421,74 +422,6 @@ export default function EmergencyContacts() {
           </BlurFade>
         )}
 
-        {/* Location sharing section */}
-        <BlurFade delay={6}>
-          <div style={{
-            background: '#272729',
-            borderRadius: '18px',
-            padding: '24px',
-            marginTop: '8px',
-          }}>
-            <p style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: '#ffffff',
-              fontFamily: SF,
-              marginBottom: '16px',
-              letterSpacing: '-0.2px',
-            }}>
-              Location Sharing
-            </p>
-            {[
-              { label: 'Share location with contacts', sub: 'Contacts can see your approximate location', key: 'shareLocation' },
-              { label: 'Auto-alert on inactivity', sub: 'Send alert if no check-in within set days', key: 'autoAlert' },
-            ].map((row, idx) => {
-              const on = safetyToggles[row.key];
-              return (
-                <div key={row.key} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '14px 0',
-                  borderBottom: idx === 0 ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                }}>
-                  <div>
-                    <p style={{ fontSize: '15px', fontWeight: 500, color: '#ffffff', marginBottom: '2px' }}>
-                      {row.label}
-                    </p>
-                    <p style={{ fontSize: '13px', color: '#a0a0a5' }}>{row.sub}</p>
-                  </div>
-                  <div
-                    role="switch"
-                    aria-checked={on}
-                    onClick={() => toggleSafety(row.key)}
-                    style={{
-                      width: '51px',
-                      height: '31px',
-                      borderRadius: '9999px',
-                      background: on ? '#34c759' : '#555',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      transition: 'background 0.2s',
-                    }}>
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      left: on ? '20px' : '2px',
-                      width: '27px',
-                      height: '27px',
-                      borderRadius: '50%',
-                      background: '#ffffff',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                      transition: 'left 0.2s',
-                    }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </BlurFade>
       </div>
     </div>
   );

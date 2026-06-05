@@ -81,7 +81,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Redis -->
+        <!-- Cache: in-memory by default; Redis when app.redis.enabled=true -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>

@@ -26,4 +26,9 @@ public class ProfileResponse {
     private String backgroundCheckStatus;
     private boolean phoneVerified;
     private String phone;
+    private String[] hobbies;
+    private String occupation;
+    private String facebookUrl;
+    private String instagramUrl;
+    private String dateOfBirth;
 }

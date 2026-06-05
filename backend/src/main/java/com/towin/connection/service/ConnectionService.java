@@ -11,6 +11,7 @@ import com.towin.connection.dto.ConnectionResponse;
 import com.towin.connection.dto.RespondToConnectionRequest;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
+import com.towin.messaging.repository.MessageRepository;
 import com.towin.profile.entity.ElderProfile;
 import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
@@ -31,11 +32,30 @@ public class ConnectionService {
 
     private static final int MAX_REQUESTS_PER_DAY = 10;
 
+    private int activeLimit(User user) {
+        return switch (user.getRole()) {
+            case HELPER -> 1;
+            case ELDER  -> 2;
+            case BOTH   -> 1; // stricter — can act as helper
+            default     -> Integer.MAX_VALUE;
+        };
+    }
+
+    private void enforceActiveLimit(User user) {
+        int active = connectionRepository.findByUserAndStatus(user.getId(), ConnectionStatus.ACTIVE).size();
+        int limit  = activeLimit(user);
+        if (active >= limit) {
+            throw new IllegalArgumentException(
+                user.getRole() + " connection limit reached (" + limit + "). End an existing connection first.");
+        }
+    }
+
     private final ConnectionRepository connectionRepository;
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
-    private final ConnectionEventProducer eventProducer;
+    private final Optional<ConnectionEventProducer> eventProducer;
+    private final MessageRepository messageRepository;
 
     @Transactional
     public ConnectionResponse sendRequest(UUID senderId, ConnectionRequest request) {
@@ -49,6 +69,9 @@ public class ConnectionService {
         connectionRepository.findBetweenUsers(senderId, target.getId()).ifPresent(c -> {
             throw new IllegalArgumentException("A connection already exists between these users");
         });
+
+        enforceActiveLimit(sender);
+        enforceActiveLimit(target);
 
         long recentCount = connectionRepository.countRequestsSince(senderId, LocalDateTime.now().minusDays(1));
         if (recentCount >= MAX_REQUESTS_PER_DAY) {
@@ -73,12 +96,12 @@ public class ConnectionService {
         connection.setConfirmedByUser(senderId, true);
 
         Connection saved = connectionRepository.save(connection);
-        eventProducer.send(ConnectionEvent.builder()
+        eventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
                 .type(ConnectionEvent.Type.REQUEST_SENT)
                 .connectionId(saved.getId())
                 .senderId(senderId)
                 .recipientId(target.getId())
-                .build());
+                .build()));
         return toResponse(saved, senderId);
     }
 
@@ -98,6 +121,8 @@ public class ConnectionService {
 
         ConnectionEvent.Type eventType;
         if (Boolean.TRUE.equals(request.getAccept())) {
+            enforceActiveLimit(connection.getUserA());
+            enforceActiveLimit(connection.getUserB());
             connection.setStatus(ConnectionStatus.ACTIVE);
             connection.setConfirmedByUser(connection.getUserA().getId(), false);
             connection.setConfirmedByUser(connection.getUserB().getId(), false);
@@ -108,13 +133,27 @@ public class ConnectionService {
         }
 
         Connection saved = connectionRepository.save(connection);
-        eventProducer.send(ConnectionEvent.builder()
-                .type(eventType)
+        final ConnectionEvent.Type emitType = eventType;
+        eventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
+                .type(emitType)
                 .connectionId(saved.getId())
                 .senderId(responderId)
                 .recipientId(connection.getInitiatedBy().getId())
-                .build());
+                .build()));
         return toResponse(saved, responderId);
+    }
+
+    @Transactional
+    public void endConnection(UUID userId, UUID connectionId) {
+        Connection connection = getConnection(connectionId);
+        if (!connection.isParticipant(userId)) {
+            throw new IllegalArgumentException("You are not part of this connection");
+        }
+        if (connection.getStatus() != ConnectionStatus.ACTIVE) {
+            throw new IllegalArgumentException("Only active connections can be ended");
+        }
+        connection.setStatus(ConnectionStatus.ENDED);
+        connectionRepository.save(connection);
     }
 
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status) {
@@ -133,6 +172,13 @@ public class ConnectionService {
 
         boolean phoneUnlocked = connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
+        var last = messageRepository.findFirstByConnectionIdOrderByCreatedAtDesc(connection.getId());
+        String preview = last.map(m -> m.getContent().length() > 60
+                ? m.getContent().substring(0, 57) + "…"
+                : m.getContent()).orElse(null);
+        java.time.LocalDateTime lastAt = last.map(com.towin.messaging.entity.Message::getCreatedAt).orElse(null);
+        int unread = (int) messageRepository.countByConnectionIdAndSenderIdNotAndSeenAtIsNull(connection.getId(), viewerUserId);
+
         return ConnectionResponse.builder()
                 .id(connection.getId())
                 .otherUserId(other.getId())
@@ -147,6 +193,9 @@ public class ConnectionService {
                 .otherUserPhone(phoneUnlocked ? other.getPhone() : null)
                 .createdAt(connection.getCreatedAt())
                 .updatedAt(connection.getUpdatedAt())
+                .lastMessagePreview(preview)
+                .lastMessageAt(lastAt)
+                .unreadCount(unread)
                 .build();
     }
 

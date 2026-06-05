@@ -67,6 +67,8 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
       SPRING_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      APP_REDIS_ENABLED: "true"
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
       AWS_ACCESS_KEY: ${AWS_ACCESS_KEY:-dummy}
       AWS_SECRET_KEY: ${AWS_SECRET_KEY:-dummy}
       AWS_REGION: ${AWS_REGION:-us-east-1}

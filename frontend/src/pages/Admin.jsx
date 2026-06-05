@@ -6,7 +6,7 @@ import api from '../api/axios';
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
-const TABS = ['Users', 'Verifications', 'Reports', 'Reviews', 'Data'];
+const TABS = ['Users', 'Verifications', 'Reports', 'Reviews', 'Data', 'Feedback'];
 const DATA_TABS = ['Connections', 'Needs', 'Messages'];
 
 function ConfirmButton({ label, style, onConfirm }) {
@@ -43,12 +43,12 @@ const actionBtn = (color, bg) => ({
 });
 
 const redBtn = actionBtn('#cc0000', 'rgba(204,0,0,0.08)');
-const greenBtn = actionBtn('#1a7a3c', 'rgba(52,199,89,0.1)');
+const greenBtn = actionBtn('#3D8AB0', 'rgba(79,163,206,0.10)');
 const yellowBtn = actionBtn('#b45309', 'rgba(245,158,11,0.1)');
 const grayBtn = actionBtn('#7a7a7a', 'rgba(160,160,165,0.1)');
 
 const roleBadge = (role) => {
-  const colors = { ADMIN: ['#5856d6', 'rgba(88,86,214,0.1)'], ELDER: ['#0066cc', 'rgba(0,102,204,0.1)'], HELPER: ['#1a7a3c', 'rgba(52,199,89,0.1)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
+  const colors = { ADMIN: ['#5856d6', 'rgba(88,86,214,0.1)'], ELDER: ['#4FA3CE', 'rgba(0,102,204,0.1)'], HELPER: ['#3D8AB0', 'rgba(79,163,206,0.10)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
   const [c, bg] = colors[role] || ['#7a7a7a', 'rgba(160,160,165,0.1)'];
   return (
     <span style={{ fontSize: '11px', fontWeight: 600, color: c, background: bg, padding: '3px 8px', borderRadius: '9999px' }}>
@@ -61,8 +61,8 @@ const statusBadge = (active) => (
   <span style={{
     fontSize: '11px',
     fontWeight: 600,
-    color: active ? '#1a7a3c' : '#cc0000',
-    background: active ? 'rgba(52,199,89,0.1)' : 'rgba(204,0,0,0.1)',
+    color: active ? '#3D8AB0' : '#cc0000',
+    background: active ? 'rgba(79,163,206,0.10)' : 'rgba(204,0,0,0.1)',
     padding: '3px 8px',
     borderRadius: '9999px',
   }}>
@@ -71,11 +71,92 @@ const statusBadge = (active) => (
 );
 
 const trustColor = (score) => {
-  if (score >= 80) return '#1a7a3c';
-  if (score >= 50) return '#0066cc';
+  if (score >= 80) return '#3D8AB0';
+  if (score >= 50) return '#4FA3CE';
   if (score >= 30) return '#f59e0b';
   return '#cc0000';
 };
+
+const RATING_LABELS = [
+  { key: 'ratingIdea', label: 'Idea' },
+  { key: 'ratingUi', label: 'UI' },
+  { key: 'ratingTheme', label: 'Theme' },
+  { key: 'ratingSecurity', label: 'Security' },
+  { key: 'ratingEaseOfUse', label: 'Ease' },
+  { key: 'ratingPerformance', label: 'Perf' },
+  { key: 'ratingOverall', label: 'Overall' },
+];
+
+function avgRating(rows, key) {
+  const vals = rows.map(r => r[key]).filter(v => v != null);
+  if (!vals.length) return null;
+  return (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+}
+
+function FeedbackTab() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/admin/feedback')
+      .then(({ data }) => setRows(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p style={{ fontFamily: SFText, color: '#7a7a7a', padding: '24px' }}>Loading feedback…</p>;
+  if (!rows.length) return <p style={{ fontFamily: SFText, color: '#7a7a7a', padding: '24px' }}>No feedback yet.</p>;
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '28px',
+        background: '#fff', borderRadius: '14px', padding: '16px 20px', border: '1px solid #e0e0e0',
+      }}>
+        {RATING_LABELS.map(({ key, label }) => {
+          const a = avgRating(rows, key);
+          return (
+            <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: '#4FA3CE', fontFamily: SF }}>
+                {a ?? '—'}
+              </div>
+              <div style={{ fontSize: '11px', color: '#7a7a7a', fontFamily: SFText }}>{label}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: SFText, fontSize: '13px' }}>
+          <thead>
+            <tr style={{ background: '#f5f5f7', textAlign: 'left' }}>
+              {['Date', 'Name', 'Email', 'Phone', ...RATING_LABELS.map(r => r.label), 'Message'].map(h => (
+                <th key={h} style={{ padding: '10px 12px', color: '#1d1d1f', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <td style={{ padding: '10px 12px', color: '#7a7a7a', whiteSpace: 'nowrap' }}>
+                  {new Date(r.createdAt).toLocaleDateString()}
+                </td>
+                <td style={{ padding: '10px 12px' }}>{r.name ?? '—'}</td>
+                <td style={{ padding: '10px 12px' }}>{r.email ?? '—'}</td>
+                <td style={{ padding: '10px 12px' }}>{r.phone ?? '—'}</td>
+                {RATING_LABELS.map(({ key }) => (
+                  <td key={key} style={{ padding: '10px 12px', textAlign: 'center' }}>
+                    {r[key] != null ? `${r[key]} ⭐` : '—'}
+                  </td>
+                ))}
+                <td style={{ padding: '10px 12px', maxWidth: '240px', color: '#1d1d1f' }}>{r.message}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function Admin() {
   const { logout } = useAuth();
@@ -154,110 +235,141 @@ export default function Admin() {
   const card = {
     background: '#ffffff',
     borderRadius: '18px',
+    border: '1px solid #e0e0e0',
     overflow: 'hidden',
   };
+
+  const subTabStyle = (active, accent = '#4FA3CE') => ({
+    fontSize: '14px',
+    fontWeight: active ? 700 : 500,
+    color: active ? '#ffffff' : '#1d1d1f',
+    background: active ? accent : '#ffffff',
+    border: active ? `1px solid ${accent}` : '1px solid #e0e0e0',
+    borderRadius: '9999px',
+    padding: '9px 20px',
+    cursor: 'pointer',
+    fontFamily: SFText,
+    transition: 'all 0.15s',
+  });
 
   return (
     <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
 
-      {/* Top nav */}
+      {/* Hero header — calm sky-blue, matches the rest of the app */}
       <div style={{
-        background: '#000000',
-        padding: '0 32px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '52px',
+        background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
+        borderBottom: '1px solid #DCEBF4',
+        padding: '40px 24px 32px',
+        textAlign: 'center',
+        position: 'relative',
       }}>
-        <p style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', fontFamily: SF, letterSpacing: '-0.2px' }}>
-          ToWin Admin
-        </p>
         <button
           onClick={() => { logout(); navigate('/login'); }}
           style={{
-            fontSize: '13px',
-            color: '#a0a0a5',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: SFText,
+            position: 'absolute', top: '20px', right: '24px',
+            fontSize: '13px', color: '#5a6b75',
+            background: '#ffffff', border: '1px solid #DCEBF4',
+            borderRadius: '9999px', padding: '6px 16px',
+            cursor: 'pointer', fontFamily: SFText, fontWeight: 500,
           }}
         >
           Sign out
         </button>
+
+        <div style={{
+          width: '60px', height: '60px', borderRadius: '16px',
+          background: '#ffffff', border: '1px solid #BFD9EA',
+          margin: '0 auto 18px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 16px rgba(79,163,206,0.15)',
+        }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" />
+          </svg>
+        </div>
+        <h1 style={{
+          fontSize: '40px', fontWeight: 700, color: '#1d1d1f',
+          fontFamily: SF, letterSpacing: '-0.8px', marginBottom: '8px',
+        }}>
+          Admin
+        </h1>
+        <p style={{ fontSize: '16px', color: '#5a6b75', maxWidth: '460px', margin: '0 auto 28px', lineHeight: 1.5 }}>
+          Care for the community — users, trust, and safety in one place.
+        </p>
+
+        {/* Stats — light, airy cards */}
+        <div style={{
+          maxWidth: '960px', margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px',
+        }}>
+          {statsData.map(stat => (
+            <div key={stat.label} style={{
+              background: '#ffffff',
+              border: '1px solid #DCEBF4',
+              borderRadius: '14px',
+              padding: '16px 18px',
+              textAlign: 'left',
+            }}>
+              <p style={{ fontSize: '26px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
+                {stat.value}
+              </p>
+              <p style={{ fontSize: '12px', color: '#7a7a7a', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Stats bar */}
-      <div style={{
-        background: '#1d1d1f',
-        padding: '20px 32px',
-        display: 'flex',
-        gap: '12px',
-        overflowX: 'auto',
-      }}>
-        {statsData.map(stat => (
-          <div key={stat.label} style={{
-            background: '#272729',
-            borderRadius: '14px',
-            padding: '14px 20px',
-            minWidth: '120px',
-            flexShrink: 0,
-          }}>
-            <p style={{ fontSize: '28px', fontWeight: 700, color: '#ffffff', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1 }}>
-              {stat.value}
-            </p>
-            <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontWeight: 500 }}>
-              {stat.label}
-            </p>
-          </div>
-        ))}
-      </div>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 32px 64px' }}>
 
-      {/* Tab bar */}
-      <div style={{
-        background: '#ffffff',
-        borderBottom: '1px solid #e0e0e0',
-        padding: '0 32px',
-        display: 'flex',
-        gap: '4px',
-      }}>
-        {TABS.map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            style={{
-              padding: '14px 18px',
-              fontSize: '14px',
-              fontWeight: tab === t ? 600 : 400,
-              color: tab === t ? '#0066cc' : '#7a7a7a',
-              background: 'none',
-              border: 'none',
-              borderBottom: tab === t ? '2px solid #0066cc' : '2px solid transparent',
-              cursor: 'pointer',
-              fontFamily: SFText,
-              transition: 'color 0.15s',
-            }}
-          >
-            {t}
-            {t === 'Reports' && reports.length > 0 && (
-              <span style={{
-                marginLeft: '6px',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: '#ffffff',
-                background: '#cc0000',
-                borderRadius: '9999px',
-                padding: '1px 7px',
-                verticalAlign: 'middle',
-              }}>
-                {reports.length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+        {/* Prominent pill tab bar — matches elder/helper dashboards */}
+        <div style={{
+          display: 'flex', gap: '10px', flexWrap: 'wrap',
+          marginBottom: '32px',
+        }}>
+          {TABS.map(t => {
+            const active = tab === t;
+            const hasBadge = t === 'Reports' && reports.length > 0;
+            return (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                style={{
+                  flex: '1 1 auto', minWidth: '140px',
+                  height: '64px', padding: '0 24px',
+                  fontSize: '17px', letterSpacing: '-0.2px',
+                  fontWeight: active ? 700 : 500,
+                  color: active ? '#ffffff' : '#1d1d1f',
+                  background: active ? '#4FA3CE' : '#ffffff',
+                  border: active ? '1px solid #4FA3CE' : '1px solid #e0e0e0',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  transition: 'background 0.18s ease, color 0.18s ease, border-color 0.18s ease',
+                  whiteSpace: 'nowrap',
+                  fontFamily: SFText,
+                  boxShadow: active ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f7'; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = '#ffffff'; }}
+              >
+                {t}
+                {hasBadge && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: 700,
+                    color: '#ffffff', background: '#cc0000',
+                    borderRadius: '9999px', padding: '1px 8px',
+                  }}>
+                    {reports.length}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-      <div style={{ padding: '28px 32px', maxWidth: '1400px', margin: '0 auto' }}>
+        <div>
 
         {/* Users tab */}
         {tab === 'Users' && (
@@ -306,7 +418,7 @@ export default function Admin() {
                             justifyContent: 'center',
                             fontSize: '13px',
                             fontWeight: 700,
-                            color: lowTrust ? '#cc0000' : '#0066cc',
+                            color: lowTrust ? '#cc0000' : '#4FA3CE',
                             flexShrink: 0,
                           }}>
                             {u.email?.[0]?.toUpperCase() || '?'}
@@ -358,7 +470,7 @@ export default function Admin() {
             <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e0e0e0' }}>
               <button style={{
                 background: 'transparent',
-                color: '#0066cc',
+                color: '#4FA3CE',
                 border: '1.5px solid #e0e0e0',
                 borderRadius: '9999px',
                 padding: '7px 18px',
@@ -368,7 +480,7 @@ export default function Admin() {
                 cursor: 'pointer',
               }}>Prev</button>
               <button style={{
-                background: '#0066cc',
+                background: '#4FA3CE',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '9999px',
@@ -404,7 +516,7 @@ export default function Admin() {
                     <td style={tdStyle}>{v.email}</td>
                     <td style={tdStyle}>
                       {v.idDocumentUrl
-                        ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: '#0066cc', fontSize: '13px', fontWeight: 600 }}>View Document</a>
+                        ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: '#4FA3CE', fontSize: '13px', fontWeight: 600 }}>View Document</a>
                         : <span style={{ color: '#a0a0a5' }}>—</span>}
                     </td>
                     <td style={tdStyle}>{new Date(v.createdAt).toLocaleDateString()}</td>
@@ -468,41 +580,9 @@ export default function Admin() {
         {/* Reviews tab */}
         {tab === 'Reviews' && (
           <div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <button
-                onClick={() => setSafetyOnly(false)}
-                style={{
-                  fontSize: '14px',
-                  fontWeight: !safetyOnly ? 600 : 400,
-                  color: !safetyOnly ? '#0066cc' : '#7a7a7a',
-                  background: !safetyOnly ? 'rgba(0,102,204,0.08)' : 'transparent',
-                  border: '1.5px solid',
-                  borderColor: !safetyOnly ? '#0066cc' : '#e0e0e0',
-                  borderRadius: '9999px',
-                  padding: '7px 18px',
-                  cursor: 'pointer',
-                  fontFamily: SFText,
-                }}
-              >
-                All Reviews
-              </button>
-              <button
-                onClick={() => setSafetyOnly(true)}
-                style={{
-                  fontSize: '14px',
-                  fontWeight: safetyOnly ? 600 : 400,
-                  color: safetyOnly ? '#cc0000' : '#7a7a7a',
-                  background: safetyOnly ? 'rgba(204,0,0,0.08)' : 'transparent',
-                  border: '1.5px solid',
-                  borderColor: safetyOnly ? '#cc0000' : '#e0e0e0',
-                  borderRadius: '9999px',
-                  padding: '7px 18px',
-                  cursor: 'pointer',
-                  fontFamily: SFText,
-                }}
-              >
-                Safety Flags
-              </button>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <button onClick={() => setSafetyOnly(false)} style={subTabStyle(!safetyOnly)}>All Reviews</button>
+              <button onClick={() => setSafetyOnly(true)} style={subTabStyle(safetyOnly, '#cc0000')}>Safety Flags</button>
             </div>
             <div style={card}>
               {reviews.length === 0 && (
@@ -525,7 +605,7 @@ export default function Admin() {
                       <td style={tdStyle}>{r.tags?.join(', ')}</td>
                       <td style={tdStyle}>
                         {r.safetyConcern
-                          ? <span style={{ fontSize: '12px', color: '#cc0000', fontWeight: 700 }}>⚠ Flag</span>
+                          ? <span style={{ fontSize: '12px', color: '#cc0000', fontWeight: 700 }}>Safety Flag</span>
                           : <span style={{ fontSize: '12px', color: '#a0a0a5' }}>—</span>}
                       </td>
                       <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>
@@ -541,27 +621,15 @@ export default function Admin() {
           </div>
         )}
 
+        {/* Feedback tab */}
+        {tab === 'Feedback' && <FeedbackTab />}
+
         {/* Data tab */}
         {tab === 'Data' && (
           <div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
               {DATA_TABS.map(dt => (
-                <button
-                  key={dt}
-                  onClick={() => setDataTab(dt)}
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: dataTab === dt ? 600 : 400,
-                    color: dataTab === dt ? '#0066cc' : '#7a7a7a',
-                    background: dataTab === dt ? 'rgba(0,102,204,0.08)' : 'transparent',
-                    border: '1.5px solid',
-                    borderColor: dataTab === dt ? '#0066cc' : '#e0e0e0',
-                    borderRadius: '9999px',
-                    padding: '7px 18px',
-                    cursor: 'pointer',
-                    fontFamily: SFText,
-                  }}
-                >
+                <button key={dt} onClick={() => setDataTab(dt)} style={subTabStyle(dataTab === dt)}>
                   {dt}
                 </button>
               ))}
@@ -583,7 +651,7 @@ export default function Admin() {
                         <td style={tdStyle}>{c.userAEmail}</td>
                         <td style={tdStyle}>{c.userBEmail}</td>
                         <td style={tdStyle}>
-                          <span style={{ fontSize: '12px', color: '#0066cc', fontWeight: 600 }}>{c.trustLevel}</span>
+                          <span style={{ fontSize: '12px', color: '#4FA3CE', fontWeight: 600 }}>{c.trustLevel}</span>
                         </td>
                         <td style={tdStyle}>{c.status}</td>
                         <td style={tdStyle}>{new Date(c.createdAt).toLocaleDateString()}</td>
@@ -657,6 +725,7 @@ export default function Admin() {
           </div>
         )}
 
+        </div>
       </div>
     </div>
   );

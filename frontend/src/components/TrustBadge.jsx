@@ -1,9 +1,9 @@
 const TIER_COLORS = {
-  'Community Champion': { bg: 'rgba(124,58,237,0.1)', color: '#7c3aed', border: 'rgba(124,58,237,0.2)' },
-  'Highly Trusted':     { bg: 'rgba(245,158,11,0.1)', color: '#b45309', border: 'rgba(245,158,11,0.2)' },
-  'Reliable':           { bg: 'rgba(34,197,94,0.1)',  color: '#15803d', border: 'rgba(34,197,94,0.2)' },
-  'Getting Started':    { bg: 'rgba(37,99,235,0.08)', color: '#2563eb', border: 'rgba(37,99,235,0.2)' },
-  'New Member':         { bg: 'rgba(148,163,184,0.1)', color: '#64748b', border: 'rgba(148,163,184,0.2)' },
+  'Community Champion': { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'Highly Trusted':     { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'Reliable':           { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'Getting Started':    { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'New Member':         { bg: '#f5f5f7', color: '#a0a0a5', border: '#e0e0e0' },
 };
 
 export default function TrustBadge({ tier, score }) {

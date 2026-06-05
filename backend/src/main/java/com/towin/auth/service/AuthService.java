@@ -3,6 +3,7 @@ package com.towin.auth.service;
 import com.towin.auth.dto.*;
 import com.towin.auth.security.JwtUtil;
 import com.towin.common.entity.User;
+import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.S3Service;
@@ -42,12 +43,36 @@ public class AuthService {
                 .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
+                .dateOfBirth(request.getDateOfBirth())
                 .build();
 
         User saved = userRepository.save(user);
         if (saved.getId() == null) {
             throw new IllegalStateException("User ID was not generated after save");
         }
+        String id = saved.getId().toString();
+        String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name());
+        return new AuthResponse(token, saved.getRole().name(), id);
+    }
+
+    @Transactional
+    public AuthResponse guestLogin(UserRole role) {
+        if (role != UserRole.ELDER && role != UserRole.HELPER) {
+            throw new IllegalArgumentException("Guest role must be ELDER or HELPER");
+        }
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        String email = "guest-" + suffix + "@towin.beta";
+        String phone = "+10000" + suffix.substring(0, 7);
+        String password = UUID.randomUUID().toString();
+
+        User user = User.builder()
+                .email(email)
+                .phone(phone)
+                .passwordHash(passwordEncoder.encode(password))
+                .role(role)
+                .build();
+
+        User saved = userRepository.save(user);
         String id = saved.getId().toString();
         String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name());
         return new AuthResponse(token, saved.getRole().name(), id);

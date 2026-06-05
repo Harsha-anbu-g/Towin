@@ -38,6 +38,15 @@ public class ConnectionController {
         return ResponseEntity.ok(connectionService.respond(userId, connectionId, request));
     }
 
+    @DeleteMapping("/{connectionId}")
+    public ResponseEntity<Void> endConnection(
+            Authentication auth,
+            @PathVariable UUID connectionId) {
+        UUID userId = UUID.fromString(auth.getName());
+        connectionService.endConnection(userId, connectionId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<ConnectionResponse>> getMyConnections(
             Authentication auth,
