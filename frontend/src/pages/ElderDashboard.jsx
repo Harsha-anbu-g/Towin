@@ -329,8 +329,8 @@ export default function ElderDashboard() {
         borderBottom: '1px solid #ececef',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       }}>
-        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 40px' }}>
-          <div style={{ display: 'flex', gap: '6px', padding: '10px 0', alignItems: 'center' }}>
+        <div className="dash-tab-wrap">
+          <div className="dash-tab-scroll">
             {tabs.map(([id, label, badge]) => {
               const active = tab === id;
               return (
@@ -362,7 +362,7 @@ export default function ElderDashboard() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '28px 40px 64px' }}>
+      <div className="dash-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Overview tab */}
