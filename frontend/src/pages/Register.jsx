@@ -317,18 +317,12 @@ export default function Register() {
         padding: 0,
       }}>
         {/* Light hero band */}
-        <div style={{
+        <div className="register-head" style={{
           width: '100%',
           background: '#ffffff',
           borderBottom: '1px solid #ececef',
-          padding: '40px 64px 36px',
-          textAlign: 'center',
         }}>
-          <h2 style={{
-            fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-            fontSize: '56px', fontWeight: 600, color: '#1d1d1f',
-            marginBottom: '10px', letterSpacing: '-0.5px', lineHeight: 1.05,
-          }}>
+          <h2 className="register-title">
             Join ToWin.
           </h2>
           <p style={{
@@ -345,10 +339,9 @@ export default function Register() {
           padding: '40px 24px 48px',
         }}>
           {/* Form card */}
-          <div style={{
+          <div className="register-form-card" style={{
             background: '#ffffff',
             borderRadius: '18px',
-            padding: '36px 32px',
             border: '1px solid #e0e0e0',
           }}>
             {/* Error state */}
@@ -373,7 +366,7 @@ export default function Register() {
                 }}>
                   I am joining as
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                <div className="role-grid">
                   {ROLES.map(({ value, label, desc }) => {
                     const active = form.role === value;
                     return (
