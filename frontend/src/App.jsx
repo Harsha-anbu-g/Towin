@@ -25,6 +25,13 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
+function PublicRoute({ children }) {
+  const { user } = useAuth();
+  if (!user) return children;
+  if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
+  return <Navigate to="/dashboard" replace />;
+}
+
 function ElderOnly({ children }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -47,8 +54,8 @@ function App() {
           <BetaBanner />
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/how-it-works" element={<Guide />} />
             <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
