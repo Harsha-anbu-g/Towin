@@ -43,7 +43,7 @@ public class TrustScoreService {
         int rooting   = calculateRootingScore(userId);
         int review    = reviewRepository.sumRatingsByRevieweeId(userId);
 
-        user.setTrustScore((int) Math.round(basic + rooting + review));
+        user.setTrustScore(basic + rooting + review);
         userRepository.save(user);
     }
 

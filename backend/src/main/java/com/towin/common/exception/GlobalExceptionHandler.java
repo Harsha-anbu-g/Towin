@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -16,10 +17,29 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    private static final Map<String, String> SAFE_MESSAGES = Map.of(
+        "User not found",                    "Invalid request.",
+        "Invalid request.",                  "Invalid request.",
+        "Invalid or expired code.",          "Invalid or expired code.",
+        "Too many attempts.",                "Too many attempts. Try again in 15 minutes.",
+        "Verification code has expired.",    "Verification code has expired. Request a new one.",
+        "Invalid credentials",               "Invalid credentials.",
+        "Email already registered",          "Email already registered.",
+        "Phone already registered",          "Phone already registered.",
+        "Guest role must be",                "Invalid request.",
+        "Verification code has expired. Request a new one.", "Verification code has expired. Request a new one."
+    );
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("IllegalArgumentException: {}", ex.getMessage());
+        String safe = SAFE_MESSAGES.entrySet().stream()
+                .filter(e -> ex.getMessage() != null && ex.getMessage().startsWith(e.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse("Invalid request.");
         return ResponseEntity.badRequest()
-                .body(new ErrorResponse(ex.getMessage(), 400, LocalDateTime.now()));
+                .body(new ErrorResponse(safe, 400, LocalDateTime.now()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

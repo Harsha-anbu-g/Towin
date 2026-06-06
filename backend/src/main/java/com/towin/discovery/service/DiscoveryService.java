@@ -78,7 +78,7 @@ public class DiscoveryService {
     }
 
     private DiscoveredUserResponse toElderResponse(ElderProfile p, double distanceKm) {
-        int score = p.getUser().getTrustScore();
+        int score = p.getUser().getTrustScore() != null ? (int) Math.round(p.getUser().getTrustScore()) : 0;
         return DiscoveredUserResponse.builder()
                 .userId(p.getUser().getId())
                 .name(p.getName())
@@ -95,7 +95,7 @@ public class DiscoveryService {
     }
 
     private DiscoveredUserResponse toHelperResponse(HelperProfile p, double distanceKm) {
-        int score = p.getUser().getTrustScore();
+        int score = p.getUser().getTrustScore() != null ? (int) Math.round(p.getUser().getTrustScore()) : 0;
         return DiscoveredUserResponse.builder()
                 .userId(p.getUser().getId())
                 .name(p.getName())

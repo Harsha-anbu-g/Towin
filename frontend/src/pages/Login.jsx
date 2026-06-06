@@ -94,7 +94,7 @@ export default function Login() {
     setError('');
     try {
       const { data } = await api.post('/auth/login', DEMO[role]);
-      login(data.token, data.role, data.userId);
+      login(data.token);
       navigate(
         (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard'
       );
@@ -116,7 +116,7 @@ export default function Login() {
     setFieldErrors({});
     try {
       const { data } = await api.post('/auth/login', form);
-      login(data.token, data.role, data.userId);
+      login(data.token);
       navigate(
         data.role === 'ADMIN' ? '/admin' :
         (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' :

@@ -16,6 +16,9 @@ Thumbs.db
 .env
 *.local
 
+# Test secrets — these should never be committed with real values
+# backend/src/test/resources/application-secret.properties
+
 # Logs
 *.log
 logs/
