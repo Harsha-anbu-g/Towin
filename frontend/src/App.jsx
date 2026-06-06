@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { useEffect } from 'react';
 import { ToastProvider } from './context/ToastContext';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -19,6 +20,29 @@ import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
 import Feedback from './pages/Feedback';
 import Guide from './pages/Guide';
+
+function BfCacheGuard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handlePageShow = (e) => {
+      if (!e.persisted) return;
+      const path = window.location.pathname;
+      const isPublic = path === '/login' || path === '/register';
+      const isProtected = !isPublic && path !== '/feedback' && path !== '/how-it-works';
+      if (isPublic && user) {
+        navigate(user.role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true });
+      } else if (isProtected && !user) {
+        navigate('/login', { replace: true });
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [user, navigate]);
+
+  return null;
+}
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -52,6 +76,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <BetaBanner />
+          <BfCacheGuard />
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
