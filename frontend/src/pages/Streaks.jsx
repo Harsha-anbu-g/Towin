@@ -89,8 +89,8 @@ export default function Streaks() {
   return (
     <div style={{ display: 'flex', minHeight: '100svh', fontFamily: SFT }}>
 
-      {/* Left — image panel */}
-      <div style={{
+      {/* Left — image panel (hidden on mobile) */}
+      <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
         padding: '52px 48px', minHeight: '100svh',
@@ -113,7 +113,7 @@ export default function Streaks() {
       </div>
 
       {/* Right — streak content */}
-      <div style={{
+      <div className="streaks-right" style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         background: '#fafafc', padding: '48px 40px',
@@ -128,9 +128,9 @@ export default function Streaks() {
             {greeting()}
           </p>
           <h1 style={{
-            fontFamily: SF, fontSize: '40px', fontWeight: 700,
+            fontFamily: SF, fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 700,
             color: '#1d1d1f', letterSpacing: '-0.6px',
-            marginBottom: '40px', lineHeight: 1.1,
+            marginBottom: '32px', lineHeight: 1.1,
           }}>
             {alreadyDone ? 'You showed up today.' : 'Ready to check in?'}
           </h1>

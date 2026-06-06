@@ -97,7 +97,7 @@ export default function EmergencyContacts() {
         <div style={{
           background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
           borderBottom: '1px solid #DCEBF4',
-          padding: '64px 24px 48px',
+          padding: 'clamp(32px, 7vw, 64px) 20px clamp(24px, 5vw, 48px)',
           textAlign: 'center',
         }}>
           <div style={{
@@ -117,7 +117,7 @@ export default function EmergencyContacts() {
             </svg>
           </div>
           <h1 style={{
-            fontSize: '48px',
+            fontSize: 'clamp(28px, 8vw, 48px)',
             fontWeight: 700,
             color: '#1d1d1f',
             fontFamily: SF,
@@ -346,7 +346,7 @@ export default function EmergencyContacts() {
                 Add Contact
               </p>
               <form onSubmit={addContact} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                       Name
@@ -360,7 +360,7 @@ export default function EmergencyContacts() {
                     <input {...f('phone')} className="field" placeholder="+1 555 000 0000" required />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                       Relationship

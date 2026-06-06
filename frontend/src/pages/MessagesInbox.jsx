@@ -79,11 +79,11 @@ export default function MessagesInbox() {
         <div style={{
           background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
           borderBottom: '1px solid #DCEBF4',
-          padding: '48px 24px 32px',
+          padding: 'clamp(28px, 6vw, 48px) 20px clamp(20px, 4vw, 32px)',
           textAlign: 'center',
         }}>
           <h1 style={{
-            fontSize: '40px',
+            fontSize: 'clamp(28px, 7vw, 40px)',
             fontWeight: 700,
             color: '#1d1d1f',
             fontFamily: SF,

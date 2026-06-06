@@ -267,7 +267,7 @@ export default function HelperDashboard() {
 
       {/* ── Sticky tab bar ── */}
       <div style={{
-        position: 'sticky', top: '72px', zIndex: 50,
+        position: 'sticky', top: '60px', zIndex: 50,
         background: '#ffffff',
         borderBottom: '1px solid #ececef',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)',

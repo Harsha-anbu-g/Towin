@@ -230,7 +230,7 @@ export default function ProfileEdit() {
         <div style={{
           background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
           borderBottom: '1px solid #DCEBF4',
-          padding: '48px 24px 36px',
+          padding: 'clamp(28px, 6vw, 48px) 20px clamp(24px, 4vw, 36px)',
           textAlign: 'center',
         }}>
           {/* Avatar circle */}
@@ -294,7 +294,7 @@ export default function ProfileEdit() {
           </div>
 
           <h1 style={{
-            fontSize: '40px',
+            fontSize: 'clamp(26px, 7vw, 40px)',
             fontWeight: 600,
             color: '#1d1d1f',
             fontFamily: SF,
