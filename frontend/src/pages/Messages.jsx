@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const TRUST_LABELS = {
   DISCOVERED: 'Just Connected',
@@ -29,7 +30,8 @@ const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 export default function Messages() {
   const { connectionId } = useParams();
   const navigate = useNavigate();
-  const myUserId = localStorage.getItem('userId');
+  const { user } = useAuth();
+  const myUserId = user?.userId;
   const { toast } = useToast();
 
   const [messages, setMessages] = useState([]);
