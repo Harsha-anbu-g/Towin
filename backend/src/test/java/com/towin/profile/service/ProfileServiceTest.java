@@ -35,7 +35,7 @@ class ProfileServiceTest {
                 .phone("+1234567890")
                 .passwordHash("hash")
                 .role(UserRole.ELDER)
-                .trustScore(0)
+                .trustScore(0.0)
                 .verificationStatus(VerificationStatus.NONE)
                 .isActive(true)
                 .build();

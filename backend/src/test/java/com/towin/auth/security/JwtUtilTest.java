@@ -13,7 +13,7 @@ class JwtUtilTest {
     @BeforeEach
     void setUp() {
         jwtUtil = new JwtUtil();
-        ReflectionTestUtils.setField(jwtUtil, "secret", "test-secret-key-must-be-at-least-32-characters-long");
+        ReflectionTestUtils.setField(jwtUtil, "secret", "test-only-secret-never-used-in-production-safe-to-be-public");
         ReflectionTestUtils.setField(jwtUtil, "expirationMs", 3600000L);
         jwtUtil.init();
     }

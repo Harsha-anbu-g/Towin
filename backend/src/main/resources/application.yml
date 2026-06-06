@@ -42,7 +42,7 @@ cors:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:your-256-bit-secret-change-this-in-production-must-be-long}
+    secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   kafka:
     enabled: ${APP_KAFKA_ENABLED:false}

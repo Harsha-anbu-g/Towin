@@ -128,7 +128,7 @@ public class ProfileService {
     }
 
     private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper) {
-        int score = user.getTrustScore() != null ? user.getTrustScore() : 0;
+        int score = user.getTrustScore() != null ? (int) Math.round(user.getTrustScore()) : 0;
         ProfileResponse.ProfileResponseBuilder builder = ProfileResponse.builder()
                 .userId(user.getId())
                 .role(user.getRole().name())
