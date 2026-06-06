@@ -15,12 +15,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final int  MAX_OTP_ATTEMPTS = 5;
+    private static final long LOCKOUT_MINUTES  = 15;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -111,7 +116,7 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        String otp = String.format("%06d", new java.util.Random().nextInt(1_000_000));
+        String otp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
         user.setPhoneOtp(otp);
         user.setPhoneOtpExpiresAt(LocalDateTime.now().plusMinutes(10));
         userRepository.save(user);
@@ -122,19 +127,34 @@ public class AuthService {
     @Transactional
     public void confirmPhoneOtp(UUID userId, String otp) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid request."));
 
-        if (user.getPhoneOtp() == null || !user.getPhoneOtp().equals(otp)) {
-            throw new IllegalArgumentException("Invalid verification code");
+        if (user.getPhoneOtpLockedAt() != null &&
+                user.getPhoneOtpLockedAt().plusMinutes(LOCKOUT_MINUTES).isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Too many attempts. Try again in 15 minutes.");
         }
+
         if (user.getPhoneOtpExpiresAt() == null ||
                 user.getPhoneOtpExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Verification code has expired");
+            throw new IllegalArgumentException("Verification code has expired. Request a new one.");
+        }
+
+        if (user.getPhoneOtp() == null || !user.getPhoneOtp().equals(otp)) {
+            int attempts = user.getPhoneOtpAttempts() + 1;
+            user.setPhoneOtpAttempts(attempts);
+            if (attempts >= MAX_OTP_ATTEMPTS) {
+                user.setPhoneOtpLockedAt(LocalDateTime.now());
+                user.setPhoneOtp(null);
+            }
+            userRepository.save(user);
+            throw new IllegalArgumentException("Invalid or expired code.");
         }
 
         user.setPhoneVerified(true);
         user.setPhoneOtp(null);
         user.setPhoneOtpExpiresAt(null);
+        user.setPhoneOtpAttempts(0);
+        user.setPhoneOtpLockedAt(null);
         userRepository.save(user);
         trustScoreService.recalculate(userId);
     }

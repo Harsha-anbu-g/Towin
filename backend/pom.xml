@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.4.5</version>
         <relativePath/>
     </parent>
 
@@ -101,14 +101,14 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>2.25.60</version>
+            <version>2.31.6</version>
         </dependency>
 
         <!-- Multipart file support -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.15.1</version>
+            <version>2.18.0</version>
         </dependency>
 
         <!-- WebSocket / STOMP -->
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>com.twilio.sdk</groupId>
             <artifactId>twilio</artifactId>
-            <version>10.1.0</version>
+            <version>10.6.4</version>
         </dependency>
 
         <!-- Test -->

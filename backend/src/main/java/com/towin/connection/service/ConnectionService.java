@@ -78,7 +78,7 @@ public class ConnectionService {
             throw new IllegalArgumentException("Daily connection request limit reached");
         }
 
-        int senderScore = sender.getTrustScore() != null ? sender.getTrustScore() : 0;
+        int senderScore = sender.getTrustScore() != null ? (int) Math.round(sender.getTrustScore()) : 0;
         TrustLevel startLevel = TrustLevel.DISCOVERED;
         if (senderScore >= 71) startLevel = TrustLevel.VERIFIED;
         else if (senderScore >= 51) startLevel = TrustLevel.PHONE_CALL;

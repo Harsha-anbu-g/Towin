@@ -142,7 +142,7 @@ class NeedServiceTest {
     private User buildUser(UUID id, UserRole role) {
         return User.builder()
                 .id(id).email(id + "@test.com").phone("+1234567890")
-                .passwordHash("hash").role(role).trustScore(0)
+                .passwordHash("hash").role(role).trustScore(0.0)
                 .verificationStatus(VerificationStatus.NONE).isActive(true).build();
     }
 

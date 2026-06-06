@@ -1,0 +1,3 @@
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS phone_otp_attempts  INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS phone_otp_locked_at TIMESTAMP;
