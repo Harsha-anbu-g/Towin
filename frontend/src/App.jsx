@@ -22,7 +22,7 @@ import Feedback from './pages/Feedback';
 import Guide from './pages/Guide';
 
 function BfCacheGuard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,14 +32,16 @@ function BfCacheGuard() {
       const isPublic = path === '/login' || path === '/register';
       const isProtected = !isPublic && path !== '/feedback' && path !== '/how-it-works';
       if (isPublic && user) {
-        navigate(user.role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true });
+        // Login page restored from bfcache while logged in → log out
+        // so pressing forward to a protected page requires re-login
+        logout();
       } else if (isProtected && !user) {
         navigate('/login', { replace: true });
       }
     };
     window.addEventListener('pageshow', handlePageShow);
     return () => window.removeEventListener('pageshow', handlePageShow);
-  }, [user, navigate]);
+  }, [user, logout, navigate]);
 
   return null;
 }
