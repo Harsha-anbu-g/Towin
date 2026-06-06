@@ -51,9 +51,9 @@ function ScoreCard({ data }) {
   return (
     <div style={{
       background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '32px 36px', display: 'flex', alignItems: 'center', gap: '40px',
-      marginBottom: '20px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+      padding: '24px 20px', marginBottom: '20px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
     }}>
+      <div className="score-card-row">
       <ScoreRing score={data.totalScore} />
       <div style={{ flex: 1 }}>
         <div style={{
@@ -78,6 +78,7 @@ function ScoreCard({ data }) {
             ? 'Build your first elder relationships and progress through trust stages.'
             : 'Great score — keep completing engagements and earning reviews.'}
         </p>
+      </div>
       </div>
     </div>
   );
@@ -115,7 +116,7 @@ function BasicCard({ basic, onGoToProfile }) {
         }} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+      <div className="two-col-grid">
         {basic.fields.map(f => (
           <div key={f.key} style={{
             display: 'flex', alignItems: 'flex-start', gap: '10px',

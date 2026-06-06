@@ -330,6 +330,34 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   box-shadow: 0 0 0 3px rgba(0,102,204,0.12);
 }
 
+/* ─── Streaks split layout — hide image panel on mobile ─── */
+@media (max-width: 640px) {
+  .streaks-left  { display: none !important; }
+  .streaks-right { padding: 28px 20px !important; justify-content: flex-start !important; min-height: 100svh; }
+}
+
+/* ─── Two-column responsive grid (Trust fields, Emergency form) ─── */
+.two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 640px) { .two-col-grid { grid-template-columns: 1fr !important; } }
+
+/* ─── Three-column role grid (Register) ─── */
+.role-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+@media (max-width: 640px) { .role-grid { grid-template-columns: 1fr 1fr !important; } }
+
+/* ─── Register hero header ─── */
+.register-head  { padding: 40px 64px 36px; text-align: center; }
+.register-title { font-size: 56px; font-weight: 600; color: #1d1d1f; margin-bottom: 10px; letter-spacing: -0.5px; line-height: 1.05; font-family: -apple-system, "SF Pro Display", system-ui, sans-serif; }
+.register-form-card { padding: 36px 32px; }
+@media (max-width: 640px) {
+  .register-head      { padding: 24px 20px 20px !important; }
+  .register-title     { font-size: 34px !important; }
+  .register-form-card { padding: 22px 16px !important; }
+}
+
+/* ─── Score card row (Trust page) ─── */
+.score-card-row { display: flex; align-items: center; gap: 40px; }
+@media (max-width: 640px) { .score-card-row { gap: 20px !important; } }
+
 /* ─── Dashboard tab bar — horizontally scrollable on mobile ─── */
 .dash-tab-wrap {
   max-width: 860px;
