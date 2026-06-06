@@ -252,7 +252,8 @@ export default function Register() {
       const { data } = await api.post('/auth/login', DEMO[role]);
       login(data.token);
       navigate(
-        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard'
+        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard',
+        { replace: true }
       );
     } catch {
       setError('Could not start demo session. Please try again.');
@@ -290,7 +291,8 @@ export default function Register() {
       navigate(
         data.role === 'ADMIN' ? '/admin' :
         (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' :
-        '/dashboard'
+        '/dashboard',
+        { replace: true }
       );
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
