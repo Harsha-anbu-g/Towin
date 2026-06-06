@@ -37,7 +37,7 @@ public class User {
 
     @Column(name = "trust_score")
     @Builder.Default
-    private Integer trustScore = 0;
+    private Double trustScore = 0.0;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -65,6 +65,13 @@ public class User {
 
     @Column(name = "phone_otp_expires_at")
     private LocalDateTime phoneOtpExpiresAt;
+
+    @Column(name = "phone_otp_attempts")
+    @Builder.Default
+    private int phoneOtpAttempts = 0;
+
+    @Column(name = "phone_otp_locked_at")
+    private LocalDateTime phoneOtpLockedAt;
 
     @Column(name = "inactivity_alerted_at")
     private LocalDateTime inactivityAlertedAt;

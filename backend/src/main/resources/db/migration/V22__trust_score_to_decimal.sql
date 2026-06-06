@@ -1,0 +1,4 @@
+ALTER TABLE users
+    ALTER COLUMN trust_score TYPE DECIMAL(10,2) USING trust_score::DECIMAL(10,2);
+ALTER TABLE users
+    ALTER COLUMN trust_score SET DEFAULT 0.00;

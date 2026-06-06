@@ -250,7 +250,7 @@ export default function Register() {
     setError('');
     try {
       const { data } = await api.post('/auth/login', DEMO[role]);
-      login(data.token, data.role, data.userId);
+      login(data.token);
       navigate(
         (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard'
       );
@@ -286,7 +286,7 @@ export default function Register() {
       const { email, password, role } = form;
       const phone = `+1000${Date.now().toString().slice(-7)}`;
       const { data } = await api.post('/auth/register', { email, phone, password, role });
-      login(data.token, data.role, data.userId);
+      login(data.token);
       navigate(
         data.role === 'ADMIN' ? '/admin' :
         (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' :

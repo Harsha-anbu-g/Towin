@@ -47,7 +47,7 @@ class TrustScoreServiceTest {
                 .email("t@t.com").phone("123").passwordHash("x")
                 .phoneVerified(false)
                 .verificationStatus(VerificationStatus.NONE)
-                .trustScore(0)
+                .trustScore(0.0)
                 .build();
     }
 

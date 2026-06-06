@@ -62,7 +62,7 @@ How the live site is wired up, what each piece costs, and how to redeploy or rec
 SPRING_DATASOURCE_URL=jdbc:postgresql://postgres.railway.internal:5432/railway
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=<rotated secret>
-JWT_SECRET=<rotated secret>
+JWT_SECRET=${JWT_SECRET}   # set in Railway environment variables — never commit the actual value
 JWT_EXPIRATION_MS=86400000
 CORS_ALLOWED_ORIGINS=https://towin.vercel.app,https://*-harsha-anbu-gs-projects.vercel.app
 APP_KAFKA_ENABLED=false   # explicit
