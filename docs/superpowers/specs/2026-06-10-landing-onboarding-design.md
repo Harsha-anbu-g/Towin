@@ -68,7 +68,11 @@ Plain everyday words. One idea per slide. No jargon.
 - Full-screen calm slides; gentle framer-motion fade between slides.
 - Dot progress indicators; large Next/Back buttons (elder-friendly tap
   targets, ≥48px).
-- Mobile-first layout; must look right at phone widths.
+- Fully responsive — equally polished on laptop/desktop browsers and phones.
+  Desktop: generous spacing, content centered with comfortable max-width,
+  slides can use side-by-side layouts (e.g., Elder/Helper cards in a row).
+  Mobile: single column, stacked cards, large tap targets, no horizontal
+  scrolling.
 
 ## Structure
 
@@ -92,7 +96,8 @@ Playwright (webapp-testing) verification:
 - `/` shows slide 1; Next/Back and dots navigate correctly.
 - "Already a member? Log in" link and final Start button both land on `/login`.
 - Logged-in user visiting `/` is redirected to their dashboard.
-- Mobile-viewport screenshots of each slide.
+- Screenshots of each slide at both desktop (≥1280px) and mobile (~390px)
+  viewports — both must look right, with no overflow or cramped layouts.
 
 ## Out of scope
 
