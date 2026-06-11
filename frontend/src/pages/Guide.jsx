@@ -116,7 +116,7 @@ export default function Guide() {
             fontFamily: SFD, fontSize: '34px', fontWeight: 700, color: '#1d1d1f',
             letterSpacing: '-0.5px', margin: '0 0 8px',
           }}>
-            How ToWin Works
+            How It Works
           </h1>
           <p style={{ fontFamily: SF, fontSize: '16px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
             A short, step-by-step tour of the platform. Use Back and Next, or tap a dot to jump.

@@ -128,7 +128,9 @@ export default function HelperDashboard() {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setLocation(loc); setLocationStatus('granted'); loadNeeds(loc);
       },
-      () => { setLocationStatus('denied'); loadNeeds(); }
+      () => { setLocationStatus('denied'); loadNeeds(); },
+      // Don't hang on an unanswered permission prompt — fall back to showing everything
+      { timeout: 8000, maximumAge: 300000 }
     );
   }
 
@@ -313,6 +315,37 @@ export default function HelperDashboard() {
           {tab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+              {profile?.name && (() => {
+                const now = new Date();
+                const h = now.getHours();
+                const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+                const firstName = profile.name.split(' ')[0];
+                const dateStr = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+                return (
+                  <div style={{
+                    background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 60%, #EBF6EE 100%)',
+                    border: '1px solid #D8EAF4', borderRadius: '20px',
+                    padding: '26px 30px',
+                  }}>
+                    <p style={{
+                      fontSize: '13px', fontWeight: 700, color: '#3D8AB0',
+                      letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 6px',
+                    }}>
+                      {dateStr}
+                    </p>
+                    <p style={{
+                      fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+                      fontSize: '32px', fontWeight: 600, color: '#1d1d1f',
+                      letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
+                    }}>
+                      {greet}, {firstName}
+                    </p>
+                    <p style={{ fontSize: '15px', color: '#5a6470', margin: '6px 0 0' }}>
+                      Welcome back. Here&apos;s what&apos;s happening with the people you help.
+                    </p>
+                  </div>
+                );
+              })()}
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
                 Your Trust Journey
               </h2>
@@ -672,8 +705,14 @@ export default function HelperDashboard() {
                       <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
                     </svg>
                   </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No elders found nearby</p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Try a larger radius or check back later.</p>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    {locationStatus === 'granted' ? 'No elders found nearby' : 'No elders available right now'}
+                  </p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>
+                    {locationStatus === 'granted'
+                      ? 'Try a larger radius above, or check back later.'
+                      : 'New members join often — please check back soon.'}
+                  </p>
                 </div>
               )}
               <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
