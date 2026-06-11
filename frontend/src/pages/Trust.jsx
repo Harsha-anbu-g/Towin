@@ -43,7 +43,7 @@ function ScoreRing({ score }) {
   );
 }
 
-function ScoreCard({ data }) {
+function ScoreCard({ data, isHelper }) {
   const tierStyle = TIER_COLORS[data.tier] ?? TIER_COLORS['New Member'];
   const display = data.totalScore % 1 === 0
     ? data.totalScore
@@ -75,7 +75,9 @@ function ScoreCard({ data }) {
           {data.totalScore < 3
             ? 'Complete your profile to earn your first points — verification alone adds 0.5 pts.'
             : data.totalScore < 15
-            ? 'Build your first elder relationships and progress through trust stages.'
+            ? (isHelper
+                ? 'Build your first elder relationships and progress through trust stages.'
+                : 'Connect with helpers and grow trust one gentle step at a time.')
             : 'Great score — keep completing engagements and earning reviews.'}
         </p>
       </div>
@@ -177,7 +179,7 @@ function BasicCard({ basic, onGoToProfile }) {
   );
 }
 
-function RootingCard({ rooting }) {
+function RootingCard({ rooting, isHelper }) {
   const STAGES = ['Text', 'Voice call', 'Video call', 'In-person', 'Help session'];
   return (
     <div style={{
@@ -191,7 +193,7 @@ function RootingCard({ rooting }) {
             Rooting Score
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
-            Points earned by progressing through trust stages with elders
+            Points earned by progressing through trust stages with {isHelper ? 'elders' : 'helpers'}
           </p>
         </div>
         <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 800, color: '#1d1d1f' }}>
@@ -217,14 +219,14 @@ function RootingCard({ rooting }) {
 
       {rooting.earned === 0 && (
         <p style={{ fontFamily: SF, fontSize: '13px', color: SKY, margin: '14px 0 0' }}>
-          → Send a message to an elder to earn your first rooting point.
+          → Send a message to {isHelper ? 'an elder' : 'a helper'} to earn your first rooting point.
         </p>
       )}
     </div>
   );
 }
 
-function ReviewCard({ review }) {
+function ReviewCard({ review, isHelper }) {
   return (
     <div style={{
       background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
@@ -236,7 +238,7 @@ function ReviewCard({ review }) {
             Review Score
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
-            Cumulative star ratings from elders — each star is one point
+            Cumulative star ratings from {isHelper ? 'elders' : 'helpers'} — each star is one point
           </p>
         </div>
         <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 800, color: '#1d1d1f' }}>
@@ -250,7 +252,7 @@ function ReviewCard({ review }) {
 
       {review.earned === 0 && (
         <p style={{ fontFamily: SF, fontSize: '13px', color: SKY, margin: '14px 0 0' }}>
-          → Complete a help session so an elder can leave you a review.
+          → Complete a help session so {isHelper ? 'an elder' : 'a helper'} can leave you a review.
         </p>
       )}
     </div>
@@ -312,10 +314,10 @@ export default function Trust() {
 
         {data && (
           <>
-            <ScoreCard data={data} />
+            <ScoreCard data={data} isHelper={isHelper} />
             <BasicCard basic={data.basic} onGoToProfile={() => navigate('/profile')} />
-            <RootingCard rooting={data.rooting} />
-            <ReviewCard review={data.review} />
+            <RootingCard rooting={data.rooting} isHelper={isHelper} />
+            <ReviewCard review={data.review} isHelper={isHelper} />
           </>
         )}
       </div>
