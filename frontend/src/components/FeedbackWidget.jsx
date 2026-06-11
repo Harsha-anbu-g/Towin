@@ -5,7 +5,8 @@ export default function FeedbackWidget() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  if (pathname === '/feedback') return null;
+  // Hidden on the landing story — it floats exactly where Next/Start sit on phones
+  if (pathname === '/feedback' || pathname === '/') return null;
 
   return (
     <button
