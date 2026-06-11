@@ -36,6 +36,11 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (request.getRole() != UserRole.ELDER
+                && request.getRole() != UserRole.HELPER
+                && request.getRole() != UserRole.BOTH) {
+            throw new IllegalArgumentException("Role must be ELDER, HELPER, or BOTH");
+        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
