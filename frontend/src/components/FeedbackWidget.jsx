@@ -5,8 +5,14 @@ export default function FeedbackWidget() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  // Hidden on the landing story — it floats exactly where Next/Start sit on phones
-  if (pathname === '/feedback' || pathname === '/') return null;
+  // Hidden where the fixed button would overlap a primary action:
+  // the landing Next/Start, the chat composer, and the Streaks check-in CTA.
+  if (
+    pathname === '/feedback' ||
+    pathname === '/' ||
+    pathname === '/streaks' ||
+    pathname.startsWith('/messages/')
+  ) return null;
 
   return (
     <button

@@ -580,7 +580,9 @@ export default function HelperDashboard() {
                     <TrustJourney
                       currentTrustLevel={conn.currentTrustLevel}
                       confirmedByMe={conn.confirmedByMe}
+                      confirmedByOther={conn.confirmedByOther}
                       otherUserName={conn.otherUserName || 'them'}
+                      isElder={false}
                       onConfirm={() => confirmTrust(conn.id)}
                       confirming={confirmingTrust === conn.id}
                     />

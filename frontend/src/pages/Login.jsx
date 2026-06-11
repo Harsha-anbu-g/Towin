@@ -227,12 +227,12 @@ export default function Login() {
                 {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
-                  <Link to="/forgot-password" style={{
+                  <Link to="/feedback" style={{
                     fontSize: '13px', color: '#4FA3CE',
                     textDecoration: 'none',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
-                    Forgot password?
+                    Forgot password? Contact us
                   </Link>
                 </div>
               </div>
