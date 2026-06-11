@@ -56,9 +56,9 @@ export default function Landing() {
           letterSpacing: '-0.3px',
         }}>
           <img
-            src="/tortoise-logo.png"
+            src="/tortoise-logo-alpha.png"
             alt=""
-            style={{ width: 34, height: 34, objectFit: 'contain', mixBlendMode: 'multiply' }}
+            style={{ width: 34, height: 34, objectFit: 'contain' }}
           />
           ToWin
         </span>
