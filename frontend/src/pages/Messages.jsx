@@ -83,9 +83,12 @@ export default function Messages() {
 
   async function loadMessages() {
     try {
-      // Backend returns the 50 newest first; reverse to display oldest→newest.
+      // Ask for 50 messages; the newest-first backend returns the latest 50.
+      // Sort by timestamp client-side so display is correct regardless of the
+      // server's ordering (robust across the asc→desc backend change).
       const res = await api.get(`/messages/${connectionId}?size=50`);
-      const ordered = (res.data.content ?? []).slice().reverse();
+      const ordered = (res.data.content ?? []).slice()
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       setMessages(prev => {
         const prevLast = prev.length ? prev[prev.length - 1].id : null;
         const nextLast = ordered.length ? ordered[ordered.length - 1].id : null;
