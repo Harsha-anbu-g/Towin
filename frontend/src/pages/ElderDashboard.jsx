@@ -297,7 +297,9 @@ export default function ElderDashboard() {
 
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
-  const connectedHelperIds = new Set(connections.map(c => c.otherUserId));
+  // Only ACTIVE connections count as "Connected" — a pending request must not
+  // show the Connected badge in Discover.
+  const connectedHelperIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
 
   const connTokens = connections.map(c => `${c.id}:${c.status}`);
   const applicantTokens = myNeeds.flatMap(n => (n.applications || []).map(a => `${n.id}:${a.helperId}`));
@@ -503,7 +505,7 @@ export default function ElderDashboard() {
                             width: '38px', height: '38px', borderRadius: '50%',
                             background: '#e8e8ed',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '13px', fontWeight: 700, color: '#fff',
+                            fontSize: '13px', fontWeight: 700, color: '#4FA3CE',
                           }}>
                             {initials(conn.otherUserName)}
                           </div>
@@ -514,7 +516,7 @@ export default function ElderDashboard() {
                             </p>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                           {conn.otherUserId && (
                             <button onClick={() => navigate(`/user/${conn.otherUserId}`)}
                               style={{ padding: '7px 14px', fontSize: '13px', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', cursor: 'pointer', color: '#5a6470', fontFamily: 'inherit', fontWeight: 500 }}>
@@ -698,6 +700,7 @@ export default function ElderDashboard() {
                 </div>
               )}
 
+              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
               {helpers.map((helper, i) => {
                 const alreadyConnected = connectedHelperIds.has(helper.userId);
                 const sent = connectMsg[helper.userId];
@@ -765,6 +768,7 @@ export default function ElderDashboard() {
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
 
