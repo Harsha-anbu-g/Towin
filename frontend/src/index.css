@@ -336,7 +336,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 /* ─── Streaks split layout — hide image panel on mobile ─── */
 @media (max-width: 640px) {
   .streaks-left  { display: none !important; }
-  .streaks-right { padding: 28px 20px !important; justify-content: flex-start !important; min-height: 100svh; }
+  .streaks-right { padding: 28px 20px !important; justify-content: flex-start !important; min-height: calc(100svh - 60px); }
 }
 
 /* ─── Two-column responsive grid (Trust fields, Emergency form) ─── */

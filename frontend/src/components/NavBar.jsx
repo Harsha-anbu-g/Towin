@@ -170,6 +170,17 @@ export default function NavBar() {
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             {isElder && (
+              <Link to="/game" style={{
+                fontSize: '15px', fontWeight: 700, fontFamily: SF,
+                padding: '8px 18px', borderRadius: '9999px',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+                background: pathname === '/game' ? '#3D8B5A' : '#EBF6EE',
+                color: pathname === '/game' ? '#fff' : '#3D8B5A',
+                border: `1.5px solid ${pathname === '/game' ? '#3D8B5A' : '#BFE0C9'}`,
+                transition: 'all 0.15s',
+              }}>Play Peekaboo</Link>
+            )}
+            {isElder && (
               <button onClick={triggerSos} disabled={sending} style={{
                 fontSize: '15px', fontWeight: 700, fontFamily: SF,
                 padding: '10px 22px', borderRadius: '9999px', border: 'none',
@@ -241,6 +252,7 @@ export default function NavBar() {
             <MenuLink to="/profile" label="Profile" />
             <MenuLink to="/trust" label="Trust Score" />
             <MenuLink to="/how-it-works" label="Guide" />
+            {isElder && <MenuLink to="/game" label="Play Peekaboo" />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" />}
             <button onClick={() => { setMenuOpen(false); logout(); }} style={{
               display: 'block', width: '100%', textAlign: 'left',

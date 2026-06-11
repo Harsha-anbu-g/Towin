@@ -277,7 +277,7 @@ export default function Login() {
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
               }}>
-                How ToWin works
+                How It Works
               </Link>
             </div>
             <p style={{
@@ -290,50 +290,61 @@ export default function Login() {
               </Link>
             </p>
 
-            {/* Demo accounts */}
-            <div style={{ marginTop: '24px' }}>
-              <p style={{ fontSize: '12px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif', textAlign: 'center', marginBottom: '12px', letterSpacing: '0.3px' }}>
-                Or explore with a demo account
+            {/* Demo accounts — for visitors who just want to look around */}
+            <div style={{
+              marginTop: '24px', background: '#EAF5FB',
+              border: '1px solid #BFD9EA', borderRadius: '16px',
+              padding: '18px 18px 16px',
+            }}>
+              <p style={{
+                fontSize: '15px', fontWeight: 700, color: '#1d1d1f', textAlign: 'center',
+                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                margin: '0 0 4px',
+              }}>
+                Just want to see how it works?
               </p>
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <p style={{
+                fontSize: '13px', color: '#5a6470', textAlign: 'center',
+                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                margin: '0 0 14px', lineHeight: 1.5,
+              }}>
+                Look around with a sample account — no sign-up needed.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {[
-                  { role: 'ELDER', title: 'Elder', name: 'Margaret · Trust Score 14', initial: 'M' },
-                  { role: 'HELPER', title: 'Helper', name: 'James · Trust Score 32', initial: 'J' },
-                ].map(({ role, title, name, initial }) => (
+                  { role: 'ELDER', label: 'Try as an Elder', sub: 'See ToWin as Margaret, 72' },
+                  { role: 'HELPER', label: 'Try as a Helper', sub: 'See ToWin as James, 28' },
+                ].map(({ role, label, sub }) => (
                   <button
                     key={role}
                     type="button"
                     onClick={() => handleGuest(role)}
                     disabled={!!guestLoading}
                     style={{
-                      flex: 1,
-                      background: '#f5f5f7',
-                      border: '1px solid #e8e8e8',
-                      borderRadius: '14px',
-                      padding: '14px 12px',
+                      width: '100%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: '#ffffff',
+                      border: '1.5px solid #BFD9EA',
+                      borderRadius: '12px',
+                      padding: '13px 16px',
                       cursor: guestLoading ? 'not-allowed' : 'pointer',
                       opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
                       textAlign: 'left',
-                      transition: 'background 0.15s',
+                      transition: 'border-color 0.15s, background 0.15s',
                       fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                     }}
-                    onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.background = '#ebebed'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                    onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{
-                        width: '36px', height: '36px', borderRadius: '50%',
-                        background: '#e0e0e0', flexShrink: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '14px', fontWeight: 700, color: '#5a6470',
-                      }}>
-                        {guestLoading === role ? '…' : initial}
-                      </div>
-                      <div>
-                        <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1d1d1f' }}>{title}</p>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a', marginTop: '1px' }}>{name}</p>
-                      </div>
-                    </div>
+                    <span>
+                      <span style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: '#3D8AB0' }}>
+                        {guestLoading === role ? 'Opening…' : label}
+                      </span>
+                      <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>
+                        {sub}
+                      </span>
+                    </span>
+                    <span aria-hidden="true" style={{ fontSize: '17px', color: '#4FA3CE', fontWeight: 700 }}>→</span>
                   </button>
                 ))}
               </div>

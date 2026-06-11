@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NavBar from '../components/NavBar';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 
@@ -93,25 +94,14 @@ export default function Streaks() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100svh', fontFamily: SFT }}>
+    <div style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', background: '#fafafc', fontFamily: SFT }}>
+      <NavBar />
+      <div style={{ flex: 1, display: 'flex' }}>
 
       {/* Left — image panel (hidden on mobile) */}
       <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        padding: '52px 48px', minHeight: '100svh',
       }}>
-        {/* Logo top-left */}
-        <div style={{
-          position: 'absolute', top: '32px', left: '48px', zIndex: 2,
-          display: 'flex', alignItems: 'center', gap: '10px',
-        }}>
-          <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-          <p style={{
-            fontSize: '22px', fontWeight: 800, color: '#1a5c2e', letterSpacing: '-0.4px',
-            fontFamily: SF, margin: 0,
-          }}>ToWin</p>
-        </div>
         <img src="/journey.jpg" alt="" style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', zIndex: 0,
@@ -281,12 +271,12 @@ export default function Streaks() {
                   onClick={handleCheckIn}
                   disabled={checkingIn}
                   style={{
-                    width: '100%', background: '#1d1d1f', color: '#fff',
+                    width: '100%', background: SKY, color: '#fff',
                     border: 'none', borderRadius: '9999px',
                     padding: '22px 0', fontSize: '20px', fontWeight: 700,
                     fontFamily: SFT, cursor: checkingIn ? 'not-allowed' : 'pointer',
                     letterSpacing: '-0.2px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    boxShadow: '0 4px 20px rgba(79,163,206,0.35)',
                     opacity: checkingIn ? 0.7 : 1,
                   }}
                 >
@@ -295,11 +285,24 @@ export default function Streaks() {
                 <p style={{ textAlign: 'center', fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, lineHeight: 1.5, marginTop: '12px' }}>
                   Tap to log today and keep your streak alive.
                 </p>
+                <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '15px', color: '#7a7a7a', fontFamily: SFT,
+                      textDecoration: 'underline', padding: '8px',
+                    }}
+                  >
+                    Skip for now — go to dashboard
+                  </button>
+                </div>
               </>
             )
           )}
 
         </div>
+      </div>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ const ROLE_ACCENT = {
   Family: '#7a7a7a',
   Neighbour: '#0a9396',
   Neighbor: '#0a9396',
-  Friend: '#5856d6',
+  Friend: '#3D8B5A',
 };
 const roleAccent = (rel) => {
   if (!rel) return '#a0a0a5';
@@ -89,7 +89,7 @@ export default function EmergencyContacts() {
   }
 
   return (
-    <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
       <NavBar />
 
       {/* Hero tile — calm sky-blue, matches dashboard theme */}

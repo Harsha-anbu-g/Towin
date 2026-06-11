@@ -56,6 +56,9 @@ function PublicRoute({ children }) {
   const { user } = useAuth();
   if (!user) return children;
   if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
+  // Elders land on the daily check-in first — keeps the post-login flow
+  // consistent even when navigation races the auth context update
+  if (user.role === 'ELDER' || user.role === 'BOTH') return <Navigate to="/streaks" replace />;
   return <Navigate to="/dashboard" replace />;
 }
 

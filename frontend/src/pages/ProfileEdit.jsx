@@ -222,7 +222,7 @@ export default function ProfileEdit() {
   );
 
   return (
-    <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
       <NavBar />
 
       {/* Hero section — calm sky-blue, matches app theme */}
