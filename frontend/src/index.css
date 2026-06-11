@@ -97,7 +97,10 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 
 @keyframes blur-fade-up {
   from { opacity: 0; filter: blur(6px); transform: translateY(16px); }
-  to   { opacity: 1; filter: blur(0);   transform: translateY(0); }
+  /* End on none (not blur(0)/translateY(0)): fill-mode retains the final frame,
+     and a non-none filter/transform creates a stacking context that isolates
+     descendants' mix-blend-mode (e.g. the multiply on the tortoise logo PNG). */
+  to   { opacity: 1; filter: none; transform: none; }
 }
 
 @keyframes fade-in {

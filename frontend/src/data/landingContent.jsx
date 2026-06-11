@@ -117,16 +117,15 @@ export const SLIDES = [
       <>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
           <img
-            src="/tortoise-logo.png"
+            src="/tortoise-logo-alpha.png"
             alt="ToWin tortoise logo"
-            style={{ width: 96, height: 96, objectFit: 'contain', mixBlendMode: 'multiply' }}
+            style={{ width: 96, height: 96, objectFit: 'contain' }}
           />
         </div>
         <Title>ToWin</Title>
-        <Lead>Where two generations win together.</Lead>
+        <Lead>It takes two to win.</Lead>
         <Body>
-          A calm, safe place where older people and young helpers meet —
-          and both walk away with more.
+          One who helps, one who&apos;s helped — both walk away winners.
         </Body>
       </>
     ),
