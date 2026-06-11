@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { ToastProvider } from './context/ToastContext';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import Landing from './pages/Landing';
 import ElderDashboard from './pages/ElderDashboard';
 import HelperDashboard from './pages/HelperDashboard';
 import ProfileEdit from './pages/ProfileEdit';
@@ -29,7 +30,7 @@ function BfCacheGuard() {
     const handlePageShow = (e) => {
       if (!e.persisted) return;
       const path = window.location.pathname;
-      const isPublic = path === '/login' || path === '/register';
+      const isPublic = path === '/' || path === '/login' || path === '/register';
       const isProtected = !isPublic && path !== '/feedback' && path !== '/how-it-works';
       if (isPublic && user) {
         // Login page restored from bfcache while logged in → log out
@@ -80,7 +81,7 @@ function App() {
           <BetaBanner />
           <BfCacheGuard />
           <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/feedback" element={<Feedback />} />
