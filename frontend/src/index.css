@@ -415,3 +415,13 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   /* Register page inner band — its inline padding 40px 64px is too wide on phones */
   .auth-form > div > div { padding-left: 16px !important; padding-right: 16px !important; }
 }
+
+/* ── Landing story slides ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .landing-topbar { padding: 14px 18px !important; }
+  .landing-main   { padding: 16px 20px !important; }
+  .landing-footer { padding: 0 20px 28px !important; }
+  .landing-title  { font-size: 29px !important; }
+  .landing-lead   { font-size: 17px !important; }
+  .landing-cards  { grid-template-columns: 1fr !important; }
+}
