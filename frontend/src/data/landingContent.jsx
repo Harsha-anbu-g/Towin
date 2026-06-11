@@ -2,8 +2,6 @@
 // Landing.jsx renders SLIDES[index].render() inside the slide shell.
 // Helpers here are hero-scale (bigger type than guideContent's card-scale).
 
-import TurtleLogo from '../components/TurtleLogo';
-
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const BLUE = '#3D8AB0';
@@ -118,7 +116,11 @@ export const SLIDES = [
     render: () => (
       <>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
-          <TurtleLogo size={76} />
+          <img
+            src="/tortoise-logo.png"
+            alt="ToWin tortoise logo"
+            style={{ width: 96, height: 96, objectFit: 'contain', mixBlendMode: 'multiply' }}
+          />
         </div>
         <Title>ToWin</Title>
         <Lead>Where two generations win together.</Lead>

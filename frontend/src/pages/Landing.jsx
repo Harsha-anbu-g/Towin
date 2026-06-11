@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import TurtleLogo from '../components/TurtleLogo';
 import { SLIDES } from '../data/landingContent';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -56,7 +55,11 @@ export default function Landing() {
           fontFamily: SFD, fontSize: '21px', fontWeight: 800, color: '#1d1d1f',
           letterSpacing: '-0.3px',
         }}>
-          <TurtleLogo size={34} />
+          <img
+            src="/tortoise-logo.png"
+            alt=""
+            style={{ width: 34, height: 34, objectFit: 'contain', mixBlendMode: 'multiply' }}
+          />
           ToWin
         </span>
         <Link to="/login" style={{

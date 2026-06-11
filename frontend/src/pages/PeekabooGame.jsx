@@ -139,7 +139,7 @@ export default function PeekabooGame() {
 
         {/* Tortoise — single SVG */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <svg width="380" height="400" viewBox="0 0 380 400" style={{ overflow: 'visible' }}>
+          <svg width="100%" height="auto" viewBox="0 0 380 400" style={{ overflow: 'visible', maxWidth: '380px' }}>
 
             {/* Shell base glow */}
             <ellipse cx="190" cy="189" rx="140" ry="115" fill={GREEN} opacity="0.08" />

@@ -176,8 +176,11 @@ public class NeedService {
         return toResponse(needRepository.save(need), null);
     }
 
-    public NeedResponse getOne(UUID needId) {
-        return toResponse(getNeed(needId), null, true);
+    public NeedResponse getOne(UUID callerId, UUID needId) {
+        Need need = getNeed(needId);
+        // Only the posting elder may see the applicant list (names + free-text messages).
+        boolean isOwner = need.getElder().getId().equals(callerId);
+        return toResponse(need, null, isOwner);
     }
 
     @Transactional

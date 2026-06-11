@@ -51,6 +51,16 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(message, 400, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
+        // Business-rule / authorization-state guards (e.g. "Not a participant",
+        // "Can only message an active connection") — a 409, not an opaque 500.
+        log.warn("IllegalStateException: {}", ex.getMessage());
+        String msg = ex.getMessage() != null ? ex.getMessage() : "That action isn't allowed right now.";
+        return ResponseEntity.status(409)
+                .body(new ErrorResponse(msg, 409, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
         String msg = ex.getMessage() != null && ex.getMessage().contains("phone")

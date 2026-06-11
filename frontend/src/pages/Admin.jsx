@@ -393,7 +393,7 @@ export default function Admin() {
                 }}
               />
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
               <thead>
                 <tr>
                   {['User', 'Role', 'Trust Score', 'Tier', 'Status', 'Verified', 'Joined', 'Actions'].map(h => (
@@ -502,7 +502,7 @@ export default function Admin() {
                 No pending verifications.
               </p>
             )}
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
               <thead>
                 <tr>
                   {['Email', 'ID Document', 'Submitted', 'Actions'].map(h => (
@@ -544,7 +544,7 @@ export default function Admin() {
                 No reports.
               </p>
             )}
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
               <thead>
                 <tr>
                   {['Reporter', 'Reported', 'Reason', 'Description', 'Date', 'Actions'].map(h => (
@@ -588,7 +588,7 @@ export default function Admin() {
               {reviews.length === 0 && (
                 <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '14px', textAlign: 'center' }}>No reviews.</p>
               )}
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
                 <thead>
                   <tr>
                     {['Reviewer', 'Reviewee', 'Rating', 'Tags', 'Safety', 'Date', 'Actions'].map(h => (
@@ -637,7 +637,7 @@ export default function Admin() {
 
             {dataTab === 'Connections' && (
               <div style={card}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
                   <thead>
                     <tr>
                       {['User A', 'User B', 'Trust Level', 'Status', 'Created', 'Actions'].map(h => (
@@ -668,7 +668,7 @@ export default function Admin() {
 
             {dataTab === 'Needs' && (
               <div style={card}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
                   <thead>
                     <tr>
                       {['Elder', 'Category', 'Status', 'Created', 'Actions'].map(h => (
@@ -696,7 +696,7 @@ export default function Admin() {
 
             {dataTab === 'Messages' && (
               <div style={card}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
                   <thead>
                     <tr>
                       {['Sender', 'Content', 'Date', 'Actions'].map(h => (

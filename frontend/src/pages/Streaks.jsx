@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useToast } from '../context/ToastContext';
 
 const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -53,6 +54,7 @@ function computeAge(dobStr) {
 
 export default function Streaks() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [streak, setStreak] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dob, setDob] = useState(null);
@@ -75,12 +77,16 @@ export default function Streaks() {
   async function handleCheckIn() {
     setCheckingIn(true);
     try {
+      // The backend returns 200 with alreadyCheckedIn=true for a same-day repeat,
+      // so a real exception here means the check-in genuinely failed.
       const r = await api.post('/streaks/checkin');
       setStreak(r.data);
       setJustCheckedIn(true);
-    } catch {
-      // already checked in or error — still reveal options
-      setJustCheckedIn(true);
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message ||
+        'Could not check in. Please try again.'
+      );
     } finally {
       setCheckingIn(false);
     }

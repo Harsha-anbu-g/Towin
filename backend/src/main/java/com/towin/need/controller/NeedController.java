@@ -23,8 +23,10 @@ public class NeedController {
 
     @GetMapping("/{needId}")
     public ResponseEntity<NeedResponse> getOne(
+            Authentication auth,
             @PathVariable UUID needId) {
-        return ResponseEntity.ok(needService.getOne(needId));
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(needService.getOne(userId, needId));
     }
 
     @DeleteMapping("/{needId}")
