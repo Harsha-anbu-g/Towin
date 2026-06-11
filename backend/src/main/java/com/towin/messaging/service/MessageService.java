@@ -26,7 +26,9 @@ public class MessageService {
 
     public Page<MessageResponse> getHistory(UUID connectionId, UUID userId, Pageable pageable) {
         Connection conn = getAuthorizedConnection(connectionId, userId);
-        return messageRepository.findByConnectionIdOrderByCreatedAtAsc(conn.getId(), pageable)
+        // Page 0 returns the newest messages (so long conversations don't hide
+        // recent activity). The client reverses each page to display oldest→newest.
+        return messageRepository.findByConnectionIdOrderByCreatedAtDesc(conn.getId(), pageable)
                 .map(this::toResponse);
     }
 

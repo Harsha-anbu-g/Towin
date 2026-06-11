@@ -49,6 +49,7 @@ export default function Messages() {
   const [reporting, setReporting] = useState(false);
   const [reportMsg, setReportMsg] = useState('');
   const bottomRef = useRef(null);
+  const lastMsgIdRef = useRef(null);
 
   useEffect(() => {
     api.get('/connections').then(r => {
@@ -71,13 +72,28 @@ export default function Messages() {
   }, [connectionId]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only auto-scroll when a genuinely new message arrives — never yank the
+    // user back down on the 5-second poll while they're reading older messages.
+    const newest = messages.length ? messages[messages.length - 1].id : null;
+    if (newest && newest !== lastMsgIdRef.current) {
+      lastMsgIdRef.current = newest;
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   async function loadMessages() {
     try {
-      const res = await api.get(`/messages/${connectionId}?sort=createdAt,asc&size=50`);
-      setMessages(res.data.content ?? []);
+      // Backend returns the 50 newest first; reverse to display oldest→newest.
+      const res = await api.get(`/messages/${connectionId}?size=50`);
+      const ordered = (res.data.content ?? []).slice().reverse();
+      setMessages(prev => {
+        const prevLast = prev.length ? prev[prev.length - 1].id : null;
+        const nextLast = ordered.length ? ordered[ordered.length - 1].id : null;
+        // Skip the state update when nothing changed, so identical polls don't
+        // re-render or retrigger effects.
+        if (prev.length === ordered.length && prevLast === nextLast) return prev;
+        return ordered;
+      });
       setLoadError('');
       await api.post(`/messages/${connectionId}/seen`).catch(() => {});
     } catch (err) {
@@ -122,12 +138,22 @@ export default function Messages() {
 
   return (
     <div style={{
-      minHeight: '100svh',
+      height: '100svh',
+      background: '#eef2f5',
+      display: 'flex',
+      justifyContent: 'center',
+      fontFamily: SFText,
+    }}>
+     <div style={{
+      width: '100%',
+      maxWidth: '860px',
+      height: '100%',
       background: '#ffffff',
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: SFText,
-    }}>
+      borderLeft: '1px solid #e0e0e0',
+      borderRight: '1px solid #e0e0e0',
+     }}>
       {/* Chat header — iMessage style */}
       <header style={{
         background: '#fafafc',
@@ -368,7 +394,6 @@ export default function Messages() {
           <div style={{
             fontSize: '12px',
             fontWeight: 600,
-            color: '#4FA3CE',
             background: '#4FA3CE',
             color: '#ffffff',
             padding: '4px 12px',
@@ -401,7 +426,7 @@ export default function Messages() {
                 if (text.trim() && !sending) send(e);
               }
             }}
-            placeholder={loadError === 'trust' ? 'Confirm trust on dashboard first…' : 'iMessage'}
+            placeholder={loadError === 'trust' ? 'Confirm trust on dashboard first…' : 'Type a message…'}
             disabled={loadError === 'trust'}
             rows={2}
             className="field"
@@ -453,6 +478,7 @@ export default function Messages() {
           )}
         </button>
       </form>
+     </div>
     </div>
   );
 }
