@@ -1,6 +1,7 @@
 package com.towin.messaging.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
@@ -25,13 +26,18 @@ public class MessageService {
 
     public Page<MessageResponse> getHistory(UUID connectionId, UUID userId, Pageable pageable) {
         Connection conn = getAuthorizedConnection(connectionId, userId);
-        return messageRepository.findByConnectionIdOrderByCreatedAtAsc(conn.getId(), pageable)
+        // Page 0 returns the newest messages (so long conversations don't hide
+        // recent activity). The client reverses each page to display oldest→newest.
+        return messageRepository.findByConnectionIdOrderByCreatedAtDesc(conn.getId(), pageable)
                 .map(this::toResponse);
     }
 
     @Transactional
     public MessageResponse send(UUID connectionId, UUID senderId, MessageRequest request) {
         Connection conn = getAuthorizedConnection(connectionId, senderId);
+        if (conn.getStatus() != ConnectionStatus.ACTIVE) {
+            throw new IllegalStateException("Can only message an active connection");
+        }
         if (conn.getCurrentTrustLevel().getValue() < TrustLevel.MESSAGING.getValue()) {
             throw new IllegalStateException("Trust level too low to message");
         }

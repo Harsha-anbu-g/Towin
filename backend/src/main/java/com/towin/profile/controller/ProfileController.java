@@ -15,7 +15,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${cors.allowed-origins:http://localhost:5173}")
 public class ProfileController {
 
     private final ProfileService profileService;
@@ -28,8 +27,11 @@ public class ProfileController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProfileResponse> getProfile(@PathVariable UUID id) {
-        return ResponseEntity.ok(profileService.getProfile(id));
+    public ResponseEntity<ProfileResponse> getProfile(Authentication auth, @PathVariable UUID id) {
+        // Only the owner sees their own raw phone; other users' phone is gated
+        // behind the trust journey (exposed via the connections endpoint instead).
+        boolean isSelf = auth != null && id.toString().equals(auth.getName());
+        return ResponseEntity.ok(profileService.getProfile(id, isSelf));
     }
 
     @PutMapping("/elder")

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import api from '../api/axios';
 
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -8,17 +9,20 @@ const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 
 export default function NavBar() {
   const { user, logout } = useAuth();
+  const { toast } = useToast();
   const { pathname } = useLocation();
   const [sosSent, setSosSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+  // Collapse to the hamburger drawer below 1024px — the full desktop rail
+  // (logo + 6 links + Trust pill + SOS + Sign out) needs ~1000px to fit.
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    const onResize = () => setIsMobile(window.innerWidth <= 1024);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -40,7 +44,13 @@ export default function NavBar() {
       await api.post('/emergency/sos');
       setSosSent(true);
       setTimeout(() => setSosSent(false), 5000);
-    } catch { setSosSent(false); }
+    } catch (err) {
+      setSosSent(false);
+      toast.error(
+        err?.response?.data?.message ||
+        'Could not send SOS. Please call your emergency contact directly.'
+      );
+    }
     finally { setSending(false); }
   }
 

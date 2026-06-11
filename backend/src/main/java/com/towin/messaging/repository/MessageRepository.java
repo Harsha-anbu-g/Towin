@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     Page<Message> findByConnectionIdOrderByCreatedAtAsc(UUID connectionId, Pageable pageable);
+    Page<Message> findByConnectionIdOrderByCreatedAtDesc(UUID connectionId, Pageable pageable);
     long countByConnectionIdAndSeenAtIsNull(UUID connectionId);
 
     java.util.Optional<Message> findFirstByConnectionIdOrderByCreatedAtDesc(UUID connectionId);

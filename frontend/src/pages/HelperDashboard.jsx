@@ -221,7 +221,9 @@ export default function HelperDashboard() {
 
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
-  const connectedElderIds = new Set(connections.map(c => c.otherUserId));
+  // Only ACTIVE connections count as "Connected" — a pending request must not
+  // show the Connected badge in Discover.
+  const connectedElderIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
 
   const connTokens = connections.map(c => `${c.id}:${c.status}`);
   const needTokens = needs.map(n => n.id);
@@ -434,7 +436,7 @@ export default function HelperDashboard() {
                             </p>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                           {conn.otherUserId && (
                             <button onClick={() => navigate(`/user/${conn.otherUserId}`)}
                               style={{ padding: '7px 14px', fontSize: '13px', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', cursor: 'pointer', color: '#5a6470', fontFamily: 'inherit', fontWeight: 500 }}>
@@ -580,7 +582,9 @@ export default function HelperDashboard() {
                     <TrustJourney
                       currentTrustLevel={conn.currentTrustLevel}
                       confirmedByMe={conn.confirmedByMe}
+                      confirmedByOther={conn.confirmedByOther}
                       otherUserName={conn.otherUserName || 'them'}
+                      isElder={false}
                       onConfirm={() => confirmTrust(conn.id)}
                       confirming={confirmingTrust === conn.id}
                     />
@@ -609,6 +613,7 @@ export default function HelperDashboard() {
                   </p>
                 </div>
               )}
+              <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
               {needs.map((need, i) => (
                 <div key={need.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '20px',
@@ -652,6 +657,7 @@ export default function HelperDashboard() {
                   )}
                 </div>
               ))}
+              </div>
             </div>
           )}
 
@@ -670,6 +676,7 @@ export default function HelperDashboard() {
                   <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Try a larger radius or check back later.</p>
                 </div>
               )}
+              <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
               {elders.map((elder, i) => {
                 const alreadyConnected = connectedElderIds.has(elder.userId);
                 const sent = connectMsg[elder.userId];
@@ -738,6 +745,7 @@ export default function HelperDashboard() {
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
         </div>
