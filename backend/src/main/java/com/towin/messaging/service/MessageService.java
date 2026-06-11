@@ -1,6 +1,7 @@
 package com.towin.messaging.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
@@ -32,6 +33,9 @@ public class MessageService {
     @Transactional
     public MessageResponse send(UUID connectionId, UUID senderId, MessageRequest request) {
         Connection conn = getAuthorizedConnection(connectionId, senderId);
+        if (conn.getStatus() != ConnectionStatus.ACTIVE) {
+            throw new IllegalStateException("Can only message an active connection");
+        }
         if (conn.getCurrentTrustLevel().getValue() < TrustLevel.MESSAGING.getValue()) {
             throw new IllegalStateException("Trust level too low to message");
         }

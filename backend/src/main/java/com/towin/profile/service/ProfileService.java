@@ -118,16 +118,24 @@ public class ProfileService {
     }
 
     public ProfileResponse getProfile(UUID userId) {
+        return getProfile(userId, true);
+    }
+
+    public ProfileResponse getProfile(UUID userId, boolean includePhone) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         ElderProfile elder = elderProfileRepository.findByUserId(userId).orElse(null);
         HelperProfile helper = helperProfileRepository.findByUserId(userId).orElse(null);
 
-        return buildProfileResponse(user, elder, helper);
+        return buildProfileResponse(user, elder, helper, includePhone);
     }
 
     private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper) {
+        return buildProfileResponse(user, elder, helper, true);
+    }
+
+    private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper, boolean includePhone) {
         int score = user.getTrustScore() != null ? (int) Math.round(user.getTrustScore()) : 0;
         ProfileResponse.ProfileResponseBuilder builder = ProfileResponse.builder()
                 .userId(user.getId())
@@ -136,7 +144,7 @@ public class ProfileService {
                 .trustTier(TrustScoreService.tierFor(score))
                 .verificationStatus(user.getVerificationStatus().name())
                 .phoneVerified(user.isPhoneVerified())
-                .phone(user.getPhone())
+                .phone(includePhone ? user.getPhone() : null)
                 .city(user.getCity())
                 .dateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
 

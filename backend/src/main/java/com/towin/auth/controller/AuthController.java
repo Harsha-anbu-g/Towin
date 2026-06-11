@@ -14,7 +14,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${cors.allowed-origins:http://localhost:5173}")
 public class AuthController {
 
     private final AuthService authService;

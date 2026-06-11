@@ -12,7 +12,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/streaks")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${cors.allowed-origins:http://localhost:5173}")
 public class StreakController {
 
     private final StreakService streakService;
