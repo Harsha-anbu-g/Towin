@@ -142,7 +142,7 @@ export default function Messages() {
   return (
     <div style={{
       height: '100svh',
-      background: '#eef2f5',
+      background: '#fafafc',
       display: 'flex',
       justifyContent: 'center',
       fontFamily: SFText,

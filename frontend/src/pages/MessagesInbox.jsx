@@ -72,7 +72,7 @@ export default function MessagesInbox() {
     });
 
   return (
-    <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
       <NavBar />
 
       <BlurFade delay={1}>

@@ -264,7 +264,7 @@ export default function HelperDashboard() {
   );
 
   return (
-    <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
       {/* ── Sticky tab bar ── */}

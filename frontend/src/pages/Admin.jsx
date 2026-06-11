@@ -48,7 +48,7 @@ const yellowBtn = actionBtn('#b45309', 'rgba(245,158,11,0.1)');
 const grayBtn = actionBtn('#7a7a7a', 'rgba(160,160,165,0.1)');
 
 const roleBadge = (role) => {
-  const colors = { ADMIN: ['#5856d6', 'rgba(88,86,214,0.1)'], ELDER: ['#4FA3CE', 'rgba(0,102,204,0.1)'], HELPER: ['#3D8AB0', 'rgba(79,163,206,0.10)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
+  const colors = { ADMIN: ['#3D8B5A', 'rgba(61,139,90,0.12)'], ELDER: ['#4FA3CE', 'rgba(0,102,204,0.1)'], HELPER: ['#3D8AB0', 'rgba(79,163,206,0.10)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
   const [c, bg] = colors[role] || ['#7a7a7a', 'rgba(160,160,165,0.1)'];
   return (
     <span style={{ fontSize: '11px', fontWeight: 600, color: c, background: bg, padding: '3px 8px', borderRadius: '9999px' }}>
@@ -253,7 +253,7 @@ export default function Admin() {
   });
 
   return (
-    <div style={{ minHeight: '100svh', background: '#f5f5f7', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
 
       {/* Hero header — calm sky-blue, matches the rest of the app */}
       <div style={{
