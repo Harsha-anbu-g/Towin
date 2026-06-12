@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SLIDES } from '../data/landingContent';
-import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -35,31 +33,10 @@ function ProgressDots({ count, current, onJump }) {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [index, setIndex] = useState(0);
-  const [demoLoading, setDemoLoading] = useState('');
   const total = SLIDES.length;
   const slide = SLIDES[index];
   const isLast = index === total - 1;
-
-  const DEMO = {
-    ELDER:  { email: 'elder@gmail.com',  password: '12345678' },
-    HELPER: { email: 'helper@gmail.com', password: '123456789' },
-  };
-
-  async function enterDemo(role) {
-    setDemoLoading(role);
-    try {
-      const { data } = await api.post('/auth/login', DEMO[role]);
-      login(data.token);
-      navigate(
-        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard',
-        { replace: true }
-      );
-    } catch {
-      setDemoLoading('');
-    }
-  }
 
   return (
     <div style={{
@@ -75,8 +52,8 @@ export default function Landing() {
       }}>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: '9px',
-          fontFamily: SFD, fontSize: '21px', fontWeight: 800, color: '#1d1d1f',
-          letterSpacing: '-0.3px',
+          fontFamily: SFD, fontSize: '21px', fontWeight: 600, color: '#1d1d1f',
+          letterSpacing: '-0.374px',
         }}>
           <img
             src="/tortoise-logo-alpha.png"
@@ -120,7 +97,7 @@ export default function Landing() {
               style={{
                 minWidth: '260px', height: '54px', background: SKY, color: '#fff',
                 border: 'none', borderRadius: '9999px', cursor: 'pointer',
-                fontFamily: SF, fontSize: '18px', fontWeight: 700,
+                fontFamily: SF, fontSize: '17px', fontWeight: 400,
                 boxShadow: '0 6px 20px rgba(79,163,206,0.4)',
               }}
             >
@@ -154,7 +131,7 @@ export default function Landing() {
               onClick={() => setIndex(i => Math.max(0, i - 1))}
               disabled={index === 0}
               style={{
-                padding: '13px 28px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
+                padding: '13px 28px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
                 borderRadius: '9999px', cursor: index === 0 ? 'default' : 'pointer',
                 background: '#fff', color: index === 0 ? '#c8c8cd' : '#1d1d1f',
                 border: '1px solid #e0e0e0',
@@ -165,7 +142,7 @@ export default function Landing() {
             <button
               onClick={() => setIndex(i => Math.min(total - 1, i + 1))}
               style={{
-                padding: '13px 32px', fontFamily: SF, fontSize: '16px', fontWeight: 700,
+                padding: '13px 32px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
                 borderRadius: '9999px', cursor: 'pointer', background: SKY, color: '#fff',
                 border: 'none', boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
               }}
@@ -175,37 +152,6 @@ export default function Landing() {
           </div>
         )}
 
-        {/* One-click demo — always visible so a visitor never has to sign up */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexWrap: 'wrap', gap: '10px', marginTop: '22px',
-        }}>
-          <span style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470' }}>
-            Just looking? One-click live demo:
-          </span>
-          {[
-            { role: 'ELDER', label: 'View as an Elder' },
-            { role: 'HELPER', label: 'View as a Helper' },
-          ].map(({ role, label }) => (
-            <button
-              key={role}
-              onClick={() => enterDemo(role)}
-              disabled={!!demoLoading}
-              style={{
-                padding: '9px 20px', fontFamily: SF, fontSize: '14px', fontWeight: 700,
-                borderRadius: '9999px', cursor: demoLoading ? 'default' : 'pointer',
-                background: '#fff', color: '#3D8AB0',
-                border: `1.5px solid ${BORDER}`,
-                opacity: demoLoading && demoLoading !== role ? 0.5 : 1,
-                transition: 'border-color 0.15s',
-              }}
-              onMouseEnter={e => { if (!demoLoading) e.currentTarget.style.borderColor = SKY; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; }}
-            >
-              {demoLoading === role ? 'Opening…' : label}
-            </button>
-          ))}
-        </div>
       </footer>
     </div>
   );

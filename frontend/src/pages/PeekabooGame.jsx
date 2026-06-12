@@ -104,7 +104,7 @@ export default function PeekabooGame() {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '18px', gap: '16px' }}>
           <div>
-            <h1 style={{ fontFamily: SF, fontSize: '38px', fontWeight: 800, color: GREEN, margin: 0, letterSpacing: '-0.8px', lineHeight: 1 }}>
+            <h1 style={{ fontFamily: SF, fontSize: '38px', fontWeight: 600, color: GREEN, margin: 0, letterSpacing: '-0.8px', lineHeight: 1 }}>
               Peekaboo!
             </h1>
             <p style={{ fontSize: '14px', color: '#7a7a7a', margin: '5px 0 0' }}>
@@ -125,7 +125,7 @@ export default function PeekabooGame() {
               />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontFamily: SF, fontSize: '18px', fontWeight: 800, color: timerColor, lineHeight: 1, transition: 'color 0.3s' }}>{timeLeft}</span>
+              <span style={{ fontFamily: SF, fontSize: '18px', fontWeight: 600, color: timerColor, lineHeight: 1, transition: 'color 0.3s' }}>{timeLeft}</span>
               <span style={{ fontSize: '9px', color: '#a0a0a5' }}>SEC</span>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function PeekabooGame() {
           <div style={{ flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '9999px', overflow: 'hidden' }}>
             <div style={{ height: '100%', background: SKY, borderRadius: '9999px', width: `${(matchedCount / PAIRS) * 100}%`, transition: 'width 0.4s' }} />
           </div>
-          <span style={{ fontSize: '14px', color: '#7a7a7a', fontWeight: 700, flexShrink: 0 }}>{matchedCount}/{PAIRS}</span>
+          <span style={{ fontSize: '14px', color: '#7a7a7a', fontWeight: 600, flexShrink: 0 }}>{matchedCount}/{PAIRS}</span>
         </div>
 
         {/* Tortoise — single SVG */}
@@ -210,9 +210,9 @@ export default function PeekabooGame() {
       {/* Result overlay */}
       {phase !== 'playing' && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-          <div style={{ background: '#fff', borderRadius: '28px', padding: '48px 40px', maxWidth: '340px', width: '90%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+          <div style={{ background: '#fff', borderRadius: '18px', padding: '48px 40px', maxWidth: '340px', width: '90%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <img src="/logo.png" alt="tortoise" style={{ width: 80, height: 80, objectFit: 'contain', marginBottom: '16px', filter: 'drop-shadow(0 4px 16px rgba(26,92,46,0.25))' }} />
-            <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 800, color: '#1d1d1f', margin: '0 0 10px', letterSpacing: '-0.4px' }}>
+            <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 10px', letterSpacing: '-0.4px' }}>
               {phase === 'won' ? 'You found them all!' : "Time's up!"}
             </h2>
             <p style={{ fontSize: '15px', color: '#7a7a7a', margin: '0 0 28px', lineHeight: 1.55, fontFamily: SFT }}>
@@ -220,7 +220,7 @@ export default function PeekabooGame() {
                 ? `All ${PAIRS} pairs matched. Your streak keeps going!`
                 : `You got ${matchedCount} of ${PAIRS}. Streak still counts!`}
             </p>
-            <button onClick={() => navigate('/dashboard')} style={{ width: '100%', background: GREEN, color: '#fff', border: 'none', borderRadius: '9999px', padding: '16px 0', fontSize: '17px', fontWeight: 700, fontFamily: SFT, cursor: 'pointer', boxShadow: '0 4px 16px rgba(26,92,46,0.3)' }}>
+            <button onClick={() => navigate('/dashboard')} style={{ width: '100%', background: GREEN, color: '#fff', border: 'none', borderRadius: '9999px', padding: '16px 0', fontSize: '17px', fontWeight: 600, fontFamily: SFT, cursor: 'pointer', boxShadow: '0 4px 16px rgba(26,92,46,0.3)' }}>
               Continue to Dashboard
             </button>
           </div>

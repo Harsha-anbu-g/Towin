@@ -120,7 +120,7 @@ export default function EmergencyContacts() {
           </div>
           <h1 style={{
             fontSize: 'clamp(28px, 8vw, 48px)',
-            fontWeight: 700,
+            fontWeight: 600,
             color: '#1d1d1f',
             fontFamily: SF,
             letterSpacing: '-1px',
@@ -149,7 +149,7 @@ export default function EmergencyContacts() {
               borderRadius: '9999px',
               height: '56px',
               fontSize: '17px',
-              fontWeight: 700,
+              fontWeight: 600,
               fontFamily: SF,
               cursor: 'pointer',
               letterSpacing: '0.3px',

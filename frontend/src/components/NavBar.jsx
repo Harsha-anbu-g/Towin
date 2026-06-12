@@ -110,8 +110,8 @@ export default function NavBar() {
       }}>
         {/* Brand */}
         <Link to="/dashboard" style={{
-          fontSize: '22px', fontWeight: 800, fontFamily: SFD,
-          letterSpacing: '-0.4px', color: '#1a5c2e',
+          fontSize: '21px', fontWeight: 600, fontFamily: SFD,
+          letterSpacing: '-0.374px', color: '#1a5c2e',
           textDecoration: 'none', flexShrink: 0,
           display: 'inline-flex', alignItems: 'center', gap: '8px',
           marginRight: isMobile ? 0 : '32px',
@@ -171,7 +171,7 @@ export default function NavBar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             {isElder && (
               <Link to="/game" style={{
-                fontSize: '15px', fontWeight: 700, fontFamily: SF,
+                fontSize: '15px', fontWeight: 600, fontFamily: SF,
                 padding: '8px 18px', borderRadius: '9999px',
                 textDecoration: 'none', whiteSpace: 'nowrap',
                 background: pathname === '/game' ? '#3D8B5A' : '#EBF6EE',

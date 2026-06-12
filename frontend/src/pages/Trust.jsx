@@ -32,7 +32,7 @@ function ScoreRing({ score }) {
         transform="rotate(-90 74 74)"
         style={{ transition: 'stroke-dasharray 0.7s ease' }} />
       <text x="74" y="69" textAnchor="middle"
-        style={{ fontFamily: SFD, fontSize: '28px', fontWeight: 700, fill: '#1d1d1f' }}>
+        style={{ fontFamily: SFD, fontSize: '28px', fontWeight: 600, fill: '#1d1d1f' }}>
         {display}
       </text>
       <text x="74" y="88" textAnchor="middle"
@@ -61,12 +61,12 @@ function ScoreCard({ data, isHelper }) {
           background: tierStyle.bg, color: tierStyle.color,
           border: `1px solid ${tierStyle.border}`,
           borderRadius: '9999px', padding: '5px 16px',
-          fontSize: '13px', fontWeight: 700, fontFamily: SF, marginBottom: '14px',
+          fontSize: '13px', fontWeight: 600, fontFamily: SF, marginBottom: '14px',
         }}>
           {data.tier}
         </div>
         <h2 style={{
-          fontFamily: SFD, fontSize: '24px', fontWeight: 700,
+          fontFamily: SFD, fontSize: '24px', fontWeight: 600,
           color: '#1d1d1f', margin: '0 0 8px', letterSpacing: '-0.3px',
         }}>
           {display} pts
@@ -96,7 +96,7 @@ function BasicCard({ basic, onGoToProfile }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
+          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
             Profile Score
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
@@ -104,7 +104,7 @@ function BasicCard({ basic, onGoToProfile }) {
           </p>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 800, color: '#1d1d1f' }}>
+          <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
             {basic.earned}
           </span>
           <span style={{ fontFamily: SF, fontSize: '14px', color: '#a0a0a5' }}> / {basic.max}</span>
@@ -138,7 +138,7 @@ function BasicCard({ basic, onGoToProfile }) {
                   {f.label}
                 </p>
                 <span style={{
-                  fontFamily: SF, fontSize: '11px', fontWeight: 700,
+                  fontFamily: SF, fontSize: '11px', fontWeight: 600,
                   color: f.completed ? BLUE : '#a0a0a5',
                   background: f.completed ? 'rgba(61,138,176,0.08)' : 'transparent',
                   borderRadius: '9999px', padding: f.completed ? '2px 7px' : '0',
@@ -164,7 +164,7 @@ function BasicCard({ basic, onGoToProfile }) {
             style={{
               background: SKY, color: '#fff', border: 'none',
               borderRadius: '9999px', padding: '12px 28px',
-              fontSize: '14px', fontWeight: 700, fontFamily: SF,
+              fontSize: '14px', fontWeight: 600, fontFamily: SF,
               cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
             }}
           >
@@ -189,14 +189,14 @@ function RootingCard({ rooting, isHelper }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
+          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
             Rooting Score
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
             Points earned by progressing through trust stages with {isHelper ? 'elders' : 'helpers'}
           </p>
         </div>
-        <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 800, color: '#1d1d1f' }}>
+        <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
           +{rooting.earned}
         </span>
       </div>
@@ -234,14 +234,14 @@ function ReviewCard({ review, isHelper }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
+          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
             Review Score
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
             Cumulative star ratings from {isHelper ? 'elders' : 'helpers'} — each star is one point
           </p>
         </div>
-        <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 800, color: '#1d1d1f' }}>
+        <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
           +{review.earned}
         </span>
       </div>
@@ -281,7 +281,7 @@ export default function Trust() {
 
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{
-            fontFamily: SFD, fontSize: '34px', fontWeight: 700,
+            fontFamily: SFD, fontSize: '34px', fontWeight: 600,
             color: '#1d1d1f', margin: '0 0 8px', letterSpacing: '-0.5px',
           }}>
             Your Trust Score

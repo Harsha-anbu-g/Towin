@@ -13,7 +13,7 @@ const BORDER = '#BFD9EA';
 function Kicker({ children }) {
   return (
     <p style={{
-      fontFamily: SF, fontSize: '13px', fontWeight: 700, color: BLUE,
+      fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE,
       letterSpacing: '1.5px', textTransform: 'uppercase',
       textAlign: 'center', margin: '0 0 10px',
     }}>{children}</p>
@@ -23,8 +23,8 @@ function Kicker({ children }) {
 function Title({ children }) {
   return (
     <h1 className="landing-title" style={{
-      fontFamily: SFD, fontSize: '38px', fontWeight: 700, color: '#1d1d1f',
-      letterSpacing: '-0.5px', lineHeight: 1.15, textAlign: 'center',
+      fontFamily: SFD, fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
+      letterSpacing: '-0.374px', lineHeight: 1.1, textAlign: 'center',
       margin: '0 0 14px',
     }}>{children}</h1>
   );
@@ -51,10 +51,10 @@ function Body({ children }) {
 function MiniCard({ title, children }) {
   return (
     <div style={{
-      background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '16px',
+      background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '18px',
       padding: '18px 20px', textAlign: 'left',
     }}>
-      <p style={{ fontFamily: SFD, fontSize: '17px', fontWeight: 700, color: BLUE, margin: '0 0 6px' }}>
+      <p style={{ fontFamily: SFD, fontSize: '17px', fontWeight: 600, color: BLUE, margin: '0 0 6px' }}>
         {title}
       </p>
       <p style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
@@ -85,7 +85,7 @@ function StageChips({ stages }) {
           background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
           padding: '9px 16px', fontFamily: SF, fontSize: '15px', color: '#1d1d1f',
         }}>
-          <span style={{ fontWeight: 700, color: BLUE }}>{i + 1}</span>
+          <span style={{ fontWeight: 600, color: BLUE }}>{i + 1}</span>
           {s}
         </span>
       ))}
@@ -119,12 +119,11 @@ export const SLIDES = [
           <img
             src="/tortoise-logo-alpha.png"
             alt="ToWin tortoise logo"
-            className="tortoise-3d"
             style={{ width: 96, height: 96, objectFit: 'contain' }}
           />
         </div>
         <Title>ToWin</Title>
-        <Lead>It takes two to win.</Lead>
+        <Lead>It takes two To win.</Lead>
         <Body>
           One who helps, one who&apos;s helped — both walk away winners.
         </Body>

@@ -18,7 +18,7 @@ function PublicHeader() {
     }}>
       <Link to="/" style={{
         display: 'inline-flex', alignItems: 'center', gap: '8px',
-        fontFamily: SFD, fontSize: '24px', fontWeight: 800, color: '#1a5c2e',
+        fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: '#1a5c2e',
         letterSpacing: '-0.4px', textDecoration: 'none',
       }}>
         <img src="/logo.png" alt="ToWin logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
@@ -113,7 +113,7 @@ export default function Guide() {
         {/* Page heading */}
         <div style={{ marginBottom: '24px' }}>
           <h1 style={{
-            fontFamily: SFD, fontSize: '34px', fontWeight: 700, color: '#1d1d1f',
+            fontFamily: SFD, fontSize: '34px', fontWeight: 600, color: '#1d1d1f',
             letterSpacing: '-0.5px', margin: '0 0 8px',
           }}>
             How It Works
@@ -162,7 +162,7 @@ export default function Guide() {
             <button
               onClick={() => setStep(s => Math.min(total - 1, s + 1))}
               style={{
-                padding: '13px 32px', fontFamily: SF, fontSize: '16px', fontWeight: 700,
+                padding: '13px 32px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
                 borderRadius: '9999px', cursor: 'pointer', background: SKY, color: '#fff',
                 border: 'none', boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
               }}

@@ -194,7 +194,7 @@ export default function Messages() {
             <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ) : (
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '15px', fontWeight: 700, color: '#5a6470', fontFamily: SF }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '15px', fontWeight: 600, color: '#5a6470', fontFamily: SF }}>
             {initials(otherName)}
           </div>
         )}
@@ -299,7 +299,7 @@ export default function Messages() {
                 <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             ) : (
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', fontWeight: 700, color: '#5a6470', fontFamily: SF }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', fontWeight: 600, color: '#5a6470', fontFamily: SF }}>
                 {initials(otherName)}
               </div>
             )}
@@ -344,7 +344,7 @@ export default function Messages() {
                       <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '10px', fontWeight: 700, color: '#5a6470', fontFamily: SF }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '10px', fontWeight: 600, color: '#5a6470', fontFamily: SF }}>
                       {initials(otherName)}
                     </div>
                   )

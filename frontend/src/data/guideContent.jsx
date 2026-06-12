@@ -13,7 +13,7 @@ const BORDER = '#BFD9EA';
 function StepTitle({ children }) {
   return (
     <h2 style={{
-      fontFamily: SFD, fontSize: '28px', fontWeight: 700, color: '#1d1d1f',
+      fontFamily: SFD, fontSize: '28px', fontWeight: 600, color: '#1d1d1f',
       letterSpacing: '-0.4px', margin: '0 0 12px', lineHeight: 1.2,
     }}>{children}</h2>
   );
@@ -31,7 +31,7 @@ function Lead({ children }) {
 function SubHead({ children }) {
   return (
     <h3 style={{
-      fontFamily: SFD, fontSize: '19px', fontWeight: 700, color: '#1d1d1f',
+      fontFamily: SFD, fontSize: '19px', fontWeight: 600, color: '#1d1d1f',
       margin: '26px 0 12px',
     }}>{children}</h3>
   );
@@ -67,7 +67,7 @@ function MiniCard({ title, children }) {
       background: WASH, border: `1px solid ${BORDER}`, borderRadius: '14px',
       padding: '16px 18px',
     }}>
-      <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 700, color: BLUE, margin: '0 0 6px' }}>
+      <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: BLUE, margin: '0 0 6px' }}>
         {title}
       </p>
       <p style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
@@ -287,7 +287,7 @@ export const STEPS = [
           onClick={() => navigate(isLoggedIn ? '/dashboard' : '/register')}
           style={{
             width: '100%', background: SKY, color: '#fff', border: 'none',
-            borderRadius: '9999px', padding: '16px 0', fontSize: '17px', fontWeight: 700,
+            borderRadius: '9999px', padding: '16px 0', fontSize: '17px', fontWeight: 600,
             fontFamily: SF, cursor: 'pointer', marginTop: '8px',
             boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
           }}
