@@ -1,10 +1,11 @@
 package com.towin.common.config;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -32,6 +33,12 @@ public class RedisConfig {
     @Bean
     @ConditionalOnMissingBean(CacheManager.class)
     public CacheManager inMemoryCacheManager() {
-        return new ConcurrentMapCacheManager("discovery-elders", "discovery-helpers");
+        // Same 5-minute TTL as the Redis path — without expiry, discovery
+        // results stay frozen per user until the process restarts.
+        CaffeineCacheManager manager = new CaffeineCacheManager("discovery-elders", "discovery-helpers");
+        manager.setCaffeine(Caffeine.newBuilder()
+                .expireAfterWrite(Duration.ofMinutes(5))
+                .maximumSize(5000));
+        return manager;
     }
 }

@@ -29,7 +29,7 @@ public class DiscoveryService {
     private final UserRepository userRepository;
     private final TrustScoreService trustScoreService;
 
-    @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
+    @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         double lat = resolvedLat(filter, requester);
@@ -54,7 +54,7 @@ public class DiscoveryService {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page")
+    @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverHelpers(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         double lat = resolvedLat(filter, requester);
