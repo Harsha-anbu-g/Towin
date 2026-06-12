@@ -8,7 +8,7 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 
 **[🚀 Try the live demo →](https://towin.vercel.app)**
 
-*No signup needed — scroll to the bottom of the login page and click **Continue as Elder** or **Continue as Helper**.*
+*No signup needed — open the sign-in page and click **Try as an Elder** or **Try as a Helper**.*
 
 </div>
 
