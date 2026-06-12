@@ -39,29 +39,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String userId = claims.getSubject();
                 String role = claims.get("role", String.class);
                 if (userId != null) {
-                    List<SimpleGrantedAuthority> authorities = role != null
-                            ? List.of(new SimpleGrantedAuthority(role))
-                            : List.of();
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(userId, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    updateLastSeen(userId);
+                    // The user row is loaded anyway for lastSeenAt, so checking
+                    // isActive here is free — a suspended or deleted account
+                    // loses its token immediately instead of after 24 h expiry
+                    userRepository.findById(UUID.fromString(userId)).ifPresent(user -> {
+                        if (Boolean.TRUE.equals(user.getIsActive())) {
+                            List<SimpleGrantedAuthority> authorities = role != null
+                                    ? List.of(new SimpleGrantedAuthority(role))
+                                    : List.of();
+                            UsernamePasswordAuthenticationToken auth =
+                                    new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                            SecurityContextHolder.getContext().setAuthentication(auth);
+                            try {
+                                user.setLastSeenAt(LocalDateTime.now());
+                                userRepository.save(user);
+                            } catch (Exception ignored) {
+                                // never block the request for a lastSeenAt update
+                            }
+                        }
+                    });
                 }
             } catch (JwtException | IllegalArgumentException ignored) {
                 // invalid token — leave security context empty
             }
         }
         chain.doFilter(request, response);
-    }
-
-    private void updateLastSeen(String userId) {
-        try {
-            userRepository.findById(UUID.fromString(userId)).ifPresent(user -> {
-                user.setLastSeenAt(LocalDateTime.now());
-                userRepository.save(user);
-            });
-        } catch (Exception ignored) {
-            // never block the request for a lastSeenAt update
-        }
     }
 }
