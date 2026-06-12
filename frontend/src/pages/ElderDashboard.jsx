@@ -115,6 +115,8 @@ export default function ElderDashboard() {
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
   const [accepting, setAccepting] = useState(null);
+  const [showPostForm, setShowPostForm] = useState(false);
+  const [endingConn, setEndingConn] = useState(null);
   const [respondingConn, setRespondingConn] = useState(null);
   const [confirmingTrust, setConfirmingTrust] = useState(null);
   const [reviewingNeed, setReviewingNeed] = useState(null);
@@ -231,7 +233,7 @@ export default function ElderDashboard() {
       if (location) { body.locationLat = location.lat; body.locationLng = location.lng; }
       await api.post('/needs', body);
       setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
-      setPostMsg('Request posted!'); await loadNeeds(); setTab('needs');
+      setPostMsg('Request posted!'); await loadNeeds(); setShowPostForm(false); setTab('needs');
     } catch (err) { setPostMsg(err?.response?.data?.message || 'Failed to post.'); }
     finally { setPosting(false); }
   }
@@ -315,11 +317,10 @@ export default function ElderDashboard() {
   }, [tab, connections, myNeeds]);
 
   const tabs = [
-    ['overview', 'Overview', 0],
-    ['connections', 'Connections', connBadge],
+    ['overview', 'Home', 0],
+    ['connections', 'My Helpers', connBadge],
     ['discover', 'Find Helpers', 0],
     ['needs', 'My Requests', requestsBadge],
-    ['post', 'Post Request', 0],
   ];
 
   return (
@@ -403,6 +404,27 @@ export default function ElderDashboard() {
                   </div>
                 );
               })()}
+              {/* Quick actions — every main feature reachable in one click */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px' }}>
+                {[
+                  { label: 'Post a help request', sub: 'Helpers nearby will offer', onClick: () => { setTab('needs'); setShowPostForm(true); } },
+                  { label: 'Find helpers', sub: 'Browse people near you', onClick: () => setTab('discover') },
+                  { label: 'My Trust Score', sub: 'See how it grows', onClick: () => navigate('/trust') },
+                ].map(a => (
+                  <button key={a.label} onClick={a.onClick} style={{
+                    background: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '16px',
+                    padding: '16px 18px', textAlign: 'left', cursor: 'pointer',
+                    fontFamily: 'inherit', transition: 'box-shadow 0.15s, transform 0.15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(16,42,67,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: '#3D8AB0' }}>{a.label} →</span>
+                    <span style={{ display: 'block', fontSize: '13px', color: '#7a7a7a', marginTop: '3px' }}>{a.sub}</span>
+                  </button>
+                ))}
+              </div>
+
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
                   Your Trust Journey
@@ -483,12 +505,26 @@ export default function ElderDashboard() {
                       >
                         View Profile
                       </button>
-                      <button
-                        onClick={() => { if (window.confirm('End this connection?')) endConnection(conn.id); }}
-                        style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
-                      >
-                        End
-                      </button>
+                      {endingConn === conn.id ? (
+                        <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '12px', color: '#5a6470' }}>End this connection?</span>
+                          <button onClick={() => { setEndingConn(null); endConnection(conn.id); }}
+                            style={{ background: '#9b3535', color: '#fff', border: 'none', borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+                            Yes, end
+                          </button>
+                          <button onClick={() => setEndingConn(null)}
+                            style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', color: '#5a6470', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            Keep
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setEndingConn(conn.id)}
+                          style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                          End
+                        </button>
+                      )}
                     </div>
                   </div>
                   <TrustJourney
@@ -793,11 +829,16 @@ export default function ElderDashboard() {
           )}
 
           {/* My Requests tab */}
-          {tab === 'needs' && (
+          {tab === 'needs' && !showPostForm && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
-                My Help Requests
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+                  My Help Requests
+                </h2>
+                <button onClick={() => setShowPostForm(true)} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+                  + New Request
+                </button>
+              </div>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
@@ -812,7 +853,7 @@ export default function ElderDashboard() {
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No requests yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>Post a request and helpers near you will offer to assist. It only takes a minute.</p>
-                  <button onClick={() => setTab('post')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+                  <button onClick={() => setShowPostForm(true)} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
                     Post a Request
                   </button>
                 </div>
@@ -930,16 +971,25 @@ export default function ElderDashboard() {
             </div>
           )}
 
-          {/* Post Request tab */}
-          {tab === 'post' && (
+          {/* Post Request form — lives inside My Requests */}
+          {tab === 'needs' && showPostForm && (
             <div style={{ background: '#ffffff', borderRadius: '18px', padding: '32px', border: '1px solid #e0e0e0' }}>
-              <h2 style={{
-                fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-                fontSize: '28px', fontWeight: 600, color: '#1d1d1f',
-                letterSpacing: '-0.4px', marginBottom: '28px', marginTop: 0,
-              }}>
-                Post a Help Request
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                <h2 style={{
+                  fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+                  fontSize: '28px', fontWeight: 600, color: '#1d1d1f',
+                  letterSpacing: '-0.4px', marginBottom: '28px', marginTop: 0,
+                }}>
+                  Post a Help Request
+                </h2>
+                <button onClick={() => setShowPostForm(false)} style={{
+                  background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px',
+                  padding: '8px 18px', fontSize: '13px', color: '#5a6470',
+                  cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, flexShrink: 0,
+                }}>
+                  ← Back to my requests
+                </button>
+              </div>
               <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
                 <FormField label="What do you need?">
                   <input value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
