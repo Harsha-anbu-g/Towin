@@ -7,6 +7,7 @@ const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const HEX   = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
 const GREEN = '#1a5c2e';
+const SHELL = '#3D8B5A';
 const SKY   = '#4FA3CE';
 const PAIRS = 6;
 const TIME  = 60;
@@ -141,36 +142,30 @@ export default function PeekabooGame() {
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <svg width="100%" height="auto" viewBox="0 0 380 400" style={{ overflow: 'visible', maxWidth: '380px' }}>
 
-            {/* Shell base glow */}
-            <ellipse cx="190" cy="189" rx="140" ry="115" fill={GREEN} opacity="0.08" />
+            {/* Ground shadow */}
+            <ellipse cx="190" cy="362" rx="128" ry="11" fill={GREEN} opacity="0.08" />
 
-            {/* Head */}
-            <ellipse cx="190" cy="52" rx="20" ry="22" fill={GREEN} />
-            <ellipse cx="190" cy="72" rx="13" ry="14" fill={GREEN} />
-            <circle cx="183" cy="44" r="4" fill="#f0fdf4" />
-            <circle cx="197" cy="44" r="4" fill="#f0fdf4" />
-            <circle cx="183" cy="44" r="2" fill="#1d1d1f" />
-            <circle cx="197" cy="44" r="2" fill="#1d1d1f" />
+            {/* Legs — stubby capsules peeking out diagonally from under the shell */}
+            <ellipse cx="64" cy="86" rx="17" ry="28" fill={GREEN} transform="rotate(-45 64 86)" />
+            <ellipse cx="316" cy="86" rx="17" ry="28" fill={GREEN} transform="rotate(45 316 86)" />
+            <ellipse cx="64" cy="292" rx="17" ry="28" fill={GREEN} transform="rotate(45 64 292)" />
+            <ellipse cx="316" cy="292" rx="17" ry="28" fill={GREEN} transform="rotate(-45 316 292)" />
 
             {/* Tail */}
-            <ellipse cx="190" cy="315" rx="10" ry="14" fill={GREEN} />
-            <path d="M186 325 Q190 345 194 325" fill={GREEN} />
+            <path d="M 178 310 Q 190 358 202 310 Z" fill={GREEN} />
 
-            {/* Front-left leg */}
-            <ellipse cx="52" cy="148" rx="14" ry="22"
-              fill={GREEN} transform="rotate(-30 52 148)" />
+            {/* Neck + head with a friendly face */}
+            <ellipse cx="190" cy="62" rx="15" ry="24" fill={GREEN} />
+            <circle cx="190" cy="34" r="23" fill={GREEN} />
+            <circle cx="181" cy="29" r="4.5" fill="#f0fdf4" />
+            <circle cx="199" cy="29" r="4.5" fill="#f0fdf4" />
+            <circle cx="181.5" cy="29.5" r="2.2" fill="#1d1d1f" />
+            <circle cx="198.5" cy="29.5" r="2.2" fill="#1d1d1f" />
 
-            {/* Front-right leg */}
-            <ellipse cx="328" cy="148" rx="14" ry="22"
-              fill={GREEN} transform="rotate(30 328 148)" />
-
-            {/* Back-left leg */}
-            <ellipse cx="52" cy="230" rx="14" ry="22"
-              fill={GREEN} transform="rotate(30 52 230)" />
-
-            {/* Back-right leg */}
-            <ellipse cx="328" cy="230" rx="14" ry="22"
-              fill={GREEN} transform="rotate(-30 328 230)" />
+            {/* Shell — dark rim with a lighter plate the cells sit on */}
+            <ellipse cx="190" cy="189" rx="164" ry="138" fill={GREEN} />
+            <ellipse cx="190" cy="189" rx="150" ry="125" fill={SHELL} />
+            <ellipse cx="148" cy="132" rx="82" ry="50" fill="#ffffff" opacity="0.04" />
 
             {/* Hex cells */}
             {cards.map((card, i) => {
@@ -183,8 +178,8 @@ export default function PeekabooGame() {
                   <polygon
                     points={hexPoints(cx, cy, 36, 3)}
                     fill={fill}
-                    stroke="#fafafc"
-                    strokeWidth="2"
+                    stroke={SHELL}
+                    strokeWidth="2.5"
                     style={{ transition: 'fill 0.25s' }}
                   />
                   {revealed && (
