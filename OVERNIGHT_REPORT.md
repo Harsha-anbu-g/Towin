@@ -50,6 +50,14 @@ in Montreal.
 
 ## Changes (newest first)
 <!-- one line per commit, added as the night progresses -->
+- `b8e3989` dashboards restructured: Home + quick actions on both roles,
+  Post Request merged into My Requests (inline form), tabs renamed
+  (My Helpers / My Elders), native window.confirm/alert replaced with
+  inline confirms + toast. Verified in browser: elder Home shows trust at
+  two stages + pending request with Accept/Decline; quick action opens the
+  post form directly.
+- **Prod verified**: demo elder on Railway now has 5 connections at 4 trust
+  stages (TRUSTED / PHONE / MESSAGING / PENDING) — seeder ran on deploy.
 - `dcd2cb2` suspended/deleted accounts lose tokens immediately (JwtAuthFilter
   gates on isActive — row was already loaded for lastSeenAt, zero extra cost)
 - `fbe246c` unit suite repaired, 54/54 green — pushes are now test-gated
