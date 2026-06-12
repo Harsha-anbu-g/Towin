@@ -48,6 +48,10 @@ app:
     enabled: ${APP_KAFKA_ENABLED:false}
   redis:
     enabled: ${APP_REDIS_ENABLED:false}
+  demo:
+    # Idempotent, additive demo content (accounts, trust stages, needs,
+    # messages, reviews) so the demo is always alive. Safe on every boot.
+    seed-enabled: ${APP_DEMO_SEED_ENABLED:true}
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
