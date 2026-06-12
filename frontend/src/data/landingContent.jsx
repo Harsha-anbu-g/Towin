@@ -123,9 +123,9 @@ export const SLIDES = [
           />
         </div>
         <Title>ToWin</Title>
-        <Lead>It takes two To win.</Lead>
+        <Lead>It takes two To Win.</Lead>
         <Body>
-          One who helps, one who&apos;s helped — both walk away winners.
+          One who helps, one who gets help — and both win.
         </Body>
       </>
     ),
@@ -137,7 +137,7 @@ export const SLIDES = [
         <Kicker>Who it&apos;s for</Kicker>
         <Title>Two kinds of people</Title>
         <Lead>
-          Everyone on ToWin is one of two roles. You choose yours when you
+          Everyone on ToWin is one of these two. You pick yours when you
           create your account.
         </Lead>
         <CardGrid>
@@ -145,7 +145,7 @@ export const SLIDES = [
             An older person looking for friendship, company, or help with daily tasks.
           </MiniCard>
           <MiniCard title="Helper">
-            A younger person offering companionship and a hand with everyday things.
+            A younger person who gives time, company, and a hand with everyday things.
           </MiniCard>
         </CardGrid>
       </>
@@ -158,12 +158,12 @@ export const SLIDES = [
         <Kicker>The problem we solve</Kicker>
         <Title>Help is hard to find alone</Title>
         <Lead>
-          Everyday things — errands, a lift, a little company — take energy
-          that elders don&apos;t always have.
+          Small daily things — shopping, a ride, someone to talk to — take
+          energy that elders don&apos;t always have.
         </Lead>
         <Body>
           On ToWin, an elder simply asks. Helpers nearby see the request and
-          step in — for whatever is needed.
+          come to help — with whatever is needed.
         </Body>
       </>
     ),
@@ -180,10 +180,10 @@ export const SLIDES = [
         </Lead>
         <CardGrid>
           <MiniCard title="Profile">
-            A complete, verified profile — ID, phone, photo and more.
+            A full profile with ID, phone, and photo — all checked.
           </MiniCard>
           <MiniCard title="Rooting">
-            Points earned each time a relationship takes a step forward.
+            Points earned each time a friendship takes a step forward.
           </MiniCard>
           <MiniCard title="Review">
             Star ratings from the people they have already helped.
@@ -200,8 +200,8 @@ export const SLIDES = [
         <Kicker>One step at a time</Kicker>
         <Title>Rooting — how trust grows</Title>
         <Lead>
-          Like a tree growing roots, every connection on ToWin deepens slowly,
-          through 7 gentle stages:
+          Like a tree growing roots, every friendship on ToWin grows slowly,
+          through 7 simple stages:
         </Lead>
         <StageChips stages={[
           'Just Connected', 'Messaging', 'Phone Ready', 'Video Ready',
@@ -226,12 +226,12 @@ export const SLIDES = [
         </Body>
         <Body>
           But the hardest parts of growing older haven&apos;t changed:
-          loneliness, and not enough energy for everyday things.
+          feeling lonely, and not having enough energy for everyday things.
         </Body>
         <NoteBox>
           Elders have <strong>time and money</strong>, but need energy and company.{' '}
-          Helpers have <strong>energy and time</strong>, but need money and warmth.{' '}
-          <strong>ToWin is where they exchange — and both win.</strong>
+          Helpers have <strong>energy and time</strong>, but need money and care.{' '}
+          <strong>ToWin is where they meet and share — and both win.</strong>
         </NoteBox>
       </>
     ),

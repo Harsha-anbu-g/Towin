@@ -108,7 +108,7 @@ export const STEPS = [
         <StepTitle>Welcome to ToWin</StepTitle>
         <Lead>
           ToWin is a community that brings older people and younger helpers together —
-          to ease loneliness and make everyday help easy to find.
+          so no one feels alone, and everyday help is easy to find.
         </Lead>
         <SubHead>Why we built it</SubHead>
         <p style={{ fontFamily: SF, fontSize: '16px', color: '#1d1d1f', lineHeight: 1.6, margin: 0 }}>
@@ -119,7 +119,7 @@ export const STEPS = [
         <SubHead>Who ToWin is for</SubHead>
         <CardGrid>
           <MiniCard title="Elder">An older person looking for friendship, company, or help with daily tasks.</MiniCard>
-          <MiniCard title="Helper">A younger person offering companionship and a hand with everyday things.</MiniCard>
+          <MiniCard title="Helper">A younger person who gives time, company, and a hand with everyday things.</MiniCard>
         </CardGrid>
         <NoteBox>
           Choose how you'll use ToWin with the tabs above — you can switch between
@@ -137,14 +137,14 @@ export const STEPS = [
           <StepTitle>What you can do as a Helper</StepTitle>
           <Lead>As a Helper, you offer your time and reach the elders who need it most.</Lead>
           <Bullets items={[
-            'Browse help requests from elders near you and apply to the ones you can take on.',
-            'Discover elders looking for friendship and send a connection request.',
+            'See help requests from elders near you and apply to the ones you can do.',
+            'Find elders looking for friendship and send a connection request.',
             'Message the elders you connect with, safely and simply.',
             'Grow your Trust Score and earn reviews each time you help.',
           ]} />
           <NoteBox>
-            Switch to the <strong>Elder</strong> tab above to see what the experience looks
-            like from the other side.
+            Switch to the <strong>Elder</strong> tab above to see how ToWin looks
+            from the other side.
           </NoteBox>
         </>
       ) : (
@@ -152,7 +152,7 @@ export const STEPS = [
           <StepTitle>What you can do as an Elder</StepTitle>
           <Lead>As an Elder, you decide who you connect with and how far the friendship goes.</Lead>
           <Bullets items={[
-            'Post a help request — companionship, transport, errands, cleaning, and more.',
+            'Post a help request — company, a ride, shopping, cleaning, and more.',
             'See the helpers who apply and choose the person you trust.',
             'Find and connect with helpers near you.',
             'Message the people you connect with, safely and simply.',
@@ -160,8 +160,8 @@ export const STEPS = [
             'Add emergency contacts and use the SOS button any time you need help fast.',
           ]} />
           <NoteBox>
-            Switch to the <strong>Helper</strong> tab above to see what the experience looks
-            like from the other side.
+            Switch to the <strong>Helper</strong> tab above to see how ToWin looks
+            from the other side.
           </NoteBox>
         </>
       )
@@ -174,16 +174,16 @@ export const STEPS = [
       <>
         <StepTitle>The Trust Journey</StepTitle>
         <Lead>
-          Every connection grows through 7 gentle stages. You only move forward when
+          Every friendship grows through 7 simple stages. You only move forward when
           both people agree.
         </Lead>
         <Bullets items={[
           <><strong>1. Just Connected</strong> — see each other's profile and send a connection request.</>,
           <><strong>2. Messaging</strong> — send messages and share photos in a private chat.</>,
-          <><strong>3. Phone Ready</strong> — exchange phone numbers and call each other.</>,
+          <><strong>3. Phone Ready</strong> — share phone numbers and call each other.</>,
           <><strong>4. Video Ready</strong> — have a video call and meet face to face.</>,
-          <><strong>5. Verified</strong> — identities are verified and a verified badge appears.</>,
-          <><strong>6. Ready to Meet</strong> — plan an in-person visit; emergency contacts are notified.</>,
+          <><strong>5. Verified</strong> — both IDs are checked and a verified badge appears.</>,
+          <><strong>6. Ready to Meet</strong> — plan to meet in person; emergency contacts are told.</>,
           <><strong>7. Fully Trusted</strong> — a full, trusted friendship; leave and receive reviews.</>,
         ]} />
         <NoteBox>
@@ -202,16 +202,16 @@ export const STEPS = [
         <StepTitle>Your Trust Score</StepTitle>
         <Lead>
           Trust is earned, not given. Your Trust Score helps everyone feel safe and helps
-          elders choose who to rely on.
+          elders choose who to count on.
         </Lead>
         <SubHead>It has three parts</SubHead>
         <CardGrid>
           <MiniCard title="Profile Score">
             Fill in your profile. 8 details — each worth 0.25 points, up to 2.0: ID and phone
-            verified, photo, a social link, hobbies, occupation, a short bio, and date of birth.
+            verified, photo, a social link, hobbies, your job, a few lines about you, and date of birth.
           </MiniCard>
           <MiniCard title="Rooting Score">
-            Earn points every time a relationship moves up a trust stage — added up across all
+            Earn points every time a friendship moves up a trust stage — added up across all
             of your connections.
           </MiniCard>
           <MiniCard title="Review Score">
@@ -229,7 +229,7 @@ export const STEPS = [
         <NoteBox>
           After a connection reaches a full friendship, both people leave a 1–5 star rating,
           a few kind tags (Friendly, Punctual, Respectful, Helpful, Patient), and can quietly
-          flag a safety concern if something didn't feel right.
+          report a safety worry if something didn't feel right.
         </NoteBox>
       </>
     ),
@@ -241,7 +241,7 @@ export const STEPS = [
       <>
         <StepTitle>Daily Streaks</StepTitle>
         <Lead>
-          Showing up matters. Each day you visit ToWin, tap "I'm here today" to log the day.
+          Showing up matters. Each day you visit ToWin, tap "I'm here today" to mark the day.
         </Lead>
         <Bullets items={[
           'Your current streak counts the days you have checked in, one after another.',
@@ -262,13 +262,13 @@ export const STEPS = [
       <>
         <StepTitle>The ToWin feel</StepTitle>
         <Lead>
-          Every screen is designed to feel calm, clear, and unhurried.
+          Every screen is made to feel calm, clear, and never rushed.
         </Lead>
         <Bullets items={[
-          'Calm sky-blue colours and soft white cards — never harsh, never cluttered.',
+          'Calm sky-blue colours and soft white cards — easy on the eyes.',
           'The tortoise logo: steady and patient, because trust grows slowly and surely.',
-          'Large, readable text so nothing is a strain to read.',
-          'One simple thing per screen — no clutter, no confusion.',
+          'Big, clear text that is easy to read.',
+          'One simple thing per screen — nothing extra, nothing confusing.',
         ]} />
       </>
     ),
