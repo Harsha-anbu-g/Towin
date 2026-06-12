@@ -50,6 +50,26 @@ in Montreal.
 
 ## Changes (newest first)
 <!-- one line per commit, added as the night progresses -->
+- `dcd2cb2` suspended/deleted accounts lose tokens immediately (JwtAuthFilter
+  gates on isActive — row was already loaded for lastSeenAt, zero extra cost)
+- `fbe246c` unit suite repaired, 54/54 green — pushes are now test-gated
+- `25d3fd0` DemoDataSeeder: idempotent/additive; demo world now has 6 personas,
+  connections at 5 trust stages incl. a PENDING request, messages, needs
+  (open/completed + an application), reviews both directions, streaks,
+  emergency contact; runs on every boot, never deletes
+- `8da1642` one-click demo entry (Elder/Helper) on every landing slide
+- (pre-midnight, same session) dead-session recovery, real phone at signup,
+  admin pagination, walking tortoise, prototype note, modern auth cards,
+  discovery cache TTL
+
+## Decisions log (tonight)
+- Seeder is additive-only; "reset" = baseline always restored on boot, but
+  recruiter-created extra data is left alone (hard limit: never destroy data).
+- Demo accounts get pinned to a downtown-Toronto location only when their
+  location is NULL, and get VERIFIED status — required for discovery and a
+  believable trust profile.
+- Existing demo creds (elder@gmail.com / helper@gmail.com) kept as the demo
+  identities since they're already seeded in prod and wired into Login/Landing.
 
 ## Needs morning review
 - Resume link target: frontend is not deployed; report assumes the link will
