@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SLIDES } from '../data/landingContent';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -33,10 +35,31 @@ function ProgressDots({ count, current, onJump }) {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [index, setIndex] = useState(0);
+  const [demoLoading, setDemoLoading] = useState('');
   const total = SLIDES.length;
   const slide = SLIDES[index];
   const isLast = index === total - 1;
+
+  const DEMO = {
+    ELDER:  { email: 'elder@gmail.com',  password: '12345678' },
+    HELPER: { email: 'helper@gmail.com', password: '123456789' },
+  };
+
+  async function enterDemo(role) {
+    setDemoLoading(role);
+    try {
+      const { data } = await api.post('/auth/login', DEMO[role]);
+      login(data.token);
+      navigate(
+        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard',
+        { replace: true }
+      );
+    } catch {
+      setDemoLoading('');
+    }
+  }
 
   return (
     <div style={{
@@ -151,6 +174,38 @@ export default function Landing() {
             </button>
           </div>
         )}
+
+        {/* One-click demo — always visible so a visitor never has to sign up */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexWrap: 'wrap', gap: '10px', marginTop: '22px',
+        }}>
+          <span style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470' }}>
+            Just looking? One-click live demo:
+          </span>
+          {[
+            { role: 'ELDER', label: 'View as an Elder' },
+            { role: 'HELPER', label: 'View as a Helper' },
+          ].map(({ role, label }) => (
+            <button
+              key={role}
+              onClick={() => enterDemo(role)}
+              disabled={!!demoLoading}
+              style={{
+                padding: '9px 20px', fontFamily: SF, fontSize: '14px', fontWeight: 700,
+                borderRadius: '9999px', cursor: demoLoading ? 'default' : 'pointer',
+                background: '#fff', color: '#3D8AB0',
+                border: `1.5px solid ${BORDER}`,
+                opacity: demoLoading && demoLoading !== role ? 0.5 : 1,
+                transition: 'border-color 0.15s',
+              }}
+              onMouseEnter={e => { if (!demoLoading) e.currentTarget.style.borderColor = SKY; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; }}
+            >
+              {demoLoading === role ? 'Opening…' : label}
+            </button>
+          ))}
+        </div>
       </footer>
     </div>
   );
