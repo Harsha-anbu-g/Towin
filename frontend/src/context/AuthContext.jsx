@@ -16,6 +16,12 @@ export function AuthProvider({ children }) {
     if (!token) return null;
     const payload = parseJwtPayload(token);
     if (!payload) return null;
+    // An expired token would 401/403 on every call and render broken,
+    // empty pages — treat it as logged out from the start
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      localStorage.removeItem('token');
+      return null;
+    }
     // Role and userId come from the signed JWT — not from writable localStorage
     return { token, role: payload.role, userId: payload.sub };
   });

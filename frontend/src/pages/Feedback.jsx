@@ -112,6 +112,17 @@ export default function Feedback() {
 
         {/* ── LEFT: Feedback form ── */}
         <div>
+          {/* Prototype notice */}
+          <div style={{
+            background: '#EAF5FB', border: '1px solid #BFD9EA', borderRadius: '14px',
+            padding: '14px 20px', marginBottom: '16px',
+          }}>
+            <p style={{ fontFamily: SFText, fontSize: '14px', color: '#1d1d1f', margin: 0, lineHeight: 1.55 }}>
+              <strong>ToWin is an early prototype.</strong> You&apos;re trying a work in
+              progress — a full mobile app is planned for the future. Your feedback
+              here directly shapes what gets built.
+            </p>
+          </div>
           {submitted ? (
             <div className="fb-card" style={{ textAlign: 'center', padding: '64px 36px' }}>
               <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 10px' }}>

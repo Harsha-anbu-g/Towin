@@ -35,10 +35,11 @@ function HeroPanel() {
           'linear-gradient(to top, rgba(20,55,80,0.62) 0%, rgba(20,55,80,0.30) 45%, rgba(20,55,80,0.05) 100%)',
       }} />
 
-      {/* Turtle logo + wordmark top-left */}
-      <div style={{
+      {/* Turtle logo + wordmark top-left — back to the landing story */}
+      <Link to="/" style={{
         position: 'absolute', top: '32px', left: '48px', zIndex: 2,
         display: 'flex', alignItems: 'center', gap: '10px',
+        textDecoration: 'none',
       }}>
         <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <p style={{
@@ -48,7 +49,7 @@ function HeroPanel() {
         }}>
           ToWin
         </p>
-      </div>
+      </Link>
 
       {/* Bottom content */}
       <div style={{ position: 'relative', zIndex: 2 }}>

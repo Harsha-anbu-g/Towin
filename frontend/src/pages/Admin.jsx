@@ -170,6 +170,7 @@ export default function Admin() {
   const [reports, setReports] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [safetyOnly, setSafetyOnly] = useState(false);
+  const [userPage, setUserPage] = useState(0);
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -200,6 +201,12 @@ export default function Admin() {
   const filteredUsers = users.filter(u =>
     !search || u.email?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // /admin/users returns the full list, so paging is client-side
+  const USERS_PER_PAGE = 20;
+  const userPageCount = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
+  const clampedPage = Math.min(userPage, userPageCount - 1);
+  const pagedUsers = filteredUsers.slice(clampedPage * USERS_PER_PAGE, (clampedPage + 1) * USERS_PER_PAGE);
 
   const statsData = [
     { label: 'Total Users', value: users.length },
@@ -378,7 +385,7 @@ export default function Admin() {
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0' }}>
               <input
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => { setSearch(e.target.value); setUserPage(0); }}
                 placeholder="Search users by email…"
                 style={{
                   width: '320px',
@@ -402,7 +409,7 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map(u => {
+                {pagedUsers.map(u => {
                   const lowTrust = (u.trustScore || 0) < 20;
                   return (
                     <tr key={u.id} style={{ background: lowTrust ? 'rgba(204,0,0,0.03)' : 'transparent' }}>
@@ -467,29 +474,38 @@ export default function Admin() {
             </table>
 
             {/* Pagination controls */}
-            <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e0e0e0' }}>
-              <button style={{
-                background: 'transparent',
-                color: '#4FA3CE',
-                border: '1.5px solid #e0e0e0',
-                borderRadius: '9999px',
-                padding: '7px 18px',
-                fontSize: '13px',
-                fontWeight: 600,
-                fontFamily: SFText,
-                cursor: 'pointer',
-              }}>Prev</button>
-              <button style={{
-                background: '#4FA3CE',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '9999px',
-                padding: '7px 18px',
-                fontSize: '13px',
-                fontWeight: 600,
-                fontFamily: SFText,
-                cursor: 'pointer',
-              }}>Next</button>
+            <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', borderTop: '1px solid #e0e0e0' }}>
+              <span style={{ fontSize: '13px', color: '#7a7a7a', fontFamily: SFText }}>
+                Page {clampedPage + 1} of {userPageCount}
+              </span>
+              <button
+                onClick={() => setUserPage(p => Math.max(0, p - 1))}
+                disabled={clampedPage === 0}
+                style={{
+                  background: 'transparent',
+                  color: clampedPage === 0 ? '#c8c8cd' : '#4FA3CE',
+                  border: '1.5px solid #e0e0e0',
+                  borderRadius: '9999px',
+                  padding: '7px 18px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  fontFamily: SFText,
+                  cursor: clampedPage === 0 ? 'default' : 'pointer',
+                }}>Prev</button>
+              <button
+                onClick={() => setUserPage(p => Math.min(userPageCount - 1, p + 1))}
+                disabled={clampedPage >= userPageCount - 1}
+                style={{
+                  background: clampedPage >= userPageCount - 1 ? '#e0e0e0' : '#4FA3CE',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '9999px',
+                  padding: '7px 18px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  fontFamily: SFText,
+                  cursor: clampedPage >= userPageCount - 1 ? 'default' : 'pointer',
+                }}>Next</button>
             </div>
           </div>
         )}
