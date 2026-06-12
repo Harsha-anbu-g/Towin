@@ -62,7 +62,7 @@ function HeroPanel() {
           letterSpacing: '0.4px', color: '#fff',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
         }}>
-          It takes two to win.
+          It takes two To Win.
         </span>
         <h1 style={{
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
