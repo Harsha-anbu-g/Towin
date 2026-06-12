@@ -37,7 +37,22 @@ docs-generated/
 # Local dev assets / reference images (not part of the app)
 assets/
 
-# Personal notes (kept local, not published)
-notes/me.txt
-notes/steps.md
-notes/linkedin-script.txt
+# Personal notes / local-only working files (kept local, not published)
+notes/
+tasks/
+memory/
+OVERNIGHT_REPORT.md
+
+# Dev/verification screenshots — only the curated README set is tracked
+docs/screenshots/*
+!docs/screenshots/Streak.png
+!docs/screenshots/admin.png
+!docs/screenshots/aws.png
+!docs/screenshots/elder-dashboard.png
+!docs/screenshots/helper-dashboard.png
+!docs/screenshots/how-it-works.png
+!docs/screenshots/messages.png
+!docs/screenshots/trust.png
+
+# Stray screenshots at repo root
+/*.png
