@@ -9,6 +9,7 @@ import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.profile.entity.HelperProfile;
+import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
 import com.towin.review.repository.ReviewRepository;
 import com.towin.trust.dto.TrustScoreBreakdownResponse;
@@ -31,6 +32,7 @@ class TrustScoreServiceTest {
 
     @Mock UserRepository userRepository;
     @Mock HelperProfileRepository helperProfileRepository;
+    @Mock ElderProfileRepository elderProfileRepository;
     @Mock ReviewRepository reviewRepository;
     @Mock ConnectionRepository connectionRepository;
 

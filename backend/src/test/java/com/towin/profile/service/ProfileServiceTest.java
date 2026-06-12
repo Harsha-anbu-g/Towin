@@ -24,6 +24,7 @@ class ProfileServiceTest {
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
+    @Mock com.towin.common.service.TrustScoreService trustScoreService;
     @InjectMocks ProfileService profileService;
 
     @Test

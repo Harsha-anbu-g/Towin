@@ -33,13 +33,22 @@ class NeedServiceTest {
     @Mock NeedApplicationRepository applicationRepository;
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
-    @InjectMocks NeedService needService;
+    @Mock com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
+    @Mock com.towin.common.service.TrustScoreService trustScoreService;
+    @Mock com.towin.connection.repository.ConnectionRepository connectionRepository;
+    NeedService needService;
 
     private User elder;
     private User helper;
 
     @BeforeEach
     void setUp() {
+        // Manual construction: the service takes Optional<ConnectionEventProducer>,
+        // which @InjectMocks cannot populate
+        needService = new NeedService(
+                needRepository, applicationRepository, userRepository,
+                elderProfileRepository, helperProfileRepository,
+                trustScoreService, connectionRepository, Optional.empty());
         elder = buildUser(UUID.randomUUID(), UserRole.ELDER);
         elder.setLocationLat(BigDecimal.valueOf(43.65));
         elder.setLocationLng(BigDecimal.valueOf(-79.38));

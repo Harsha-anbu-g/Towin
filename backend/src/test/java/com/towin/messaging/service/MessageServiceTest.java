@@ -1,6 +1,7 @@
 package com.towin.messaging.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.MessageType;
 import com.towin.common.enums.TrustLevel;
 import com.towin.connection.entity.Connection;
@@ -49,6 +50,7 @@ class MessageServiceTest {
                 .id(connId)
                 .userA(userA)
                 .userB(userB)
+                .status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.MESSAGING)
                 .build();
     }
@@ -80,6 +82,7 @@ class MessageServiceTest {
                 .id(connId)
                 .userA(userA)
                 .userB(userB)
+                .status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.DISCOVERED)
                 .build();
         when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));

@@ -21,7 +21,7 @@ class JwtUtilTest {
     @Test
     void shouldGenerateAndValidateToken() {
         String userId = UUID.randomUUID().toString();
-        String token = jwtUtil.generateToken(userId, "test@email.com");
+        String token = jwtUtil.generateToken(userId, "test@email.com", "ELDER");
 
         assertThat(token).isNotBlank();
         assertThat(jwtUtil.isTokenValid(token)).isTrue();
@@ -36,7 +36,7 @@ class JwtUtilTest {
 
     @Test
     void shouldExtractEmailFromToken() {
-        String token = jwtUtil.generateToken("user-id-123", "hello@test.com");
+        String token = jwtUtil.generateToken("user-id-123", "hello@test.com", "HELPER");
         assertThat(jwtUtil.extractEmail(token)).contains("hello@test.com");
     }
 }

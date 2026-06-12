@@ -59,7 +59,7 @@ class AuthServiceTest {
             u.setId(userId);
             return u;
         });
-        when(jwtUtil.generateToken(userId.toString(), "test@email.com")).thenReturn("mock-token");
+        when(jwtUtil.generateToken(userId.toString(), "test@email.com", "ELDER")).thenReturn("mock-token");
 
         var response = authService.register(req);
 
