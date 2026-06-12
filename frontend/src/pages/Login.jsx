@@ -41,7 +41,7 @@ function HeroPanel() {
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
-        <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
         <p style={{
           fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.4px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
@@ -53,6 +53,17 @@ function HeroPanel() {
 
       {/* Bottom content */}
       <div style={{ position: 'relative', zIndex: 2 }}>
+        <span style={{
+          display: 'inline-block', marginBottom: '14px',
+          background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.35)', borderRadius: '9999px',
+          padding: '7px 18px', fontSize: '13px', fontWeight: 700,
+          letterSpacing: '0.4px', color: '#fff',
+          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        }}>
+          It takes two to win.
+        </span>
         <h1 style={{
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
           fontSize: '40px', lineHeight: 1.15, color: '#fff',
@@ -142,9 +153,10 @@ export default function Login() {
           {/* Form card */}
           <div className="auth-card" style={{
             background: '#ffffff',
-            borderRadius: '18px',
+            borderRadius: '24px',
             padding: '40px 36px',
-            border: '1px solid #e0e0e0',
+            border: '1px solid rgba(191,217,234,0.6)',
+            boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
           }}>
             {/* Headline */}
             <h2 style={{
@@ -252,6 +264,7 @@ export default function Login() {
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   marginTop: '4px',
                   transition: 'background 0.15s',
+                  boxShadow: '0 6px 18px rgba(79,163,206,0.35)',
                 }}
               >
                 {loading ? 'Signing in…' : 'Sign In'}
