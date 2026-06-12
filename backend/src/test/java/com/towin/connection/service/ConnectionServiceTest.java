@@ -5,7 +5,6 @@ import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.ConnectionType;
 import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
-import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.dto.ConnectionRequest;
 import com.towin.connection.dto.ConnectionResponse;
@@ -36,14 +35,19 @@ class ConnectionServiceTest {
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
-    @Mock ConnectionEventProducer eventProducer;
-    @InjectMocks ConnectionService connectionService;
+    @Mock com.towin.messaging.repository.MessageRepository messageRepository;
+    ConnectionService connectionService;
 
     private User sender;
     private User target;
 
     @BeforeEach
     void setUp() {
+        // Manual construction: the service takes Optional<ConnectionEventProducer>,
+        // which @InjectMocks cannot populate
+        connectionService = new ConnectionService(
+                connectionRepository, userRepository, elderProfileRepository,
+                helperProfileRepository, Optional.empty(), messageRepository);
         sender = buildUser(UUID.randomUUID(), "sender@test.com");
         target = buildUser(UUID.randomUUID(), "target@test.com");
     }
