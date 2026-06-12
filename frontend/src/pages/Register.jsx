@@ -160,7 +160,7 @@ function HeroPanel() {
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
-        <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
         <p style={{
           fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.4px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
@@ -346,8 +346,9 @@ export default function Register() {
           {/* Form card */}
           <div className="register-form-card" style={{
             background: '#ffffff',
-            borderRadius: '18px',
-            border: '1px solid #e0e0e0',
+            borderRadius: '24px',
+            border: '1px solid rgba(191,217,234,0.6)',
+            boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
           }}>
             {/* Error state */}
             {error && (
