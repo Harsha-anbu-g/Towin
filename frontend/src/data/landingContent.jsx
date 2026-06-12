@@ -119,6 +119,7 @@ export const SLIDES = [
           <img
             src="/tortoise-logo-alpha.png"
             alt="ToWin tortoise logo"
+            className="tortoise-3d"
             style={{ width: 96, height: 96, objectFit: 'contain' }}
           />
         </div>

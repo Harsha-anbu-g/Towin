@@ -419,6 +419,35 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   .auth-form > div > div { padding-left: 16px !important; padding-right: 16px !important; }
 }
 
+/* ── Landing tortoise — walks in slowly (steady waddle), then floats ──── */
+@keyframes tortoise-walk-in {
+  0%    { opacity: 0; transform: perspective(700px) translateX(-130px) rotateZ(0); }
+  10%   { opacity: 1; }
+  12.5% { transform: perspective(700px) translateX(-114px) rotateZ(2.2deg); }
+  25%   { transform: perspective(700px) translateX(-97px)  rotateZ(-2.2deg); }
+  37.5% { transform: perspective(700px) translateX(-81px)  rotateZ(2.2deg); }
+  50%   { transform: perspective(700px) translateX(-65px)  rotateZ(-2.2deg); }
+  62.5% { transform: perspective(700px) translateX(-49px)  rotateZ(2.2deg); }
+  75%   { transform: perspective(700px) translateX(-32px)  rotateZ(-2.2deg); }
+  87.5% { transform: perspective(700px) translateX(-16px)  rotateZ(2.2deg); }
+  100%  { opacity: 1; transform: perspective(700px) translateX(0) rotateZ(0); }
+}
+@keyframes tortoise-float {
+  0%, 100% { transform: perspective(700px) translateY(0) rotateZ(0); }
+  50%      { transform: perspective(700px) translateY(-7px) rotateZ(-1.5deg); }
+}
+.tortoise-3d {
+  animation:
+    tortoise-walk-in 4.5s linear both,
+    tortoise-float 5s ease-in-out 4.5s infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+  filter: drop-shadow(0 14px 18px rgba(26, 92, 46, 0.18));
+}
+@media (prefers-reduced-motion: reduce) {
+  .tortoise-3d { animation: none; }
+}
+
 /* ── Landing story slides ─────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .landing-topbar { padding: 14px 18px !important; }
