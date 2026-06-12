@@ -36,11 +36,12 @@ function hexPoints(cx, cy, s, inset = 3) {
   }).join(' ');
 }
 
+// 3×4 grid — taller than wide, so the shell reads as a vertical oval
 const POSITIONS = [
-  [152, 90], [228, 90],
-  [76, 156], [152, 156], [228, 156], [304, 156],
-  [76, 222], [152, 222], [228, 222], [304, 222],
-  [152, 288], [228, 288],
+  [118, 96], [190, 96], [262, 96],
+  [118, 158], [190, 158], [262, 158],
+  [118, 220], [190, 220], [262, 220],
+  [118, 282], [190, 282], [262, 282],
 ];
 
 export default function PeekabooGame() {
@@ -140,32 +141,32 @@ export default function PeekabooGame() {
 
         {/* Tortoise — single SVG */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <svg width="100%" height="auto" viewBox="0 0 380 400" style={{ overflow: 'visible', maxWidth: '380px' }}>
+          <svg width="100%" height="auto" viewBox="0 -28 380 460" style={{ overflow: 'visible', maxWidth: '380px' }}>
 
             {/* Ground shadow */}
-            <ellipse cx="190" cy="362" rx="128" ry="11" fill={GREEN} opacity="0.08" />
+            <ellipse cx="190" cy="416" rx="110" ry="10" fill={GREEN} opacity="0.08" />
 
-            {/* Legs — stubby capsules peeking out diagonally from under the shell */}
-            <ellipse cx="64" cy="86" rx="17" ry="28" fill={GREEN} transform="rotate(-45 64 86)" />
-            <ellipse cx="316" cy="86" rx="17" ry="28" fill={GREEN} transform="rotate(45 316 86)" />
-            <ellipse cx="64" cy="292" rx="17" ry="28" fill={GREEN} transform="rotate(45 64 292)" />
-            <ellipse cx="316" cy="292" rx="17" ry="28" fill={GREEN} transform="rotate(-45 316 292)" />
+            {/* Legs — chunky capsules peeking out diagonally from under the shell */}
+            <ellipse cx="70" cy="52" rx="24" ry="40" fill={GREEN} transform="rotate(-45 70 52)" />
+            <ellipse cx="310" cy="52" rx="24" ry="40" fill={GREEN} transform="rotate(45 310 52)" />
+            <ellipse cx="70" cy="326" rx="24" ry="40" fill={GREEN} transform="rotate(45 70 326)" />
+            <ellipse cx="310" cy="326" rx="24" ry="40" fill={GREEN} transform="rotate(-45 310 326)" />
 
             {/* Tail */}
-            <path d="M 178 310 Q 190 358 202 310 Z" fill={GREEN} />
+            <path d="M 172 348 Q 190 410 208 348 Z" fill={GREEN} />
 
-            {/* Neck + head with a friendly face */}
-            <ellipse cx="190" cy="62" rx="15" ry="24" fill={GREEN} />
-            <circle cx="190" cy="34" r="23" fill={GREEN} />
-            <circle cx="181" cy="29" r="4.5" fill="#f0fdf4" />
-            <circle cx="199" cy="29" r="4.5" fill="#f0fdf4" />
-            <circle cx="181.5" cy="29.5" r="2.2" fill="#1d1d1f" />
-            <circle cx="198.5" cy="29.5" r="2.2" fill="#1d1d1f" />
+            {/* Neck + head peeking over the shell */}
+            <ellipse cx="190" cy="40" rx="18" ry="28" fill={GREEN} />
+            <circle cx="190" cy="8" r="30" fill={GREEN} />
+            <circle cx="178" cy="2" r="5.5" fill="#f0fdf4" />
+            <circle cx="202" cy="2" r="5.5" fill="#f0fdf4" />
+            <circle cx="178.5" cy="2.5" r="2.6" fill="#1d1d1f" />
+            <circle cx="201.5" cy="2.5" r="2.6" fill="#1d1d1f" />
 
-            {/* Shell — dark rim with a lighter plate the cells sit on */}
-            <ellipse cx="190" cy="189" rx="164" ry="138" fill={GREEN} />
-            <ellipse cx="190" cy="189" rx="150" ry="125" fill={SHELL} />
-            <ellipse cx="148" cy="132" rx="82" ry="50" fill="#ffffff" opacity="0.04" />
+            {/* Shell — vertical oval: dark rim with a lighter plate the cells sit on */}
+            <ellipse cx="190" cy="189" rx="152" ry="174" fill={GREEN} />
+            <ellipse cx="190" cy="189" rx="138" ry="160" fill={SHELL} />
+            <ellipse cx="152" cy="116" rx="52" ry="66" fill="#ffffff" opacity="0.04" />
 
             {/* Hex cells */}
             {cards.map((card, i) => {
