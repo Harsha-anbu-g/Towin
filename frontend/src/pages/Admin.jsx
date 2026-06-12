@@ -116,7 +116,7 @@ function FeedbackTab() {
           const a = avgRating(rows, key);
           return (
             <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: '#4FA3CE', fontFamily: SF }}>
+              <div style={{ fontSize: '18px', fontWeight: 600, color: '#4FA3CE', fontFamily: SF }}>
                 {a ?? '—'}
               </div>
               <div style={{ fontSize: '11px', color: '#7a7a7a', fontFamily: SFText }}>{label}</div>
@@ -221,7 +221,7 @@ export default function Admin() {
     padding: '12px 16px',
     textAlign: 'left',
     fontSize: '11px',
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#a0a0a5',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
@@ -295,7 +295,7 @@ export default function Admin() {
           </svg>
         </div>
         <h1 style={{
-          fontSize: '40px', fontWeight: 700, color: '#1d1d1f',
+          fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
           fontFamily: SF, letterSpacing: '-0.8px', marginBottom: '8px',
         }}>
           Admin
@@ -317,7 +317,7 @@ export default function Admin() {
               padding: '16px 18px',
               textAlign: 'left',
             }}>
-              <p style={{ fontSize: '26px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
+              <p style={{ fontSize: '26px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
                 {stat.value}
               </p>
               <p style={{ fontSize: '12px', color: '#7a7a7a', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
@@ -364,7 +364,7 @@ export default function Admin() {
                 {t}
                 {hasBadge && (
                   <span style={{
-                    fontSize: '11px', fontWeight: 700,
+                    fontSize: '11px', fontWeight: 600,
                     color: '#ffffff', background: '#cc0000',
                     borderRadius: '9999px', padding: '1px 8px',
                   }}>
@@ -424,7 +424,7 @@ export default function Admin() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '13px',
-                            fontWeight: 700,
+                            fontWeight: 600,
                             color: lowTrust ? '#cc0000' : '#4FA3CE',
                             flexShrink: 0,
                           }}>
@@ -437,7 +437,7 @@ export default function Admin() {
                       </td>
                       <td style={tdStyle}>{roleBadge(u.role)}</td>
                       <td style={tdStyle}>
-                        <span style={{ fontWeight: 700, color: trustColor(u.trustScore || 0), fontSize: '15px' }}>
+                        <span style={{ fontWeight: 600, color: trustColor(u.trustScore || 0), fontSize: '15px' }}>
                           {u.trustScore ?? '—'}
                         </span>
                       </td>
@@ -621,7 +621,7 @@ export default function Admin() {
                       <td style={tdStyle}>{r.tags?.join(', ')}</td>
                       <td style={tdStyle}>
                         {r.safetyConcern
-                          ? <span style={{ fontSize: '12px', color: '#cc0000', fontWeight: 700 }}>Safety Flag</span>
+                          ? <span style={{ fontSize: '12px', color: '#cc0000', fontWeight: 600 }}>Safety Flag</span>
                           : <span style={{ fontSize: '12px', color: '#a0a0a5' }}>—</span>}
                       </td>
                       <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>

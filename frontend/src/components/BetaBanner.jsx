@@ -37,7 +37,7 @@ export default function BetaBanner() {
           onClick={() => navigate('/feedback')}
           style={{
             background: 'none', border: 'none', color: '#fff',
-            fontWeight: 700, cursor: 'pointer', textDecoration: 'underline',
+            fontWeight: 600, cursor: 'pointer', textDecoration: 'underline',
             fontSize: '14px', fontFamily: 'inherit', padding: 0,
           }}
         >

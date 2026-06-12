@@ -43,7 +43,7 @@ function HeroPanel() {
       }}>
         <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
         <p style={{
-          fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.4px',
+          fontSize: '21px', fontWeight: 600, color: '#fff', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
           margin: 0,
         }}>
@@ -58,7 +58,7 @@ function HeroPanel() {
           background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           border: '1px solid rgba(255,255,255,0.35)', borderRadius: '9999px',
-          padding: '7px 18px', fontSize: '13px', fontWeight: 700,
+          padding: '7px 18px', fontSize: '13px', fontWeight: 600,
           letterSpacing: '0.4px', color: '#fff',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
         }}>
@@ -153,7 +153,7 @@ export default function Login() {
           {/* Form card */}
           <div className="auth-card" style={{
             background: '#ffffff',
-            borderRadius: '24px',
+            borderRadius: '18px',
             padding: '40px 36px',
             border: '1px solid rgba(191,217,234,0.6)',
             boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
@@ -259,7 +259,7 @@ export default function Login() {
                   background: loading ? '#7BB8D6' : '#4FA3CE',
                   color: '#ffffff',
                   border: 'none', borderRadius: '9999px',
-                  fontSize: '16px', fontWeight: 600,
+                  fontSize: '17px', fontWeight: 400,
                   cursor: loading ? 'not-allowed' : 'pointer',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   marginTop: '4px',
@@ -287,7 +287,7 @@ export default function Login() {
                 display: 'inline-flex', alignItems: 'center', gap: '8px',
                 background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
                 borderRadius: '9999px', padding: '11px 24px',
-                fontSize: '14px', fontWeight: 700,
+                fontSize: '15px', fontWeight: 400,
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
               }}>
@@ -311,7 +311,7 @@ export default function Login() {
               padding: '18px 18px 16px',
             }}>
               <p style={{
-                fontSize: '15px', fontWeight: 700, color: '#1d1d1f', textAlign: 'center',
+                fontSize: '15px', fontWeight: 600, color: '#1d1d1f', textAlign: 'center',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 margin: '0 0 4px',
               }}>
@@ -339,7 +339,7 @@ export default function Login() {
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       background: '#ffffff',
                       border: '1.5px solid #BFD9EA',
-                      borderRadius: '12px',
+                      borderRadius: '11px',
                       padding: '13px 16px',
                       cursor: guestLoading ? 'not-allowed' : 'pointer',
                       opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
@@ -351,7 +351,7 @@ export default function Login() {
                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
                   >
                     <span>
-                      <span style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: '#3D8AB0' }}>
+                      <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
                         {guestLoading === role ? 'Opening…' : label}
                       </span>
                       <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>

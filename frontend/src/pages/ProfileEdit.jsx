@@ -247,7 +247,7 @@ export default function ProfileEdit() {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '28px',
-            fontWeight: 700,
+            fontWeight: 600,
             color: '#fff',
             position: 'relative',
           }}>
@@ -337,7 +337,7 @@ export default function ProfileEdit() {
                           background: '#f5f5f7', border: '1.5px solid #e0e0e0',
                           fontSize: '14px', color: '#1d1d1f', lineHeight: 1.6,
                         }}>
-                          <span style={{ fontWeight: 700, fontSize: '20px', color: '#1a5c2e' }}>
+                          <span style={{ fontWeight: 600, fontSize: '20px', color: '#1a5c2e' }}>
                             {age.years}
                           </span>
                           <span style={{ color: '#7a7a7a' }}> years old</span>

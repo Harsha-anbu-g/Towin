@@ -18,7 +18,7 @@ function TabBadge({ count }) {
       marginLeft: '8px', verticalAlign: 'middle',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-      background: '#5a6470', color: '#fff', fontSize: '13px', fontWeight: 700,
+      background: '#5a6470', color: '#fff', fontSize: '13px', fontWeight: 600,
       borderRadius: '9999px', lineHeight: 1,
     }}>{count}</span>
   );
@@ -325,11 +325,11 @@ export default function HelperDashboard() {
                 return (
                   <div style={{
                     background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 60%, #EBF6EE 100%)',
-                    border: '1px solid #D8EAF4', borderRadius: '20px',
+                    border: '1px solid #D8EAF4', borderRadius: '18px',
                     padding: '26px 30px',
                   }}>
                     <p style={{
-                      fontSize: '13px', fontWeight: 700, color: '#3D8AB0',
+                      fontSize: '13px', fontWeight: 600, color: '#3D8AB0',
                       letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 6px',
                     }}>
                       {dateStr}
@@ -355,14 +355,14 @@ export default function HelperDashboard() {
                   { label: 'My Trust Score', sub: 'See how it grows', onClick: () => navigate('/trust') },
                 ].map(a => (
                   <button key={a.label} onClick={a.onClick} style={{
-                    background: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '16px',
+                    background: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '18px',
                     padding: '16px 18px', textAlign: 'left', cursor: 'pointer',
                     fontFamily: 'inherit', transition: 'box-shadow 0.15s, transform 0.15s',
                   }}
                     onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(16,42,67,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                     onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
                   >
-                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: '#3D8AB0' }}>{a.label} →</span>
+                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>{a.label} →</span>
                     <span style={{ display: 'block', fontSize: '13px', color: '#7a7a7a', marginTop: '3px' }}>{a.sub}</span>
                   </button>
                 ))}
@@ -379,7 +379,7 @@ export default function HelperDashboard() {
               <div
                 onClick={() => navigate('/trust')}
                 style={{
-                  background: '#ffffff', borderRadius: '16px',
+                  background: '#ffffff', borderRadius: '18px',
                   border: '1px solid #e0e0e0', padding: '20px 24px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   cursor: 'pointer', marginBottom: '16px',
@@ -391,7 +391,7 @@ export default function HelperDashboard() {
                   <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#a0a0a5', margin: '0 0 4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                     Trust Score
                   </p>
-                  <p style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 800, color: '#1d1d1f', margin: 0, letterSpacing: '-0.5px' }}>
+                  <p style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0, letterSpacing: '-0.374px' }}>
                     {profile?.trustScore ?? '—'}
                   </p>
                   <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#4FA3CE', margin: '2px 0 0', fontWeight: 600 }}>
@@ -435,7 +435,7 @@ export default function HelperDashboard() {
                       width: '44px', height: '44px', borderRadius: '50%',
                       background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
+                      fontSize: '15px', fontWeight: 600, color: '#4FA3CE', flexShrink: 0,
                     }}>
                       {initials(conn.otherUserName)}
                     </div>
@@ -480,7 +480,7 @@ export default function HelperDashboard() {
                             width: '38px', height: '38px', borderRadius: '50%',
                             background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '13px', fontWeight: 700, color: '#4FA3CE',
+                            fontSize: '13px', fontWeight: 600, color: '#4FA3CE',
                           }}>
                             {initials(conn.otherUserName)}
                           </div>
@@ -550,7 +550,7 @@ export default function HelperDashboard() {
                         width: '48px', height: '48px', borderRadius: '50%',
                         background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
+                        fontSize: '16px', fontWeight: 600, color: '#4FA3CE', flexShrink: 0,
                       }}>
                         {initials(conn.otherUserName)}
                       </div>
@@ -767,7 +767,7 @@ export default function HelperDashboard() {
                           width: '52px', height: '52px', borderRadius: '50%',
                           background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '17px', fontWeight: 700, color: '#4FA3CE', flexShrink: 0,
+                          fontSize: '17px', fontWeight: 600, color: '#4FA3CE', flexShrink: 0,
                         }}>
                           {elder.name ? elder.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
                         </div>

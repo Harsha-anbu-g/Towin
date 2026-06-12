@@ -124,7 +124,7 @@ export default function Streaks() {
             {greeting()}
           </p>
           <h1 style={{
-            fontFamily: SF, fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 700,
+            fontFamily: SF, fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 600,
             color: '#1d1d1f', letterSpacing: '-0.6px',
             marginBottom: '32px', lineHeight: 1.1,
           }}>
@@ -133,7 +133,7 @@ export default function Streaks() {
 
           {/* Streak card */}
           <div style={{
-            background: '#ffffff', borderRadius: '24px',
+            background: '#ffffff', borderRadius: '18px',
             border: '1px solid #e0e0e0', padding: '36px',
             textAlign: 'center', marginBottom: '28px',
             boxShadow: '0 4px 24px rgba(0,0,0,0.05)',
@@ -144,7 +144,7 @@ export default function Streaks() {
               <>
                 <FlameIcon size={56} />
                 <p style={{
-                  fontFamily: SF, fontSize: '80px', fontWeight: 800,
+                  fontFamily: SF, fontSize: '80px', fontWeight: 600,
                   color: '#1d1d1f', lineHeight: 1, margin: '16px 0 4px',
                   letterSpacing: '-2px',
                 }}>
@@ -167,7 +167,7 @@ export default function Streaks() {
 
           {/* Age display */}
           <div style={{
-            background: '#ffffff', borderRadius: '20px',
+            background: '#ffffff', borderRadius: '18px',
             border: '1px solid #e0e0e0', padding: '24px 28px',
             marginBottom: '28px',
             boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
@@ -177,7 +177,7 @@ export default function Streaks() {
               return (
                 <>
                   <p style={{
-                    fontFamily: SF, fontSize: '40px', fontWeight: 800,
+                    fontFamily: SF, fontSize: '40px', fontWeight: 600,
                     color: '#1a5c2e', lineHeight: 1, margin: '0 0 6px',
                     letterSpacing: '-1px',
                   }}>
@@ -201,7 +201,7 @@ export default function Streaks() {
             })() : (
               <>
                 <p style={{
-                  fontFamily: SF, fontSize: '18px', fontWeight: 700,
+                  fontFamily: SF, fontSize: '18px', fontWeight: 600,
                   color: '#1d1d1f', margin: '0 0 6px',
                 }}>
                   How many days have you lived?
@@ -246,7 +246,7 @@ export default function Streaks() {
                   style={{
                     width: '100%', background: SKY, color: '#fff',
                     border: 'none', borderRadius: '9999px',
-                    padding: '18px 0', fontSize: '17px', fontWeight: 700,
+                    padding: '18px 0', fontSize: '17px', fontWeight: 600,
                     fontFamily: SFT, cursor: 'pointer',
                   }}
                 >
@@ -273,7 +273,7 @@ export default function Streaks() {
                   style={{
                     width: '100%', background: SKY, color: '#fff',
                     border: 'none', borderRadius: '9999px',
-                    padding: '22px 0', fontSize: '20px', fontWeight: 700,
+                    padding: '22px 0', fontSize: '20px', fontWeight: 600,
                     fontFamily: SFT, cursor: checkingIn ? 'not-allowed' : 'pointer',
                     letterSpacing: '-0.2px',
                     boxShadow: '0 4px 20px rgba(79,163,206,0.35)',

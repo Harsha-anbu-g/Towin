@@ -84,7 +84,7 @@ export default function MessagesInbox() {
         }}>
           <h1 style={{
             fontSize: 'clamp(28px, 7vw, 40px)',
-            fontWeight: 700,
+            fontWeight: 600,
             color: '#1d1d1f',
             fontFamily: SF,
             letterSpacing: '-0.8px',
@@ -203,7 +203,7 @@ export default function MessagesInbox() {
                       {c.unreadCount > 0 && (
                         <span style={{
                           background: '#4FA3CE', color: '#fff',
-                          fontSize: '11px', fontWeight: 700, fontFamily: SFText,
+                          fontSize: '11px', fontWeight: 600, fontFamily: SFText,
                           borderRadius: '9999px', padding: '2px 7px',
                           flexShrink: 0, minWidth: '20px', textAlign: 'center',
                         }}>

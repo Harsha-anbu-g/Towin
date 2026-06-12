@@ -33,7 +33,7 @@ function Avatar({ name, photoUrl, size = 96 }) {
       background: BG, border: `3px solid #BFD9EA`,
       color: SKY, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: `${Math.round(size * 0.38)}px`, fontWeight: 700, fontFamily: SFD,
+      fontSize: `${Math.round(size * 0.38)}px`, fontWeight: 600, fontFamily: SFD,
     }}>
       {initials(name)}
     </div>
@@ -82,7 +82,7 @@ function ScoreRing({ score }) {
         transform="rotate(-90 44 44)"
         style={{ transition: 'stroke-dasharray 0.7s ease' }} />
       <text x="44" y="40" textAnchor="middle"
-        style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, fill: '#1d1d1f' }}>
+        style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, fill: '#1d1d1f' }}>
         {score ?? 0}
       </text>
       <text x="44" y="54" textAnchor="middle"
@@ -99,7 +99,7 @@ function Section({ title, children }) {
       background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
       padding: '24px 28px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
     }}>
-      <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 16px', letterSpacing: '-0.2px' }}>
+      <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 16px', letterSpacing: '-0.2px' }}>
         {title}
       </h3>
       {children}
@@ -187,7 +187,7 @@ export default function UserProfile() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '18px' }}>
                 <Avatar name={profile.name} photoUrl={profile.photoUrl} size={80} />
                 <div style={{ flex: 1 }}>
-                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
+                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
                     {profile.name || 'User'}
                   </h1>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -214,7 +214,7 @@ export default function UserProfile() {
                     const tc = TIER_COLORS[tier] ?? TIER_COLORS['New Member'];
                     return (
                       <span style={{
-                        fontFamily: SF, fontSize: '11px', fontWeight: 700,
+                        fontFamily: SF, fontSize: '11px', fontWeight: 600,
                         background: tc.bg, color: tc.color, border: `1px solid ${tc.border}`,
                         borderRadius: '9999px', padding: '3px 10px',
                       }}>
@@ -260,7 +260,7 @@ export default function UserProfile() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   {profile.skillsOffered?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '12px', fontWeight: 700, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Skills Offered</p>
+                      <p style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Skills Offered</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.skillsOffered.map(s => <Pill key={s} label={s} />)}
                       </div>
@@ -268,7 +268,7 @@ export default function UserProfile() {
                   )}
                   {profile.hobbies?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '12px', fontWeight: 700, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Hobbies</p>
+                      <p style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Hobbies</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.hobbies.map(h => <Pill key={h} label={h} />)}
                       </div>
@@ -276,7 +276,7 @@ export default function UserProfile() {
                   )}
                   {profile.languages?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '12px', fontWeight: 700, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Languages</p>
+                      <p style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Languages</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.languages.map(l => <Pill key={l} label={l} />)}
                       </div>

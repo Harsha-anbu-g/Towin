@@ -125,7 +125,7 @@ export default function Feedback() {
           </div>
           {submitted ? (
             <div className="fb-card" style={{ textAlign: 'center', padding: '64px 36px' }}>
-              <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 10px' }}>
+              <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 10px' }}>
                 Thank you
               </h2>
               <p style={{ fontFamily: SFText, fontSize: '16px', color: '#7a7a7a', margin: 0 }}>
@@ -134,7 +134,7 @@ export default function Feedback() {
             </div>
           ) : (
             <div className="fb-card">
-              <h2 style={{ fontFamily: SF, fontSize: '26px', fontWeight: 700, color: '#1d1d1f', margin: '0 0 4px' }}>
+              <h2 style={{ fontFamily: SF, fontSize: '26px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
                 Share Your Feedback
               </h2>
               <p style={{ fontFamily: SFText, fontSize: '14px', color: '#7a7a7a', margin: '0 0 24px' }}>
@@ -217,10 +217,10 @@ export default function Feedback() {
                 width: 52, height: 52, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #4FA3CE, #2a7da8)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '20px', fontWeight: 700, color: '#fff', fontFamily: SF, flexShrink: 0,
+                fontSize: '20px', fontWeight: 600, color: '#fff', fontFamily: SF, flexShrink: 0,
               }}>H</div>
               <div>
-                <h2 style={{ fontFamily: SF, fontSize: '17px', fontWeight: 700, color: '#1d1d1f', margin: 0 }}>
+                <h2 style={{ fontFamily: SF, fontSize: '17px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
                   Harshavardhan Anbuchezhian Gowri
                 </h2>
                 <p style={{ fontFamily: SFText, fontSize: '13px', color: '#7a7a7a', margin: 0 }}>Harsha</p>

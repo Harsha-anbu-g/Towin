@@ -298,7 +298,7 @@ export default function TrustJourney({
           {/* NOW unlocked */}
           <div style={{ background: '#ffffff', padding: '14px 16px' }}>
             <p style={{
-              fontSize: '10px', fontWeight: 700, color: '#4FA3CE',
+              fontSize: '10px', fontWeight: 600, color: '#4FA3CE',
               textTransform: 'uppercase', letterSpacing: '0.7px',
               marginBottom: '8px', fontFamily: SFT,
             }}>Now available</p>
@@ -324,7 +324,7 @@ export default function TrustJourney({
           {next && (
             <div style={{ background: '#fafafc', padding: '14px 16px' }}>
               <p style={{
-                fontSize: '10px', fontWeight: 700, color: '#4FA3CE',
+                fontSize: '10px', fontWeight: 600, color: '#4FA3CE',
                 textTransform: 'uppercase', letterSpacing: '0.7px',
                 marginBottom: '8px', fontFamily: SFT,
               }}>Unlock next</p>
@@ -394,7 +394,7 @@ export default function TrustJourney({
                 </svg>
               </div>
               <div>
-                <p style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', margin: '0 0 2px', fontFamily: SF }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', margin: '0 0 2px', fontFamily: SF }}>
                   Community Champion
                 </p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: 0, fontFamily: SFT }}>
