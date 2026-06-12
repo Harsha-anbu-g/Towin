@@ -13,6 +13,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Page<Message> findByConnectionIdOrderByCreatedAtAsc(UUID connectionId, Pageable pageable);
     Page<Message> findByConnectionIdOrderByCreatedAtDesc(UUID connectionId, Pageable pageable);
     long countByConnectionIdAndSeenAtIsNull(UUID connectionId);
+    long countByConnectionId(UUID connectionId);
 
     java.util.Optional<Message> findFirstByConnectionIdOrderByCreatedAtDesc(UUID connectionId);
     long countByConnectionIdAndSenderIdNotAndSeenAtIsNull(UUID connectionId, UUID senderId);
