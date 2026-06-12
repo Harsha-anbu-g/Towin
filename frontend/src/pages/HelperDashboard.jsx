@@ -84,6 +84,7 @@ export default function HelperDashboard() {
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
   const [connectingTo, setConnectingTo] = useState(null);
+  const [endingConn, setEndingConn] = useState(null);
   const [connectMsg, setConnectMsg] = useState({});
   const [respondingConn, setRespondingConn] = useState(null);
   const [confirmingTrust, setConfirmingTrust] = useState(null);
@@ -239,8 +240,8 @@ export default function HelperDashboard() {
   }, [tab, connections, needs]);
 
   const tabs = [
-    ['overview', 'Overview', 0],
-    ['connections', 'Connections', connBadge],
+    ['overview', 'Home', 0],
+    ['connections', 'My Elders', connBadge],
     ['browse', 'Browse Needs', browseBadge],
     ['discover', 'Discover Elders', 0],
   ];
@@ -346,6 +347,27 @@ export default function HelperDashboard() {
                   </div>
                 );
               })()}
+              {/* Quick actions — every main feature reachable in one click */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px' }}>
+                {[
+                  { label: 'Browse help requests', sub: 'Elders need a hand nearby', onClick: () => setTab('browse') },
+                  { label: 'Discover elders', sub: 'Make a new connection', onClick: () => setTab('discover') },
+                  { label: 'My Trust Score', sub: 'See how it grows', onClick: () => navigate('/trust') },
+                ].map(a => (
+                  <button key={a.label} onClick={a.onClick} style={{
+                    background: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '16px',
+                    padding: '16px 18px', textAlign: 'left', cursor: 'pointer',
+                    fontFamily: 'inherit', transition: 'box-shadow 0.15s, transform 0.15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(16,42,67,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 700, color: '#3D8AB0' }}>{a.label} →</span>
+                    <span style={{ display: 'block', fontSize: '13px', color: '#7a7a7a', marginTop: '3px' }}>{a.sub}</span>
+                  </button>
+                ))}
+              </div>
+
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
                 Your Trust Journey
               </h2>
@@ -568,12 +590,26 @@ export default function HelperDashboard() {
                         {{ ACTIVE: 'Connected', PENDING: 'Request Sent' }[conn.status] || conn.status}
                       </span>
                       {conn.status === 'ACTIVE' && (
-                        <button
-                          onClick={() => { if (window.confirm('End this connection?')) endConnection(conn.id); }}
-                          style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
-                        >
-                          End
-                        </button>
+                        endingConn === conn.id ? (
+                          <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '12px', color: '#5a6470' }}>End this connection?</span>
+                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }}
+                              style={{ background: '#9b3535', color: '#fff', border: 'none', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+                              Yes, end
+                            </button>
+                            <button onClick={() => setEndingConn(null)}
+                              style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', color: '#5a6470', cursor: 'pointer', fontFamily: 'inherit' }}>
+                              Keep
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setEndingConn(conn.id)}
+                            style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
+                          >
+                            End
+                          </button>
+                        )
                       )}
                     </div>
                   </div>

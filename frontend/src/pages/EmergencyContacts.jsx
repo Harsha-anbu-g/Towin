@@ -4,6 +4,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+import { useToast } from '../context/ToastContext';
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
@@ -45,6 +46,7 @@ const DefaultAvatar = ({ color = '#4FA3CE', size = 52 }) => (
 );
 
 export default function EmergencyContacts() {
+  const { toast } = useToast();
   const [contacts, setContacts] = useState([]);
   const [form, setForm] = useState({ name: '', phone: '', relationship: '', inactivityDays: 5 });
   const [adding, setAdding] = useState(false);
@@ -76,7 +78,7 @@ export default function EmergencyContacts() {
     try {
       await api.delete(`/emergency/contacts/${contactId}`);
       setContacts(prev => prev.filter(c => c.id !== contactId));
-    } catch { alert('Could not remove contact.'); }
+    } catch { toast.error('Could not remove contact. Please try again.'); }
   }
 
   async function triggerSos() {
