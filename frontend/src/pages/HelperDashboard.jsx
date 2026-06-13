@@ -66,6 +66,17 @@ const sortConnections = (a, b) => {
   return (TRUST_LEVEL_ORDER[b.currentTrustLevel] ?? 0) - (TRUST_LEVEL_ORDER[a.currentTrustLevel] ?? 0);
 };
 
+const NEED_STATUS_ORDER = { OPEN: 0, ASSIGNED: 1, COMPLETED: 2, CANCELLED: 3 };
+const sortNeeds = (a, b) => {
+  const aS = NEED_STATUS_ORDER[a.status] ?? 4;
+  const bS = NEED_STATUS_ORDER[b.status] ?? 4;
+  if (aS !== bS) return aS - bS;
+  if (a.status === 'OPEN' && b.status === 'OPEN') {
+    return (a.urgency === 'URGENT' ? 0 : 1) - (b.urgency === 'URGENT' ? 0 : 1);
+  }
+  return 0;
+};
+
 const statusStyle = (status) => {
   const map = {
     ACTIVE:  { bg: '#f5f5f7', color: '#4FA3CE' },
@@ -692,7 +703,7 @@ export default function HelperDashboard() {
                 </div>
               )}
               <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
-              {needs.map((need, i) => (
+              {[...needs].sort(sortNeeds).map((need, i) => (
                 <div key={need.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '20px',
                   border: '1px solid #e0e0e0',

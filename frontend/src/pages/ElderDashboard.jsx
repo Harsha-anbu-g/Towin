@@ -66,6 +66,20 @@ const sortConnections = (a, b) => {
   return (TRUST_LEVEL_ORDER[b.currentTrustLevel] ?? 0) - (TRUST_LEVEL_ORDER[a.currentTrustLevel] ?? 0);
 };
 
+const NEED_STATUS_ORDER = { OPEN: 0, ASSIGNED: 1, COMPLETED: 2, CANCELLED: 3 };
+const sortNeeds = (a, b) => {
+  const aS = NEED_STATUS_ORDER[a.status] ?? 4;
+  const bS = NEED_STATUS_ORDER[b.status] ?? 4;
+  if (aS !== bS) return aS - bS;
+  // Within OPEN: urgent before normal
+  if (a.status === 'OPEN' && b.status === 'OPEN') {
+    const aU = a.urgency === 'URGENT' ? 0 : 1;
+    const bU = b.urgency === 'URGENT' ? 0 : 1;
+    return aU - bU;
+  }
+  return 0;
+};
+
 const statusStyle = (status) => {
   const active = ['OPEN', 'ACTIVE', 'ASSIGNED', 'PENDING'].includes(status);
   return {
@@ -867,7 +881,7 @@ export default function ElderDashboard() {
                   </button>
                 </div>
               )}
-              {!loading && myNeeds.map((need, i) => (
+              {!loading && [...myNeeds].sort(sortNeeds).map((need, i) => (
                 <div key={need.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '20px',
                   border: '1px solid #e0e0e0',
