@@ -426,6 +426,15 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   .auth-form > div > div { padding-left: 16px !important; padding-right: 16px !important; }
 }
 
+/* ── Global: prevent images from being dragged ───────────────────────── */
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
 /* ── Landing story slides ─────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .landing-topbar { padding: 14px 18px !important; }
