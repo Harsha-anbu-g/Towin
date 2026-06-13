@@ -57,19 +57,23 @@ public class DiscoveryService {
     @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverHelpers(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
-        double lat = resolvedLat(filter, requester);
-        double lng = resolvedLng(filter, requester);
+        Double lat = resolvedLatOptional(filter, requester);
+        Double lng = resolvedLngOptional(filter, requester);
+        boolean hasLocation = lat != null && lng != null;
 
         return helperProfileRepository.findAllActiveWithLocation(requestingUserId)
                 .stream()
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .map(p -> {
-                    double dist = haversineKm(lat, lng,
-                            p.getUser().getLocationLat().doubleValue(),
-                            p.getUser().getLocationLng().doubleValue());
+                    boolean helperHasLocation = p.getUser().getLocationLat() != null && p.getUser().getLocationLng() != null;
+                    double dist = (hasLocation && helperHasLocation)
+                            ? haversineKm(lat, lng,
+                                    p.getUser().getLocationLat().doubleValue(),
+                                    p.getUser().getLocationLng().doubleValue())
+                            : 0.0;
                     return Map.entry(p, dist);
                 })
-                .filter(e -> e.getValue() <= filter.getRadiusKm())
+                .filter(e -> !hasLocation || e.getValue() <= filter.getRadiusKm())
                 .sorted(Comparator.comparingDouble(e -> e.getValue()))
                 .skip((long) filter.getPage() * filter.getSize())
                 .limit(filter.getSize())
@@ -132,6 +136,18 @@ public class DiscoveryService {
         if (filter.getLng() != null) return filter.getLng();
         if (user.getLocationLng() != null) return user.getLocationLng().doubleValue();
         throw new IllegalArgumentException("Location required for discovery");
+    }
+
+    private Double resolvedLatOptional(DiscoveryFilter filter, User user) {
+        if (filter.getLat() != null) return filter.getLat();
+        if (user.getLocationLat() != null) return user.getLocationLat().doubleValue();
+        return null;
+    }
+
+    private Double resolvedLngOptional(DiscoveryFilter filter, User user) {
+        if (filter.getLng() != null) return filter.getLng();
+        if (user.getLocationLng() != null) return user.getLocationLng().doubleValue();
+        return null;
     }
 
     private User getUser(UUID userId) {

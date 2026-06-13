@@ -11,7 +11,7 @@ public interface HelperProfileRepository extends JpaRepository<HelperProfile, UU
     Optional<HelperProfile> findByUserId(UUID userId);
     boolean existsByUserId(UUID userId);
 
-    @Query("SELECT p FROM HelperProfile p WHERE p.user.isActive = true AND p.user.locationLat IS NOT NULL AND p.user.id != :excludeUserId")
+    @Query("SELECT p FROM HelperProfile p WHERE p.user.isActive = true AND p.user.id != :excludeUserId")
     List<HelperProfile> findAllActiveWithLocation(@org.springframework.data.repository.query.Param("excludeUserId") UUID excludeUserId);
 
     void deleteByUserId(UUID userId);
