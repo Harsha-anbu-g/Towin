@@ -160,9 +160,9 @@ function HeroPanel() {
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
-        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', filter: 'brightness(0) saturate(100%) invert(62%) sepia(15%) saturate(713%) hue-rotate(93deg) brightness(91%) contrast(90%)' }} />
         <p style={{
-          fontSize: '21px', fontWeight: 600, color: '#fff', letterSpacing: '-0.374px',
+          fontSize: '21px', fontWeight: 600, color: '#5FA670', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
           margin: 0,
         }}>ToWin</p>
@@ -343,64 +343,50 @@ export default function Register() {
           width: '100%', maxWidth: '440px',
           padding: '40px 24px 48px',
         }}>
-          {/* Demo accounts — highlighted up top for visitors who just want to look around */}
+          {/* Role selector — standalone at the top */}
           <div style={{
-            marginBottom: '24px', background: '#EAF5FB',
-            border: '1px solid #BFD9EA', borderRadius: '16px',
-            padding: '18px 18px 16px',
-            boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
+            marginBottom: '24px', background: '#ffffff',
+            border: '1px solid rgba(191,217,234,0.6)', borderRadius: '18px',
+            padding: '20px 20px 18px',
+            boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07)',
           }}>
-            <p style={{
-              fontSize: '15px', fontWeight: 600, color: '#1d1d1f', textAlign: 'center',
+            <label style={{
+              display: 'block', fontSize: '13px', fontWeight: 600,
+              color: '#1d1d1f', marginBottom: '10px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 4px',
             }}>
-              Just want to see how it works?
-            </p>
-            <p style={{
-              fontSize: '13px', color: '#5a6470', textAlign: 'center',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 14px', lineHeight: 1.5,
-            }}>
-              Look around with a sample account, no sign-up needed.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[
-                { role: 'ELDER', label: 'Try as an Elder', sub: 'See ToWin as Margaret, 72' },
-                { role: 'HELPER', label: 'Try as a Helper', sub: 'See ToWin as James, 28' },
-              ].map(({ role, label, sub }) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => handleGuest(role)}
-                  disabled={!!guestLoading}
-                  style={{
-                    width: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    background: '#ffffff',
-                    border: '1.5px solid #BFD9EA',
-                    borderRadius: '11px',
-                    padding: '13px 16px',
-                    cursor: guestLoading ? 'not-allowed' : 'pointer',
-                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
-                    textAlign: 'left',
-                    transition: 'border-color 0.15s, background 0.15s',
-                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                  }}
-                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
-                >
-                  <span>
-                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
-                      {guestLoading === role ? 'Opening…' : label}
-                    </span>
-                    <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>
-                      {sub}
-                    </span>
-                  </span>
-                  <span aria-hidden="true" style={{ fontSize: '17px', color: '#4FA3CE', fontWeight: 700 }}>→</span>
-                </button>
-              ))}
+              I am joining as
+            </label>
+            <div className="role-grid">
+              {ROLES.map(({ value, label, desc }) => {
+                const active = form.role === value;
+                return (
+                  <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
+                    style={{
+                      padding: '14px 12px', borderRadius: '11px',
+                      border: active ? '2px solid #4FA3CE' : '1.5px solid #e0e0e0',
+                      background: active ? '#EAF5FB' : '#ffffff',
+                      cursor: 'pointer', textAlign: 'left',
+                      transition: 'all 0.15s',
+                    }}>
+                    <div style={{
+                      fontSize: '14px', fontWeight: 600,
+                      color: active ? '#4FA3CE' : '#1d1d1f',
+                      marginBottom: '4px',
+                      fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                    }}>
+                      {label}
+                    </div>
+                    <div style={{
+                      fontSize: '12px', lineHeight: 1.3,
+                      color: active ? '#7BB8D6' : '#a0a0a5',
+                      fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                    }}>
+                      {desc}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -424,48 +410,6 @@ export default function Register() {
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              {/* Role selector */}
-              <div>
-                <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '8px',
-                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                }}>
-                  I am joining as
-                </label>
-                <div className="role-grid">
-                  {ROLES.map(({ value, label, desc }) => {
-                    const active = form.role === value;
-                    return (
-                      <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
-                        style={{
-                          padding: '12px 8px', borderRadius: '11px',
-                          border: active ? '2px solid #4FA3CE' : '1.5px solid #e0e0e0',
-                          background: active ? '#EAF5FB' : '#ffffff',
-                          cursor: 'pointer', textAlign: 'left',
-                          transition: 'all 0.15s',
-                        }}>
-                        <div style={{
-                          fontSize: '13px', fontWeight: 600,
-                          color: active ? '#4FA3CE' : '#1d1d1f',
-                          marginBottom: '3px',
-                          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                        }}>
-                          {label}
-                        </div>
-                        <div style={{
-                          fontSize: '11px', lineHeight: 1.3,
-                          color: active ? '#7BB8D6' : '#a0a0a5',
-                          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                        }}>
-                          {desc}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Email */}
               <div>
                 <label style={{
@@ -635,6 +579,67 @@ export default function Register() {
               Sign In
             </Link>
           </p>
+
+          {/* Demo accounts — at the bottom, same as login page */}
+          <div style={{
+            marginTop: '24px', background: '#EAF5FB',
+            border: '1px solid #BFD9EA', borderRadius: '16px',
+            padding: '18px 18px 16px',
+          }}>
+            <p style={{
+              fontSize: '15px', fontWeight: 600, color: '#1d1d1f', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 4px',
+            }}>
+              Just want to see how it works?
+            </p>
+            <p style={{
+              fontSize: '13px', color: '#5a6470', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 14px', lineHeight: 1.5,
+            }}>
+              Look around with a sample account, no sign-up needed.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {[
+                { role: 'ELDER', label: 'Try as an Elder', sub: 'See ToWin as Margaret, 72' },
+                { role: 'HELPER', label: 'Try as a Helper', sub: 'See ToWin as James, 28' },
+              ].map(({ role, label, sub }) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => handleGuest(role)}
+                  disabled={!!guestLoading}
+                  style={{
+                    width: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: '#ffffff',
+                    border: '1.5px solid #BFD9EA',
+                    borderRadius: '11px',
+                    padding: '13px 16px',
+                    cursor: guestLoading ? 'not-allowed' : 'pointer',
+                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
+                    textAlign: 'left',
+                    transition: 'border-color 0.15s, background 0.15s',
+                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  }}
+                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
+                >
+                  <span>
+                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
+                      {guestLoading === role ? 'Opening…' : label}
+                    </span>
+                    <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>
+                      {sub}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" style={{ fontSize: '17px', color: '#4FA3CE', fontWeight: 700 }}>→</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
