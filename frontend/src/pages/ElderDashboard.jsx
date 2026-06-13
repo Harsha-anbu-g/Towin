@@ -57,6 +57,15 @@ const COMMUNITY_PHOTOS = [
   { id: 'photo-1507679799987-c73779587ccf', label: 'Elder man' },
 ];
 
+const TRUST_LEVEL_ORDER = { DISCOVERED: 1, MESSAGING: 2, PHONE_CALL: 3, VIDEO_CALL: 4, VERIFIED: 5, FIRST_MEET: 6, TRUSTED: 7 };
+const STATUS_ORDER = { ACTIVE: 0, PENDING: 1 };
+const sortConnections = (a, b) => {
+  const aS = STATUS_ORDER[a.status] ?? 2;
+  const bS = STATUS_ORDER[b.status] ?? 2;
+  if (aS !== bS) return aS - bS;
+  return (TRUST_LEVEL_ORDER[b.currentTrustLevel] ?? 0) - (TRUST_LEVEL_ORDER[a.currentTrustLevel] ?? 0);
+};
+
 const statusStyle = (status) => {
   const active = ['OPEN', 'ACTIVE', 'ASSIGNED', 'PENDING'].includes(status);
   return {
@@ -613,7 +622,7 @@ export default function ElderDashboard() {
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>Helpers in your area will send you connection requests. You'll see them here.</p>
                 </div>
               )}
-              {!loading && connections.map((conn, i) => (
+              {!loading && [...connections].sort(sortConnections).map((conn, i) => (
                 <div key={conn.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '24px',
                   border: '1px solid #e0e0e0',
