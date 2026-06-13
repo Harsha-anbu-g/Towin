@@ -157,7 +157,7 @@ export default function EmergencyContacts() {
               boxShadow: sosSent ? '0 4px 24px rgba(26,122,60,0.3)' : '0 4px 24px rgba(204,0,0,0.35)',
             }}
           >
-            {sosSent ? 'SOS Sent' : 'SOS — Call All Contacts Now'}
+            {sosSent ? 'SOS Sent' : 'SOS: Call All Contacts Now'}
           </button>
           {sosMsg && (
             <p style={{

@@ -125,7 +125,7 @@ export const SLIDES = [
         <Title>ToWin</Title>
         <Lead>It takes two To Win.</Lead>
         <Body>
-          One who helps, one who gets help — and both win.
+          One who helps, one who gets help, and both win.
         </Body>
       </>
     ),
@@ -158,12 +158,12 @@ export const SLIDES = [
         <Kicker>The problem we solve</Kicker>
         <Title>Help is hard to find alone</Title>
         <Lead>
-          Small daily things — shopping, a ride, someone to talk to — take
+          Small daily things, like shopping, a ride, or someone to talk to, take
           energy that elders don&apos;t always have.
         </Lead>
         <Body>
           On ToWin, an elder simply asks. Helpers nearby see the request and
-          come to help — with whatever is needed.
+          come to help with whatever is needed.
         </Body>
       </>
     ),
@@ -180,7 +180,7 @@ export const SLIDES = [
         </Lead>
         <CardGrid>
           <MiniCard title="Profile">
-            A full profile with ID, phone, and photo — all checked.
+            A full profile with ID, phone, and photo, all checked.
           </MiniCard>
           <MiniCard title="Rooting">
             Points earned each time a friendship takes a step forward.
@@ -198,7 +198,7 @@ export const SLIDES = [
     render: () => (
       <>
         <Kicker>One step at a time</Kicker>
-        <Title>Rooting — how trust grows</Title>
+        <Title>Rooting: how trust grows</Title>
         <Lead>
           Like a tree growing roots, every friendship on ToWin grows slowly,
           through 7 simple stages:
@@ -208,8 +208,8 @@ export const SLIDES = [
           'Verified', 'Ready to Meet', 'Fully Trusted',
         ]} />
         <NoteBox>
-          <strong>Both people must agree to every step.</strong> Nothing personal —
-          like a phone number — is shared until trust has grown.
+          <strong>Both people must agree to every step.</strong> Nothing personal,
+          like a phone number, is shared until trust has grown.
         </NoteBox>
       </>
     ),
@@ -221,8 +221,8 @@ export const SLIDES = [
         <Kicker>Why ToWin</Kicker>
         <Title>Both sides win</Title>
         <Body>
-          Today&apos;s elders use phones, shop online, and pay online — and
-          tomorrow there will be many more.
+          Today&apos;s elders use phones, shop online, and pay online. Tomorrow
+          there will be many more.
         </Body>
         <Body>
           But the hardest parts of growing older haven&apos;t changed:
@@ -231,7 +231,7 @@ export const SLIDES = [
         <NoteBox>
           Elders have <strong>time and money</strong>, but need energy and company.{' '}
           Helpers have <strong>energy and time</strong>, but need money and care.{' '}
-          <strong>ToWin is where they meet and share — and both win.</strong>
+          <strong>ToWin is where they meet and share, and both win.</strong>
         </NoteBox>
       </>
     ),

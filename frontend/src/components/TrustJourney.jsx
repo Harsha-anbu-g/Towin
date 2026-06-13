@@ -231,7 +231,7 @@ export default function TrustJourney({
                 <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
-                Trust request sent — waiting for {otherUserName} to accept
+                Trust request sent, waiting for {otherUserName} to accept
               </span>
             </div>
           )}
@@ -279,7 +279,7 @@ export default function TrustJourney({
                 <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
-                You accepted — trust advancing
+                You accepted, trust is advancing
               </span>
             </div>
           )}
@@ -354,7 +354,7 @@ export default function TrustJourney({
                     <path d="M1 4L3.5 6.5L9 1" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   <span style={{ fontSize: '11px', color: '#4FA3CE', fontWeight: 600, fontFamily: SFT }}>
-                    Confirmed — waiting for {otherUserName}
+                    Confirmed, waiting for {otherUserName}
                   </span>
                 </div>
               ) : onConfirm ? (

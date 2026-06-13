@@ -73,12 +73,12 @@ function ScoreCard({ data, isHelper }) {
         </h2>
         <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: 0, lineHeight: 1.55 }}>
           {data.totalScore < 3
-            ? 'Complete your profile to earn your first points — verification alone adds 0.5 pts.'
+            ? 'Complete your profile to earn your first points. Verification alone adds 0.5 pts.'
             : data.totalScore < 15
             ? (isHelper
                 ? 'Build your first elder relationships and progress through trust stages.'
                 : 'Connect with helpers and grow trust one gentle step at a time.')
-            : 'Great score — keep completing engagements and earning reviews.'}
+            : 'Great score! Keep completing engagements and earning reviews.'}
         </p>
       </div>
       </div>
@@ -238,7 +238,7 @@ function ReviewCard({ review, isHelper }) {
             Review Score
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
-            Cumulative star ratings from {isHelper ? 'elders' : 'helpers'} — each star is one point
+            Cumulative star ratings from {isHelper ? 'elders' : 'helpers'}. Each star is one point
           </p>
         </div>
         <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
@@ -289,7 +289,7 @@ export default function Trust() {
           <p style={{ fontFamily: SF, fontSize: '16px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
             {isHelper
               ? 'Three parts: your profile completeness, the depth of your elder relationships, and what elders say about you.'
-              : 'Your community standing — built through verified identity, connections, and reviews.'}
+              : 'Your community standing, built through verified identity, connections, and reviews.'}
           </p>
         </div>
 

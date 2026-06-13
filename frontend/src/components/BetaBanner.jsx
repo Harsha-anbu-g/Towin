@@ -32,7 +32,7 @@ export default function BetaBanner() {
       boxSizing: 'border-box',
     }}>
       <span>
-        ToWin is in beta testing — your feedback helps us improve.{' '}
+        ToWin is in beta testing. Your feedback helps us improve.{' '}
         <button
           onClick={() => navigate('/feedback')}
           style={{

@@ -147,10 +147,10 @@ public class TrustScoreService {
                     "Link your Facebook or Instagram in your profile."));
             fields.add(field("hobbies",    "Hobbies",
                     p.getHobbies() != null && p.getHobbies().length > 0,
-                    "Add at least one hobby — shared interests start friendships."));
+                    "Add at least one hobby. Shared interests start friendships."));
             fields.add(field("occupation", "Occupation",
                     notBlank(p.getOccupation()),
-                    "Add your occupation — context builds trust."));
+                    "Add your occupation. It helps others feel comfortable."));
             fields.add(field("bio",        "About Me",
                     notBlank(p.getBio()),
                     "Write a short bio in your own words."));
@@ -168,7 +168,7 @@ public class TrustScoreService {
                     "Link your Facebook or Instagram in your profile."));
             fields.add(field("occupation", "Occupation",
                     notBlank(e.getOccupation()),
-                    "Add your occupation — context builds trust."));
+                    "Add your occupation. It helps others feel comfortable."));
             fields.add(field("bio",        "About Me",
                     notBlank(e.getBio()),
                     "Write a short bio in your own words."));

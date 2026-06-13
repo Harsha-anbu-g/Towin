@@ -300,7 +300,7 @@ export default function Login() {
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 margin: '0 0 14px', lineHeight: 1.5,
               }}>
-                Look around with a sample account — no sign-up needed.
+                Look around with a sample account, no sign-up needed.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {[

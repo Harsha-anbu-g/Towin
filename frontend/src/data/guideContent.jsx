@@ -107,13 +107,13 @@ export const STEPS = [
       <>
         <StepTitle>Welcome to ToWin</StepTitle>
         <Lead>
-          ToWin is a community that brings older people and younger helpers together —
-          so no one feels alone, and everyday help is easy to find.
+          ToWin is a community that brings older people and younger helpers together,
+          so no one feels alone and everyday help is easy to find.
         </Lead>
         <SubHead>Why we built it</SubHead>
         <p style={{ fontFamily: SF, fontSize: '16px', color: '#1d1d1f', lineHeight: 1.6, margin: 0 }}>
           Many older people have no safe, trusted way to meet new friends or get a hand with
-          daily tasks. ToWin gives them one — built around trust that grows one small step
+          daily tasks. ToWin gives them one, built around trust that grows one small step
           at a time, so no one ever has to rush or feel unsafe.
         </p>
         <SubHead>Who ToWin is for</SubHead>
@@ -122,7 +122,7 @@ export const STEPS = [
           <MiniCard title="Helper">A younger person who gives time, company, and a hand with everyday things.</MiniCard>
         </CardGrid>
         <NoteBox>
-          Choose how you'll use ToWin with the tabs above — you can switch between
+          Choose how you'll use ToWin with the tabs above. You can switch between
           Elder and Helper anytime.
         </NoteBox>
       </>
@@ -152,7 +152,7 @@ export const STEPS = [
           <StepTitle>What you can do as an Elder</StepTitle>
           <Lead>As an Elder, you decide who you connect with and how far the friendship goes.</Lead>
           <Bullets items={[
-            'Post a help request — company, a ride, shopping, cleaning, and more.',
+            'Post a help request for company, a ride, shopping, cleaning, and more.',
             'See the helpers who apply and choose the person you trust.',
             'Find and connect with helpers near you.',
             'Message the people you connect with, safely and simply.',
@@ -178,18 +178,18 @@ export const STEPS = [
           both people agree.
         </Lead>
         <Bullets items={[
-          <><strong>1. Just Connected</strong> — see each other's profile and send a connection request.</>,
-          <><strong>2. Messaging</strong> — send messages and share photos in a private chat.</>,
-          <><strong>3. Phone Ready</strong> — share phone numbers and call each other.</>,
-          <><strong>4. Video Ready</strong> — have a video call and meet face to face.</>,
-          <><strong>5. Verified</strong> — both IDs are checked and a verified badge appears.</>,
-          <><strong>6. Ready to Meet</strong> — plan to meet in person; emergency contacts are told.</>,
-          <><strong>7. Fully Trusted</strong> — a full, trusted friendship; leave and receive reviews.</>,
+          <><strong>1. Just Connected</strong>: see each other's profile and send a connection request.</>,
+          <><strong>2. Messaging</strong>: send messages and share photos in a private chat.</>,
+          <><strong>3. Phone Ready</strong>: share phone numbers and call each other.</>,
+          <><strong>4. Video Ready</strong>: have a video call and meet face to face.</>,
+          <><strong>5. Verified</strong>: both IDs are checked and a verified badge appears.</>,
+          <><strong>6. Ready to Meet</strong>: plan to meet in person; emergency contacts are told.</>,
+          <><strong>7. Fully Trusted</strong>: a full, trusted friendship; leave and receive reviews.</>,
         ]} />
         <NoteBox>
           <strong>Both people must confirm every step.</strong> Either person can pause or end
           a connection at any time. Phone numbers and other details are shared only as trust
-          grows — there is no rush, and the journey takes as long as you need.
+          grows. There is no rush, and the journey takes as long as you need.
         </NoteBox>
       </>
     ),
@@ -207,11 +207,11 @@ export const STEPS = [
         <SubHead>It has three parts</SubHead>
         <CardGrid>
           <MiniCard title="Profile Score">
-            Fill in your profile. 8 details — each worth 0.25 points, up to 2.0: ID and phone
+            Fill in your profile. 8 details, each worth 0.25 points, up to 2.0: ID and phone
             verified, photo, a social link, hobbies, your job, a few lines about you, and date of birth.
           </MiniCard>
           <MiniCard title="Rooting Score">
-            Earn points every time a friendship moves up a trust stage — added up across all
+            Earn points every time a friendship moves up a trust stage, added up across all
             of your connections.
           </MiniCard>
           <MiniCard title="Review Score">
@@ -220,14 +220,14 @@ export const STEPS = [
         </CardGrid>
         <SubHead>The five tiers</SubHead>
         <Bullets items={[
-          <><strong>New Member</strong> — 0 to 2 points.</>,
-          <><strong>Getting Started</strong> — 3 to 14 points.</>,
-          <><strong>Reliable</strong> — 15 to 49 points.</>,
-          <><strong>Highly Trusted</strong> — 50 to 119 points.</>,
-          <><strong>Community Champion</strong> — 120 points and above.</>,
+          <><strong>New Member</strong>: 0 to 2 points.</>,
+          <><strong>Getting Started</strong>: 3 to 14 points.</>,
+          <><strong>Reliable</strong>: 15 to 49 points.</>,
+          <><strong>Highly Trusted</strong>: 50 to 119 points.</>,
+          <><strong>Community Champion</strong>: 120 points and above.</>,
         ]} />
         <NoteBox>
-          After a connection reaches a full friendship, both people leave a 1–5 star rating,
+          After a connection reaches a full friendship, both people leave a 1 to 5 star rating,
           a few kind tags (Friendly, Punctual, Respectful, Helpful, Patient), and can quietly
           report a safety worry if something didn't feel right.
         </NoteBox>
@@ -245,11 +245,11 @@ export const STEPS = [
         </Lead>
         <Bullets items={[
           'Your current streak counts the days you have checked in, one after another.',
-          'Your best streak is your all-time record — something to be proud of.',
-          'Miss a day and the current streak starts again — but your best streak is always kept.',
+          'Your best streak is your all-time record, something to be proud of.',
+          'Miss a day and the current streak starts again, but your best streak is always kept.',
         ]} />
         <NoteBox>
-          The streak check-in is the first screen elders see after signing in — a simple,
+          The streak check-in is the first screen elders see after signing in. A simple,
           friendly way to start the day.
         </NoteBox>
       </>
@@ -265,10 +265,10 @@ export const STEPS = [
           Every screen is made to feel calm, clear, and never rushed.
         </Lead>
         <Bullets items={[
-          'Calm sky-blue colours and soft white cards — easy on the eyes.',
+          'Calm sky-blue colours and soft white cards, easy on the eyes.',
           'The tortoise logo: steady and patient, because trust grows slowly and surely.',
           'Big, clear text that is easy to read.',
-          'One simple thing per screen — nothing extra, nothing confusing.',
+          'One simple thing per screen, nothing extra, nothing confusing.',
         ]} />
       </>
     ),

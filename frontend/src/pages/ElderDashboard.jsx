@@ -732,7 +732,7 @@ export default function ElderDashboard() {
                 <p style={{ fontSize: '13px', color: '#7a7a7a', margin: 0 }}>
                   {locationStatus === 'asking' && 'Getting your location…'}
                   {locationStatus === 'granted' && `Showing within ${radiusKm} km of you`}
-                  {locationStatus === 'denied' && 'Location unavailable — showing all helpers'}
+                  {locationStatus === 'denied' && 'Location unavailable, showing all helpers'}
                   {locationStatus === 'idle' && 'Detecting location…'}
                 </p>
                 {locationStatus === 'granted' && (
@@ -751,7 +751,7 @@ export default function ElderDashboard() {
                   <p style={{ fontSize: '14px', color: '#7a7a7a' }}>
                     {locationStatus === 'granted'
                       ? 'Try a larger radius above, or check back later.'
-                      : 'New helpers join often — please check back soon.'}
+                      : 'New helpers join often. Please check back soon.'}
                   </p>
                 </div>
               )}
@@ -1027,8 +1027,8 @@ export default function ElderDashboard() {
                     background: locationStatus === 'granted' ? '#4FA3CE' : locationStatus === 'denied' ? '#d0d0d5' : '#e0e0e0',
                   }} />
                   {locationStatus === 'asking' && 'Getting your location…'}
-                  {locationStatus === 'granted' && 'Location on — nearby helpers will be matched first.'}
-                  {locationStatus === 'denied' && 'Location off — your request will still reach all helpers.'}
+                  {locationStatus === 'granted' && 'Location on. Nearby helpers will be matched first.'}
+                  {locationStatus === 'denied' && 'Location off. Your request will still reach all helpers.'}
                   {locationStatus === 'idle' && (
                     <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#4FA3CE', padding: 0, fontWeight: 600 }}>
                       Share location to reach nearby helpers first

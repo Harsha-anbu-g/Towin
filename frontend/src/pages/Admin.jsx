@@ -301,7 +301,7 @@ export default function Admin() {
           Admin
         </h1>
         <p style={{ fontSize: '16px', color: '#5a6b75', maxWidth: '460px', margin: '0 auto 28px', lineHeight: 1.5 }}>
-          Care for the community — users, trust, and safety in one place.
+          Care for the community: users, trust, and safety in one place.
         </p>
 
         {/* Stats — light, airy cards */}
