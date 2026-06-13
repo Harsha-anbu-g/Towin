@@ -172,14 +172,14 @@ function HeroPanel() {
       <div style={{ position: 'relative', zIndex: 2, marginTop: '64px' }}>
         <h1 style={{
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-          fontSize: '40px', lineHeight: 1.15, color: '#0a2e14',
+          fontSize: '40px', lineHeight: 1.15, color: '#0d1a0f',
           marginBottom: '14px', fontWeight: 600,
         }}>
           Your community<br />is waiting<br />for you.
         </h1>
 
         <p style={{
-          fontSize: '14px', color: '#0a2e14', lineHeight: 1.7,
+          fontSize: '14px', color: '#0d1a0f', lineHeight: 1.7,
           marginBottom: '28px', maxWidth: '260px',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
         }}>
@@ -192,7 +192,7 @@ function HeroPanel() {
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
-                background: '#0a2e14',
+                background: '#0d1a0f',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="9" height="7" viewBox="0 0 7 5" fill="none">
@@ -200,7 +200,7 @@ function HeroPanel() {
                 </svg>
               </div>
               <span style={{
-                fontSize: '13px', color: '#0a2e14',
+                fontSize: '13px', color: '#0d1a0f',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               }}>{text}</span>
             </div>
