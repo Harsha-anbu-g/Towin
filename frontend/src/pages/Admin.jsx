@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -164,6 +165,7 @@ export default function Admin() {
   const [tab, setTab] = useState('Users');
   const [dataTab, setDataTab] = useState('Connections');
   const [search, setSearch] = useState('');
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   const [users, setUsers] = useState([]);
   const [verifications, setVerifications] = useState([]);
@@ -271,7 +273,7 @@ export default function Admin() {
         position: 'relative',
       }}>
         <button
-          onClick={() => { logout(); navigate('/login'); }}
+          onClick={() => setConfirmSignOut(true)}
           style={{
             position: 'absolute', top: '20px', right: '24px',
             fontSize: '13px', color: '#5a6b75',
@@ -743,6 +745,16 @@ export default function Admin() {
 
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmSignOut}
+        title="Sign out of the admin console?"
+        message="You can sign back in any time with your admin account."
+        confirmLabel="Sign Out"
+        cancelLabel="Stay Signed In"
+        onConfirm={() => { setConfirmSignOut(false); logout(); navigate('/login'); }}
+        onCancel={() => setConfirmSignOut(false)}
+      />
     </div>
   );
 }

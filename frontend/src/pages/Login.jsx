@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -96,8 +96,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [showPwd, setShowPwd] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const [guestLoading, setGuestLoading] = useState('');
+
+  // If the user was bounced here by an expired session, say so (H9).
+  useEffect(() => {
+    if (sessionStorage.getItem('sessionExpired')) {
+      setSessionExpired(true);
+      sessionStorage.removeItem('sessionExpired');
+    }
+  }, []);
 
   const DEMO = {
     ELDER:  { email: 'elder@gmail.com',  password: '12345678' },
@@ -178,6 +187,18 @@ export default function Login() {
 
             {/* Hairline divider */}
             <div style={{ height: '1px', background: '#e0e0e0', marginBottom: '24px' }} />
+
+            {/* Session expired notice — explains why they're back here (H9) */}
+            {sessionExpired && (
+              <div style={{
+                background: '#EAF5FB', border: '1px solid #BFD9EA',
+                borderRadius: '11px', padding: '12px 16px',
+                fontSize: '14px', color: '#3D8AB0', marginBottom: '20px',
+                lineHeight: 1.45,
+              }}>
+                For your safety, you were signed out after a period of inactivity. Please sign in again.
+              </div>
+            )}
 
             {/* Error state */}
             {error && (

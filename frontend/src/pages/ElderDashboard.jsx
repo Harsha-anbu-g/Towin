@@ -153,6 +153,8 @@ export default function ElderDashboard() {
   const [loading, setLoading] = useState(true);
   const [cancelConfirm, setCancelConfirm] = useState(null);
   const [helpers, setHelpers] = useState([]);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoverError, setDiscoverError] = useState(false);
   const [radiusKm, setRadiusKm] = useState(25);
   const [connectingTo, setConnectingTo] = useState(null);
   const [connectMsg, setConnectMsg] = useState({});
@@ -183,12 +185,18 @@ export default function ElderDashboard() {
 
   async function loadHelpers(loc) {
     const coords = loc ?? location;
+    setDiscovering(true);
+    setDiscoverError(false);
     try {
       const res = coords
         ? await api.get(`/discover/helpers?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`)
         : await api.get('/discover/helpers');
       setHelpers(res.data || []);
-    } catch {}
+    } catch {
+      setDiscoverError(true);
+    } finally {
+      setDiscovering(false);
+    }
   }
 
   async function connectToHelper(helperId) {
@@ -766,7 +774,28 @@ export default function ElderDashboard() {
                 )}
               </div>
 
-              {helpers.length === 0 && (
+              {/* Searching — let people know we're looking, never a blank flash (H1) */}
+              {discovering && helpers.length === 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '110px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                  ))}
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', textAlign: 'center', margin: 0 }}>Looking for helpers near you…</p>
+                </div>
+              )}
+
+              {/* Fetch failed — tell the truth and offer a way out (H9) */}
+              {!discovering && discoverError && (
+                <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #fecaca', padding: '40px 24px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Couldn't load helpers</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
+                  <button onClick={() => loadHelpers()} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {!discovering && !discoverError && helpers.length === 0 && (
                 <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0', padding: '48px 24px', textAlign: 'center' }}>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                     {locationStatus === 'granted' ? 'No helpers found nearby' : 'No helpers available right now'}

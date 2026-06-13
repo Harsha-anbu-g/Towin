@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import ConfirmDialog from './ConfirmDialog';
 import api from '../api/axios';
 
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -14,6 +15,7 @@ export default function NavBar() {
   const [sosSent, setSosSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   // Collapse to the hamburger drawer below 1024px — the full desktop rail
   // (logo + 6 links + Trust pill + SOS + Sign out) needs ~1000px to fit.
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
@@ -29,6 +31,14 @@ export default function NavBar() {
 
   // Close menu on route change
   useEffect(() => { setMenuOpen(false); }, [pathname]);
+
+  // Esc closes the open mobile drawer — user control & freedom (H3/H7)
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!user) return;
@@ -181,7 +191,10 @@ export default function NavBar() {
               }}>Play Peekaboo</Link>
             )}
             {isElder && (
-              <button onClick={triggerSos} disabled={sending} style={{
+              <button onClick={triggerSos} disabled={sending}
+                title="Send an urgent alert to all your emergency contacts"
+                aria-label="Send SOS alert to your emergency contacts"
+                style={{
                 fontSize: '15px', fontWeight: 700, fontFamily: SF,
                 padding: '10px 22px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
@@ -189,7 +202,7 @@ export default function NavBar() {
                 color: '#fff', opacity: sending ? 0.7 : 1,
               }}>{sosSent ? 'Help sent' : sending ? 'Sending…' : 'SOS'}</button>
             )}
-            <button onClick={logout} style={{
+            <button onClick={() => setConfirmSignOut(true)} style={{
               fontSize: '15px', fontFamily: SF, fontWeight: 500,
               color: '#7a7a7a', background: 'none', border: 'none',
               cursor: 'pointer', padding: '8px 14px', borderRadius: '8px',
@@ -210,7 +223,10 @@ export default function NavBar() {
               </Link>
             )}
             {isElder && (
-              <button onClick={triggerSos} disabled={sending} style={{
+              <button onClick={triggerSos} disabled={sending}
+                title="Send an urgent alert to all your emergency contacts"
+                aria-label="Send SOS alert to your emergency contacts"
+                style={{
                 fontSize: '13px', fontWeight: 700, fontFamily: SF,
                 padding: '7px 14px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
@@ -254,7 +270,7 @@ export default function NavBar() {
             <MenuLink to="/how-it-works" label="Guide" />
             {isElder && <MenuLink to="/game" label="Play Peekaboo" />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" />}
-            <button onClick={() => { setMenuOpen(false); logout(); }} style={{
+            <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '16px 0', marginTop: '4px',
               fontSize: '17px', fontFamily: SF, fontWeight: 500,
@@ -264,6 +280,16 @@ export default function NavBar() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmSignOut}
+        title="Sign out of ToWin?"
+        message="You can sign back in any time with your email and password."
+        confirmLabel="Sign Out"
+        cancelLabel="Stay Signed In"
+        onConfirm={() => { setConfirmSignOut(false); logout(); }}
+        onCancel={() => setConfirmSignOut(false)}
+      />
     </>
   );
 }

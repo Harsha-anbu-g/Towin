@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import TrustBadge from '../components/TrustBadge';
 import BlurFade from '../components/magic/BlurFade';
+import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -73,6 +74,7 @@ export default function ProfileEdit() {
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [profileData, setProfileData] = useState(null);
 
@@ -603,7 +605,7 @@ export default function ProfileEdit() {
                 </p>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    onClick={() => { logout(); navigate('/login'); }}
+                    onClick={() => setConfirmSignOut(true)}
                     style={{
                       flex: 1,
                       background: SKY,
@@ -626,6 +628,16 @@ export default function ProfileEdit() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmSignOut}
+        title="Sign out of ToWin?"
+        message="You can sign back in any time with your email and password."
+        confirmLabel="Sign Out"
+        cancelLabel="Stay Signed In"
+        onConfirm={() => { setConfirmSignOut(false); logout(); navigate('/login'); }}
+        onCancel={() => setConfirmSignOut(false)}
+      />
     </div>
   );
 }
