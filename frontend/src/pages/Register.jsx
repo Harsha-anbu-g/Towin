@@ -160,7 +160,7 @@ function HeroPanel() {
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
-        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', filter: 'brightness(0) saturate(100%) invert(62%) sepia(15%) saturate(713%) hue-rotate(93deg) brightness(91%) contrast(90%)' }} />
+        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', filter: 'brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(100deg) brightness(0.09)' }} />
         <p style={{
           fontSize: '21px', fontWeight: 600, color: '#5FA670', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
