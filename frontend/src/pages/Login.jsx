@@ -282,88 +282,89 @@ export default function Login() {
                 Create one
               </Link>
             </p>
-            {/* Demo accounts — for visitors who just want to look around */}
-            <div style={{
-              marginTop: '24px', background: '#EAF5FB',
-              border: '1px solid #BFD9EA', borderRadius: '16px',
-              padding: '18px 18px 16px',
-            }}>
-              <p style={{
-                fontSize: '15px', fontWeight: 600, color: '#1d1d1f', textAlign: 'center',
-                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                margin: '0 0 4px',
-              }}>
-                Just want to see how it works?
-              </p>
-              <p style={{
-                fontSize: '13px', color: '#5a6470', textAlign: 'center',
-                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                margin: '0 0 14px', lineHeight: 1.5,
-              }}>
-                Look around with a sample account, no sign-up needed.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[
-                  { role: 'ELDER', label: 'Try as an Elder', sub: 'See ToWin as Margaret, 72' },
-                  { role: 'HELPER', label: 'Try as a Helper', sub: 'See ToWin as James, 28' },
-                ].map(({ role, label, sub }) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => handleGuest(role)}
-                    disabled={!!guestLoading}
-                    style={{
-                      width: '100%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: '#ffffff',
-                      border: '1.5px solid #BFD9EA',
-                      borderRadius: '11px',
-                      padding: '13px 16px',
-                      cursor: guestLoading ? 'not-allowed' : 'pointer',
-                      opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
-                      textAlign: 'left',
-                      transition: 'border-color 0.15s, background 0.15s',
-                      fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                    }}
-                    onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
-                  >
-                    <span>
-                      <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
-                        {guestLoading === role ? 'Opening…' : label}
-                      </span>
-                      <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>
-                        {sub}
-                      </span>
-                    </span>
-                    <span aria-hidden="true" style={{ fontSize: '17px', color: '#4FA3CE', fontWeight: 700 }}>→</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'center', marginTop: '14px' }}>
-              <Link to="/how-it-works" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
-                borderRadius: '9999px', padding: '11px 24px',
-                fontSize: '15px', fontWeight: 400,
-                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
-              }}>
-                How It Works
-              </Link>
-            </div>
-            <p style={{
-              textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              marginTop: '12px',
-            }}>
-              <Link to="/feedback" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
-                Share feedback
-              </Link>
-            </p>
           </div>
+
+          {/* Demo accounts — standalone below the card */}
+          <div style={{
+            marginTop: '24px', background: '#EAF5FB',
+            border: '1px solid #BFD9EA', borderRadius: '16px',
+            padding: '18px 18px 16px',
+          }}>
+            <p style={{
+              fontSize: '15px', fontWeight: 600, color: '#1d1d1f', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 4px',
+            }}>
+              Just want to see how it works?
+            </p>
+            <p style={{
+              fontSize: '13px', color: '#5a6470', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 14px', lineHeight: 1.5,
+            }}>
+              Look around with a sample account, no sign-up needed.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {[
+                { role: 'ELDER', label: 'Try as an Elder', sub: 'See ToWin as Margaret, 72' },
+                { role: 'HELPER', label: 'Try as a Helper', sub: 'See ToWin as James, 28' },
+              ].map(({ role, label, sub }) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => handleGuest(role)}
+                  disabled={!!guestLoading}
+                  style={{
+                    width: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: '#ffffff',
+                    border: '1.5px solid #BFD9EA',
+                    borderRadius: '11px',
+                    padding: '13px 16px',
+                    cursor: guestLoading ? 'not-allowed' : 'pointer',
+                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
+                    textAlign: 'left',
+                    transition: 'border-color 0.15s, background 0.15s',
+                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  }}
+                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
+                >
+                  <span>
+                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
+                      {guestLoading === role ? 'Opening…' : label}
+                    </span>
+                    <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>
+                      {sub}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" style={{ fontSize: '17px', color: '#4FA3CE', fontWeight: 700 }}>→</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '14px' }}>
+            <Link to="/how-it-works" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
+              borderRadius: '9999px', padding: '11px 24px',
+              fontSize: '15px', fontWeight: 400,
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
+            }}>
+              How It Works
+            </Link>
+          </div>
+          <p style={{
+            textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
+            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+            marginTop: '12px',
+          }}>
+            <Link to="/feedback" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
+              Share feedback
+            </Link>
+          </p>
         </div>
       </div>
     </div>
