@@ -148,9 +148,12 @@ function HeroPanel() {
       <img
         src="/walking.png"
         alt="An elder and younger person walking together hand in hand"
+        draggable="false"
+        onDragStart={e => e.preventDefault()}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', objectPosition: 'center', zIndex: 0,
+          userSelect: 'none', WebkitUserDrag: 'none',
         }}
       />
 

@@ -22,9 +22,12 @@ function HeroPanel() {
       <img
         src="/image3.png"
         alt="A handshake between an elder and a younger person"
+        draggable="false"
+        onDragStart={e => e.preventDefault()}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', objectPosition: 'center 70%', zIndex: 0,
+          userSelect: 'none', WebkitUserDrag: 'none',
         }}
       />
 
