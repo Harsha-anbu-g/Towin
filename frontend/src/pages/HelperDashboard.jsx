@@ -444,7 +444,7 @@ export default function HelperDashboard() {
                 </div>
               )}
 
-              {!loading && connections.filter(c => c.status === 'ACTIVE').map((conn, i) => (
+              {!loading && connections.filter(c => c.status === 'ACTIVE').sort((a,b) => (TRUST_LEVEL_ORDER[b.currentTrustLevel]??0)-(TRUST_LEVEL_ORDER[a.currentTrustLevel]??0)).map((conn, i) => (
                 <div key={conn.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '24px',
                   border: '1px solid #e0e0e0',
@@ -490,7 +490,7 @@ export default function HelperDashboard() {
                     Pending Requests ({connections.filter(c => c.status === 'PENDING').length})
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {connections.filter(c => c.status === 'PENDING').map(conn => (
+                    {connections.filter(c => c.status === 'PENDING').sort((a,b) => (a.initiatedByMe ? 1 : 0) - (b.initiatedByMe ? 1 : 0)).map(conn => (
                       <div key={conn.id} style={{
                         background: '#ffffff', borderRadius: '14px', padding: '16px 20px',
                         border: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
@@ -702,7 +702,7 @@ export default function HelperDashboard() {
                   </p>
                 </div>
               )}
-              <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[...needs].sort(sortNeeds).map((need, i) => (
                 <div key={need.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '20px',
@@ -771,7 +771,7 @@ export default function HelperDashboard() {
                   </p>
                 </div>
               )}
-              <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {elders.map((elder, i) => {
                 const alreadyConnected = connectedElderIds.has(elder.userId);
                 const sent = connectMsg[elder.userId];
