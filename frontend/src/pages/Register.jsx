@@ -172,30 +172,27 @@ function HeroPanel() {
       <div style={{ position: 'relative', zIndex: 2, marginTop: '64px' }}>
         <h1 style={{
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-          fontSize: '40px', lineHeight: 1.15, color: '#fff',
+          fontSize: '40px', lineHeight: 1.15, color: '#0a2e14',
           marginBottom: '14px', fontWeight: 600,
-          textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
           Your community<br />is waiting<br />for you.
         </h1>
 
         <p style={{
-          fontSize: '14px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.7,
+          fontSize: '14px', color: '#0a2e14', lineHeight: 1.7,
           marginBottom: '28px', maxWidth: '260px',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-          textShadow: '0 1px 10px rgba(20,55,80,0.5)',
         }}>
           Join thousands of elders and helpers building real, trusted connections every day.
         </p>
 
-        {/* Feature bullets — leaf-green check pills */}
+        {/* Feature bullets */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {['Free to join, no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(79,163,206,0.95)',
-                border: '1px solid rgba(255,255,255,0.4)',
+                background: '#0a2e14',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="9" height="7" viewBox="0 0 7 5" fill="none">
@@ -203,9 +200,8 @@ function HeroPanel() {
                 </svg>
               </div>
               <span style={{
-                fontSize: '13px', color: 'rgba(255,255,255,0.92)',
+                fontSize: '13px', color: '#0a2e14',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                textShadow: '0 1px 8px rgba(20,55,80,0.5)',
               }}>{text}</span>
             </div>
           ))}
