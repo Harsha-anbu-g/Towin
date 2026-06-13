@@ -294,7 +294,7 @@ export default function Streaks() {
                       textDecoration: 'underline', padding: '8px',
                     }}
                   >
-                    Skip for now — go to dashboard
+                    Skip for now, go to dashboard
                   </button>
                 </div>
               </>

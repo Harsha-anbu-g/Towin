@@ -111,14 +111,14 @@ public class DemoDataSeeder implements ApplicationRunner {
         Connection cTrusted = ensureConnection(margaret, james, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, james,
                 "Hi Margaret, I'd love to help with tech or play a game of chess!");
         Connection cMessaging = ensureConnection(margaret, priya, ConnectionStatus.ACTIVE, TrustLevel.MESSAGING, priya,
-                "Hello Margaret! I'm Priya — happy to help with errands or cooking.");
+                "Hello Margaret! I'm Priya, happy to help with errands or cooking.");
         Connection cVideo = ensureConnection(david, james, ConnectionStatus.ACTIVE, TrustLevel.VIDEO_CALL, james,
                 "Hi David, fellow engineer here. Happy to help with anything.");
         ensureConnection(grace, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
                 "Hi Grace, I'd love to keep you company on your walks.");
         // A pending request so the accept/decline flow is visible
         ensureConnection(margaret, tom, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, tom,
-                "Hello Margaret! I can fix any phone or wifi problem — happy to help.");
+                "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
 
         seedMessagesIfEmpty(cTrusted, List.of(
                 msg(james,    "Hi Margaret! Ready for our chess game on Thursday?"),
@@ -126,13 +126,13 @@ public class DemoDataSeeder implements ApplicationRunner {
                 msg(james,    "Ha! I will bring the biscuits then. 3pm as usual?"),
                 msg(margaret, "Perfect. And thank you again for setting up my tablet."),
                 msg(james,    "Any time. Video calling your sister works now, right?"),
-                msg(margaret, "It does — we talked for an hour yesterday. Lovely.")));
+                msg(margaret, "It does! We talked for an hour yesterday. Lovely.")));
         seedMessagesIfEmpty(cMessaging, List.of(
                 msg(priya,    "Hello Margaret! Thanks for accepting my request."),
                 msg(margaret, "Hello Priya. Your profile says you like baking?"),
                 msg(priya,    "I do! I make a mean banana bread. Could bring some by once we know each other better.")));
         seedMessagesIfEmpty(cVideo, List.of(
-                msg(james, "David, our video call was great — same time next week?"),
+                msg(james, "David, our video call was great! Same time next week?"),
                 msg(david, "Yes! And bring that pasta recipe you mentioned.")));
 
         Need tablet = ensureNeed(margaret, "Help setting up my new tablet",
@@ -160,7 +160,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Very reliable and great company. Always on time.",
                 List.of("Reliable", "Punctual"));
         ensureReview(james, margaret, null, 5,
-                "Margaret is delightful — and a much better chess player than she admits.",
+                "Margaret is delightful, and a much better chess player than she admits.",
                 List.of("Friendly", "Welcoming"));
 
         ensureStreak(margaret, 6, 14);

@@ -6,7 +6,7 @@ import api from '../api/axios';
 
 const TERMS_CONTENT = [
   { h: '1. Welcome to ToWin',
-    p: 'ToWin is a community platform that connects elders with helpers for companionship, errands, and everyday support. By creating an account, you agree to these Terms of Service. This is a placeholder document for the prototype — final terms will be reviewed by counsel before launch.' },
+    p: 'ToWin is a community platform that connects elders with helpers for companionship, errands, and everyday support. By creating an account, you agree to these Terms of Service. This is a placeholder document for the prototype. Final terms will be reviewed by counsel before launch.' },
   { h: '2. Eligibility',
     p: 'You must be at least 18 years old to use ToWin. By registering, you confirm that the information you provide is accurate and that you will keep it up to date. Accounts created with false information may be suspended at any time.' },
   { h: '3. Your account',
@@ -29,7 +29,7 @@ const PRIVACY_CONTENT = [
   { h: '1. What we collect',
     p: 'We collect the information you provide when you register (name, email, phone, role) and the content you create on ToWin (profile, help requests, messages, reviews). We also collect basic device information to keep the service secure.' },
   { h: '2. Location',
-    p: 'If you share your location, we use it only to match you with nearby helpers or elders. You can turn location off at any time in your device settings — your account will continue to work, just without distance-based matching.' },
+    p: 'If you share your location, we use it only to match you with nearby helpers or elders. You can turn location off at any time in your device settings. Your account will continue to work, just without distance-based matching.' },
   { h: '3. How we use your data',
     p: 'Your data is used to operate ToWin: showing nearby members, enabling messaging, calculating trust scores, and keeping the community safe. We do not sell your personal data to advertisers.' },
   { h: '4. Who can see what',
@@ -94,7 +94,7 @@ function LegalModal({ title, sections, onClose }) {
             fontSize: '12px', color: '#a0a0a5', textTransform: 'uppercase',
             letterSpacing: '0.5px', fontWeight: 600, margin: '0 0 18px',
           }}>
-            Placeholder document — prototype only
+            Placeholder document, prototype only
           </p>
           {sections.map(s => (
             <div key={s.h} style={{ marginBottom: '20px' }}>
@@ -190,7 +190,7 @@ function HeroPanel() {
 
         {/* Feature bullets — leaf-green check pills */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {['Free to join — no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
+          {['Free to join, no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
@@ -282,7 +282,7 @@ export default function Register() {
     if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
     // Same shape the backend enforces: optional +, then 10-15 digits
     const phoneDigits = form.phone.replace(/[\s()-]/g, '');
-    if (!/^\+?[0-9]{10,15}$/.test(phoneDigits)) errs.phone = 'Enter a valid phone number (10–15 digits)';
+    if (!/^\+?[0-9]{10,15}$/.test(phoneDigits)) errs.phone = 'Enter a valid phone number (10 to 15 digits)';
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
@@ -362,7 +362,7 @@ export default function Register() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
-              Look around with a sample account — no sign-up needed.
+              Look around with a sample account, no sign-up needed.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[

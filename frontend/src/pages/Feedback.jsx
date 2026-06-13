@@ -119,7 +119,7 @@ export default function Feedback() {
           }}>
             <p style={{ fontFamily: SFText, fontSize: '14px', color: '#1d1d1f', margin: 0, lineHeight: 1.55 }}>
               <strong>ToWin is an early prototype.</strong> You&apos;re trying a work in
-              progress — a full mobile app is planned for the future. Your feedback
+              progress. A full mobile app is planned for the future. Your feedback
               here directly shapes what gets built.
             </p>
           </div>
@@ -171,12 +171,12 @@ export default function Feedback() {
                 <div>
                   <label style={labelStyle}>Message <span style={{ color: '#dc2626' }}>*</span></label>
                   <p style={{ fontFamily: SFText, fontSize: '12px', color: '#7a7a7a', margin: '0 0 8px', lineHeight: 1.5 }}>
-                    Be honest! Include <strong style={{ color: '#1d1d1f' }}>at least one thing you didn't like</strong> — that's where the real value is.
+                    Be honest! Include <strong style={{ color: '#1d1d1f' }}>at least one thing you didn't like</strong>. That's where the real value is.
                   </p>
                   <textarea required rows={7} style={{ ...inputStyle, resize: 'vertical' }}
                     value={form.message}
                     onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                    placeholder={"What did you think? What worked, what didn't?\nBe honest — one thing you didn't like is more valuable than ten compliments."}
+                    placeholder={"What did you think? What worked, what didn't?\nBe honest. One thing you didn't like is more valuable than ten compliments."}
                   />
                 </div>
                 <div style={{ height: '1px', background: '#e0e0e0' }} />
@@ -237,7 +237,7 @@ export default function Feedback() {
             <div style={{ height: '1px', background: '#e0e0e0', margin: '0 0 16px' }} />
 
             <p style={{ fontFamily: SFText, fontSize: '14px', color: '#1d1d1f', fontWeight: 600, margin: '0 0 6px', lineHeight: 1.5 }}>
-              This isn't a university project — ToWin is my future startup.
+              This isn't a university project. ToWin is my future startup.
             </p>
             <p style={{ fontFamily: SFText, fontSize: '13px', color: '#7a7a7a', margin: '0 0 20px', lineHeight: 1.6 }}>
               I'm building something real, and your feedback is what shapes it. Love the idea? Want to connect? Let's talk!

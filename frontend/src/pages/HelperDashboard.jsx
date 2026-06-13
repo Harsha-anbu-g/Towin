@@ -254,7 +254,7 @@ export default function HelperDashboard() {
       <p style={{ fontSize: '13px', color: '#7a7a7a', margin: 0 }}>
         {locationStatus === 'asking' && 'Getting your location...'}
         {locationStatus === 'granted' && `Showing within ${radiusKm} km of you`}
-        {locationStatus === 'denied' && 'Location denied — showing all'}
+        {locationStatus === 'denied' && 'Location denied, showing all'}
         {locationStatus === 'idle' && 'Detecting location...'}
       </p>
       {locationStatus === 'granted' && (
@@ -747,7 +747,7 @@ export default function HelperDashboard() {
                   <p style={{ fontSize: '14px', color: '#7a7a7a' }}>
                     {locationStatus === 'granted'
                       ? 'Try a larger radius above, or check back later.'
-                      : 'New members join often — please check back soon.'}
+                      : 'New members join often. Please check back soon.'}
                   </p>
                 </div>
               )}
