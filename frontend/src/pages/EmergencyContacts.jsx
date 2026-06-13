@@ -3,6 +3,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
+import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 
@@ -54,6 +55,8 @@ export default function EmergencyContacts() {
   const [sosMsg, setSosMsg] = useState('');
   const [sosSent, setSosSent] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
   useEffect(() => {
     api.get('/emergency/contacts').then(r => setContacts(r.data)).catch(() => {});
   }, []);
@@ -75,10 +78,14 @@ export default function EmergencyContacts() {
   }
 
   async function remove(contactId) {
+    setRemoving(true);
     try {
       await api.delete(`/emergency/contacts/${contactId}`);
       setContacts(prev => prev.filter(c => c.id !== contactId));
+      setPendingRemove(null);
+      toast.success('Contact removed.');
     } catch { toast.error('Could not remove contact. Please try again.'); }
+    finally { setRemoving(false); }
   }
 
   async function triggerSos() {
@@ -305,7 +312,7 @@ export default function EmergencyContacts() {
                       Call Now
                     </a>
                     <button
-                      onClick={() => remove(c.id)}
+                      onClick={() => setPendingRemove(c)}
                       style={{
                         flex: 1,
                         background: 'transparent',
@@ -425,6 +432,18 @@ export default function EmergencyContacts() {
         )}
 
       </div>
+
+      <ConfirmDialog
+        open={!!pendingRemove}
+        danger
+        title={`Remove ${pendingRemove?.name || 'this contact'}?`}
+        message="They will no longer be alerted if you trigger an SOS or go inactive. You can add them again later."
+        confirmLabel="Remove Contact"
+        cancelLabel="Keep"
+        loading={removing}
+        onConfirm={() => pendingRemove && remove(pendingRemove.id)}
+        onCancel={() => setPendingRemove(null)}
+      />
     </div>
   );
 }

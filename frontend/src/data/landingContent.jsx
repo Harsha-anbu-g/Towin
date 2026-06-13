@@ -73,22 +73,54 @@ function CardGrid({ children }) {
   );
 }
 
-function StageChips({ stages }) {
+// Vertical trust journey — one level passing to the next, the tortoise waiting
+// at the top as the goal. Mirrors the tortoise track on the dashboards, but down.
+function StageLadder({ stages }) {
   return (
-    <div style={{
-      display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center',
-      maxWidth: '560px', margin: '0 auto',
-    }}>
-      {stages.map((s, i) => (
-        <span key={s} style={{
-          display: 'inline-flex', alignItems: 'center', gap: '8px',
-          background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
-          padding: '9px 16px', fontFamily: SF, fontSize: '15px', color: '#1d1d1f',
-        }}>
-          <span style={{ fontWeight: 600, color: BLUE }}>{i + 1}</span>
-          {s}
-        </span>
-      ))}
+    <div style={{ maxWidth: '360px', margin: '0 auto' }}>
+      {stages.map((s, i) => {
+        const isLast = i === stages.length - 1;
+        const size = isLast ? 44 : 34;
+        return (
+          <div key={s} style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
+            {/* Rail: numbered node + connector line down to the next node.
+                Fixed width so every node shares one vertical centre line. */}
+            <div style={{ width: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{
+                width: `${size}px`, height: `${size}px`, borderRadius: '50%',
+                background: isLast ? '#ffffff' : WASH,
+                border: isLast ? 'none' : `2px solid ${BORDER}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: SFD, fontSize: '15px', fontWeight: 700,
+                color: BLUE, flexShrink: 0,
+                boxShadow: isLast ? '0 4px 14px rgba(61,138,176,0.35)' : 'none',
+              }}>
+                {isLast
+                  ? <img src="/logo.png" alt="ToWin" draggable="false"
+                      style={{ width: 26, height: 26, objectFit: 'contain', transform: 'rotate(90deg)' }} />
+                  : i + 1}
+              </div>
+              {!isLast && (
+                <div style={{ flex: 1, width: '2px', minHeight: '16px', background: BORDER }} />
+              )}
+            </div>
+
+            {/* Label, vertically centred on its node */}
+            <div style={{
+              minHeight: `${size}px`,
+              display: 'flex', alignItems: 'center', gap: '10px',
+              paddingBottom: isLast ? 0 : '16px',
+            }}>
+              <span style={{
+                fontFamily: SF,
+                fontSize: isLast ? '18px' : '16px',
+                fontWeight: isLast ? 700 : 500,
+                color: isLast ? BLUE : '#1d1d1f',
+              }}>{s}</span>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -203,7 +235,7 @@ export const SLIDES = [
           Like a tree growing roots, every friendship on ToWin grows slowly,
           through 7 simple stages:
         </Lead>
-        <StageChips stages={[
+        <StageLadder stages={[
           'Just Connected', 'Messaging', 'Phone Ready', 'Video Ready',
           'Verified', 'Ready to Meet', 'Fully Trusted',
         ]} />

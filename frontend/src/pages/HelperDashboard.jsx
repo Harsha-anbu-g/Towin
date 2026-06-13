@@ -100,6 +100,8 @@ export default function HelperDashboard() {
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
   const [elders, setElders] = useState([]);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoverError, setDiscoverError] = useState(false);
   const [tab, setTab] = useState('overview');
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
@@ -132,13 +134,19 @@ export default function HelperDashboard() {
     finally { setLoading(false); }
   }
   async function loadElders(loc) {
+    setDiscovering(true);
+    setDiscoverError(false);
     try {
       const coords = loc ?? location;
       let url = '/discover/elders';
       if (coords) url += `?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`;
       const r = await api.get(url);
       setElders(r.data);
-    } catch {}
+    } catch {
+      setDiscoverError(true);
+    } finally {
+      setDiscovering(false);
+    }
   }
 
   function requestLocation() {
@@ -754,7 +762,28 @@ export default function HelperDashboard() {
           {tab === 'discover' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <RadiusBar />
-              {elders.length === 0 && (
+              {/* Searching state — never flash a blank "nobody here" while loading (H1) */}
+              {discovering && elders.length === 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '110px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                  ))}
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', textAlign: 'center', margin: 0 }}>Looking for elders near you…</p>
+                </div>
+              )}
+
+              {/* Fetch failed — be honest and give a retry (H9) */}
+              {!discovering && discoverError && (
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '40px 24px', border: '1px solid #fecaca' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Couldn't load elders</p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
+                  <button onClick={() => loadElders()} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {!discovering && !discoverError && elders.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f5f5f7', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

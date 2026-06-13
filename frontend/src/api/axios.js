@@ -22,6 +22,8 @@ api.interceptors.response.use(
     const onAuthPage = ['/', '/login', '/register'].includes(window.location.pathname);
     if ((status === 401 || status === 403) && hadToken && !onAuthPage) {
       localStorage.removeItem('token');
+      // Tell the login page why the user is suddenly here (H9: help recover from errors).
+      try { sessionStorage.setItem('sessionExpired', '1'); } catch { /* ignore */ }
       window.location.assign('/login');
     }
     return Promise.reject(error);

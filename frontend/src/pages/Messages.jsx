@@ -453,6 +453,8 @@ export default function Messages() {
         <button
           type="submit"
           disabled={sending || !text.trim() || loadError === 'trust'}
+          title="Send message (Enter)"
+          aria-label="Send message"
           style={{
             background: text.trim() && loadError !== 'trust' ? '#4FA3CE' : '#e0e0e0',
             color: '#fff',
