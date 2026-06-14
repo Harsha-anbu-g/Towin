@@ -214,7 +214,7 @@ export const SLIDES = [
           <MiniCard title="Profile">
             A full profile with ID, phone, and photo, all checked.
           </MiniCard>
-          <MiniCard title="Rooting">
+          <MiniCard title="Rooting (Trust Ladder)">
             Points earned each time a friendship takes a step forward.
           </MiniCard>
           <MiniCard title="Review">
@@ -230,7 +230,7 @@ export const SLIDES = [
     render: () => (
       <>
         <Kicker>One step at a time</Kicker>
-        <Title>Rooting: how trust grows</Title>
+        <Title>Rooting (Trust Ladder): how trust grows</Title>
         <Lead>
           Like a tree growing roots, every friendship on ToWin grows slowly,
           through 7 simple stages:
