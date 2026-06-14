@@ -123,8 +123,12 @@ export default function Login() {
         (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard',
         { replace: true }
       );
-    } catch {
-      setError('Could not start demo session. Please try again.');
+    } catch (err) {
+      setError(
+        err?.response?.status === 429
+          ? (err.response.data?.message || 'Too many attempts. Please try again later.')
+          : 'Could not start demo session. Please try again.'
+      );
     } finally {
       setGuestLoading('');
     }
@@ -148,8 +152,12 @@ export default function Login() {
         '/dashboard',
         { replace: true }
       );
-    } catch {
-      setError('Invalid email or password.');
+    } catch (err) {
+      setError(
+        err?.response?.status === 429
+          ? (err.response.data?.message || 'Too many attempts. Please try again later.')
+          : 'Invalid email or password.'
+      );
     } finally {
       setLoading(false);
     }

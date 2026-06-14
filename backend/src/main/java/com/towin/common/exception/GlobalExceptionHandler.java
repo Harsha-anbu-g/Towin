@@ -42,6 +42,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(safe, 400, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitException ex) {
+        log.warn("RateLimitException: {}", ex.getMessage());
+        return ResponseEntity.status(429)
+                .body(new ErrorResponse(ex.getMessage(), 429, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
