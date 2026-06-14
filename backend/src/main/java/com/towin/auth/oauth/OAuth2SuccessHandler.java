@@ -45,13 +45,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String code;
         if (existing.isPresent()) {
             User user = existing.get();
-            // Update auth provider on first Google sign-in of a locally-created account
             if (!"GOOGLE".equals(user.getAuthProvider())) {
                 user.setAuthProvider("GOOGLE");
                 userRepository.save(user);
             }
-            String jwt = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
-            code = storeCode("READY", Map.of("type", "READY", "token", jwt));
+            boolean needsSetup = user.getUsername() == null || user.getPasswordHash() == null;
+            if (needsSetup) {
+                code = storeCode("ONB", Map.of(
+                        "type", "NEEDS_ONBOARDING",
+                        "email", email != null ? email : "",
+                        "name", name != null ? name : ""
+                ));
+            } else {
+                String jwt = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
+                code = storeCode("READY", Map.of("type", "READY", "token", jwt));
+            }
         } else {
             code = storeCode("ONB", Map.of(
                     "type", "NEEDS_ONBOARDING",

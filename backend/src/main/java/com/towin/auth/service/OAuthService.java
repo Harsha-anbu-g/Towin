@@ -69,13 +69,22 @@ public class OAuthService {
             throw new IllegalArgumentException("Invalid onboarding session.");
         }
 
-        // Auto-link: existing account with this email — just update authProvider and log them in
+        // Existing account — update authProvider, and set username/password if not already set
         if (userRepository.existsByEmail(email)) {
             User existing = userRepository.findByEmail(email).orElseThrow();
             if (!"GOOGLE".equals(existing.getAuthProvider())) {
                 existing.setAuthProvider("GOOGLE");
-                userRepository.save(existing);
             }
+            if (existing.getUsername() == null) {
+                if (userRepository.existsByUsername(request.getUsername())) {
+                    throw new IllegalArgumentException("Username already taken. Please choose another.");
+                }
+                existing.setUsername(request.getUsername());
+            }
+            if (existing.getPasswordHash() == null) {
+                existing.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            }
+            userRepository.save(existing);
             String jwt = jwtUtil.generateToken(existing.getId().toString(), existing.getEmail(), existing.getRole().name());
             return new AuthResponse(jwt, existing.getRole().name(), existing.getId().toString());
         }
