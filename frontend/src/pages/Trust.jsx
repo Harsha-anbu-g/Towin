@@ -6,9 +6,10 @@ import api from '../api/axios';
 
 const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
-const SKY = '#4FA3CE';
-const BLUE = '#4FA3CE';
-const BG   = '#f5f5f7';
+const SKY   = '#4FA3CE';
+const BLUE  = '#4FA3CE';
+const TRUST = '#10069f';
+const BG    = '#f5f5f7';
 
 const TIER_COLORS = {
   'Community Champion': { bg: '#FFF7E6', color: '#5a6470', border: '#FDE68A' },
@@ -171,7 +172,7 @@ function BasicCard({ basic, onGoToProfile }) {
             Complete your profile →
           </button>
           <p style={{ fontFamily: SF, fontSize: '12px', color: '#a0a0a5', margin: '8px 0 0' }}>
-            Each completed field adds +0.25 pts to your trust score
+            Each completed field adds +0.25 pts to your <span style={{ color: TRUST }}>trust</span> score
           </p>
         </div>
       )}
@@ -193,7 +194,7 @@ function RootingCard({ rooting, isHelper }) {
             Rooting Score
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
-            Points earned by progressing through trust stages with {isHelper ? 'elders' : 'helpers'}
+            Points earned by progressing through <span style={{ color: TRUST }}>trust</span> stages with {isHelper ? 'elders' : 'helpers'}
           </p>
         </div>
         <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
@@ -284,7 +285,7 @@ export default function Trust() {
             fontFamily: SFD, fontSize: '34px', fontWeight: 600,
             color: '#1d1d1f', margin: '0 0 8px', letterSpacing: '-0.5px',
           }}>
-            Your Trust Score
+            Your <span style={{ color: TRUST }}>Trust</span> Score
           </h1>
           <p style={{ fontFamily: SF, fontSize: '16px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
             {isHelper

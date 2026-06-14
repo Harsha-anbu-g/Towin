@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Slider } from './ui/slider';
 
-const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
-const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+const SF    = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
+const SFT   = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+const TRUST = '#10069f';
 
 /* H2: Real-world language — no technical enum names visible to user */
 const LEVELS = [
@@ -109,10 +110,16 @@ export default function TrustJourney({
           {/* H2: human label, not enum */}
           <span style={{
             fontSize: '13px', fontWeight: 600,
-            color: isTrusted ? '#4FA3CE' : '#1d1d1f',
+            color: '#1d1d1f',
             fontFamily: SFT, letterSpacing: '-0.1px',
           }}>
-            {current.label}
+            {current.label.includes('Trust') || current.label.includes('trust')
+              ? current.label.split(/(trust|Trust)/i).map((part, i) =>
+                  /^trust$/i.test(part)
+                    ? <span key={i} style={{ color: TRUST }}>{part}</span>
+                    : part
+                )
+              : current.label}
           </span>
           {/* H1: always show the next step clearly */}
           {!isTrusted && next && !expanded && (
@@ -231,7 +238,7 @@ export default function TrustJourney({
                 <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
-                Trust request sent, waiting for {otherUserName} to accept
+                <span style={{ color: TRUST }}>Trust</span> request sent, waiting for {otherUserName} to accept
               </span>
             </div>
           )}
@@ -255,7 +262,7 @@ export default function TrustJourney({
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
             }}>
               <p style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, margin: 0, fontWeight: 500 }}>
-                {otherUserName} wants to advance your trust
+                {otherUserName} wants to advance your <span style={{ color: TRUST }}>trust</span>
               </p>
               <button onClick={onConfirm} disabled={confirming} style={{
                 flexShrink: 0, padding: '7px 16px',
@@ -279,7 +286,7 @@ export default function TrustJourney({
                 <path d="M1.5 5L4.5 8L10.5 1.5" stroke="#1d1d1f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span style={{ fontSize: '12px', color: '#4FA3CE', fontFamily: SFT, fontWeight: 500 }}>
-                You accepted, trust is advancing
+                You accepted, <span style={{ color: TRUST }}>trust</span> is advancing
               </span>
             </div>
           )}
@@ -398,7 +405,7 @@ export default function TrustJourney({
                   Community Champion
                 </p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: 0, fontFamily: SFT }}>
-                  You and {otherUserName} have built full trust.
+                  You and {otherUserName} have built full <span style={{ color: '#a8a4f5' }}>trust</span>.
                 </p>
               </div>
             </div>
