@@ -23,6 +23,8 @@ public class JwtUtil {
 
     @PostConstruct
     protected void init() {
+        if (secret == null || secret.length() < 32)
+            throw new IllegalStateException("JWT_SECRET must be at least 32 characters");
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 

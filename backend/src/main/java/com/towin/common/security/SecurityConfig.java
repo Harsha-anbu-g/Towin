@@ -39,8 +39,11 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(headers -> headers
                 .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(ct -> {})
+                .referrerPolicy(rp -> rp.policy(
+                    org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                 .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("frame-ancestors 'none'")
+                    .policyDirectives("default-src 'self'; frame-ancestors 'none'")
                 )
             )
             .authorizeHttpRequests(auth -> auth
@@ -62,7 +65,7 @@ public class SecurityConfig {
         // still use explicit hosts via CORS_ALLOWED_ORIGINS.
         config.setAllowedOriginPatterns(List.of(allowedOrigins.split(",")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
