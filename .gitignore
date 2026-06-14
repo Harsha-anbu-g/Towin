@@ -56,3 +56,6 @@ docs/screenshots/*
 
 # Stray screenshots at repo root
 /*.png
+
+# Google OAuth client secret files — never commit these
+client_secret_*.json
