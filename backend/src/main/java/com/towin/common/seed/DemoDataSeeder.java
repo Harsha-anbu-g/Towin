@@ -18,15 +18,19 @@ import com.towin.profile.entity.ElderProfile;
 import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
+import com.towin.report.repository.ReportRepository;
 import com.towin.review.entity.Review;
 import com.towin.review.repository.ReviewRepository;
 import com.towin.streak.entity.UserStreak;
 import com.towin.streak.repository.UserStreakRepository;
+import com.towin.trust.repository.TrustProgressionLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +39,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Idempotent, additive demo content so the demo accounts show every feature
@@ -65,8 +70,16 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final ReviewRepository reviewRepository;
     private final UserStreakRepository userStreakRepository;
     private final EmergencyContactRepository emergencyContactRepository;
+    private final ReportRepository reportRepository;
+    private final TrustProgressionLogRepository trustProgressionLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final TrustScoreService trustScoreService;
+
+    // When true (default), wipe content accumulated on the public demo accounts
+    // on each boot before re-seeding, so the demo always shows a clean, minimal
+    // set. Set APP_DEMO_RESET_ENABLED=false to keep whatever visitors leave.
+    @Value("${app.demo.reset-enabled:true}")
+    private boolean resetEnabled;
 
     @Override
     @Transactional
@@ -86,6 +99,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         User tom      = ensureUser("demo.tom@towin.app",   "+14165550104", UserRole.HELPER, "DemoTom!2026");
         User david    = ensureUser("demo.david@towin.app", "+14165550105", UserRole.ELDER,  "DemoDavid!2026");
         User grace    = ensureUser("demo.grace@towin.app", "+14165550106", UserRole.ELDER,  "DemoGrace!2026");
+
+        // Clear anything visitors left on the public demo accounts so the rest of
+        // this method re-seeds a clean, minimal showcase (one of each type).
+        if (resetEnabled) {
+            for (User u : List.of(margaret, james, priya, tom, david, grace)) {
+                purgeDemoContent(u);
+            }
+            log.info("Demo content reset: cleared accumulated data on demo accounts");
+        }
 
         ensureElderProfile(margaret, "Margaret", 72,
                 "Retired teacher. I love chess, gardening, and a good cup of tea.",
@@ -176,6 +198,29 @@ public class DemoDataSeeder implements ApplicationRunner {
             }
         }
         log.info("Demo data seeding complete");
+    }
+
+    /**
+     * Delete all content owned by or involving a demo user, while keeping the
+     * account and profile so the persona stays stable across resets. Deletion
+     * order respects foreign keys (same sequence proven in admin user deletion):
+     * messages → applications → reviews/reports → needs → trust logs →
+     * connections → emergency contacts → streak. Only demo accounts are passed
+     * here, so real users are never touched.
+     */
+    private void purgeDemoContent(User u) {
+        UUID id = u.getId();
+        messageRepository.deleteByConnectionUserIdOrSenderId(id);
+        needApplicationRepository.deleteByHelperId(id);
+        needRepository.findByElderIdOrderByCreatedAtDesc(id, Pageable.unpaged())
+                .forEach(n -> needApplicationRepository.deleteByNeedId(n.getId()));
+        reviewRepository.deleteByReviewerIdOrRevieweeId(id, id);
+        reportRepository.deleteByReporterIdOrReportedUserId(id, id);
+        needRepository.deleteByElderId(id);
+        trustProgressionLogRepository.deleteByUserId(id);
+        connectionRepository.deleteByUserId(id);
+        emergencyContactRepository.deleteByElderId(id);
+        userStreakRepository.findByUserId(id).ifPresent(userStreakRepository::delete);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────
