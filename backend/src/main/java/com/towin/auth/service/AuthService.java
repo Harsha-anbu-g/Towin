@@ -2,6 +2,7 @@ package com.towin.auth.service;
 
 import com.towin.auth.dto.*;
 import com.towin.auth.security.JwtUtil;
+import com.towin.auth.security.LoginRateLimiter;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
@@ -33,6 +34,7 @@ public class AuthService {
     private final S3Service s3Service;
     private final SosService sosService;
     private final TrustScoreService trustScoreService;
+    private final LoginRateLimiter loginRateLimiter;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -89,13 +91,15 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+        loginRateLimiter.checkNotLocked(request.getEmail());
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            loginRateLimiter.recordFailure(request.getEmail());
             throw new IllegalArgumentException("Invalid credentials");
         }
 
+        loginRateLimiter.reset(request.getEmail());
         String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
     }

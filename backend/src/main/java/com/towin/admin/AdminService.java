@@ -104,6 +104,9 @@ public class AdminService {
             throw new IllegalArgumentException("Cannot delete your own admin account");
         }
         User user = getUser(userId);
+        if (user.getRole() == com.towin.common.enums.UserRole.ADMIN) {
+            throw new IllegalArgumentException("Cannot delete another admin account");
+        }
 
         String photoUrl = getPhotoUrl(userId);
         if (photoUrl != null) s3Service.deleteFile(photoUrl);
