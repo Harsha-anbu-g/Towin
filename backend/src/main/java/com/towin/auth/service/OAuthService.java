@@ -12,6 +12,7 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class OAuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public OAuthExchangeResponse exchange(String code) {
@@ -41,7 +43,6 @@ public class OAuthService {
         if ("NEEDS_ONBOARDING".equals(type)) {
             String email = parsed.get("email");
             String name = parsed.get("name");
-            // Store a fresh single-use onboarding token the finish-setup screen will exchange
             Map<String, String> onbPayload = Map.of(
                     "email", email != null ? email : "",
                     "name", name != null ? name : ""
@@ -68,7 +69,7 @@ public class OAuthService {
             throw new IllegalArgumentException("Invalid onboarding session.");
         }
 
-        // Auto-link: if a local account with this email already exists, log them in
+        // Auto-link: existing account with this email — just update authProvider and log them in
         if (userRepository.existsByEmail(email)) {
             User existing = userRepository.findByEmail(email).orElseThrow();
             if (!"GOOGLE".equals(existing.getAuthProvider())) {
@@ -79,14 +80,18 @@ public class OAuthService {
             return new AuthResponse(jwt, existing.getRole().name(), existing.getId().toString());
         }
 
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already taken. Please choose another.");
+        }
         if (userRepository.existsByPhone(request.getPhone())) {
             throw new IllegalArgumentException("This phone number is already registered.");
         }
 
         User user = User.builder()
+                .username(request.getUsername())
                 .email(email)
                 .phone(request.getPhone())
-                .passwordHash(null)
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .authProvider("GOOGLE")
                 .build();

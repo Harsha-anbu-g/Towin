@@ -33,6 +33,9 @@ public class User {
     @Builder.Default
     private String authProvider = "LOCAL";
 
+    @Column(name = "username", length = 30, unique = true, nullable = false)
+    private String username;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "user_role")

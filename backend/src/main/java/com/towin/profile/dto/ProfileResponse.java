@@ -8,6 +8,8 @@ import java.util.UUID;
 @Builder
 public class ProfileResponse {
     private UUID userId;
+    private String username;
+    private String authProvider;
     private String name;
     private Integer age;
     private String photoUrl;

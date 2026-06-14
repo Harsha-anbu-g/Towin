@@ -43,6 +43,9 @@ public class AuthService {
                 && request.getRole() != UserRole.BOTH) {
             throw new IllegalArgumentException("Role must be ELDER, HELPER, or BOTH");
         }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already taken");
+        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
@@ -51,6 +54,7 @@ public class AuthService {
         }
 
         User user = User.builder()
+                .username(request.getUsername())
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
@@ -78,6 +82,7 @@ public class AuthService {
         String password = UUID.randomUUID().toString();
 
         User user = User.builder()
+                .username("guest_" + suffix)
                 .email(email)
                 .phone(phone)
                 .passwordHash(passwordEncoder.encode(password))
@@ -94,7 +99,6 @@ public class AuthService {
         loginRateLimiter.checkNotLocked(request.getEmail());
 
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        // Google-only accounts have no password — treat as invalid credentials (anti-enumeration)
         boolean noPassword = user == null || user.getPasswordHash() == null;
         if (noPassword || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             loginRateLimiter.recordFailure(request.getEmail());
