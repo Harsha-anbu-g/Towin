@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Home, MessageCircle, User, ShieldCheck, HelpCircle, Siren, Gamepad2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -16,6 +17,10 @@ export default function NavBar() {
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  // The beta banner sits above the nav, so the nav isn't always at viewport
+  // top — measure its real bottom edge to anchor the mobile drawer below it.
+  const navRef = useRef(null);
+  const [drawerTop, setDrawerTop] = useState(60);
   // Collapse to the hamburger drawer below 1024px — the full desktop rail
   // (logo + 6 links + Trust pill + SOS + Sign out) needs ~1000px to fit.
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
@@ -38,6 +43,17 @@ export default function NavBar() {
     const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
+  // Anchor the drawer to the nav's actual bottom (banner may sit above it).
+  useEffect(() => {
+    if (!menuOpen) return;
+    const measure = () => {
+      if (navRef.current) setDrawerTop(Math.round(navRef.current.getBoundingClientRect().bottom));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
   }, [menuOpen]);
 
   useEffect(() => {
@@ -64,7 +80,7 @@ export default function NavBar() {
     finally { setSending(false); }
   }
 
-  const NavLink = ({ to, label }) => {
+  const NavLink = ({ to, label, icon: Icon }) => {
     const active = pathname === to || pathname.startsWith(to + '/');
     return (
       <Link to={to} style={{
@@ -73,19 +89,20 @@ export default function NavBar() {
         fontWeight: active ? 600 : 500,
         color: active ? '#4FA3CE' : '#5a6470',
         textDecoration: 'none',
-        padding: '10px 18px',
+        padding: '10px 16px',
         borderRadius: '10px',
         background: active ? 'rgba(79,163,206,0.08)' : 'transparent',
         transition: 'color 0.12s, background 0.12s',
         whiteSpace: 'nowrap',
       }}>
+        {Icon && <Icon size={18} strokeWidth={active ? 2.4 : 2} aria-hidden="true" />}
         {label}
       </Link>
     );
   };
 
   // Mobile menu link
-  const MenuLink = ({ to, label }) => {
+  const MenuLink = ({ to, label, icon: Icon }) => {
     const active = pathname === to || pathname.startsWith(to + '/');
     return (
       <Link to={to} onClick={() => setMenuOpen(false)} style={{
@@ -97,7 +114,10 @@ export default function NavBar() {
         color: active ? '#4FA3CE' : '#1d1d1f',
         textDecoration: 'none',
       }}>
-        {label}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
+          {Icon && <Icon size={22} strokeWidth={active ? 2.4 : 2} aria-hidden="true" />}
+          {label}
+        </span>
         {active && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4FA3CE' }} />}
       </Link>
     );
@@ -107,7 +127,7 @@ export default function NavBar() {
 
   return (
     <>
-      <nav style={{
+      <nav ref={navRef} style={{
         background: '#ffffff',
         height: '60px',
         display: 'flex',
@@ -133,9 +153,9 @@ export default function NavBar() {
         {/* Desktop nav */}
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
-            <NavLink to="/dashboard" label="Dashboard" />
+            <NavLink to="/dashboard" label="Dashboard" icon={Home} />
             <div style={{ position: 'relative', display: 'inline-flex' }}>
-              <NavLink to="/messages" label="Messages" />
+              <NavLink to="/messages" label="Messages" icon={MessageCircle} />
               {unread > 0 && (
                 <span style={{
                   position: 'absolute', top: '6px', right: '6px',
@@ -146,31 +166,32 @@ export default function NavBar() {
                 }}>{unread > 99 ? '99+' : unread}</span>
               )}
             </div>
-            <NavLink to="/profile" label="Profile" />
+            <NavLink to="/profile" label="Profile" icon={User} />
             <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
             <Link to="/trust" style={{
-              display: 'flex', alignItems: 'center',
+              display: 'flex', alignItems: 'center', gap: '7px',
               fontSize: '15px', fontFamily: SF, fontWeight: 600,
               color: trustActive ? '#fff' : '#4FA3CE',
               background: trustActive ? '#4FA3CE' : 'rgba(79,163,206,0.1)',
               border: `1.5px solid ${trustActive ? '#4FA3CE' : 'rgba(79,163,206,0.35)'}`,
               borderRadius: '9999px', padding: '6px 16px',
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
-            }}>Trust Score</Link>
+            }}><ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />Trust Score</Link>
             <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
             {[
-              { to: '/how-it-works', label: 'Guide' },
-              ...(isElder ? [{ to: '/emergency-contacts', label: 'Emergency' }] : []),
-            ].map(({ to, label }) => {
+              { to: '/how-it-works', label: 'Guide', icon: HelpCircle },
+              ...(isElder ? [{ to: '/emergency-contacts', label: 'Emergency', icon: Siren }] : []),
+            ].map(({ to, label, icon: Icon }) => {
               const active = pathname === to;
               return (
                 <Link key={to} to={to} style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
                   fontSize: '14px', fontFamily: SF, fontWeight: active ? 600 : 400,
                   color: active ? '#4FA3CE' : '#9a9a9f',
-                  textDecoration: 'none', padding: '8px 14px', borderRadius: '10px',
+                  textDecoration: 'none', padding: '8px 12px', borderRadius: '10px',
                   background: active ? 'rgba(79,163,206,0.08)' : 'transparent',
                   whiteSpace: 'nowrap',
-                }}>{label}</Link>
+                }}><Icon size={16} strokeWidth={2} aria-hidden="true" />{label}</Link>
               );
             })}
           </div>
@@ -181,14 +202,15 @@ export default function NavBar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             {isElder && (
               <Link to="/game" style={{
+                display: 'flex', alignItems: 'center', gap: '7px',
                 fontSize: '15px', fontWeight: 600, fontFamily: SF,
-                padding: '8px 18px', borderRadius: '9999px',
+                padding: '8px 16px', borderRadius: '9999px',
                 textDecoration: 'none', whiteSpace: 'nowrap',
                 background: pathname === '/game' ? '#3D8B5A' : '#EBF6EE',
                 color: pathname === '/game' ? '#fff' : '#3D8B5A',
                 border: `1.5px solid ${pathname === '/game' ? '#3D8B5A' : '#BFE0C9'}`,
                 transition: 'all 0.15s',
-              }}>Play Peekaboo</Link>
+              }}><Gamepad2 size={17} strokeWidth={2.2} aria-hidden="true" />Play Peekaboo</Link>
             )}
             {isElder && (
               <button onClick={triggerSos} disabled={sending}
@@ -253,23 +275,23 @@ export default function NavBar() {
           {/* Backdrop */}
           <div onClick={() => setMenuOpen(false)} style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.2)',
-            zIndex: 98, top: '60px',
+            zIndex: 98, top: drawerTop,
           }} />
           {/* Drawer */}
           <div style={{
-            position: 'fixed', top: '60px', left: 0, right: 0,
+            position: 'fixed', top: drawerTop, left: 0, right: 0,
             background: '#ffffff', zIndex: 99,
             padding: '0 24px 24px',
             borderBottom: '1px solid #e0e0e0',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
           }}>
-            <MenuLink to="/dashboard" label="Dashboard" />
-            <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} />
-            <MenuLink to="/profile" label="Profile" />
-            <MenuLink to="/trust" label="Trust Score" />
-            <MenuLink to="/how-it-works" label="Guide" />
-            {isElder && <MenuLink to="/game" label="Play Peekaboo" />}
-            {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" />}
+            <MenuLink to="/dashboard" label="Dashboard" icon={Home} />
+            <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
+            <MenuLink to="/profile" label="Profile" icon={User} />
+            <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
+            <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
+            {isElder && <MenuLink to="/game" label="Play Peekaboo" icon={Gamepad2} />}
+            {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '16px 0', marginTop: '4px',
