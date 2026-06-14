@@ -77,7 +77,7 @@ function CardGrid({ children }) {
 // at the top as the goal. Mirrors the tortoise track on the dashboards, but down.
 function StageLadder({ stages }) {
   return (
-    <div style={{ maxWidth: '360px', margin: '0 auto' }}>
+    <div style={{ width: 'fit-content', maxWidth: '360px', margin: '0 auto' }}>
       {stages.map((s, i) => {
         const isLast = i === stages.length - 1;
         const size = isLast ? 44 : 34;
