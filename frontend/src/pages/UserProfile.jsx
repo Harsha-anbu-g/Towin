@@ -187,9 +187,14 @@ export default function UserProfile() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '18px' }}>
                 <Avatar name={profile.name} photoUrl={profile.photoUrl} size={80} />
                 <div style={{ flex: 1 }}>
-                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
+                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 2px', letterSpacing: '-0.3px' }}>
                     {profile.name || 'User'}
                   </h1>
+                  {profile.username && (
+                    <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: '0 0 8px' }}>
+                      @{profile.username}
+                    </p>
+                  )}
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {profile.verificationStatus === 'VERIFIED' && (
                       <span style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>

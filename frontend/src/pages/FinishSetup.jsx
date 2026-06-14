@@ -24,8 +24,11 @@ export default function FinishSetup() {
 
   const [role, setRole] = useState('ELDER');
   const [phone, setPhone] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
-  const [fieldError, setFieldError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   // Guard: if someone navigates here directly without an onboarding token, send them to login
@@ -54,18 +57,21 @@ export default function FinishSetup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    const errs = {};
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) errs.username = 'Username must be 3-20 characters: lowercase letters, numbers, underscores only';
     const digits = phone.replace(/[\s()-]/g, '');
-    if (!/^\+?[0-9]{10,15}$/.test(digits)) {
-      setFieldError('Enter a valid phone number (10 to 15 digits)');
-      return;
-    }
-    setFieldError('');
+    if (!/^\+?[0-9]{10,15}$/.test(digits)) errs.phone = 'Enter a valid phone number (10 to 15 digits)';
+    if (password.length < 8) errs.password = 'Password must be at least 8 characters';
+    if (Object.keys(errs).length) { setFieldErrors(errs); return; }
+    setFieldErrors({});
     setLoading(true);
     try {
       const { data } = await api.post('/auth/oauth/complete', {
         onboardingToken,
         role,
         phone: digits,
+        username,
+        password,
       });
       login(data.token);
       navigate(
@@ -169,6 +175,31 @@ export default function FinishSetup() {
             </div>
           </div>
 
+          {/* Username */}
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+              Username
+            </label>
+            <div style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
+                fontSize: '15px', color: '#a0a0a5', pointerEvents: 'none',
+              }}>@</span>
+              <input
+                type="text" autoComplete="username" required
+                value={username}
+                onChange={e => { setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')); setFieldErrors(f => ({ ...f, username: '' })); }}
+                placeholder="your_username"
+                className="field"
+                style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
+              />
+            </div>
+            {fieldErrors.username && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.username}</p>}
+            <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
+              3-20 characters. Visible to others on your profile.
+            </p>
+          </div>
+
           {/* Phone */}
           <div>
             <label style={{
@@ -180,16 +211,41 @@ export default function FinishSetup() {
             <input
               type="tel" autoComplete="tel" required
               value={phone}
-              onChange={e => { setPhone(e.target.value); setFieldError(''); }}
+              onChange={e => { setPhone(e.target.value); setFieldErrors(f => ({ ...f, phone: '' })); }}
               placeholder="+1 416 555 0123"
               className="field"
-              style={{ borderColor: fieldError ? '#fca5a5' : undefined }}
+              style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
             />
-            {fieldError && (
-              <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{fieldError}</p>
+            {fieldErrors.phone && (
+              <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.phone}</p>
             )}
             <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
               Only shared after both people reach the Phone Ready trust stage.
+            </p>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+              Set a password
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPwd ? 'text' : 'password'} autoComplete="new-password" required
+                value={password}
+                onChange={e => { setPassword(e.target.value); setFieldErrors(f => ({ ...f, password: '' })); }}
+                placeholder="At least 8 characters"
+                className="field"
+                style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined, paddingRight: '44px' }}
+              />
+              <button type="button" onClick={() => setShowPwd(v => !v)}
+                style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#7a7a7a', fontSize: '13px' }}>
+                {showPwd ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.password}</p>}
+            <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
+              You can also use this password to log in without Google.
             </p>
           </div>
 

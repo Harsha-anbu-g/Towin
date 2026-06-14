@@ -139,6 +139,8 @@ public class ProfileService {
         int score = user.getTrustScore() != null ? (int) Math.round(user.getTrustScore()) : 0;
         ProfileResponse.ProfileResponseBuilder builder = ProfileResponse.builder()
                 .userId(user.getId())
+                .username(user.getUsername())
+                .authProvider(user.getAuthProvider())
                 .role(user.getRole().name())
                 .trustScore(score)
                 .trustTier(TrustScoreService.tierFor(score))

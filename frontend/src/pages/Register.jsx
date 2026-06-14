@@ -266,7 +266,7 @@ export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    email: '', phone: '', password: '', confirmPassword: '',
+    username: '', email: '', phone: '', password: '', confirmPassword: '',
     role: 'ELDER',
   });
   const [error, setError] = useState('');
@@ -320,6 +320,7 @@ export default function Register() {
     setLoading(true);
     setError('');
     const errs = {};
+    if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = 'Username must be 3-20 characters: lowercase letters, numbers, underscores only';
     if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
     // Same shape the backend enforces: optional +, then 10-15 digits
     const phoneDigits = form.phone.replace(/[\s()-]/g, '');
@@ -329,8 +330,8 @@ export default function Register() {
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
-      const { email, password, role } = form;
-      const { data } = await api.post('/auth/register', { email, phone: phoneDigits, password, role });
+      const { username, email, password, role } = form;
+      const { data } = await api.post('/auth/register', { username, email, phone: phoneDigits, password, role });
       login(data.token);
       navigate(
         data.role === 'ADMIN' ? '/admin' :
@@ -461,6 +462,35 @@ export default function Register() {
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              {/* Username */}
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '6px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  Username
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{
+                    position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
+                    fontSize: '15px', color: '#a0a0a5', fontFamily: 'inherit', pointerEvents: 'none',
+                  }}>@</span>
+                  <input
+                    type="text" autoComplete="username" required
+                    className="field"
+                    value={form.username}
+                    onChange={e => { setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }); setFieldErrors(f => ({ ...f, username: '' })); }}
+                    placeholder="your_username"
+                    style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
+                  />
+                </div>
+                {fieldErrors.username && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
+                <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+                  3-20 characters. Letters, numbers, underscores. Visible to others.
+                </p>
+              </div>
+
               {/* Email */}
               <div>
                 <label style={{
