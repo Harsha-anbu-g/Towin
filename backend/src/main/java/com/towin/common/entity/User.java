@@ -80,6 +80,10 @@ public class User {
     @Column(name = "phone_otp_locked_at")
     private LocalDateTime phoneOtpLockedAt;
 
+    @Column(name = "setup_completed")
+    @Builder.Default
+    private boolean setupCompleted = false;
+
     @Column(name = "inactivity_alerted_at")
     private LocalDateTime inactivityAlertedAt;
 

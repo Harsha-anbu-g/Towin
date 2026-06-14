@@ -84,6 +84,7 @@ public class OAuthService {
             if (existing.getPasswordHash() == null) {
                 existing.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             }
+            existing.setSetupCompleted(true);
             userRepository.save(existing);
             String jwt = jwtUtil.generateToken(existing.getId().toString(), existing.getEmail(), existing.getRole().name());
             return new AuthResponse(jwt, existing.getRole().name(), existing.getId().toString());
@@ -103,6 +104,7 @@ public class OAuthService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .authProvider("GOOGLE")
+                .setupCompleted(true)
                 .build();
 
         User saved = userRepository.save(user);

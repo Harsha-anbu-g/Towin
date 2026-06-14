@@ -74,10 +74,7 @@ export default function FinishSetup() {
         password,
       });
       login(data.token);
-      navigate(
-        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard',
-        { replace: true }
-      );
+      navigate('/profile', { replace: true });
     } catch (err) {
       setError(err?.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {

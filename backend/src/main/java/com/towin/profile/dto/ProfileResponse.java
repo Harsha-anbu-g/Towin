@@ -9,6 +9,7 @@ import java.util.UUID;
 public class ProfileResponse {
     private UUID userId;
     private String username;
+    private String email;
     private String authProvider;
     private String name;
     private Integer age;
