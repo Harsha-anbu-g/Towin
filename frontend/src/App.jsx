@@ -81,8 +81,14 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <BrowserRouter>
+          {/* App shell: the beta banner takes its own height and the routed
+              content fills whatever viewport space is left. Without this, any
+              100svh page sits *below* the banner and its bottom is pushed
+              off-screen by the banner's height. */}
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100svh' }}>
           <BetaBanner />
           <BfCacheGuard />
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
           <Routes>
             <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
@@ -101,7 +107,9 @@ function App() {
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+          </div>
           <FeedbackWidget />
+          </div>
         </BrowserRouter>
       </AuthProvider>
     </ToastProvider>
