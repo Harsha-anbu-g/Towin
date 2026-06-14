@@ -27,4 +27,6 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     List<Review> findBySafetyConcernTrue();
 
     void deleteByReviewerIdOrRevieweeId(UUID reviewerId, UUID revieweeId);
+
+    void deleteByNeedId(UUID needId);
 }
