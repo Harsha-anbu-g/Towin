@@ -92,18 +92,30 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        loginRateLimiter.checkNotLocked(request.getUsername());
+        String id = request.getIdentifier().trim();
+        loginRateLimiter.checkNotLocked(id);
 
-        User user = userRepository.findByUsername(request.getUsername()).orElse(null);
+        User user = resolveUser(id);
         boolean noPassword = user == null || user.getPasswordHash() == null;
         if (noPassword || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            loginRateLimiter.recordFailure(request.getUsername());
+            loginRateLimiter.recordFailure(id);
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        loginRateLimiter.reset(request.getUsername());
+        loginRateLimiter.reset(id);
         String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
+    }
+
+    private User resolveUser(String identifier) {
+        if (identifier.contains("@")) {
+            return userRepository.findByEmail(identifier).orElse(null);
+        }
+        if (identifier.startsWith("+") || identifier.matches("\\d{10,15}")) {
+            User u = userRepository.findByPhone(identifier).orElse(null);
+            return (u != null && u.isPhoneVerified()) ? u : null;
+        }
+        return userRepository.findByUsername(identifier).orElse(null);
     }
 
     @Transactional
