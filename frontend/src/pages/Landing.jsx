@@ -40,7 +40,8 @@ export default function Landing() {
 
   return (
     <div style={{
-      minHeight: '100svh', display: 'flex', flexDirection: 'column',
+      height: '100%', minHeight: 0, overflow: 'hidden',
+      display: 'flex', flexDirection: 'column',
       background:
         'radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.8) 0%, transparent 55%),' +
         'linear-gradient(165deg, #F4FAFD 0%, #EAF5FB 55%, #D9EBF5 100%)',
@@ -70,13 +71,22 @@ export default function Landing() {
         </Link>
       </header>
 
-      {/* Slide content — key remounts the wrapper so .bf re-animates per slide */}
+      {/* Slide content — key remounts the wrapper so .bf re-animates per slide.
+          The middle scrolls on its own only when a slide is taller than the
+          viewport, so the header and the Back/Next footer stay visible on every
+          screen size (the inner min-height:100% keeps content centred when it
+          fits, and lets it grow + scroll when it doesn't). */}
       <main className="landing-main" style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flex: 1, minHeight: 0, overflowY: 'auto',
         padding: '24px 40px',
       }}>
-        <div key={slide.id} className="bf" style={{ width: '100%', maxWidth: '680px' }}>
-          {slide.render()}
+        <div style={{
+          minHeight: '100%', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div key={slide.id} className="bf" style={{ width: '100%', maxWidth: '680px' }}>
+            {slide.render()}
+          </div>
         </div>
       </main>
 
