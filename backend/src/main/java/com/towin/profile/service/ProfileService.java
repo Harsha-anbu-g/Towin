@@ -140,6 +140,7 @@ public class ProfileService {
         ProfileResponse.ProfileResponseBuilder builder = ProfileResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .authProvider(user.getAuthProvider())
                 .role(user.getRole().name())
                 .trustScore(score)

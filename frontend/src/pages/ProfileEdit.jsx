@@ -305,9 +305,14 @@ export default function ProfileEdit() {
           }}>
             {form.name || 'Your Name'}
           </h1>
-          <p style={{ fontSize: '16px', color: '#7a7a7a', marginBottom: '12px' }}>
+          <p style={{ fontSize: '16px', color: '#7a7a7a', marginBottom: '4px' }}>
             {isElder ? 'Elder' : 'Helper'}
           </p>
+          {profileData?.username && (
+            <p style={{ fontSize: '14px', color: '#a0a0a5', marginBottom: '12px', marginTop: '0' }}>
+              @{profileData.username}
+            </p>
+          )}
           {profileData && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               <TrustBadge tier={profileData.trustTier} score={profileData.trustScore} />
@@ -603,6 +608,31 @@ export default function ProfileEdit() {
                 <p style={{ fontSize: '14px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '14px' }}>
                   Account
                 </p>
+
+                {/* Username */}
+                {profileData?.username && (
+                  <div style={{ marginBottom: '10px', padding: '10px 14px', background: '#f5f5f7', borderRadius: '10px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 2px' }}>Username</p>
+                    <p style={{ fontSize: '14px', color: '#1d1d1f', margin: 0 }}>@{profileData.username}</p>
+                  </div>
+                )}
+
+                {/* Linked Google account */}
+                {profileData?.authProvider === 'GOOGLE' && profileData?.email && (
+                  <div style={{ marginBottom: '10px', padding: '10px 14px', background: '#f0f7ff', border: '1px solid #bfdbfe', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    <div>
+                      <p style={{ fontSize: '11px', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 1px' }}>Linked Google Account</p>
+                      <p style={{ fontSize: '14px', color: '#1d1d1f', margin: 0 }}>{profileData.email}</p>
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
                     onClick={() => setConfirmSignOut(true)}
@@ -632,7 +662,7 @@ export default function ProfileEdit() {
       <ConfirmDialog
         open={confirmSignOut}
         title="Sign out of ToWin?"
-        message="You can sign back in any time with your email and password."
+        message="You can sign back in any time with your username and password."
         confirmLabel="Sign Out"
         cancelLabel="Stay Signed In"
         onConfirm={() => { setConfirmSignOut(false); logout(); navigate('/login'); }}

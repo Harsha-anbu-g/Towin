@@ -49,7 +49,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 user.setAuthProvider("GOOGLE");
                 userRepository.save(user);
             }
-            boolean needsSetup = user.getUsername() == null || user.getPasswordHash() == null;
+            boolean needsSetup = !user.isSetupCompleted();
             if (needsSetup) {
                 code = storeCode("ONB", Map.of(
                         "type", "NEEDS_ONBOARDING",
