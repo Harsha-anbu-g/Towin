@@ -1,8 +1,10 @@
+const TRUST = '#10069f';
+
 const TIER_COLORS = {
-  'Community Champion': { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
-  'Highly Trusted':     { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
-  'Reliable':           { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
-  'Getting Started':    { bg: '#f5f5f7', color: '#4FA3CE', border: '#e0e0e0' },
+  'Community Champion': { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
+  'Highly Trusted':     { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
+  'Reliable':           { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
+  'Getting Started':    { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
   'New Member':         { bg: '#f5f5f7', color: '#a0a0a5', border: '#e0e0e0' },
 };
 

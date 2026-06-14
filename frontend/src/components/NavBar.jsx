@@ -176,7 +176,10 @@ export default function NavBar() {
               border: `1.5px solid ${trustActive ? '#4FA3CE' : 'rgba(79,163,206,0.35)'}`,
               borderRadius: '9999px', padding: '6px 16px',
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
-            }}><ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />Trust Score</Link>
+            }}>
+              <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
+              <span style={{ color: trustActive ? '#fff' : '#10069f' }}>Trust</span> Score
+            </Link>
             <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
             {[
               { to: '/how-it-works', label: 'Guide', icon: HelpCircle },

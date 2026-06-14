@@ -204,8 +204,8 @@ export const SLIDES = [
     id: 'trust',
     render: () => (
       <>
-        <Kicker>The real problem is trust</Kicker>
-        <Title>Trust is earned, not given</Title>
+        <Kicker>The real problem is <span style={{ color: '#10069f' }}>trust</span></Kicker>
+        <Title><span style={{ color: '#10069f' }}>Trust</span> is earned, not given</Title>
         <Lead>
           Letting someone new into your life is a big step. So every member
           has a Trust Score, built from three things:
@@ -214,14 +214,14 @@ export const SLIDES = [
           <MiniCard title="Profile">
             A full profile with ID, phone, and photo, all checked.
           </MiniCard>
-          <MiniCard title="Rooting (Trust Ladder)">
+          <MiniCard title={<>Rooting (<span style={{ color: '#10069f' }}>Trust</span> Ladder)</>}>
             Points earned each time a friendship takes a step forward.
           </MiniCard>
           <MiniCard title="Review">
             Star ratings from the people they have already helped.
           </MiniCard>
         </CardGrid>
-        <NoteBox>Elders see a helper&apos;s Trust Score before they ever say yes.</NoteBox>
+        <NoteBox>Elders see a helper&apos;s <span style={{ color: '#10069f' }}>Trust</span> Score before they ever say yes.</NoteBox>
       </>
     ),
   },
@@ -230,7 +230,7 @@ export const SLIDES = [
     render: () => (
       <>
         <Kicker>One step at a time</Kicker>
-        <Title>Rooting (Trust Ladder): how trust grows</Title>
+        <Title>Rooting (<span style={{ color: '#10069f' }}>Trust</span> Ladder): how <span style={{ color: '#10069f' }}>trust</span> grows</Title>
         <Lead>
           Like a tree growing roots, every friendship on ToWin grows slowly,
           through 7 simple stages:
