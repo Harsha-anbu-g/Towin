@@ -10,9 +10,6 @@ public class RegisterRequest {
     @NotBlank @Pattern(regexp = "^[a-z0-9_]{3,20}$", message = "Username must be 3-20 characters: lowercase letters, numbers, underscores only")
     private String username;
 
-    @Email @NotBlank
-    private String email;
-
     @NotBlank @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid phone number")
     private String phone;
 

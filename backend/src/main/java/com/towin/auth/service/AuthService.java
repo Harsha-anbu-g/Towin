@@ -46,16 +46,12 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username already taken");
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered");
-        }
         if (userRepository.existsByPhone(request.getPhone())) {
             throw new IllegalArgumentException("Phone already registered");
         }
 
         User user = User.builder()
                 .username(request.getUsername())
-                .email(request.getEmail())
                 .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
@@ -96,16 +92,16 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        loginRateLimiter.checkNotLocked(request.getEmail());
+        loginRateLimiter.checkNotLocked(request.getUsername());
 
-        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        User user = userRepository.findByUsername(request.getUsername()).orElse(null);
         boolean noPassword = user == null || user.getPasswordHash() == null;
         if (noPassword || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            loginRateLimiter.recordFailure(request.getEmail());
+            loginRateLimiter.recordFailure(request.getUsername());
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        loginRateLimiter.reset(request.getEmail());
+        loginRateLimiter.reset(request.getUsername());
         String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
     }
