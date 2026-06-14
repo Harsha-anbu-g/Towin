@@ -266,7 +266,7 @@ export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    username: '', email: '', phone: '', password: '', confirmPassword: '',
+    username: '', phone: '', password: '', confirmPassword: '',
     role: 'ELDER',
   });
   const [error, setError] = useState('');
@@ -279,8 +279,8 @@ export default function Register() {
   const [guestLoading, setGuestLoading] = useState('');
 
   const DEMO = {
-    ELDER:  { email: 'elder@gmail.com',  password: '12345678' },
-    HELPER: { email: 'helper@gmail.com', password: '123456789' },
+    ELDER:  { username: 'elder',  password: '12345678' },
+    HELPER: { username: 'helper', password: '123456789' },
   };
 
   const handleGuest = async (role) => {
@@ -321,7 +321,6 @@ export default function Register() {
     setError('');
     const errs = {};
     if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = 'Username must be 3-20 characters: lowercase letters, numbers, underscores only';
-    if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
     // Same shape the backend enforces: optional +, then 10-15 digits
     const phoneDigits = form.phone.replace(/[\s()-]/g, '');
     if (!/^\+?[0-9]{10,15}$/.test(phoneDigits)) errs.phone = 'Enter a valid phone number (10 to 15 digits)';
@@ -330,8 +329,8 @@ export default function Register() {
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
-      const { username, email, password, role } = form;
-      const { data } = await api.post('/auth/register', { username, email, phone: phoneDigits, password, role });
+      const { username, password, role } = form;
+      const { data } = await api.post('/auth/register', { username, phone: phoneDigits, password, role });
       login(data.token);
       navigate(
         data.role === 'ADMIN' ? '/admin' :
@@ -489,26 +488,6 @@ export default function Register() {
                 <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   3-20 characters. Letters, numbers, underscores. Visible to others.
                 </p>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
-                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                }}>
-                  Email address
-                </label>
-                <input
-                  type="email" autoComplete="email" required
-                  className="field"
-                  value={form.email}
-                  onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
-                  placeholder="you@example.com"
-                  style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
-                />
-                {fieldErrors.email && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
               </div>
 
               {/* Phone */}

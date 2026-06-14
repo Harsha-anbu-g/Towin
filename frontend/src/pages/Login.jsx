@@ -122,7 +122,7 @@ function GoogleButton({ label }) {
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -140,8 +140,8 @@ export default function Login() {
   }, []);
 
   const DEMO = {
-    ELDER:  { email: 'elder@gmail.com',  password: '12345678' },
-    HELPER: { email: 'helper@gmail.com', password: '123456789' },
+    ELDER:  { username: 'elder',  password: '12345678' },
+    HELPER: { username: 'helper', password: '123456789' },
   };
 
   const handleGuest = async (role) => {
@@ -170,7 +170,7 @@ export default function Login() {
     setLoading(true);
     setError('');
     const errs = {};
-    if (!form.email.includes('@')) errs.email = 'Enter a valid email address';
+    if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = 'Enter a valid username (letters, numbers, underscores)';
     if (form.password.length < 6) errs.password = 'Password must be at least 6 characters';
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
@@ -187,7 +187,7 @@ export default function Login() {
       setError(
         err?.response?.status === 429
           ? (err.response.data?.message || 'Too many attempts. Please try again later.')
-          : 'Invalid email or password.'
+          : 'Invalid username or password.'
       );
     } finally {
       setLoading(false);
@@ -256,7 +256,7 @@ export default function Login() {
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-              <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign in with email</span>
+              <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign in with username</span>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
             </div>
 
@@ -267,17 +267,23 @@ export default function Login() {
                   color: '#1d1d1f', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Email address
+                  Username
                 </label>
-                <input
-                  type="email" required autoComplete="email"
-                  className="field"
-                  value={form.email}
-                  onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
-                  placeholder="you@example.com"
-                  style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
-                />
-                {fieldErrors.email && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
+                <div style={{ position: 'relative' }}>
+                  <span style={{
+                    position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
+                    fontSize: '15px', color: '#a0a0a5', pointerEvents: 'none',
+                  }}>@</span>
+                  <input
+                    type="text" required autoComplete="username"
+                    className="field"
+                    value={form.username}
+                    onChange={e => { setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }); setFieldErrors(f => ({ ...f, username: '' })); }}
+                    placeholder="your_username"
+                    style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
+                  />
+                </div>
+                {fieldErrors.username && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
               </div>
 
               <div>

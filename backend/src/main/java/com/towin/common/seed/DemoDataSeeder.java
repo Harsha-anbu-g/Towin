@@ -283,7 +283,13 @@ public class DemoDataSeeder implements ApplicationRunner {
             if (!u.isPhoneVerified()) { u.setPhoneVerified(true); dirty = true; }
             return dirty ? userRepository.save(u) : u;
         }
+        String username = email.split("@")[0].toLowerCase().replaceAll("[^a-z0-9]", "_");
+        // Ensure uniqueness in the unlikely case of collision
+        if (userRepository.existsByUsername(username)) {
+            username = username + "_" + (System.currentTimeMillis() % 1000);
+        }
         User u = User.builder()
+                .username(username)
                 .email(email)
                 .phone(uniquePhone(phone))
                 .passwordHash(passwordEncoder.encode(rawPassword))
