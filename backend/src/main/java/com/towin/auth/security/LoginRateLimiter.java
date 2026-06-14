@@ -1,5 +1,6 @@
 package com.towin.auth.security;
 
+import com.towin.common.exception.RateLimitException;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -30,7 +31,7 @@ public class LoginRateLimiter {
         Attempt a = attempts.get(key);
         if (a != null && a.lockedUntil != null) {
             if (a.lockedUntil.isAfter(Instant.now())) {
-                throw new IllegalArgumentException("Too many attempts. Try again in 15 minutes.");
+                throw new RateLimitException("Too many attempts. Try again in 15 minutes.");
             }
             attempts.remove(key); // lock window elapsed — start fresh
         }

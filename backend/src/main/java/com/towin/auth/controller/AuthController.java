@@ -1,7 +1,9 @@
 package com.towin.auth.controller;
 
 import com.towin.auth.dto.*;
+import com.towin.auth.security.IpRateLimiter;
 import com.towin.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +19,12 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
+    private final IpRateLimiter ipRateLimiter;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request,
+                                                 HttpServletRequest http) {
+        ipRateLimiter.check(http);
         return ResponseEntity.ok(authService.register(request));
     }
 
@@ -29,7 +34,9 @@ public class AuthController {
     }
 
     @PostMapping("/guest")
-    public ResponseEntity<AuthResponse> guest(@Valid @RequestBody GuestLoginRequest request) {
+    public ResponseEntity<AuthResponse> guest(@Valid @RequestBody GuestLoginRequest request,
+                                              HttpServletRequest http) {
+        ipRateLimiter.check(http);
         return ResponseEntity.ok(authService.guestLogin(request.getRole()));
     }
 
