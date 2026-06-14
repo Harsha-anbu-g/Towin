@@ -122,7 +122,7 @@ function GoogleButton({ label }) {
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -140,8 +140,8 @@ export default function Login() {
   }, []);
 
   const DEMO = {
-    ELDER:  { username: 'elder',  password: '12345678' },
-    HELPER: { username: 'helper', password: '123456789' },
+    ELDER:  { identifier: 'elder',  password: '12345678' },
+    HELPER: { identifier: 'helper', password: '123456789' },
   };
 
   const handleGuest = async (role) => {
@@ -170,7 +170,7 @@ export default function Login() {
     setLoading(true);
     setError('');
     const errs = {};
-    if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = 'Enter a valid username (letters, numbers, underscores)';
+    if (!form.identifier.trim()) errs.identifier = 'Enter your username, Gmail, or phone number';
     if (form.password.length < 6) errs.password = 'Password must be at least 6 characters';
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
@@ -267,23 +267,17 @@ export default function Login() {
                   color: '#1d1d1f', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Username
+                  Username, Gmail, or phone
                 </label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{
-                    position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
-                    fontSize: '15px', color: '#a0a0a5', pointerEvents: 'none',
-                  }}>@</span>
-                  <input
-                    type="text" required autoComplete="username"
-                    className="field"
-                    value={form.username}
-                    onChange={e => { setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }); setFieldErrors(f => ({ ...f, username: '' })); }}
-                    placeholder="your_username"
-                    style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
-                  />
-                </div>
-                {fieldErrors.username && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
+                <input
+                  type="text" required autoComplete="username"
+                  className="field"
+                  value={form.identifier}
+                  onChange={e => { setForm({ ...form, identifier: e.target.value }); setFieldErrors(f => ({ ...f, identifier: '' })); }}
+                  placeholder="your_username / you@gmail.com / +1234567890"
+                  style={{ borderColor: fieldErrors.identifier ? '#fca5a5' : undefined }}
+                />
+                {fieldErrors.identifier && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
               </div>
 
               <div>
