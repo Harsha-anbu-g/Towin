@@ -46,6 +46,8 @@ public class Message {
 
     @PrePersist
     void onCreate() {
-        createdAt = LocalDateTime.now();
+        // Respect an explicitly-set time (demo seeding gives a conversation
+        // realistic, ordered timestamps); default to now for live messages.
+        if (createdAt == null) createdAt = LocalDateTime.now();
     }
 }

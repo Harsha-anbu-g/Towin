@@ -162,18 +162,20 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureConnection(grace, james, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, grace,
                 "Hi James, I'd love a hand learning to video-call my grandchildren.");
 
-        seedMessagesIfEmpty(cTrusted, List.of(
+        // endedMinutesAgo varies per thread so the inbox "last active" order reads
+        // naturally: James most recent, then Priya, then David.
+        seedMessagesIfEmpty(cTrusted, 95, List.of(
                 msg(james,    "Hi Margaret! Ready for our chess game on Thursday?"),
                 msg(margaret, "Of course! I have been practicing my openings."),
                 msg(james,    "Ha! I will bring the biscuits then. 3pm as usual?"),
                 msg(margaret, "Perfect. And thank you again for setting up my tablet."),
                 msg(james,    "Any time. Video calling your sister works now, right?"),
                 msg(margaret, "It does! We talked for an hour yesterday. Lovely.")));
-        seedMessagesIfEmpty(cAdvance, List.of(
+        seedMessagesIfEmpty(cAdvance, 1450, List.of(
                 msg(priya,    "Hello Margaret! Thanks for accepting my request."),
                 msg(margaret, "Hello Priya. Your profile says you like baking?"),
-                msg(priya,    "I do! I make a mean banana bread. Could bring some by once we know each other better.")));
-        seedMessagesIfEmpty(cVideo, List.of(
+                msg(priya,    "I do! I make a mean banana bread — I'll bring some by once we know each other a little better.")));
+        seedMessagesIfEmpty(cVideo, 2900, List.of(
                 msg(james, "David, our video call was great! Same time next week?"),
                 msg(david, "Yes! And bring that pasta recipe you mentioned.")));
 
@@ -362,14 +364,26 @@ public class DemoDataSeeder implements ApplicationRunner {
     private record Draft(User sender, String content) {}
     private Draft msg(User sender, String content) { return new Draft(sender, content); }
 
-    private void seedMessagesIfEmpty(Connection conn, List<Draft> drafts) {
+    /**
+     * Seed a conversation with realistic, strictly-increasing timestamps so the
+     * thread reads in order and looks lived-in. The last message lands
+     * {@code endedMinutesAgo} before now; earlier ones step back ~9 minutes
+     * each. Without explicit times every message shares one createdAt and the
+     * client's timestamp sort scrambles the order.
+     */
+    private void seedMessagesIfEmpty(Connection conn, long endedMinutesAgo, List<Draft> drafts) {
         if (messageRepository.countByConnectionId(conn.getId()) > 0) return;
-        for (Draft d : drafts) {
+        int n = drafts.size();
+        LocalDateTime end = LocalDateTime.now().minusMinutes(endedMinutesAgo);
+        for (int i = 0; i < n; i++) {
+            Draft d = drafts.get(i);
+            LocalDateTime ts = end.minusMinutes((long) (n - 1 - i) * 9L);
             messageRepository.save(Message.builder()
                     .connection(conn)
                     .sender(d.sender())
                     .content(d.content())
                     .type(MessageType.TEXT)
+                    .createdAt(ts)
                     .build());
         }
     }
