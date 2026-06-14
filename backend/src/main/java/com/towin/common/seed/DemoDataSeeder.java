@@ -33,7 +33,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -74,6 +75,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final TrustProgressionLogRepository trustProgressionLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final TrustScoreService trustScoreService;
+    private final PlatformTransactionManager transactionManager;
 
     // When true (default), wipe content accumulated on the public demo accounts
     // on each boot before re-seeding, so the demo always shows a clean, minimal
@@ -82,12 +84,16 @@ public class DemoDataSeeder implements ApplicationRunner {
     private boolean resetEnabled;
 
     @Override
-    @Transactional
     public void run(ApplicationArguments args) {
+        // The transaction lives INSIDE this try via TransactionTemplate, not on
+        // run() itself. If run() were @Transactional, a caught seeding error would
+        // still leave the transaction rollback-only and the commit at the proxy
+        // boundary would throw UnexpectedRollbackException — failing app startup.
+        // Containing it here keeps the promise that demo seeding never takes the
+        // app down: on error we roll back and continue serving existing data.
         try {
-            seed();
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> seed());
         } catch (Exception e) {
-            // Demo content must never take the app down
             log.error("Demo data seeding failed (app continues normally)", e);
         }
     }
@@ -232,17 +238,22 @@ public class DemoDataSeeder implements ApplicationRunner {
     /**
      * Delete all content owned by or involving a demo user, while keeping the
      * account and profile so the persona stays stable across resets. Deletion
-     * order respects foreign keys (same sequence proven in admin user deletion):
-     * messages → applications → reviews/reports → needs → trust logs →
-     * connections → emergency contacts → streak. Only demo accounts are passed
-     * here, so real users are never touched.
+     * order respects foreign keys: messages → (per owned need) applications +
+     * reviews → applications/reviews/reports by user → needs → trust logs →
+     * connections → emergency contacts → streak. Reviews and applications that
+     * reference the user's needs are cleared by need_id first — a review can
+     * point at a need without either party being this user — otherwise the
+     * needs delete trips reviews_need_id_fkey. Only demo accounts are passed in.
      */
     private void purgeDemoContent(User u) {
         UUID id = u.getId();
         messageRepository.deleteByConnectionUserIdOrSenderId(id);
-        needApplicationRepository.deleteByHelperId(id);
         needRepository.findByElderIdOrderByCreatedAtDesc(id, Pageable.unpaged())
-                .forEach(n -> needApplicationRepository.deleteByNeedId(n.getId()));
+                .forEach(n -> {
+                    needApplicationRepository.deleteByNeedId(n.getId());
+                    reviewRepository.deleteByNeedId(n.getId());
+                });
+        needApplicationRepository.deleteByHelperId(id);
         reviewRepository.deleteByReviewerIdOrRevieweeId(id, id);
         reportRepository.deleteByReporterIdOrReportedUserId(id, id);
         needRepository.deleteByElderId(id);
