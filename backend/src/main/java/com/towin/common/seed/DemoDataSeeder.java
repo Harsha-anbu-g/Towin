@@ -99,13 +99,14 @@ public class DemoDataSeeder implements ApplicationRunner {
         User tom      = ensureUser("demo.tom@towin.app",   "+14165550104", UserRole.HELPER, "DemoTom!2026");
         User david    = ensureUser("demo.david@towin.app", "+14165550105", UserRole.ELDER,  "DemoDavid!2026");
         User grace    = ensureUser("demo.grace@towin.app", "+14165550106", UserRole.ELDER,  "DemoGrace!2026");
+        User nina     = ensureUser("demo.nina@towin.app",  "+14165550107", UserRole.HELPER, "DemoNina!2026");
+
+        List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina);
 
         // Clear anything visitors left on the public demo accounts so the rest of
         // this method re-seeds a clean, minimal showcase (one of each type).
         if (resetEnabled) {
-            for (User u : List.of(margaret, james, priya, tom, david, grace)) {
-                purgeDemoContent(u);
-            }
+            demoUsers.forEach(this::purgeDemoContent);
             log.info("Demo content reset: cleared accumulated data on demo accounts");
         }
 
@@ -128,19 +129,32 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureHelperProfile(tom, "Tom Walker", 31,
                 "Software dev who fixes phones, tablets and wifi. Patient explainer.",
                 new String[]{"Technology", "Transportation"}, new String[]{"Hiking", "Photography"});
+        ensureHelperProfile(nina, "Nina Okafor", 26,
+                "Friendly driver and errand-runner who loves a good chat.",
+                new String[]{"Transportation", "Errands", "Companionship"}, new String[]{"Driving", "Cooking"});
 
-        // Trust progression at different stages — the core differentiator
+        // Connections cover every state a viewer can act on:
+        //  • TRUSTED   — top of the ladder, fully progressed
+        //  • PHONE_CALL with the helper already confirmed — Margaret sees a live
+        //    "confirm to advance" button (the core trust step in action)
+        //  • PENDING incoming — Margaret can accept or decline
+        //  • a PENDING request waiting on the helper (James) too, so the helper
+        //    account also has an accept/decline to show
         Connection cTrusted = ensureConnection(margaret, james, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, james,
                 "Hi Margaret, I'd love to help with tech or play a game of chess!");
-        Connection cMessaging = ensureConnection(margaret, priya, ConnectionStatus.ACTIVE, TrustLevel.MESSAGING, priya,
-                "Hello Margaret! I'm Priya, happy to help with errands or cooking.");
+        // confirmedByA=false (Margaret), confirmedByB=true (Priya) → confirm button live for Margaret
+        Connection cAdvance = ensureConnection(margaret, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
+                "Hello Margaret! I'm Priya, happy to help with errands or cooking.", false, true);
         Connection cVideo = ensureConnection(david, james, ConnectionStatus.ACTIVE, TrustLevel.VIDEO_CALL, james,
                 "Hi David, fellow engineer here. Happy to help with anything.");
         ensureConnection(grace, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
                 "Hi Grace, I'd love to keep you company on your walks.");
-        // A pending request so the accept/decline flow is visible
+        // Incoming pending request to Margaret (elder accept/decline)
         ensureConnection(margaret, tom, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, tom,
                 "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
+        // Incoming pending request to James (helper accept/decline)
+        ensureConnection(grace, james, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, grace,
+                "Hi James, I'd love a hand learning to video-call my grandchildren.");
 
         seedMessagesIfEmpty(cTrusted, List.of(
                 msg(james,    "Hi Margaret! Ready for our chess game on Thursday?"),
@@ -149,7 +163,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 msg(margaret, "Perfect. And thank you again for setting up my tablet."),
                 msg(james,    "Any time. Video calling your sister works now, right?"),
                 msg(margaret, "It does! We talked for an hour yesterday. Lovely.")));
-        seedMessagesIfEmpty(cMessaging, List.of(
+        seedMessagesIfEmpty(cAdvance, List.of(
                 msg(priya,    "Hello Margaret! Thanks for accepting my request."),
                 msg(margaret, "Hello Priya. Your profile says you like baking?"),
                 msg(priya,    "I do! I make a mean banana bread. Could bring some by once we know each other better.")));
@@ -157,15 +171,27 @@ public class DemoDataSeeder implements ApplicationRunner {
                 msg(james, "David, our video call was great! Same time next week?"),
                 msg(david, "Yes! And bring that pasta recipe you mentioned.")));
 
-        Need tablet = ensureNeed(margaret, "Help setting up my new tablet",
-                "My daughter sent me a tablet and I would love help setting it up for video calls.",
-                NeedCategory.OTHER, NeedUrgency.NORMAL, NeedStatus.COMPLETED);
-        ensureNeed(margaret, "Ride to my doctor appointment",
-                "Appointment on Tuesday at 10am, clinic is 15 minutes away.",
-                NeedCategory.TRANSPORTATION, NeedUrgency.URGENT, NeedStatus.OPEN);
+        // Requests cover every status AND every category, so each action shows:
+        //  • OPEN (no offers)         — Company for my morning walk      [COMPANIONSHIP]
+        //  • OPEN + a pending offer   — Ride to my doctor appointment    [TRANSPORTATION]  → accept applicant
+        //  • ASSIGNED (helper agreed) — Weekly grocery shopping          [ERRANDS]         → mark complete / cancel
+        //  • COMPLETED (+ review)     — Help setting up my new tablet    [OTHER]
+        //  • CANCELLED                — Fix the dripping kitchen tap      [CLEANING]
         ensureNeed(margaret, "Company for my morning walk",
                 "I walk in Riverdale Park most mornings and would enjoy company.",
                 NeedCategory.COMPANIONSHIP, NeedUrgency.NORMAL, NeedStatus.OPEN);
+        Need ride = ensureNeed(margaret, "Ride to my doctor appointment",
+                "Appointment on Tuesday at 10am, clinic is 15 minutes away.",
+                NeedCategory.TRANSPORTATION, NeedUrgency.URGENT, NeedStatus.OPEN);
+        Need shopping = ensureNeed(margaret, "Weekly grocery shopping",
+                "A hand carrying groceries home from the market on Saturday mornings.",
+                NeedCategory.ERRANDS, NeedUrgency.NORMAL, NeedStatus.ASSIGNED);
+        Need tablet = ensureNeed(margaret, "Help setting up my new tablet",
+                "My daughter sent me a tablet and I would love help setting it up for video calls.",
+                NeedCategory.OTHER, NeedUrgency.NORMAL, NeedStatus.COMPLETED);
+        ensureNeed(margaret, "Fix the dripping kitchen tap",
+                "The kitchen tap drips through the night — I'd love help getting it sorted.",
+                NeedCategory.CLEANING, NeedUrgency.NORMAL, NeedStatus.CANCELLED);
         Need chess = ensureNeed(david, "Weekly chess and tea company",
                 "Looking for someone to play chess with on weekend afternoons.",
                 NeedCategory.COMPANIONSHIP, NeedUrgency.NORMAL, NeedStatus.OPEN);
@@ -173,6 +199,9 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "A hand with vacuuming and dusting once a week.",
                 NeedCategory.CLEANING, NeedUrgency.NORMAL, NeedStatus.OPEN);
 
+        // A pending offer Margaret can accept, and the accepted offer behind the assigned need
+        ensureApplication(ride, nina, "Hi Margaret, I drive and would gladly take you on Tuesday.");
+        ensureApplication(shopping, james, "Happy to carry your groceries every Saturday!", ApplicationStatus.ACCEPTED);
         ensureApplication(chess, priya, "I'd love to learn chess while keeping you company!");
 
         ensureReview(margaret, james, tablet, 5,
@@ -190,7 +219,7 @@ public class DemoDataSeeder implements ApplicationRunner {
 
         ensureEmergencyContact(margaret, "Sarah (daughter)", "+14165550199", "Family");
 
-        for (User u : List.of(margaret, james, priya, tom, david, grace)) {
+        for (User u : demoUsers) {
             try {
                 trustScoreService.recalculate(u.getId());
             } catch (Exception e) {
@@ -296,17 +325,26 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private Connection ensureConnection(User a, User b, ConnectionStatus status,
                                         TrustLevel level, User initiator, String requestMessage) {
+        boolean active = status == ConnectionStatus.ACTIVE;
+        return ensureConnection(a, b, status, level, initiator, requestMessage, active, active);
+    }
+
+    /** Variant with explicit per-side confirm flags — used to stage a connection
+     *  where the helper has confirmed the next trust step but the elder hasn't,
+     *  so the elder sees a live "confirm to advance" button. */
+    private Connection ensureConnection(User a, User b, ConnectionStatus status,
+                                        TrustLevel level, User initiator, String requestMessage,
+                                        boolean confirmedByA, boolean confirmedByB) {
         Optional<Connection> existing = connectionRepository.findBetweenUsers(a.getId(), b.getId());
         if (existing.isPresent()) return existing.get();
-        boolean active = status == ConnectionStatus.ACTIVE;
         return connectionRepository.save(Connection.builder()
                 .userA(a).userB(b)
                 .status(status)
                 .currentTrustLevel(level)
                 .initiatedBy(initiator)
                 .requestMessage(requestMessage)
-                .confirmedByA(active)
-                .confirmedByB(active)
+                .confirmedByA(confirmedByA)
+                .confirmedByB(confirmedByB)
                 .build());
     }
 
@@ -340,10 +378,14 @@ public class DemoDataSeeder implements ApplicationRunner {
     }
 
     private void ensureApplication(Need need, User helper, String message) {
+        ensureApplication(need, helper, message, ApplicationStatus.PENDING);
+    }
+
+    private void ensureApplication(Need need, User helper, String message, ApplicationStatus status) {
         if (needApplicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId()).isPresent()) return;
         needApplicationRepository.save(NeedApplication.builder()
                 .need(need).helper(helper).message(message)
-                .status(ApplicationStatus.PENDING)
+                .status(status)
                 .build());
     }
 
