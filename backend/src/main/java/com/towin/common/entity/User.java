@@ -26,8 +26,12 @@ public class User {
     @Column(unique = true, nullable = false)
     private String phone;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
+
+    @Column(name = "auth_provider", length = 20)
+    @Builder.Default
+    private String authProvider = "LOCAL";
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

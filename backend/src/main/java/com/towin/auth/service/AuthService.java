@@ -94,7 +94,9 @@ public class AuthService {
         loginRateLimiter.checkNotLocked(request.getEmail());
 
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        // Google-only accounts have no password — treat as invalid credentials (anti-enumeration)
+        boolean noPassword = user == null || user.getPasswordHash() == null;
+        if (noPassword || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             loginRateLimiter.recordFailure(request.getEmail());
             throw new IllegalArgumentException("Invalid credentials");
         }
