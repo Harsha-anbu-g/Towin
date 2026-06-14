@@ -1,0 +1,89 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
+
+export default function OAuthCallback() {
+  const [searchParams] = useSearchParams();
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const code = searchParams.get('code');
+    const err = searchParams.get('error');
+
+    if (err || !code) {
+      setError('Google sign-in was cancelled or failed. Please try again.');
+      return;
+    }
+
+    api.post('/auth/oauth/exchange', { code })
+      .then(({ data }) => {
+        if (data.status === 'READY') {
+          login(data.token);
+          const role = JSON.parse(atob(data.token.split('.')[1])).role;
+          navigate(
+            role === 'ADMIN' ? '/admin' :
+            (role === 'ELDER' || role === 'BOTH') ? '/streaks' : '/dashboard',
+            { replace: true }
+          );
+        } else if (data.status === 'NEEDS_ONBOARDING') {
+          navigate('/auth/setup', {
+            replace: true,
+            state: {
+              onboardingToken: data.onboardingToken,
+              email: data.email,
+              name: data.name,
+            },
+          });
+        }
+      })
+      .catch(() => {
+        setError('Something went wrong. Please try signing in again.');
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const SF = '-apple-system, "SF Pro Text", system-ui, sans-serif';
+
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', height: '100%', padding: '40px 24px',
+      fontFamily: SF,
+    }}>
+      {error ? (
+        <div style={{ textAlign: 'center', maxWidth: '380px' }}>
+          <div style={{
+            background: '#fef2f2', border: '1px solid #fecaca',
+            borderRadius: '14px', padding: '20px 24px',
+            fontSize: '15px', color: '#dc2626', marginBottom: '20px',
+          }}>
+            {error}
+          </div>
+          <button
+            onClick={() => navigate('/login', { replace: true })}
+            style={{
+              height: '44px', padding: '0 28px',
+              background: '#4FA3CE', color: '#fff',
+              border: 'none', borderRadius: '9999px',
+              fontSize: '15px', cursor: 'pointer', fontFamily: SF,
+            }}
+          >
+            Back to Sign In
+          </button>
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', color: '#5a6470' }}>
+          <div style={{
+            width: '40px', height: '40px', borderRadius: '50%',
+            border: '3px solid #BFD9EA', borderTopColor: '#4FA3CE',
+            animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
+          }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <p style={{ fontSize: '15px', margin: 0 }}>Signing you in…</p>
+        </div>
+      )}
+    </div>
+  );
+}

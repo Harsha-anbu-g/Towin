@@ -21,6 +21,8 @@ import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
 import Feedback from './pages/Feedback';
 import Guide from './pages/Guide';
+import OAuthCallback from './pages/OAuthCallback';
+import FinishSetup from './pages/FinishSetup';
 
 function BfCacheGuard() {
   const { user, logout } = useAuth();
@@ -30,7 +32,7 @@ function BfCacheGuard() {
     const handlePageShow = (e) => {
       if (!e.persisted) return;
       const path = window.location.pathname;
-      const isPublic = path === '/' || path === '/login' || path === '/register';
+      const isPublic = ['/', '/login', '/register', '/auth/callback', '/auth/setup'].includes(path);
       const isProtected = !isPublic && path !== '/feedback' && path !== '/how-it-works';
       if (isPublic && user) {
         // Login page restored from bfcache while logged in → log out
@@ -95,6 +97,8 @@ function App() {
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/how-it-works" element={<Guide />} />
+            <Route path="/auth/callback" element={<OAuthCallback />} />
+            <Route path="/auth/setup" element={<FinishSetup />} />
             <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />

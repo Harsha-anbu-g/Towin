@@ -1,5 +1,8 @@
 package com.towin.common.security;
 
+import com.towin.auth.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.towin.auth.oauth.OAuth2FailureHandler;
+import com.towin.auth.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +27,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthRequestRepo;
+    private final OAuth2SuccessHandler oauthSuccessHandler;
+    private final OAuth2FailureHandler oauthFailureHandler;
 
     @Value("${cors.allowed-origins:http://localhost:5173}")
     private String allowedOrigins;
@@ -48,10 +54,17 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/feedback").permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth -> oauth
+                .authorizationEndpoint(a -> a
+                    .authorizationRequestRepository(cookieAuthRequestRepo))
+                .successHandler(oauthSuccessHandler)
+                .failureHandler(oauthFailureHandler)
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
