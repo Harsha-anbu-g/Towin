@@ -69,18 +69,21 @@ public class OAuthService {
             throw new IllegalArgumentException("Invalid onboarding session.");
         }
 
-        // Existing account — update authProvider, and set username/password if not already set
+        // Existing account — update authProvider; always apply chosen username/password during first setup
         if (userRepository.existsByEmail(email)) {
             User existing = userRepository.findByEmail(email).orElseThrow();
             if (!"GOOGLE".equals(existing.getAuthProvider())) {
                 existing.setAuthProvider("GOOGLE");
             }
-            if (existing.getUsername() == null) {
+            // Always honour the username the user chose — V25 migration may have auto-set one
+            if (!request.getUsername().equals(existing.getUsername())) {
                 if (userRepository.existsByUsername(request.getUsername())) {
                     throw new IllegalArgumentException("Username already taken. Please choose another.");
                 }
                 existing.setUsername(request.getUsername());
             }
+            // Always set/update role during first setup
+            existing.setRole(request.getRole());
             if (existing.getPasswordHash() == null) {
                 existing.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             }
