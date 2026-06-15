@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -17,18 +18,27 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    private static final Map<String, String> SAFE_MESSAGES = Map.of(
-        "User not found",                    "Invalid request.",
-        "Invalid request.",                  "Invalid request.",
-        "Invalid or expired code.",          "Invalid or expired code.",
-        "Too many attempts.",                "Too many attempts. Try again in 15 minutes.",
-        "Verification code has expired.",    "Verification code has expired. Request a new one.",
-        "Invalid credentials",               "Invalid credentials.",
-        "Email already registered",          "Email already registered.",
-        "Phone already registered",          "Phone already registered.",
-        "Guest role must be",                "Invalid request.",
-        "Verification code has expired. Request a new one.", "Verification code has expired. Request a new one."
-    );
+    private static final Map<String, String> SAFE_MESSAGES;
+    static {
+        SAFE_MESSAGES = new HashMap<>();
+        SAFE_MESSAGES.put("User not found",                               "Invalid request.");
+        SAFE_MESSAGES.put("Invalid request.",                             "Invalid request.");
+        SAFE_MESSAGES.put("Invalid or expired code.",                     "Invalid or expired code.");
+        SAFE_MESSAGES.put("Too many attempts.",                           "Too many attempts. Try again in 15 minutes.");
+        SAFE_MESSAGES.put("Verification code has expired.",               "Verification code has expired. Request a new one.");
+        SAFE_MESSAGES.put("Invalid credentials",                          "Invalid credentials.");
+        SAFE_MESSAGES.put("Email already registered",                     "Email already registered.");
+        SAFE_MESSAGES.put("Phone already registered",                     "Phone already registered.");
+        SAFE_MESSAGES.put("Guest role must be",                           "Invalid request.");
+        // OAuth-specific messages
+        SAFE_MESSAGES.put("Session expired. Please sign in with Google",  "Your session expired. Please sign in with Google again.");
+        SAFE_MESSAGES.put("Invalid onboarding session.",                  "Your session expired. Please sign in with Google again.");
+        SAFE_MESSAGES.put("Username already taken.",                      "Username already taken. Please choose another.");
+        SAFE_MESSAGES.put("This phone number is already registered.",     "This phone number is already registered.");
+        SAFE_MESSAGES.put("Role must be ELDER or HELPER",                 "Please select a valid role (Elder or Helper).");
+        SAFE_MESSAGES.put("Username must be",                             "Username must be 3-20 characters: lowercase letters, numbers, underscores only.");
+        SAFE_MESSAGES.put("Username already",                             "Username already taken. Please choose another.");
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {

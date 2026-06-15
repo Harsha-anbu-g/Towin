@@ -20,7 +20,7 @@ public class OneTimeCodeStore {
     private record Entry(String payload, Instant expiresAt) {}
 
     private final ConcurrentHashMap<String, Entry> store = new ConcurrentHashMap<>();
-    private static final Duration TTL = Duration.ofMinutes(5);
+    private static final Duration TTL = Duration.ofMinutes(15);
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public String store(String payload) {
