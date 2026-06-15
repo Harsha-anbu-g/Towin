@@ -205,7 +205,7 @@ export const SLIDES = [
     render: () => (
       <>
         <Kicker>The real problem is trust</Kicker>
-        <Title>Trust is earned, not given</Title>
+        <Title><span style={{ color: '#10069f' }}>Trust</span> is earned, not given</Title>
         <Lead>
           Letting someone new into your life is a big step. So every member
           has a Trust Score, built from three things:
@@ -230,7 +230,7 @@ export const SLIDES = [
     render: () => (
       <>
         <Kicker>One step at a time</Kicker>
-        <Title>Rooting (Trust Ladder): how trust grows</Title>
+        <Title>Rooting (<span style={{ color: '#10069f' }}>Trust</span> Ladder): how trust grows</Title>
         <Lead>
           Like a tree growing roots, every friendship on ToWin grows slowly,
           through 7 simple stages:
