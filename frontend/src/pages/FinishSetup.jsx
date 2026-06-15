@@ -26,7 +26,9 @@ export default function FinishSetup() {
   const [phone, setPhone] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -62,6 +64,7 @@ export default function FinishSetup() {
     const digits = phone.replace(/[\s()-]/g, '');
     if (!/^\+?[0-9]{10,15}$/.test(digits)) errs.phone = 'Enter a valid phone number (10 to 15 digits)';
     if (password.length < 8) errs.password = 'Password must be at least 8 characters';
+    if (confirmPassword !== password) errs.confirmPassword = 'Passwords do not match';
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
     setLoading(true);
@@ -244,6 +247,31 @@ export default function FinishSetup() {
             <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
               You can also use this password to log in without Google.
             </p>
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+              Re-enter password
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showConfirm ? 'text' : 'password'} autoComplete="new-password" required
+                value={confirmPassword}
+                onChange={e => { setConfirmPassword(e.target.value); setFieldErrors(f => ({ ...f, confirmPassword: '' })); }}
+                placeholder="Type the same password again"
+                className="field"
+                style={{ borderColor: fieldErrors.confirmPassword ? '#fca5a5' : undefined, paddingRight: '44px' }}
+              />
+              <button type="button" onClick={() => setShowConfirm(v => !v)}
+                style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#7a7a7a', fontSize: '13px' }}>
+                {showConfirm ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {fieldErrors.confirmPassword && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.confirmPassword}</p>}
+            {confirmPassword && password && confirmPassword === password && (
+              <p style={{ fontSize: '12px', color: '#5FA670', marginTop: '4px' }}>Passwords match</p>
+            )}
           </div>
 
           <button
