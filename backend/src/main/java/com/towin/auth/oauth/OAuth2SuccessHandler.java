@@ -45,8 +45,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String code;
         if (existing.isPresent()) {
             User user = existing.get();
+            boolean dirty = false;
             if (!"GOOGLE".equals(user.getAuthProvider())) {
                 user.setAuthProvider("GOOGLE");
+                dirty = true;
+            }
+            // Backfill the real name from Google so the profile can pre-fill "Full Name"
+            if ((user.getFullName() == null || user.getFullName().isBlank()) && name != null && !name.isBlank()) {
+                user.setFullName(name);
+                dirty = true;
+            }
+            if (dirty) {
                 userRepository.save(user);
             }
             boolean needsSetup = !user.isSetupCompleted();

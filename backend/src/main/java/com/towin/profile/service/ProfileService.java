@@ -141,6 +141,8 @@ public class ProfileService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                // Default name from the linked Google account; overridden below once a profile exists
+                .name(user.getFullName())
                 .authProvider(user.getAuthProvider())
                 .role(user.getRole().name())
                 .trustScore(score)

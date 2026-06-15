@@ -65,6 +65,7 @@ public class OAuthService {
 
         Map<String, String> parsed = parse(json);
         String email = parsed.get("email");
+        String googleName = parsed.get("name");
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Invalid onboarding session.");
         }
@@ -87,6 +88,9 @@ public class OAuthService {
             if (existing.getPasswordHash() == null) {
                 existing.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             }
+            if (existing.getFullName() == null || existing.getFullName().isBlank()) {
+                existing.setFullName(googleName);
+            }
             existing.setSetupCompleted(true);
             userRepository.save(existing);
             String jwt = jwtUtil.generateToken(existing.getId().toString(), existing.getEmail(), existing.getRole().name());
@@ -103,6 +107,7 @@ public class OAuthService {
         User user = User.builder()
                 .username(request.getUsername())
                 .email(email)
+                .fullName(googleName)
                 .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
