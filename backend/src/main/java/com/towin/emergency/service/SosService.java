@@ -46,7 +46,22 @@ public class SosService {
     private static final int INACTIVITY_DAYS = 5;
 
     public void sendSmsPublic(String toNumber, String body) {
-        sendSms(toNumber, body);
+        if (accountSid.isBlank() || authToken.isBlank() || fromNumber.isBlank()) {
+            log.info("Twilio not configured — would send SMS to {}: {}", toNumber, body);
+            return;
+        }
+        try {
+            com.twilio.Twilio.init(accountSid, authToken);
+            com.twilio.rest.api.v2010.account.Message.creator(
+                    new com.twilio.type.PhoneNumber(toNumber),
+                    new com.twilio.type.PhoneNumber(fromNumber),
+                    body
+            ).create();
+            log.info("SMS sent to {}", toNumber);
+        } catch (Exception e) {
+            log.error("Failed to send OTP SMS to {}: {}", toNumber, e.getMessage());
+            throw new RuntimeException("Could not send verification code: " + e.getMessage());
+        }
     }
 
     public void sendInactivityAlert(String toPhone, com.towin.common.entity.User elder) {
