@@ -87,6 +87,14 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(msg, 400, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntime(RuntimeException ex) {
+        log.error("RuntimeException: {}", ex.getMessage());
+        String msg = ex.getMessage() != null ? ex.getMessage() : "Something went wrong. Please try again.";
+        return ResponseEntity.status(500)
+                .body(new ErrorResponse(msg, 500, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Unhandled exception", ex);
