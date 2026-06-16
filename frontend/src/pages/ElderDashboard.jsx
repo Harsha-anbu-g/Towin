@@ -466,8 +466,8 @@ export default function ElderDashboard() {
                     background: '#f5f5f7', border: '1px solid #BFD9EA',
                     borderRadius: '9999px', padding: '6px 16px',
                   }}>
-                    <span style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 500 }}>Trust Score</span>
-                    <span style={{ fontSize: '15px', color: '#4FA3CE', fontWeight: 600 }}>{profile.trustScore}</span>
+                    <span style={{ fontSize: '13px', color: '#1d1d1f', fontWeight: 500 }}>Trust Score</span>
+                    <span style={{ fontSize: '15px', color: '#1d1d1f', fontWeight: 600 }}>{profile.trustScore}</span>
                   </div>
                 )}
               </div>
