@@ -247,7 +247,7 @@ function GoogleButton() {
         <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.7-3.3-11.3-8H6.5C9.9 35.7 16.4 44 24 44z"/>
         <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C41 36.2 44 30.5 44 24c0-1.3-.1-2.7-.4-3.9z"/>
       </svg>
-      Continue with Google
+      Sign in with Google
     </a>
   );
 }
@@ -384,13 +384,13 @@ export default function Register() {
           width: '100%', maxWidth: '440px',
           padding: '40px 24px 48px',
         }}>
-          {/* Google sign-up */}
+          {/* Google sign-in */}
           <GoogleButton />
 
           {/* Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-            <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or create account with email</span>
+            <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign in with email</span>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
           </div>
 
@@ -607,7 +607,7 @@ export default function Register() {
                 </span>
               </label>
 
-              {/* Blue pill Create Account button */}
+              {/* Blue pill Sign In button */}
               <button
                 type="submit"
                 disabled={loading || !agreed}
@@ -623,12 +623,12 @@ export default function Register() {
                   transition: 'background 0.15s',
                 }}
               >
-                {loading ? 'Creating account…' : 'Create Account'}
+                {loading ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
           </div>
 
-          {/* Sign in link */}
+          {/* Log in link — returning users */}
           <p style={{
             textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
             marginTop: '20px',
@@ -636,7 +636,7 @@ export default function Register() {
           }}>
             Already have an account?{' '}
             <Link to="/login" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
-              Sign In
+              Log in
             </Link>
           </p>
 
@@ -658,7 +658,7 @@ export default function Register() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
-              Look around with a sample account, no sign-up needed.
+              Look around with a sample account, no account needed.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[

@@ -221,7 +221,7 @@ export default function Login() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               fontSize: '17px', color: '#7a7a7a', marginBottom: '20px',
             }}>
-              Sign in to your ToWin account.
+              Log in to your ToWin account.
             </p>
 
             {/* Hairline divider */}
@@ -235,7 +235,7 @@ export default function Login() {
                 fontSize: '14px', color: '#3D8AB0', marginBottom: '20px',
                 lineHeight: 1.45,
               }}>
-                For your safety, you were signed out after a period of inactivity. Please sign in again.
+                For your safety, you were logged out after a period of inactivity. Please log in again.
               </div>
             )}
 
@@ -250,13 +250,13 @@ export default function Login() {
               </div>
             )}
 
-            {/* Google sign-in */}
-            <GoogleButton label="Continue with Google" />
+            {/* Google log-in */}
+            <GoogleButton label="Log in with Google" />
 
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-              <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign in with username</span>
+              <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or log in with username</span>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
             </div>
 
@@ -323,7 +323,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Blue pill Sign In button */}
+              {/* Blue pill Log In button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -340,11 +340,11 @@ export default function Login() {
                   boxShadow: '0 6px 18px rgba(79,163,206,0.35)',
                 }}
               >
-                {loading ? 'Signing in…' : 'Sign In'}
+                {loading ? 'Logging in…' : 'Log In'}
               </button>
             </form>
 
-            {/* Create account link */}
+            {/* Sign in link — new users create an account */}
             <p style={{
               textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -352,7 +352,7 @@ export default function Login() {
             }}>
               Don&apos;t have an account?{' '}
               <Link to="/register" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
-                Create one
+                Sign in
               </Link>
             </p>
           </div>
@@ -375,7 +375,7 @@ export default function Login() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
-              Look around with a sample account, no sign-up needed.
+              Look around with a sample account, no account needed.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[

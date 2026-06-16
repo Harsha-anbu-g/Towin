@@ -50,7 +50,7 @@ export default function FinishSetup() {
           borderRadius: '9999px', textDecoration: 'none',
           fontSize: '15px', fontFamily: SF,
         }}>
-          Go to Sign In
+          Go to log in
         </Link>
       </div>
     );
@@ -287,7 +287,7 @@ export default function FinishSetup() {
               boxShadow: '0 6px 18px rgba(79,163,206,0.35)',
             }}
           >
-            {loading ? 'Creating account…' : 'Create Account'}
+            {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
       </div>
