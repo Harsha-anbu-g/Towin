@@ -70,6 +70,13 @@ public class AdminService {
     @Transactional
     public void suspendUser(UUID userId) {
         User user = getUser(userId);
+        // Admins must never be suspendable: a suspended account can still log in but is
+        // blocked from every admin API call, so suspending an admin locks it out of the
+        // very panel needed to reverse it. Mirror the delete guard, which already
+        // protects admin accounts.
+        if (user.getRole() == com.towin.common.enums.UserRole.ADMIN) {
+            throw new IllegalArgumentException("Cannot suspend an admin account");
+        }
         user.setIsActive(false);
         userRepository.save(user);
     }
