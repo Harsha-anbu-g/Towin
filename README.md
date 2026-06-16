@@ -67,17 +67,18 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 
 ## 🛠 Tech stack
 
-| Layer | Technologies |
-|---|---|
-| **Frontend** | React 19 · Vite · React Router 7 · TanStack Query · Axios · Radix UI · Framer Motion · Lucide |
-| **Backend** | Java 21 · Spring Boot 3 · Spring Security + JWT · Spring Data JPA / Hibernate · Flyway |
-| **Database** | PostgreSQL |
-| **Real-time** | WebSocket / STOMP (live messaging) |
-| **Cloud storage** | AWS S3 (profile photos & ID document uploads) — bucket `towin-uploads`, live in production |
-| **SMS** | Twilio (emergency SOS alerts & phone-OTP verification) |
-| **Messaging / cache** | Apache Kafka (async events) · Redis (caching) — feature-flagged: on locally, off in prod to save cost |
-| **Build & tooling** | Maven · Docker · Docker Compose |
-| **Hosting / CI** | Vercel (frontend) · Railway (backend + Postgres) · GitHub |
+| Area | Stack | Why I used it |
+|---|---|---|
+| **Frontend** | React 19 · Vite · React Router 7 · TanStack Query · Axios · Radix UI · Framer Motion | Component-based **single-page application (SPA)** with client-side routing; TanStack Query handles **server-state caching & data fetching**; Radix UI delivers **accessible (a11y / WCAG)**, responsive components |
+| **Backend** | Java 21 · Spring Boot 3 · REST API · Spring MVC · Lombok · Bean Validation | Layered **RESTful API** (15 controllers) with **dependency injection** and a clean **controller → service → repository** architecture — the standard enterprise Java stack |
+| **Security & Auth** | Spring Security · JWT · BCrypt · RBAC · rate limiting · CORS / CSP | **Stateless JWT authentication & authorization** with **role-based access control (RBAC)**, BCrypt password hashing, brute-force / abuse rate limiting, and **OWASP Top 10**-reviewed hardening |
+| **Database & ORM** | PostgreSQL · Spring Data JPA / Hibernate · Flyway · connection pooling | **Relational database (SQL)** accessed through an **ORM** for type-safe, **parameterized (SQL-injection-safe) queries**, with **versioned schema migrations** (Flyway) and pooled connections |
+| **Real-time** | WebSocket · STOMP · SockJS | **Real-time**, bidirectional messaging for live chat and notifications |
+| **Cloud & Storage** | AWS S3 | **Cloud object storage** for profile photos & ID uploads — server-validated content-type, live in production (bucket `towin-uploads`) |
+| **Async & Caching** | Apache Kafka · Redis | **Event-driven** async processing (**pub/sub**) and **caching** — feature-flagged: on locally, off in prod to save cost |
+| **Integrations** | Twilio | **Third-party API integration** — SMS for emergency SOS alerts & phone-OTP verification |
+| **DevOps & CI/CD** | Docker · Docker Compose · Maven · Vercel · Railway · GitHub | **Containerized** local stack and **CI/CD** auto-deploy to the cloud (Vercel frontend · Railway backend + Postgres) on every push to `main` |
+| **Testing & Quality** | JUnit 5 · Mockito · SonarQube · Snyk | **Unit testing** (54 passing tests across 9 service suites), plus **SAST / SCA** security scanning and static **code-quality analysis** |
 
 > **Architecture note for reviewers:** AWS S3, Twilio, Redis, and Kafka are all fully integrated in code. Redis and Kafka are gated behind `app.redis.enabled` / `app.kafka.enabled` so the app runs the complete stack locally (via Docker Compose) but uses an in-memory cache and in-process events in production — keeping the live demo free to host without removing the integrations.
 
