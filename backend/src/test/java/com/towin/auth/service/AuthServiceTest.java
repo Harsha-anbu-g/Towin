@@ -3,6 +3,7 @@ package com.towin.auth.service;
 import com.towin.auth.dto.LoginRequest;
 import com.towin.auth.dto.RegisterRequest;
 import com.towin.auth.security.JwtUtil;
+import com.towin.auth.security.LoginRateLimiter;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
@@ -23,22 +24,23 @@ class AuthServiceTest {
     @Mock UserRepository userRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock JwtUtil jwtUtil;
+    @Mock LoginRateLimiter loginRateLimiter;
     @InjectMocks AuthService authService;
 
     @Test
-    void shouldThrowWhenEmailAlreadyExists() {
+    void shouldThrowWhenUsernameAlreadyExists() {
         RegisterRequest req = registerRequest();
-        when(userRepository.existsByEmail("test@email.com")).thenReturn(true);
+        when(userRepository.existsByUsername("testuser")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(req))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Email already registered");
+            .hasMessageContaining("Username already taken");
     }
 
     @Test
     void shouldThrowWhenPhoneAlreadyExists() {
         RegisterRequest req = registerRequest();
-        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsByUsername(any())).thenReturn(false);
         when(userRepository.existsByPhone("+1234567890")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(req))
@@ -51,7 +53,7 @@ class AuthServiceTest {
         RegisterRequest req = registerRequest();
         UUID userId = UUID.randomUUID();
 
-        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsByUsername(any())).thenReturn(false);
         when(userRepository.existsByPhone(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("hashed");
         when(userRepository.save(any())).thenAnswer(inv -> {
@@ -59,7 +61,8 @@ class AuthServiceTest {
             u.setId(userId);
             return u;
         });
-        when(jwtUtil.generateToken(userId.toString(), "test@email.com", "ELDER")).thenReturn("mock-token");
+        // RegisterRequest carries no email, so the token is minted with a null email claim.
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER")).thenReturn("mock-token");
 
         var response = authService.register(req);
 
@@ -71,7 +74,7 @@ class AuthServiceTest {
     @Test
     void shouldThrowOnInvalidLoginEmail() {
         LoginRequest req = new LoginRequest();
-        req.setEmail("test@email.com");
+        req.setIdentifier("test@email.com");
         req.setPassword("wrongpassword");
 
         when(userRepository.findByEmail("test@email.com")).thenReturn(Optional.empty());
@@ -84,7 +87,7 @@ class AuthServiceTest {
     @Test
     void shouldThrowOnWrongPassword() {
         LoginRequest req = new LoginRequest();
-        req.setEmail("test@email.com");
+        req.setIdentifier("test@email.com");
         req.setPassword("wrongpassword");
 
         UUID userId = UUID.randomUUID();
@@ -99,9 +102,52 @@ class AuthServiceTest {
             .hasMessageContaining("Invalid credentials");
     }
 
+    @Test
+    void shouldLoginByPhoneEvenWhenNotVerified() {
+        // A brand-new account hasn't done the SMS OTP yet (phoneVerified = false).
+        // The password proves identity, so phone login must still work.
+        LoginRequest req = new LoginRequest();
+        req.setIdentifier("+14165550123");
+        req.setPassword("password123");
+
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().phone("+14165550123").passwordHash("hashed").role(UserRole.ELDER).build();
+        user.setId(userId);
+        user.setPhoneVerified(false);
+
+        when(userRepository.findByPhone("+14165550123")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER")).thenReturn("mock-token");
+
+        var response = authService.login(req);
+
+        assertThat(response.getToken()).isEqualTo("mock-token");
+        assertThat(response.getRole()).isEqualTo("ELDER");
+    }
+
+    @Test
+    void shouldMatchPhoneTypedWithSpacesAndDashes() {
+        // Stored as "+14165550123" at registration; user types it with separators.
+        LoginRequest req = new LoginRequest();
+        req.setIdentifier("+1 416-555 0123");
+        req.setPassword("password123");
+
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().phone("+14165550123").passwordHash("hashed").role(UserRole.ELDER).build();
+        user.setId(userId);
+
+        when(userRepository.findByPhone("+14165550123")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER")).thenReturn("mock-token");
+
+        var response = authService.login(req);
+
+        assertThat(response.getToken()).isEqualTo("mock-token");
+    }
+
     private RegisterRequest registerRequest() {
         RegisterRequest req = new RegisterRequest();
-        req.setEmail("test@email.com");
+        req.setUsername("testuser");
         req.setPhone("+1234567890");
         req.setPassword("password123");
         req.setRole(UserRole.ELDER);
