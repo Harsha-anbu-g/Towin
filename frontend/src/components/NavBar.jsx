@@ -203,18 +203,16 @@ export default function NavBar() {
         {/* Desktop right actions */}
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            {isElder && (
-              <Link to="/game" style={{
-                display: 'flex', alignItems: 'center', gap: '7px',
-                fontSize: '15px', fontWeight: 600, fontFamily: SF,
-                padding: '8px 16px', borderRadius: '9999px',
-                textDecoration: 'none', whiteSpace: 'nowrap',
-                background: pathname === '/game' ? '#3D8B5A' : '#EBF6EE',
-                color: pathname === '/game' ? '#fff' : '#3D8B5A',
-                border: `1.5px solid ${pathname === '/game' ? '#3D8B5A' : '#BFE0C9'}`,
-                transition: 'all 0.15s',
-              }}><Gamepad2 size={17} strokeWidth={2.2} aria-hidden="true" />Play Peekaboo</Link>
-            )}
+            <Link to="/game" style={{
+              display: 'flex', alignItems: 'center', gap: '7px',
+              fontSize: '15px', fontWeight: 600, fontFamily: SF,
+              padding: '8px 16px', borderRadius: '9999px',
+              textDecoration: 'none', whiteSpace: 'nowrap',
+              background: pathname === '/game' ? '#3D8B5A' : '#EBF6EE',
+              color: pathname === '/game' ? '#fff' : '#3D8B5A',
+              border: `1.5px solid ${pathname === '/game' ? '#3D8B5A' : '#BFE0C9'}`,
+              transition: 'all 0.15s',
+            }}><Gamepad2 size={17} strokeWidth={2.2} aria-hidden="true" />Play Peekaboo</Link>
             {isElder && (
               <button onClick={triggerSos} disabled={sending}
                 title="Send an urgent alert to all your emergency contacts"
@@ -293,7 +291,7 @@ export default function NavBar() {
             <MenuLink to="/profile" label="Profile" icon={User} />
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
-            {isElder && <MenuLink to="/game" label="Play Peekaboo" icon={Gamepad2} />}
+            <MenuLink to="/game" label="Play Peekaboo" icon={Gamepad2} />
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
               display: 'block', width: '100%', textAlign: 'left',
