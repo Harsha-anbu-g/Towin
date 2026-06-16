@@ -26,7 +26,7 @@ function PublicHeader() {
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
         <Link to="/login" style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470', textDecoration: 'none' }}>
-          Sign in
+          Log in
         </Link>
         <Link to="/register" style={{
           fontFamily: SF, fontSize: '15px', fontWeight: 600, color: '#fff', background: SKY,

@@ -249,7 +249,7 @@ export const STEPS = [
           'Miss a day and the current streak starts again, but your best streak is always kept.',
         ]} />
         <NoteBox>
-          The streak check-in is the first screen elders see after signing in. A simple,
+          The streak check-in is the first screen elders see after logging in. A simple,
           friendly way to start the day.
         </NoteBox>
       </>

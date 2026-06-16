@@ -14,7 +14,7 @@ export default function OAuthCallback() {
     const err = searchParams.get('error');
 
     if (err || !code) {
-      setError('Google sign-in was cancelled or failed. Please try again.');
+      setError('Could not connect with Google. Please try again.');
       return;
     }
 
@@ -40,7 +40,7 @@ export default function OAuthCallback() {
         }
       })
       .catch(() => {
-        setError('Something went wrong. Please try signing in again.');
+        setError('Something went wrong. Please try again.');
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -70,7 +70,7 @@ export default function OAuthCallback() {
               fontSize: '15px', cursor: 'pointer', fontFamily: SF,
             }}
           >
-            Back to Sign In
+            Back to log in
           </button>
         </div>
       ) : (
@@ -81,7 +81,7 @@ export default function OAuthCallback() {
             animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <p style={{ fontSize: '15px', margin: 0 }}>Signing you in…</p>
+          <p style={{ fontSize: '15px', margin: 0 }}>One moment…</p>
         </div>
       )}
     </div>
