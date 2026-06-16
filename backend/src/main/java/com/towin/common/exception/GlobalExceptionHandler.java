@@ -38,6 +38,10 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Role must be ELDER or HELPER",                 "Please select a valid role (Elder or Helper).");
         SAFE_MESSAGES.put("Username must be",                             "Username must be 3-20 characters: lowercase letters, numbers, underscores only.");
         SAFE_MESSAGES.put("Username already",                             "Username already taken. Please choose another.");
+        // Change-password flow
+        SAFE_MESSAGES.put("Current password is incorrect.",               "Current password is incorrect.");
+        SAFE_MESSAGES.put("New password must be different",               "New password must be different from your current password.");
+        SAFE_MESSAGES.put("This account uses Google sign-in",             "This account uses Google sign-in, so it has no password to change.");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
