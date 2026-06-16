@@ -59,3 +59,9 @@ docs/screenshots/*
 
 # Google OAuth client secret files — never commit these
 client_secret_*.json
+
+# Security scan reports & personal study/marketing docs — kept local, never published
+*-security-scan-*.md
+owasp-top-10-towin.*
+q-and-a-interview.*
+linkedin-video-scripts.*
