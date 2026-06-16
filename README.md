@@ -2,15 +2,52 @@
 
 # 🐢 ToWin
 
-### Connecting generations, building trust.
+### It takes two To Win.
 
-A social platform where **elders** and **younger helpers** meet, talk, and grow trust at their own pace.
+One who helps, one who gets help — and both win.
 
 **[🚀 Try the live demo →](https://towin.vercel.app)**
 
 *No signup needed — open the sign-in page and click **Try as an Elder** or **Try as a Helper**.*
 
 </div>
+
+---
+
+## 🤝 What is ToWin?
+
+ToWin brings together **two kinds of people** — and you pick which one you are when you create your account:
+
+- **Elder** — an older person looking for friendship, company, or help with daily tasks.
+- **Helper** — a younger person who gives time, company, and a hand with everyday things.
+
+### Help is hard to find alone
+
+Small daily things — like shopping, a ride, or someone to talk to — take energy that elders don't always have. On ToWin, an elder simply asks. Helpers nearby see the request and come to help with whatever is needed.
+
+### Trust is earned, not given
+
+Letting someone new into your life is a big step. So every member has a **Trust Score**, built from three things:
+
+- **Profile** — a full profile with ID, phone, and photo, all checked.
+- **Rooting (Trust Ladder)** — points earned each time a friendship takes a step forward.
+- **Review** — star ratings from the people they have already helped.
+
+*Elders see a helper's Trust Score before they ever say yes.*
+
+### How trust grows — the Trust Ladder
+
+Like a tree growing roots, every friendship on ToWin grows slowly, through **7 simple stages**:
+
+> **Just Connected → Messaging → Phone Ready → Video Ready → Verified → Ready to Meet → Fully Trusted**
+
+**Both people must agree to every step.** Nothing personal, like a phone number, is shared until trust has grown.
+
+### Both sides win
+
+> Elders have **time and money**, but need energy and company.
+> Helpers have **energy and time**, but need money and care.
+> **ToWin is where they meet and share — and both win.**
 
 ---
 
@@ -57,7 +94,7 @@ A social platform where **elders** and **younger helpers** meet, talk, and grow 
 
 - 🤝 **Build trust gradually** — connections move through levels (message → phone → meet), and **both people** confirm each step.
 - 📝 **Post & answer needs** — elders post tasks, helpers apply, accepting one starts a connection.
-- 💬 **Chat in real time** — WebSocket messaging; phone numbers stay hidden until trust is earned.
+- 💬 **Message privately** — chat opens once you connect; phone numbers stay hidden until trust is earned.
 - ⭐ **Earn a trust score** — verification, completed help, and reviews build a 0–100 score.
 - 🔥 **Keep a streak** — daily elder check-ins.
 - 🚨 **Stay safe** — emergency contacts, SOS, reviews, and reports.
