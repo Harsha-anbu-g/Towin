@@ -48,13 +48,10 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username already taken");
         }
-        if (userRepository.existsByPhone(request.getPhone())) {
-            throw new IllegalArgumentException("Phone already registered");
-        }
 
+        // Phone is no longer collected at sign-up; users add it later from their profile.
         User user = User.builder()
                 .username(request.getUsername())
-                .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .dateOfBirth(request.getDateOfBirth())
@@ -107,6 +104,26 @@ public class AuthService {
         loginRateLimiter.reset(id);
         String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Google-only accounts have no local password to verify against.
+        if (user.getPasswordHash() == null) {
+            throw new IllegalArgumentException("This account uses Google sign-in, so it has no password to change.");
+        }
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect.");
+        }
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("New password must be different from your current password.");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
     private User resolveUser(String identifier) {

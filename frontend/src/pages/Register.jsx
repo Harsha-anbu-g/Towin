@@ -266,7 +266,7 @@ export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    username: '', phone: '', password: '', confirmPassword: '',
+    username: '', password: '', confirmPassword: '',
     role: 'ELDER',
   });
   const [error, setError] = useState('');
@@ -321,16 +321,13 @@ export default function Register() {
     setError('');
     const errs = {};
     if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = 'Username must be 3-20 characters: lowercase letters, numbers, underscores only';
-    // Same shape the backend enforces: optional +, then 10-15 digits
-    const phoneDigits = form.phone.replace(/[\s()-]/g, '');
-    if (!/^\+?[0-9]{10,15}$/.test(phoneDigits)) errs.phone = 'Enter a valid phone number (10 to 15 digits)';
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
       const { username, password, role } = form;
-      const { data } = await api.post('/auth/register', { username, phone: phoneDigits, password, role });
+      const { data } = await api.post('/auth/register', { username, password, role });
       login(data.token);
       navigate(
         data.role === 'ADMIN' ? '/admin' :
@@ -489,30 +486,6 @@ export default function Register() {
                   3-20 characters. Letters, numbers, underscores. Visible to others.
                 </p>
               </div>
-
-              {/* Phone */}
-              <div>
-                <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
-                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                }}>
-                  Phone number
-                </label>
-                <input
-                  type="tel" autoComplete="tel" required
-                  className="field"
-                  value={form.phone}
-                  onChange={e => { setForm({ ...form, phone: e.target.value }); setFieldErrors(f => ({ ...f, phone: '' })); }}
-                  placeholder="+1 416 555 0123"
-                  style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
-                />
-                {fieldErrors.phone && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.phone}</p>}
-                <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
-                  Only shared with a connection after you both reach the Phone Ready trust stage.
-                </p>
-              </div>
-
 
               {/* Password */}
               <div>
