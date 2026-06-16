@@ -40,6 +40,15 @@ public class AuthController {
         return ResponseEntity.ok(authService.guestLogin(request.getRole()));
     }
 
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            Authentication auth,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        UUID userId = UUID.fromString(auth.getName());
+        authService.changePassword(userId, request);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/verify-id")
     public ResponseEntity<VerifyIdResponse> verifyId(
             Authentication auth,

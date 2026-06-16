@@ -90,6 +90,9 @@ export default function ProfileEdit() {
   const [photoFile, setPhotoFile] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoMsg, setPhotoMsg] = useState('');
+  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState('');
 
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
@@ -172,6 +175,20 @@ export default function ProfileEdit() {
       setPhotoMsg('Photo updated.'); setPhotoFile(null);
     } catch (err) { setPhotoMsg(err?.response?.data?.message || 'Upload failed.'); }
     finally { setUploadingPhoto(false); }
+  }
+
+  async function changePassword(e) {
+    e.preventDefault(); setPwMsg('');
+    if (pw.next.length < 8) { setPwMsg('New password must be at least 8 characters.'); return; }
+    if (pw.next !== pw.confirm) { setPwMsg('New passwords do not match.'); return; }
+    setPwSaving(true);
+    try {
+      await api.post('/auth/change-password', { currentPassword: pw.current, newPassword: pw.next });
+      setPwMsg('Password changed.');
+      setPw({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      setPwMsg(err?.response?.data?.message || 'Could not change password.');
+    } finally { setPwSaving(false); }
   }
 
   async function save(e) {
@@ -596,6 +613,53 @@ export default function ProfileEdit() {
                 </div>
               </div>
             </BlurFade>
+
+            {/* Password — only for accounts that sign in with a password */}
+            {profileData && profileData.authProvider !== 'GOOGLE' && (
+              <BlurFade delay={5}>
+                <div style={card}>
+                  {sectionHeader('Password')}
+                  <form onSubmit={changePassword} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px' }}>
+                        Current password
+                      </label>
+                      <input type="password" autoComplete="current-password" value={pw.current}
+                        onChange={e => setPw(p => ({ ...p, current: e.target.value }))}
+                        placeholder="Your current password" className="field" required
+                        style={{ width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px' }}>
+                        New password
+                      </label>
+                      <input type="password" autoComplete="new-password" value={pw.next}
+                        onChange={e => setPw(p => ({ ...p, next: e.target.value }))}
+                        placeholder="At least 8 characters" className="field" required
+                        style={{ width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px' }}>
+                        Confirm new password
+                      </label>
+                      <input type="password" autoComplete="new-password" value={pw.confirm}
+                        onChange={e => setPw(p => ({ ...p, confirm: e.target.value }))}
+                        placeholder="Type it again" className="field" required
+                        style={{ width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+                    {pwMsg && (
+                      <p style={{ fontSize: '13px', color: pwMsg.includes('changed') ? '#4FA3CE' : '#5a6470', fontWeight: 500, margin: 0 }}>
+                        {pwMsg}
+                      </p>
+                    )}
+                    <button type="submit" disabled={pwSaving} className="primary-btn"
+                      style={{ alignSelf: 'flex-start', fontSize: '14px' }}>
+                      {pwSaving ? 'Saving…' : 'Change password'}
+                    </button>
+                  </form>
+                </div>
+              </BlurFade>
+            )}
 
             {/* Account */}
             <BlurFade delay={5}>
