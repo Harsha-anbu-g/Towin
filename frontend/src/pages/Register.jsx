@@ -279,8 +279,8 @@ export default function Register() {
   const [guestLoading, setGuestLoading] = useState('');
 
   const DEMO = {
-    ELDER:  { username: 'elder',  password: '12345678' },
-    HELPER: { username: 'helper', password: '123456789' },
+    ELDER:  { identifier: 'elder',  password: '12345678' },
+    HELPER: { identifier: 'helper', password: '123456789' },
   };
 
   const handleGuest = async (role) => {
