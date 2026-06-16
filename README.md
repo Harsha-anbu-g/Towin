@@ -132,6 +132,18 @@ Scored 0–100, with auto-suspend on abuse.
 
 ---
 
+## 🔒 Security
+
+ToWin was reviewed against the **OWASP Top 10 (2021)** and scanned with **SonarQube** (SAST), **Snyk** (SCA + SAST), and **npm audit**. Highlights:
+
+- **Access control** — identity is always derived from the verified JWT (never the request body); resource ownership is re-checked in the service layer (IDOR defense), and a per-request `isActive` check revokes suspended accounts instantly.
+- **Auth & abuse limits** — BCrypt password hashing, brute-force lockouts on login and OTP, IP rate limits on registration, and a per-user limiter on paid SMS sends to stop cost abuse.
+- **Injection & XSS** — 100% parameterized JPA queries, React auto-escaping, and a strict Content-Security-Policy; no `dangerouslySetInnerHTML` or `eval` anywhere.
+- **Hardening** — stateless sessions, an env-driven CORS allowlist (no `*`, applied to HTTP **and** WebSocket origins), security headers (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, CSP), generic error responses that never leak internals, and server-validated uploads with a server-set content-type.
+- **Dependencies (OWASP A06)** — Snyk surfaced **90 transitive backend CVEs** and several frontend CVEs that SonarQube and `npm audit` had missed; remediated by upgrading Spring Boot, the AWS SDK, and Twilio to backward-compatible lines → **0 vulnerable paths**, all 54 backend tests still passing.
+
+---
+
 ## 📚 More docs
 
 - **[Deployment runbook](docs/DEPLOYMENT.md)** — hosting, env vars, dump/restore, recovery
