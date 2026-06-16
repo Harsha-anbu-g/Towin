@@ -89,10 +89,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntime(RuntimeException ex) {
-        log.error("RuntimeException: {}", ex.getMessage());
-        String msg = ex.getMessage() != null ? ex.getMessage() : "Something went wrong. Please try again.";
+        // Log the real cause server-side, but never echo internal exception text
+        // (stack-trace fragments, SQL, NPE messages) back to the client.
+        log.error("Unhandled RuntimeException", ex);
         return ResponseEntity.status(500)
-                .body(new ErrorResponse(msg, 500, LocalDateTime.now()));
+                .body(new ErrorResponse("Something went wrong. Please try again.", 500, LocalDateTime.now()));
     }
 
     @ExceptionHandler(Exception.class)
