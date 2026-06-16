@@ -53,6 +53,9 @@ public class SecurityConfig {
                 )
             )
             .authorizeHttpRequests(auth -> auth
+                // Self-service password change requires a valid session — must sit
+                // before the broad /api/auth/** permitAll so it is actually enforced.
+                .requestMatchers("/api/auth/change-password").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()

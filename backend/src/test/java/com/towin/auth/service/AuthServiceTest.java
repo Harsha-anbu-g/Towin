@@ -38,23 +38,11 @@ class AuthServiceTest {
     }
 
     @Test
-    void shouldThrowWhenPhoneAlreadyExists() {
-        RegisterRequest req = registerRequest();
-        when(userRepository.existsByUsername(any())).thenReturn(false);
-        when(userRepository.existsByPhone("+1234567890")).thenReturn(true);
-
-        assertThatThrownBy(() -> authService.register(req))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Phone already registered");
-    }
-
-    @Test
     void shouldRegisterSuccessfully() {
         RegisterRequest req = registerRequest();
         UUID userId = UUID.randomUUID();
 
         when(userRepository.existsByUsername(any())).thenReturn(false);
-        when(userRepository.existsByPhone(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("hashed");
         when(userRepository.save(any())).thenAnswer(inv -> {
             User u = inv.getArgument(0);
@@ -148,7 +136,6 @@ class AuthServiceTest {
     private RegisterRequest registerRequest() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("testuser");
-        req.setPhone("+1234567890");
         req.setPassword("password123");
         req.setRole(UserRole.ELDER);
         return req;
