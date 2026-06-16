@@ -1,21 +1,51 @@
+ToWin — Source-Available, View-Only License
 Copyright (c) 2026 Harshavardhan ag (agharsha.anbu@gmail.com)
 
 All Rights Reserved.
 
-This software and associated documentation files (the "Software") are the
-exclusive property of Harshavardhan ag. No part of this Software may be
-reproduced, distributed, transmitted, copied, cloned, modified, merged,
-published, sublicensed, sold, or otherwise used in any form or by any means —
-electronic, mechanical, photocopying, recording, or otherwise — without the
-express prior written permission of the copyright owner.
+SUMMARY (non-binding): This repository is public so that the source code may
+be VIEWED and EVALUATED — for example, by recruiters, interviewers, and others
+assessing the author's work. Public visibility does NOT make this open-source
+software and grants NO right to use the code. The full legal terms below
+control.
 
-Unauthorized use, reproduction, or distribution of this Software, in whole or
-in part, is strictly prohibited and may result in civil and criminal penalties
-under applicable law.
+1. DEFINITIONS
+   "Software" means this source code, documentation, assets, and all associated
+   files in this repository. "Author" means the copyright owner named above.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED. IN NO EVENT SHALL THE COPYRIGHT OWNER BE LIABLE FOR ANY CLAIM,
-DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR INABILITY TO USE THE SOFTWARE.
+2. GRANT OF PERMISSION (LIMITED)
+   You are permitted ONLY to:
+     (a) view and read the Software through this hosting platform; and
+     (b) clone or download it solely for the purpose of privately reading and
+         evaluating it.
+   No other rights are granted.
 
-For licensing inquiries, contact: agharsha.anbu@gmail.com
+3. RESTRICTIONS
+   Except as expressly permitted in Section 2, you may NOT, without the express
+   prior written permission of the Author:
+     (a) use the Software, in whole or in part, in any product, service, or
+         project — commercial or non-commercial;
+     (b) copy, reproduce, republish, mirror, or redistribute the Software;
+     (c) modify, adapt, translate, or create derivative works from it;
+     (d) sublicense, sell, rent, lease, or otherwise commercially exploit it;
+     (e) remove or alter this license or any copyright or attribution notice.
+
+4. NO OPEN-SOURCE LICENSE
+   The public availability of this repository does not constitute, and shall
+   not be construed as, the grant of any open-source license. The Author
+   reserves all rights not expressly granted herein.
+
+5. ENFORCEMENT
+   Unauthorized use, reproduction, or distribution of the Software, in whole or
+   in part, is strictly prohibited and may result in civil and criminal
+   penalties under applicable law.
+
+6. DISCLAIMER OF WARRANTY AND LIABILITY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR INABILITY TO USE THE SOFTWARE.
+
+For licensing inquiries or permission requests, contact: agharsha.anbu@gmail.com
