@@ -70,7 +70,7 @@ export default function ProfileEdit() {
     name: '', age: '', bio: '',
     interests: '', languages: '', lookingFor: 'BOTH',
     skillsOffered: '', availabilityDays: '', availabilityTimes: '',
-    hobbies: '', occupation: '', facebookUrl: '', instagramUrl: '', dateOfBirth: '',
+    hobbies: '', occupation: '', gender: '', facebookUrl: '', instagramUrl: '', dateOfBirth: '',
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -90,9 +90,6 @@ export default function ProfileEdit() {
   const [photoFile, setPhotoFile] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoMsg, setPhotoMsg] = useState('');
-  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
-  const [pwSaving, setPwSaving] = useState(false);
-  const [pwMsg, setPwMsg] = useState('');
 
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
@@ -111,6 +108,7 @@ export default function ProfileEdit() {
         availabilityTimes: (p.availabilityTimes || []).join(', '),
         hobbies: (p.hobbies || []).join(', '),
         occupation: p.occupation || '',
+        gender: p.gender || '',
         facebookUrl: p.facebookUrl || '',
         instagramUrl: p.instagramUrl || '',
         dateOfBirth: p.dateOfBirth || '',
@@ -177,20 +175,6 @@ export default function ProfileEdit() {
     finally { setUploadingPhoto(false); }
   }
 
-  async function changePassword(e) {
-    e.preventDefault(); setPwMsg('');
-    if (pw.next.length < 8) { setPwMsg('New password must be at least 8 characters.'); return; }
-    if (pw.next !== pw.confirm) { setPwMsg('New passwords do not match.'); return; }
-    setPwSaving(true);
-    try {
-      await api.post('/auth/change-password', { currentPassword: pw.current, newPassword: pw.next });
-      setPwMsg('Password changed.');
-      setPw({ current: '', next: '', confirm: '' });
-    } catch (err) {
-      setPwMsg(err?.response?.data?.message || 'Could not change password.');
-    } finally { setPwSaving(false); }
-  }
-
   async function save(e) {
     e.preventDefault(); setSaving(true); setMsg('');
     const computedAge = form.dateOfBirth
@@ -204,6 +188,7 @@ export default function ProfileEdit() {
           facebookUrl: form.facebookUrl || null,
           instagramUrl: form.instagramUrl || null,
           occupation: form.occupation || null,
+          gender: form.gender || null,
           dateOfBirth: form.dateOfBirth || null,
         });
       } else {
@@ -213,6 +198,7 @@ export default function ProfileEdit() {
           availabilityDays: toArr(form.availabilityDays), availabilityTimes: toArr(form.availabilityTimes),
           hobbies: toArr(form.hobbies),
           occupation: form.occupation,
+          gender: form.gender || null,
           facebookUrl: form.facebookUrl,
           instagramUrl: form.instagramUrl,
           dateOfBirth: form.dateOfBirth || null,
@@ -448,6 +434,15 @@ export default function ProfileEdit() {
                     <input {...f('occupation')} placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
+                  <FieldRow label="Sex">
+                    <select {...f('gender')} className="field" style={{ width: '100%', boxSizing: 'border-box' }}>
+                      <option value="">Select…</option>
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </FieldRow>
+                  <Divider />
                   <FieldRow label="Facebook URL">
                     <input {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
@@ -614,53 +609,6 @@ export default function ProfileEdit() {
               </div>
             </BlurFade>
 
-            {/* Password — only for accounts that sign in with a password */}
-            {profileData && profileData.authProvider !== 'GOOGLE' && (
-              <BlurFade delay={5}>
-                <div style={card}>
-                  {sectionHeader('Password')}
-                  <form onSubmit={changePassword} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px' }}>
-                        Current password
-                      </label>
-                      <input type="password" autoComplete="current-password" value={pw.current}
-                        onChange={e => setPw(p => ({ ...p, current: e.target.value }))}
-                        placeholder="Your current password" className="field" required
-                        style={{ width: '100%', boxSizing: 'border-box' }} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px' }}>
-                        New password
-                      </label>
-                      <input type="password" autoComplete="new-password" value={pw.next}
-                        onChange={e => setPw(p => ({ ...p, next: e.target.value }))}
-                        placeholder="At least 8 characters" className="field" required
-                        style={{ width: '100%', boxSizing: 'border-box' }} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px' }}>
-                        Confirm new password
-                      </label>
-                      <input type="password" autoComplete="new-password" value={pw.confirm}
-                        onChange={e => setPw(p => ({ ...p, confirm: e.target.value }))}
-                        placeholder="Type it again" className="field" required
-                        style={{ width: '100%', boxSizing: 'border-box' }} />
-                    </div>
-                    {pwMsg && (
-                      <p style={{ fontSize: '13px', color: pwMsg.includes('changed') ? '#4FA3CE' : '#5a6470', fontWeight: 500, margin: 0 }}>
-                        {pwMsg}
-                      </p>
-                    )}
-                    <button type="submit" disabled={pwSaving} className="primary-btn"
-                      style={{ alignSelf: 'flex-start', fontSize: '14px' }}>
-                      {pwSaving ? 'Saving…' : 'Change password'}
-                    </button>
-                  </form>
-                </div>
-              </BlurFade>
-            )}
-
             {/* Account */}
             <BlurFade delay={5}>
               <div style={{
@@ -695,6 +643,28 @@ export default function ProfileEdit() {
                       <p style={{ fontSize: '14px', color: '#1d1d1f', margin: 0 }}>{profileData.email}</p>
                     </div>
                   </div>
+                )}
+
+                {/* Change Password — only for accounts that sign in with a password */}
+                {profileData && profileData.authProvider !== 'GOOGLE' && (
+                  <button
+                    onClick={() => navigate('/profile/change-password')}
+                    style={{
+                      width: '100%',
+                      background: '#ffffff',
+                      color: SKY,
+                      border: `1.5px solid ${SKY}`,
+                      borderRadius: '9999px',
+                      padding: '10px 0',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      fontFamily: SFText,
+                      cursor: 'pointer',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Change Password
+                  </button>
                 )}
 
                 <div style={{ display: 'flex', gap: '10px' }}>
