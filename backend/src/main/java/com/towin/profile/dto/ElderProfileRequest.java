@@ -1,5 +1,6 @@
 package com.towin.profile.dto;
 
+import com.towin.common.enums.Gender;
 import com.towin.common.enums.LookingForType;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -22,5 +23,6 @@ public class ElderProfileRequest {
     private String facebookUrl;
     private String instagramUrl;
     private String occupation;
+    private Gender gender;
     private LocalDate dateOfBirth;
 }

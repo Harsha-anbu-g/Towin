@@ -31,6 +31,7 @@ public class ProfileResponse {
     private String phone;
     private String[] hobbies;
     private String occupation;
+    private String gender;
     private String facebookUrl;
     private String instagramUrl;
     private String dateOfBirth;

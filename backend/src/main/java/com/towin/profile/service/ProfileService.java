@@ -41,6 +41,7 @@ public class ProfileService {
         profile.setFacebookUrl(request.getFacebookUrl());
         profile.setInstagramUrl(request.getInstagramUrl());
         profile.setOccupation(request.getOccupation());
+        profile.setGender(request.getGender());
         if (request.getDateOfBirth() != null) {
             user.setDateOfBirth(request.getDateOfBirth());
             userRepository.save(user);
@@ -69,6 +70,7 @@ public class ProfileService {
         profile.setAvailabilityTimes(request.getAvailabilityTimes());
         profile.setHobbies(request.getHobbies());
         profile.setOccupation(request.getOccupation());
+        profile.setGender(request.getGender());
         profile.setFacebookUrl(request.getFacebookUrl());
         profile.setInstagramUrl(request.getInstagramUrl());
         profile.setDateOfBirth(request.getDateOfBirth());
@@ -161,6 +163,7 @@ public class ProfileService {
                     .interests(elder.getInterests())
                     .languages(elder.getLanguages())
                     .lookingFor(elder.getLookingFor().name())
+                    .gender(elder.getGender() != null ? elder.getGender().name() : null)
                     .facebookUrl(elder.getFacebookUrl())
                     .instagramUrl(elder.getInstagramUrl())
                     .occupation(elder.getOccupation());
@@ -178,6 +181,7 @@ public class ProfileService {
                     .backgroundCheckStatus(helper.getBackgroundCheckStatus().name())
                     .hobbies(helper.getHobbies())
                     .occupation(helper.getOccupation())
+                    .gender(helper.getGender() != null ? helper.getGender().name() : null)
                     .facebookUrl(helper.getFacebookUrl())
                     .instagramUrl(helper.getInstagramUrl());
         }

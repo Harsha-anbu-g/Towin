@@ -2,6 +2,7 @@ package com.towin.profile.entity;
 
 import com.towin.common.entity.User;
 import com.towin.common.enums.BackgroundCheckStatus;
+import com.towin.common.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -61,6 +62,11 @@ public class HelperProfile {
 
     @Column(name = "occupation")
     private String occupation;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "gender", columnDefinition = "gender_type")
+    private Gender gender;
 
     @Column(name = "facebook_url")
     private String facebookUrl;
