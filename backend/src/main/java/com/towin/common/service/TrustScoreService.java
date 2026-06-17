@@ -11,6 +11,7 @@ import com.towin.profile.entity.ElderProfile;
 import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
+import com.towin.review.entity.Review;
 import com.towin.review.repository.ReviewRepository;
 import com.towin.trust.dto.TrustScoreBreakdownResponse;
 import com.towin.trust.dto.TrustScoreBreakdownResponse.*;
@@ -19,12 +20,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Trust score v3 — per-customer model.
+ *
+ * Every active customer relationship is worth up to 15 whole points:
+ *   • Rooting  0–7  — one point per trust stage reached with that customer.
+ *   • Review   0–5  — one point per star the customer gives you (latest review).
+ *   • Profile  0–3  — your profile completeness, counted for every customer.
+ *
+ * Total trust score = the sum across all customers.
+ */
 @Service
 @RequiredArgsConstructor
 public class TrustScoreService {
+
+    public static final int ROOTING_MAX  = 7;
+    public static final int REVIEW_MAX   = 5;
+    public static final int PROFILE_MAX  = 3;
+    public static final int CUSTOMER_MAX = ROOTING_MAX + REVIEW_MAX + PROFILE_MAX; // 15
 
     private final UserRepository userRepository;
     private final HelperProfileRepository helperProfileRepository;
@@ -36,164 +54,164 @@ public class TrustScoreService {
     public void recalculate(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-        HelperProfile profile = helperProfileRepository.findByUserId(userId).orElse(null);
-        ElderProfile elderProfile = elderProfileRepository.findByUserId(userId).orElse(null);
 
-        double basic  = calculateBasicScore(user, profile, elderProfile);
-        int rooting   = calculateRootingScore(userId);
-        int review    = reviewRepository.sumRatingsByRevieweeId(userId);
+        int profilePoints = calculateProfilePoints(user);
+        Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
-        user.setTrustScore(basic + rooting + review);
+        int total = 0;
+        for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
+            UUID customerId = c.getOtherUser(userId).getId();
+            int rooting = rootingPoints(c.getCurrentTrustLevel());
+            int review  = Math.min(reviewByCustomer.getOrDefault(customerId, 0), REVIEW_MAX);
+            total += rooting + review + profilePoints;
+        }
+
+        user.setTrustScore((double) total);
         userRepository.save(user);
     }
 
     public TrustScoreBreakdownResponse getMyScoreBreakdown(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-        HelperProfile profile = helperProfileRepository.findByUserId(userId).orElse(null);
-        ElderProfile elderProfile = elderProfileRepository.findByUserId(userId).orElse(null);
 
-        double basic = calculateBasicScore(user, profile, elderProfile);
+        int profilePoints = calculateProfilePoints(user);
+        Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
-        List<Connection> active = connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE);
-        int rootingScore = active.stream().mapToInt(c -> stagesEarned(c.getCurrentTrustLevel())).sum();
+        List<CustomerCard> cards = new ArrayList<>();
+        int total = 0;
 
-        int reviewScore = reviewRepository.sumRatingsByRevieweeId(userId);
-        int reviewCount = reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId).size();
+        for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
+            User customer = c.getOtherUser(userId);
+            int rooting = rootingPoints(c.getCurrentTrustLevel());
+            int review  = Math.min(reviewByCustomer.getOrDefault(customer.getId(), 0), REVIEW_MAX);
+            int cardTotal = rooting + review + profilePoints;
+            total += cardTotal;
 
-        double total = basic + rootingScore + reviewScore;
+            cards.add(CustomerCard.builder()
+                    .connectionId(c.getId())
+                    .customerName(displayName(customer))
+                    .customerPhotoUrl(photoUrl(customer))
+                    .currentStageLabel(stageLabel(c.getCurrentTrustLevel()))
+                    .stageIndex(c.getCurrentTrustLevel().getValue())
+                    .rooting(rooting).rootingMax(ROOTING_MAX)
+                    .review(review).reviewMax(REVIEW_MAX).hasReview(review > 0)
+                    .profile(profilePoints).profileMax(PROFILE_MAX)
+                    .total(cardTotal).totalMax(CUSTOMER_MAX)
+                    .build());
+        }
+
+        // Most points first — completed customers float to the top.
+        cards.sort((a, b) -> Integer.compare(b.getTotal(), a.getTotal()));
 
         return TrustScoreBreakdownResponse.builder()
-                .totalScore(total)
-                .tier(tierFor((int) Math.round(total)))
-                .basic(BasicSection.builder()
-                        .earned(basic)
-                        .max(2.0)
-                        .fields(buildProfileFields(user, profile, elderProfile))
+                .totalScore((double) total)
+                .tier(tierFor(total))
+                .maxPerCustomer(CUSTOMER_MAX)
+                .profile(ProfileSection.builder()
+                        .earned(profilePoints)
+                        .max(PROFILE_MAX)
+                        .tasks(buildProfileTasks(user))
                         .build())
-                .rooting(RootingSection.builder()
-                        .earned(rootingScore)
-                        .relationshipCount(active.size())
-                        .detail(active.size() + " active " + (active.size() == 1 ? "relationship" : "relationships")
-                                + " · " + rootingScore + " stage " + (rootingScore == 1 ? "point" : "points") + " earned")
-                        .build())
-                .review(ReviewSection.builder()
-                        .earned(reviewScore)
-                        .reviewCount(reviewCount)
-                        .detail(reviewCount + (reviewCount == 1 ? " review" : " reviews")
-                                + " · " + reviewScore + " total " + (reviewScore == 1 ? "star" : "stars"))
-                        .build())
+                .customers(cards)
                 .build();
     }
 
-    // ── Private helpers ──────────────────────────────────────────────────────
+    // ── Scoring helpers ──────────────────────────────────────────────────────
 
-    private double calculateBasicScore(User user, HelperProfile p, ElderProfile e) {
-        double score = 0.0;
-        if (user.getVerificationStatus() == VerificationStatus.VERIFIED) score += 0.25;
-        if (user.isPhoneVerified())                                        score += 0.25;
-
-        if (p != null) {
-            if (notBlank(p.getPhotoUrl()))                                     score += 0.25;
-            if (notBlank(p.getFacebookUrl()) || notBlank(p.getInstagramUrl())) score += 0.25;
-            if (p.getHobbies() != null && p.getHobbies().length > 0)          score += 0.25;
-            if (notBlank(p.getOccupation()))                                   score += 0.25;
-            if (notBlank(p.getBio()))                                          score += 0.25;
-            if (p.getDateOfBirth() != null)                                    score += 0.25;
-        }
-
-        if (e != null) {
-            if (notBlank(e.getPhotoUrl()))                                     score += 0.25;
-            if (notBlank(e.getFacebookUrl()) || notBlank(e.getInstagramUrl())) score += 0.25;
-            if (notBlank(e.getOccupation()))                                   score += 0.25;
-            if (notBlank(e.getBio()))                                          score += 0.25;
-            if (user.getDateOfBirth() != null)                                 score += 0.25;
-        }
-
-        return Math.min(score, 2.0);
+    /** One point per trust stage reached: DISCOVERED=1 … TRUSTED=7. */
+    private int rootingPoints(TrustLevel level) {
+        return Math.min(level.getValue() + 1, ROOTING_MAX);
     }
 
-    private int calculateRootingScore(UUID userId) {
-        return connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)
-                .stream().mapToInt(c -> stagesEarned(c.getCurrentTrustLevel())).sum();
-    }
-
-    private int stagesEarned(TrustLevel level) {
-        int v = level.getValue();
+    /** Profile = 3 simple milestones, 1 point each. */
+    private int calculateProfilePoints(User user) {
+        HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
+        ElderProfile  e = elderProfileRepository.findByUserId(user.getId()).orElse(null);
         int pts = 0;
-        if (v >= TrustLevel.MESSAGING.getValue())  pts++; // Stage 1: text
-        if (v >= TrustLevel.PHONE_CALL.getValue()) pts++; // Stage 2: voice
-        if (v >= TrustLevel.VIDEO_CALL.getValue()) pts++; // Stage 3: video
-        if (v >= TrustLevel.FIRST_MEET.getValue()) pts++; // Stage 4: in-person (VERIFIED=4 < FIRST_MEET=5, skipped)
-        if (v >= TrustLevel.TRUSTED.getValue())    pts++; // Stage 5: help session
+        if (hasPhoto(p, e)) pts++;
+        if (hasBio(p, e))   pts++;
+        if (isVerified(user)) pts++;
         return pts;
     }
 
-    private List<ProfileField> buildProfileFields(User user, HelperProfile p, ElderProfile e) {
-        List<ProfileField> fields = new ArrayList<>();
-        fields.add(field("id_verified", "Identity Verified",
-                user.getVerificationStatus() == VerificationStatus.VERIFIED,
-                "Upload a government ID in Profile → Verification."));
-        fields.add(field("phone_verified", "Phone Verified",
-                user.isPhoneVerified(),
-                "Verify your phone number in Profile → Verification."));
-
-        if (p != null) {
-            fields.add(field("photo",      "Profile Photo",
-                    notBlank(p.getPhotoUrl()),
-                    "Add a clear photo so elders feel comfortable."));
-            fields.add(field("social",     "Social Media",
-                    notBlank(p.getFacebookUrl()) || notBlank(p.getInstagramUrl()),
-                    "Link your Facebook or Instagram in your profile."));
-            fields.add(field("hobbies",    "Hobbies",
-                    p.getHobbies() != null && p.getHobbies().length > 0,
-                    "Add at least one hobby. Shared interests start friendships."));
-            fields.add(field("occupation", "Occupation",
-                    notBlank(p.getOccupation()),
-                    "Add your occupation. It helps others feel comfortable."));
-            fields.add(field("bio",        "About Me",
-                    notBlank(p.getBio()),
-                    "Write a short bio in your own words."));
-            fields.add(field("dob",        "Date of Birth",
-                    p.getDateOfBirth() != null,
-                    "Add your date of birth in your profile."));
+    /** Newest review rating per reviewer (the customer's latest word on you). */
+    private Map<UUID, Integer> latestRatingByReviewer(UUID userId) {
+        Map<UUID, Integer> map = new HashMap<>();
+        for (Review r : reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)) {
+            map.putIfAbsent(r.getReviewer().getId(), r.getRating()); // first = newest
         }
-
-        if (e != null) {
-            fields.add(field("photo",      "Profile Photo",
-                    notBlank(e.getPhotoUrl()),
-                    "Add a clear photo so others feel comfortable."));
-            fields.add(field("social",     "Social Media",
-                    notBlank(e.getFacebookUrl()) || notBlank(e.getInstagramUrl()),
-                    "Link your Facebook or Instagram in your profile."));
-            fields.add(field("occupation", "Occupation",
-                    notBlank(e.getOccupation()),
-                    "Add your occupation. It helps others feel comfortable."));
-            fields.add(field("bio",        "About Me",
-                    notBlank(e.getBio()),
-                    "Write a short bio in your own words."));
-            fields.add(field("dob",        "Date of Birth",
-                    user.getDateOfBirth() != null,
-                    "Add your date of birth in your profile."));
-        }
-
-        return fields;
+        return map;
     }
 
-    private ProfileField field(String key, String label, boolean completed, String tip) {
-        return ProfileField.builder()
+    private List<ProfileTask> buildProfileTasks(User user) {
+        HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
+        ElderProfile  e = elderProfileRepository.findByUserId(user.getId()).orElse(null);
+
+        List<ProfileTask> tasks = new ArrayList<>();
+        tasks.add(task("photo", "Add a profile photo", hasPhoto(p, e),
+                "A clear photo helps people feel comfortable with you."));
+        tasks.add(task("bio", "Write a short bio", hasBio(p, e),
+                "A few words about yourself goes a long way."));
+        tasks.add(task("verified", "Verify yourself", isVerified(user),
+                "Verify your phone or your ID in Profile."));
+        return tasks;
+    }
+
+    private ProfileTask task(String key, String label, boolean completed, String tip) {
+        return ProfileTask.builder()
                 .key(key).label(label).completed(completed)
                 .tip(completed ? null : tip)
                 .build();
     }
 
+    private boolean hasPhoto(HelperProfile p, ElderProfile e) {
+        return (p != null && notBlank(p.getPhotoUrl())) || (e != null && notBlank(e.getPhotoUrl()));
+    }
+
+    private boolean hasBio(HelperProfile p, ElderProfile e) {
+        return (p != null && notBlank(p.getBio())) || (e != null && notBlank(e.getBio()));
+    }
+
+    private boolean isVerified(User user) {
+        return user.isPhoneVerified() || user.getVerificationStatus() == VerificationStatus.VERIFIED;
+    }
+
+    // ── Display helpers ──────────────────────────────────────────────────────
+
+    private String stageLabel(TrustLevel level) {
+        switch (level) {
+            case MESSAGING:  return "Messaging";
+            case PHONE_CALL: return "Phone Ready";
+            case VIDEO_CALL: return "Video Ready";
+            case VERIFIED:   return "Verified";
+            case FIRST_MEET: return "Ready to Meet";
+            case TRUSTED:    return "Fully Trusted";
+            case DISCOVERED:
+            default:         return "Connected";
+        }
+    }
+
+    private String displayName(User user) {
+        return elderProfileRepository.findByUserId(user.getId()).map(ElderProfile::getName)
+                .or(() -> helperProfileRepository.findByUserId(user.getId()).map(HelperProfile::getName))
+                .filter(this::notBlank)
+                .orElseGet(() -> user.getFullName() != null ? user.getFullName() : "A member");
+    }
+
+    private String photoUrl(User user) {
+        return elderProfileRepository.findByUserId(user.getId()).map(ElderProfile::getPhotoUrl)
+                .or(() -> helperProfileRepository.findByUserId(user.getId()).map(HelperProfile::getPhotoUrl))
+                .filter(this::notBlank)
+                .orElse(null);
+    }
+
     private boolean notBlank(String s) { return s != null && !s.isBlank(); }
 
     public static String tierFor(int score) {
-        if (score >= 120) return "Community Champion";
-        if (score >= 50)  return "Highly Trusted";
-        if (score >= 15)  return "Reliable";
-        if (score >= 3)   return "Getting Started";
+        if (score >= 90) return "Community Champion";
+        if (score >= 45) return "Highly Trusted";
+        if (score >= 15) return "Reliable";
+        if (score >= 1)  return "Getting Started";
         return "New Member";
     }
 }

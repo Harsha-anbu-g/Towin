@@ -11,21 +11,21 @@ import com.towin.connection.repository.ConnectionRepository;
 import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
+import com.towin.review.entity.Review;
 import com.towin.review.repository.ReviewRepository;
 import com.towin.trust.dto.TrustScoreBreakdownResponse;
+import com.towin.trust.dto.TrustScoreBreakdownResponse.CustomerCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class TrustScoreServiceTest {
@@ -51,171 +51,150 @@ class TrustScoreServiceTest {
                 .verificationStatus(VerificationStatus.NONE)
                 .trustScore(0.0)
                 .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
     }
 
-    private void stubEmpty() {
-        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of());
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(0);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+    private void connections(Connection... cs) {
+        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of(cs));
     }
 
-    // ── Basic Score ──────────────────────────────────────────────────────────
+    private void reviews(Review... rs) {
+        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of(rs));
+    }
+
+    private User customer() {
+        return User.builder().id(UUID.randomUUID()).build();
+    }
+
+    private Connection connection(User customer, TrustLevel level) {
+        return Connection.builder().userA(baseUser).userB(customer).currentTrustLevel(level).build();
+    }
+
+    // ── Profile (0–3, three milestones) ──────────────────────────────────────
 
     @Test
-    void basicScore_0_25_whenOnlyPhoneVerified() {
-        baseUser.setPhoneVerified(true);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        stubEmpty();
+    void profile_isZero_whenNothingFilled() {
+        connections();
+        reviews();
 
         TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
 
-        assertThat(r.getBasic().getEarned()).isEqualTo(0.25);
+        assertThat(r.getProfile().getEarned()).isEqualTo(0);
+        assertThat(r.getProfile().getMax()).isEqualTo(3);
+        assertThat(r.getTotalScore()).isEqualTo(0.0);
+        assertThat(r.getCustomers()).isEmpty();
     }
 
     @Test
-    void basicScore_2_0_whenAllEightFieldsFilled() {
-        baseUser.setPhoneVerified(true);
-        baseUser.setVerificationStatus(VerificationStatus.VERIFIED);
+    void profile_isThree_whenPhotoBioAndVerified() {
+        baseUser.setPhoneVerified(true); // counts as "verified"
         HelperProfile profile = HelperProfile.builder()
                 .photoUrl("https://photo.jpg")
-                .facebookUrl("https://facebook.com/me")
-                .hobbies(new String[]{"reading"})
-                .occupation("Teacher")
-                .bio("Hello world")
-                .dateOfBirth(LocalDate.of(1960, 1, 1))
+                .bio("Hello, I love helping out.")
                 .build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
         when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
-        stubEmpty();
+        connections();
+        reviews();
 
         TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
 
-        assertThat(r.getBasic().getEarned()).isEqualTo(2.0);
-        assertThat(r.getBasic().getMax()).isEqualTo(2.0);
+        assertThat(r.getProfile().getEarned()).isEqualTo(3);
     }
 
-    // ── Rooting Score ────────────────────────────────────────────────────────
+    // ── Rooting (one point per stage, 1–7) ───────────────────────────────────
 
     @Test
-    void rootingScore_0_whenConnectionAtDiscovered() {
-        Connection c = Connection.builder()
-                .userA(baseUser).userB(User.builder().id(UUID.randomUUID()).build())
-                .currentTrustLevel(TrustLevel.DISCOVERED).build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of(c));
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(0);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+    void rooting_isOne_atDiscovered() {
+        connections(connection(customer(), TrustLevel.DISCOVERED));
+        reviews();
 
-        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+        CustomerCard card = trustScoreService.getMyScoreBreakdown(userId).getCustomers().get(0);
 
-        assertThat(r.getRooting().getEarned()).isEqualTo(0);
+        assertThat(card.getRooting()).isEqualTo(1);
+        assertThat(card.getStageIndex()).isEqualTo(0);
+        assertThat(card.getCurrentStageLabel()).isEqualTo("Connected");
     }
 
     @Test
-    void rootingScore_1_whenOneConnectionAtMessaging() {
-        Connection c = Connection.builder()
-                .userA(baseUser).userB(User.builder().id(UUID.randomUUID()).build())
-                .currentTrustLevel(TrustLevel.MESSAGING).build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of(c));
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(0);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+    void rooting_isSeven_atTrusted() {
+        connections(connection(customer(), TrustLevel.TRUSTED));
+        reviews();
 
-        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+        CustomerCard card = trustScoreService.getMyScoreBreakdown(userId).getCustomers().get(0);
 
-        assertThat(r.getRooting().getEarned()).isEqualTo(1);
+        assertThat(card.getRooting()).isEqualTo(7);
+        assertThat(card.getCurrentStageLabel()).isEqualTo("Fully Trusted");
     }
 
     @Test
-    void rootingScore_5_whenOneConnectionAtTrusted() {
-        Connection c = Connection.builder()
-                .userA(baseUser).userB(User.builder().id(UUID.randomUUID()).build())
-                .currentTrustLevel(TrustLevel.TRUSTED).build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of(c));
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(0);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+    void rooting_isFive_atVerified() {
+        connections(connection(customer(), TrustLevel.VERIFIED));
+        reviews();
 
-        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+        CustomerCard card = trustScoreService.getMyScoreBreakdown(userId).getCustomers().get(0);
 
-        assertThat(r.getRooting().getEarned()).isEqualTo(5);
+        assertThat(card.getRooting()).isEqualTo(5);
     }
 
+    // ── Review (one point per star from that customer, max 5) ─────────────────
+
     @Test
-    void rootingScore_3_whenConnectionAtVerified_verifiedIsNotASpecStage() {
-        // VERIFIED(4) is not a spec stage — earns same as VIDEO_CALL(3) = 3 pts
-        Connection c = Connection.builder()
-                .userA(baseUser).userB(User.builder().id(UUID.randomUUID()).build())
-                .currentTrustLevel(TrustLevel.VERIFIED).build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of(c));
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(0);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+    void review_countsThatCustomersLatestRating() {
+        User cust = customer();
+        Review fiveStar = Review.builder().reviewer(cust).reviewee(baseUser).rating(5).build();
+        connections(connection(cust, TrustLevel.DISCOVERED));
+        reviews(fiveStar);
 
-        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+        CustomerCard card = trustScoreService.getMyScoreBreakdown(userId).getCustomers().get(0);
 
-        assertThat(r.getRooting().getEarned()).isEqualTo(3);
+        assertThat(card.getReview()).isEqualTo(5);
+        assertThat(card.isHasReview()).isTrue();
+        // rooting 1 + review 5 + profile 0
+        assertThat(card.getTotal()).isEqualTo(6);
     }
 
-    @Test
-    void rootingScore_isAdditiveAcrossConnections() {
-        Connection c1 = Connection.builder()
-                .userA(baseUser).userB(User.builder().id(UUID.randomUUID()).build())
-                .currentTrustLevel(TrustLevel.MESSAGING).build();
-        Connection c2 = Connection.builder()
-                .userA(baseUser).userB(User.builder().id(UUID.randomUUID()).build())
-                .currentTrustLevel(TrustLevel.PHONE_CALL).build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of(c1, c2));
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(0);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
-
-        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
-
-        // MESSAGING=1 + PHONE_CALL=2 = 3
-        assertThat(r.getRooting().getEarned()).isEqualTo(3);
-        assertThat(r.getRooting().getRelationshipCount()).isEqualTo(2);
-    }
-
-    // ── Review Score ─────────────────────────────────────────────────────────
+    // ── Total = sum across customers, with profile counted per customer ───────
 
     @Test
-    void reviewScore_isSumNotAverage() {
-        // 5-star reviews: 5 + 3 + 4 = 12 (not avg 4.0)
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(connectionRepository.findByUserAndStatus(any(), any())).thenReturn(List.of());
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(12);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
-
-        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
-
-        assertThat(r.getReview().getEarned()).isEqualTo(12);
-    }
-
-    // ── Total ────────────────────────────────────────────────────────────────
-
-    @Test
-    void totalScore_isSumOfThreeParts() {
-        // basic=0.25 (phone only) + rooting=1 (MESSAGING) + review=5 (one 5-star) = 6.25
+    void total_sumsAcrossCustomers_includingProfilePerCustomer() {
         baseUser.setPhoneVerified(true);
-        Connection c = Connection.builder()
-                .userA(baseUser).userB(User.builder().id(UUID.randomUUID()).build())
-                .currentTrustLevel(TrustLevel.MESSAGING).build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)).thenReturn(List.of(c));
-        when(reviewRepository.sumRatingsByRevieweeId(userId)).thenReturn(5);
-        when(reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+        HelperProfile profile = HelperProfile.builder()
+                .photoUrl("https://photo.jpg").bio("hi").build();
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
+
+        // profile points = 3 each
+        connections(
+                connection(customer(), TrustLevel.MESSAGING),   // rooting 2 + 0 + 3 = 5
+                connection(customer(), TrustLevel.PHONE_CALL));  // rooting 3 + 0 + 3 = 6
+        reviews();
 
         TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
 
-        assertThat(r.getTotalScore()).isEqualTo(6.25);
+        assertThat(r.getTotalScore()).isEqualTo(11.0);
+        assertThat(r.getCustomers()).hasSize(2);
+        assertThat(r.getMaxPerCustomer()).isEqualTo(15);
+        // highest-total customer first
+        assertThat(r.getCustomers().get(0).getTotal()).isEqualTo(6);
+    }
+
+    @Test
+    void recalculate_storesIntegerTotalOnUser() {
+        connections(connection(customer(), TrustLevel.TRUSTED)); // rooting 7, no review, no profile
+        reviews();
+
+        trustScoreService.recalculate(userId);
+
+        assertThat(baseUser.getTrustScore()).isEqualTo(7.0);
+    }
+
+    // ── Tiers (rebased) ──────────────────────────────────────────────────────
+
+    @Test
+    void tierFor_usesRebasedThresholds() {
+        assertThat(TrustScoreService.tierFor(0)).isEqualTo("New Member");
+        assertThat(TrustScoreService.tierFor(1)).isEqualTo("Getting Started");
+        assertThat(TrustScoreService.tierFor(15)).isEqualTo("Reliable");
+        assertThat(TrustScoreService.tierFor(45)).isEqualTo("Highly Trusted");
+        assertThat(TrustScoreService.tierFor(90)).isEqualTo("Community Champion");
     }
 }

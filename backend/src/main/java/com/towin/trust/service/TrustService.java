@@ -73,10 +73,8 @@ public class TrustService {
                 sosService.notifyFirstMeet(elderId, connectionId);
             }
 
-            if (to == TrustLevel.TRUSTED) {
-                trustScoreService.recalculate(connection.getUserA().getId());
-                trustScoreService.recalculate(connection.getUserB().getId());
-            }
+            // Each stage is a rooting point, so both sides' scores change on every advance.
+            recalculateBoth(connection);
         }
 
         connectionRepository.save(connection);
@@ -89,6 +87,7 @@ public class TrustService {
         connection.setStatus(ConnectionStatus.PAUSED);
         connection.setIsPausedBy(getUser(userId));
         connectionRepository.save(connection);
+        recalculateBoth(connection);
         return buildStatusResponse(connection, userId);
     }
 
@@ -101,6 +100,7 @@ public class TrustService {
         connection.setStatus(ConnectionStatus.ACTIVE);
         connection.setIsPausedBy(null);
         connectionRepository.save(connection);
+        recalculateBoth(connection);
         return buildStatusResponse(connection, userId);
     }
 
@@ -153,5 +153,10 @@ public class TrustService {
     private User getUser(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    private void recalculateBoth(Connection connection) {
+        trustScoreService.recalculate(connection.getUserA().getId());
+        trustScoreService.recalculate(connection.getUserB().getId());
     }
 }

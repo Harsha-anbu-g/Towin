@@ -9,6 +9,7 @@ import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
+import com.towin.common.service.TrustScoreService;
 import com.towin.trust.dto.TrustStatusResponse;
 import com.towin.trust.entity.TrustProgressionLog;
 import com.towin.emergency.service.SosService;
@@ -34,6 +35,7 @@ class TrustServiceTest {
     @Mock TrustProgressionLogRepository trustLogRepository;
     @Mock UserRepository userRepository;
     @Mock SosService sosService;
+    @Mock TrustScoreService trustScoreService;
     @InjectMocks TrustService trustService;
 
     private User userA;

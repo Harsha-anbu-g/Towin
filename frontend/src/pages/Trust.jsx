@@ -10,6 +10,18 @@ const SKY   = '#4FA3CE';
 const BLUE  = '#4FA3CE';
 const TRUST = '#10069f';
 const BG    = '#f5f5f7';
+const INK   = '#1d1d1f';
+const GREY  = '#7a7a7a';
+const FAINT = '#a0a0a5';
+const EMPTY = '#d8d8de';
+
+const TIERS = [
+  { name: 'New Member',         min: 0 },
+  { name: 'Getting Started',    min: 1 },
+  { name: 'Reliable',           min: 15 },
+  { name: 'Highly Trusted',     min: 45 },
+  { name: 'Community Champion', min: 90 },
+];
 
 const TIER_COLORS = {
   'Community Champion': { bg: '#FFF7E6', color: '#5a6470', border: '#FDE68A' },
@@ -19,12 +31,19 @@ const TIER_COLORS = {
   'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
 };
 
+const card = {
+  background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
+  boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+};
+
+/* ── Score ring: arc fills toward the next tier ──────────────────────────── */
 function ScoreRing({ score }) {
   const r = 54;
   const circ = 2 * Math.PI * r;
-  const BASE = 65;
-  const pct = Math.min(score / BASE, 1);
-  const display = score % 1 === 0 ? score : score.toFixed(2).replace(/\.?0+$/, '');
+  const idx = TIERS.reduce((acc, t, i) => (score >= t.min ? i : acc), 0);
+  const next = TIERS[idx + 1];
+  const curMin = TIERS[idx].min;
+  const pct = next ? Math.min((score - curMin) / (next.min - curMin), 1) : 1;
   return (
     <svg width="148" height="148" viewBox="0 0 148 148">
       <circle cx="74" cy="74" r={r} fill="none" stroke="#ececef" strokeWidth="10" />
@@ -32,125 +51,129 @@ function ScoreRing({ score }) {
         strokeDasharray={`${pct * circ} ${circ}`} strokeLinecap="round"
         transform="rotate(-90 74 74)"
         style={{ transition: 'stroke-dasharray 0.7s ease' }} />
-      <text x="74" y="69" textAnchor="middle"
-        style={{ fontFamily: SFD, fontSize: '28px', fontWeight: 600, fill: '#1d1d1f' }}>
-        {display}
+      <text x="74" y="70" textAnchor="middle"
+        style={{ fontFamily: SFD, fontSize: '34px', fontWeight: 600, fill: INK }}>
+        {score}
       </text>
-      <text x="74" y="88" textAnchor="middle"
-        style={{ fontFamily: SF, fontSize: '12px', fill: '#9ca3af' }}>
-        pts
+      <text x="74" y="90" textAnchor="middle"
+        style={{ fontFamily: SF, fontSize: '12px', fill: FAINT }}>
+        points
       </text>
     </svg>
   );
 }
 
-function ScoreCard({ data, isHelper }) {
-  const tierStyle = TIER_COLORS[data.tier] ?? TIER_COLORS['New Member'];
-  const display = data.totalScore % 1 === 0
-    ? data.totalScore
-    : data.totalScore.toFixed(2).replace(/\.?0+$/, '');
+/* ── A row of filled/empty marks (stars or dots) with an x / max count ────── */
+function Meter({ label, earned, max, shape, hint }) {
+  const marks = [];
+  for (let i = 0; i < max; i++) {
+    const on = i < earned;
+    if (shape === 'star') {
+      marks.push(
+        <span key={i} style={{ fontSize: '15px', lineHeight: 1, color: on ? SKY : EMPTY }}>★</span>
+      );
+    } else {
+      marks.push(
+        <span key={i} style={{
+          width: '9px', height: '9px', borderRadius: '50%',
+          background: on ? SKY : EMPTY, display: 'inline-block',
+        }} />
+      );
+    }
+  }
   return (
-    <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '24px 20px', marginBottom: '20px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
-      <div className="score-card-row">
-      <ScoreRing score={data.totalScore} />
-      <div style={{ flex: 1 }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center',
-          background: tierStyle.bg, color: tierStyle.color,
-          border: `1px solid ${tierStyle.border}`,
-          borderRadius: '9999px', padding: '5px 16px',
-          fontSize: '13px', fontWeight: 600, fontFamily: SF, marginBottom: '14px',
-        }}>
-          {data.tier}
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '7px 0' }}>
+      <span style={{ fontFamily: SF, fontSize: '13px', color: GREY, width: '92px', flexShrink: 0 }}>
+        {label}
+      </span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: 1, flexWrap: 'wrap' }}>
+        {marks}
+      </span>
+      <span style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: earned > 0 ? INK : FAINT, flexShrink: 0 }}>
+        {earned}<span style={{ color: FAINT, fontWeight: 400 }}>/{max}</span>
+      </span>
+    </div>
+  );
+}
+
+/* ── Header: total score + tier + next-tier hint ─────────────────────────── */
+function ScoreSummary({ data }) {
+  const score = Math.round(data.totalScore);
+  const tierStyle = TIER_COLORS[data.tier] ?? TIER_COLORS['New Member'];
+  const idx = TIERS.findIndex(t => t.name === data.tier);
+  const next = TIERS[idx + 1];
+  const toNext = next ? next.min - score : 0;
+  return (
+    <div style={{ ...card, padding: '24px 20px', marginBottom: '20px' }}>
+      <div className="score-card-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+        <ScoreRing score={score} />
+        <div style={{ flex: 1, minWidth: '220px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center',
+            background: tierStyle.bg, color: tierStyle.color,
+            border: `1px solid ${tierStyle.border}`,
+            borderRadius: '9999px', padding: '5px 16px',
+            fontSize: '13px', fontWeight: 600, fontFamily: SF, marginBottom: '12px',
+          }}>
+            {data.tier}
+          </div>
+          <h2 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: INK, margin: '0 0 8px', letterSpacing: '-0.3px' }}>
+            {score} points
+          </h2>
+          <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.55 }}>
+            {next
+              ? <>You're <strong style={{ color: INK }}>{toNext}</strong> {toNext === 1 ? 'point' : 'points'} away from <strong style={{ color: INK }}>{next.name}</strong>. Every person you help fully adds up to <strong style={{ color: INK }}>15</strong> points.</>
+              : <>You've reached the top tier. Keep helping — every person still adds up to 15 points.</>}
+          </p>
         </div>
-        <h2 style={{
-          fontFamily: SFD, fontSize: '24px', fontWeight: 600,
-          color: '#1d1d1f', margin: '0 0 8px', letterSpacing: '-0.3px',
-        }}>
-          {display} pts
-        </h2>
-        <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: 0, lineHeight: 1.55 }}>
-          {data.totalScore < 3
-            ? 'Complete your profile to earn your first points. Verification alone adds 0.5 pts.'
-            : data.totalScore < 15
-            ? (isHelper
-                ? 'Build your first elder relationships and progress through trust stages.'
-                : 'Connect with helpers and grow trust one gentle step at a time.')
-            : 'Great score! Keep completing engagements and earning reviews.'}
-        </p>
-      </div>
       </div>
     </div>
   );
 }
 
-function BasicCard({ basic, onGoToProfile }) {
-  const pct = Math.round((basic.earned / basic.max) * 100);
+/* ── Profile card: 3 milestones, counts for every customer ───────────────── */
+function ProfileCard({ profile, onGoToProfile }) {
+  const done = profile.earned >= profile.max;
   return (
-    <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '28px 32px', marginBottom: '16px',
-      boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div style={{ ...card, padding: '24px 28px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
-            Profile Score
+          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: INK, margin: '0 0 4px' }}>
+            Your profile
           </h3>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
-            How completely you've filled in your profile
+          <p style={{ fontFamily: SF, fontSize: '13px', color: FAINT, margin: 0 }}>
+            Adds up to 3 points to <em>every</em> customer you help
           </p>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
-            {basic.earned}
-          </span>
-          <span style={{ fontFamily: SF, fontSize: '14px', color: '#a0a0a5' }}> / {basic.max}</span>
+        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: INK }}>{profile.earned}</span>
+          <span style={{ fontFamily: SF, fontSize: '14px', color: FAINT }}> / {profile.max}</span>
         </div>
       </div>
 
-      <div style={{ height: '8px', borderRadius: '9999px', background: '#ececef', marginBottom: '24px' }}>
-        <div style={{
-          height: '100%', width: `${pct}%`, background: SKY,
-          borderRadius: '9999px', transition: 'width 0.6s ease',
-        }} />
-      </div>
-
-      <div className="two-col-grid">
-        {basic.fields.map(f => (
-          <div key={f.key} style={{
-            display: 'flex', alignItems: 'flex-start', gap: '10px',
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+        {profile.tasks.map(t => (
+          <div key={t.key} style={{
+            display: 'flex', alignItems: 'flex-start', gap: '11px',
             padding: '12px 14px', borderRadius: '12px',
-            background: f.completed ? BG : '#fafafa',
-            border: `1px solid ${f.completed ? '#e0e0e0' : '#f0f0f0'}`,
+            background: t.completed ? BG : '#fafafa',
+            border: `1px solid ${t.completed ? '#e0e0e0' : '#f0f0f0'}`,
           }}>
-            <span style={{ fontSize: '15px', marginTop: '1px', color: f.completed ? BLUE : '#c0c0c8' }}>
-              {f.completed ? '✓' : '○'}
+            <span style={{ fontSize: '15px', marginTop: '1px', color: t.completed ? BLUE : '#c0c0c8' }}>
+              {t.completed ? '✓' : '○'}
             </span>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                <p style={{
-                  fontFamily: SF, fontSize: '13px', fontWeight: 600,
-                  color: f.completed ? BLUE : '#1d1d1f', margin: '0 0 2px',
-                }}>
-                  {f.label}
+                <p style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: t.completed ? BLUE : INK, margin: 0 }}>
+                  {t.label}
                 </p>
-                <span style={{
-                  fontFamily: SF, fontSize: '11px', fontWeight: 600,
-                  color: f.completed ? BLUE : '#a0a0a5',
-                  background: f.completed ? 'rgba(61,138,176,0.08)' : 'transparent',
-                  borderRadius: '9999px', padding: f.completed ? '2px 7px' : '0',
-                  whiteSpace: 'nowrap', flexShrink: 0,
-                }}>
-                  {f.completed ? '+0.25 pts ✓' : '+0.25 pts'}
+                <span style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: t.completed ? BLUE : FAINT, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  {t.completed ? '+1 ✓' : '+1'}
                 </span>
               </div>
-              {!f.completed && f.tip && (
-                <p style={{ fontFamily: SF, fontSize: '11px', color: '#a0a0a5', margin: 0, lineHeight: 1.4 }}>
-                  {f.tip}
+              {!t.completed && t.tip && (
+                <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: '3px 0 0', lineHeight: 1.4 }}>
+                  {t.tip}
                 </p>
               )}
             </div>
@@ -158,104 +181,68 @@ function BasicCard({ basic, onGoToProfile }) {
         ))}
       </div>
 
-      {basic.earned < basic.max && (
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <button
-            onClick={onGoToProfile}
-            style={{
-              background: SKY, color: '#fff', border: 'none',
-              borderRadius: '9999px', padding: '12px 28px',
-              fontSize: '14px', fontWeight: 600, fontFamily: SF,
-              cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
-            }}
-          >
-            Complete your profile →
-          </button>
-          <p style={{ fontFamily: SF, fontSize: '12px', color: '#a0a0a5', margin: '8px 0 0' }}>
-            Each completed field adds +0.25 pts to your <span style={{ color: TRUST }}>trust</span> score
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function RootingCard({ rooting, isHelper }) {
-  const STAGES = ['Text', 'Voice call', 'Video call', 'In-person', 'Help session'];
-  return (
-    <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '28px 32px', marginBottom: '16px',
-      boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
-            Rooting Score
-          </h3>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
-            Points earned by progressing through <span style={{ color: TRUST }}>trust</span> stages with {isHelper ? 'elders' : 'helpers'}
-          </p>
-        </div>
-        <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
-          +{rooting.earned}
-        </span>
-      </div>
-
-      <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: '0 0 20px' }}>
-        {rooting.detail}
-      </p>
-
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-        {STAGES.map((s, i) => (
-          <span key={s} style={{
-            fontFamily: SF, fontSize: '12px', fontWeight: 600,
-            background: '#f5f5f7', color: '#5a6470',
-            borderRadius: '9999px', padding: '5px 12px',
+      {!done && (
+        <div style={{ marginTop: '18px', textAlign: 'center' }}>
+          <button onClick={onGoToProfile} style={{
+            background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',
+            padding: '12px 28px', fontSize: '14px', fontWeight: 600, fontFamily: SF,
+            cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
           }}>
-            {i + 1}. {s}
-          </span>
-        ))}
-      </div>
-
-      {rooting.earned === 0 && (
-        <p style={{ fontFamily: SF, fontSize: '13px', color: SKY, margin: '14px 0 0' }}>
-          → Send a message to {isHelper ? 'an elder' : 'a helper'} to earn your first rooting point.
-        </p>
+            Finish your profile →
+          </button>
+        </div>
       )}
     </div>
   );
 }
 
-function ReviewCard({ review, isHelper }) {
+/* ── Avatar for a customer ───────────────────────────────────────────────── */
+function Avatar({ name, photoUrl }) {
+  const initial = (name || '?').trim().charAt(0).toUpperCase();
+  if (photoUrl) {
+    return <img src={photoUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
+  }
   return (
     <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '28px 32px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
-            Review Score
-          </h3>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5', margin: 0 }}>
-            Cumulative star ratings from {isHelper ? 'elders' : 'helpers'}. Each star is one point
+      width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+      background: BG, border: '1px solid #e0e0e0',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: BLUE,
+    }}>{initial}</div>
+  );
+}
+
+/* ── One card per customer, showing exactly what they earned you ─────────── */
+function CustomerCard({ c }) {
+  return (
+    <div style={{ ...card, padding: '20px 22px', marginBottom: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+        <Avatar name={c.customerName} photoUrl={c.customerPhotoUrl} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {c.customerName}
+          </p>
+          <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: '2px 0 0' }}>
+            {c.currentStageLabel}
           </p>
         </div>
-        <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: '#1d1d1f' }}>
-          +{review.earned}
-        </span>
+        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <div style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 600, color: INK, lineHeight: 1 }}>
+            {c.total}<span style={{ fontFamily: SF, fontSize: '13px', color: FAINT, fontWeight: 400 }}> / {c.totalMax}</span>
+          </div>
+          <div style={{ fontFamily: SF, fontSize: '11px', color: FAINT, marginTop: '2px' }}>points</div>
+        </div>
       </div>
 
-      <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: 0 }}>
-        {review.detail}
-      </p>
+      <div style={{ height: '6px', borderRadius: '9999px', background: '#ececef', marginBottom: '8px' }}>
+        <div style={{ height: '100%', width: `${(c.total / c.totalMax) * 100}%`, background: SKY, borderRadius: '9999px', transition: 'width 0.6s ease' }} />
+      </div>
 
-      {review.earned === 0 && (
-        <p style={{ fontFamily: SF, fontSize: '13px', color: SKY, margin: '14px 0 0' }}>
-          → Complete a help session so {isHelper ? 'an elder' : 'a helper'} can leave you a review.
-        </p>
-      )}
+      <div style={{ borderTop: '1px solid #f0f0f2', paddingTop: '6px' }}>
+        <Meter label="Trust stages" earned={c.rooting} max={c.rootingMax} shape="dot" />
+        <Meter label="Their review" earned={c.review}  max={c.reviewMax}  shape="star" />
+        <Meter label="Your profile" earned={c.profile} max={c.profileMax} shape="dot" />
+      </div>
     </div>
   );
 }
@@ -275,50 +262,74 @@ export default function Trust() {
       .finally(() => setLoading(false));
   }, []);
 
+  const customers = data?.customers ?? [];
+
   return (
     <div style={{ minHeight: '100svh', background: '#fafafc' }}>
       <NavBar />
       <div style={{ maxWidth: '780px', margin: '0 auto', padding: '40px 24px 80px' }}>
 
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{
-            fontFamily: SFD, fontSize: '34px', fontWeight: 600,
-            color: '#1d1d1f', margin: '0 0 8px', letterSpacing: '-0.5px',
-          }}>
+        <div style={{ marginBottom: '28px' }}>
+          <h1 style={{ fontFamily: SFD, fontSize: '34px', fontWeight: 600, color: INK, margin: '0 0 8px', letterSpacing: '-0.5px' }}>
             Your <span style={{ color: TRUST }}>Trust</span> Score
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '16px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
-            {isHelper
-              ? 'Three parts: your profile completeness, the depth of your elder relationships, and what elders say about you.'
-              : 'Your community standing, built through verified identity, connections, and reviews.'}
+          <p style={{ fontFamily: SF, fontSize: '16px', color: GREY, margin: 0, lineHeight: 1.5 }}>
+            Each person you help can earn you up to <strong style={{ color: INK }}>15</strong> points:
+            {' '}<strong style={{ color: INK }}>7</strong> for growing trust together,
+            {' '}<strong style={{ color: INK }}>5</strong> from their review, and
+            {' '}<strong style={{ color: INK }}>3</strong> for your profile.
           </p>
         </div>
 
         {loading && (
-          <div style={{
-            background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-            padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '15px', color: '#a0a0a5',
-          }}>
+          <div style={{ ...card, padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '15px', color: FAINT }}>
             Loading your score…
           </div>
         )}
 
         {error && (
-          <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
-            borderRadius: '14px', padding: '16px 20px',
-            fontFamily: SF, fontSize: '14px', color: '#dc2626',
-          }}>
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '14px', padding: '16px 20px', fontFamily: SF, fontSize: '14px', color: '#dc2626' }}>
             {error}
           </div>
         )}
 
         {data && (
           <>
-            <ScoreCard data={data} isHelper={isHelper} />
-            <BasicCard basic={data.basic} onGoToProfile={() => navigate('/profile')} />
-            <RootingCard rooting={data.rooting} isHelper={isHelper} />
-            <ReviewCard review={data.review} isHelper={isHelper} />
+            <ScoreSummary data={data} />
+            <ProfileCard profile={data.profile} onGoToProfile={() => navigate('/profile')} />
+
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '28px 0 14px' }}>
+              <h3 style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: INK, margin: 0 }}>
+                {isHelper ? 'People you help' : 'Your helpers'}
+              </h3>
+              {customers.length > 0 && (
+                <span style={{ fontFamily: SF, fontSize: '13px', color: FAINT }}>
+                  {customers.length} {customers.length === 1 ? 'person' : 'people'}
+                </span>
+              )}
+            </div>
+
+            {customers.length === 0 ? (
+              <div style={{ ...card, padding: '40px 28px', textAlign: 'center' }}>
+                <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: '0 0 6px' }}>
+                  No one here yet
+                </p>
+                <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: '0 0 18px', lineHeight: 1.5 }}>
+                  {isHelper
+                    ? 'Connect with your first elder. As your trust grows step by step, you earn points here.'
+                    : 'Connect with your first helper. As your trust grows step by step, you earn points here.'}
+                </p>
+                <button onClick={() => navigate('/dashboard')} style={{
+                  background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',
+                  padding: '12px 28px', fontSize: '14px', fontWeight: 600, fontFamily: SF,
+                  cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
+                }}>
+                  Find {isHelper ? 'an elder' : 'a helper'} →
+                </button>
+              </div>
+            ) : (
+              customers.map(c => <CustomerCard key={c.connectionId} c={c} />)
+            )}
           </>
         )}
       </div>
