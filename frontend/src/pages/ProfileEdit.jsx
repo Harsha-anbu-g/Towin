@@ -648,6 +648,7 @@ export default function ProfileEdit() {
                 {/* Change Password — only for accounts that sign in with a password */}
                 {profileData && profileData.authProvider !== 'GOOGLE' && (
                   <button
+                    type="button"
                     onClick={() => navigate('/profile/change-password')}
                     style={{
                       width: '100%',
@@ -669,6 +670,7 @@ export default function ProfileEdit() {
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button
+                    type="button"
                     onClick={() => setConfirmSignOut(true)}
                     style={{
                       flex: 1,
