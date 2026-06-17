@@ -344,15 +344,14 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Sign in link — new users create an account */}
             <p style={{
               textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               marginTop: '20px',
             }}>
-              Don&apos;t have an account?{' '}
+              New here?{' '}
               <Link to="/register" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
-                Sign in
+                Create Account
               </Link>
             </p>
           </div>

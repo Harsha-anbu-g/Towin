@@ -229,7 +229,7 @@ export default function NavBar() {
               fontSize: '15px', fontFamily: SF, fontWeight: 500,
               color: '#7a7a7a', background: 'none', border: 'none',
               cursor: 'pointer', padding: '8px 14px', borderRadius: '8px',
-            }}>Sign out</button>
+            }}>Log out</button>
           </div>
         )}
 
@@ -299,17 +299,17 @@ export default function NavBar() {
               fontSize: '17px', fontFamily: SF, fontWeight: 500,
               color: '#7a7a7a', background: 'none', border: 'none',
               cursor: 'pointer',
-            }}>Sign out</button>
+            }}>Log out</button>
           </div>
         </>
       )}
 
       <ConfirmDialog
         open={confirmSignOut}
-        title="Sign out of ToWin?"
-        message="You can sign back in any time with your email and password."
-        confirmLabel="Sign Out"
-        cancelLabel="Stay Signed In"
+        title="Log out of ToWin?"
+        message="You can log back in any time with your email and password."
+        confirmLabel="Log Out"
+        cancelLabel="Stay Logged In"
         onConfirm={() => { setConfirmSignOut(false); logout(); }}
         onCancel={() => setConfirmSignOut(false)}
       />
