@@ -215,8 +215,8 @@ export const STEPS = [
             so a 5-star review is 5 points.
           </MiniCard>
           <MiniCard title="Your profile — up to 3">
-            A photo, a short bio, and verifying yourself. Each is worth 1 point — and your
-            profile counts for every person you help.
+            Your profile is split into 3 sets. Fill a whole set to earn its point: introduce
+            yourself, share more about you, and verify yourself. It counts for every person you help.
           </MiniCard>
         </CardGrid>
         <SubHead>The five tiers</SubHead>
