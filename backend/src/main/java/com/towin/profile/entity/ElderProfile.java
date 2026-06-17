@@ -1,6 +1,7 @@
 package com.towin.profile.entity;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.Gender;
 import com.towin.common.enums.LookingForType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,6 +50,11 @@ public class ElderProfile {
 
     @Column(name = "occupation")
     private String occupation;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "gender", columnDefinition = "gender_type")
+    private Gender gender;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

@@ -1,5 +1,6 @@
 package com.towin.profile.dto;
 
+import com.towin.common.enums.Gender;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -20,6 +21,7 @@ public class HelperProfileRequest {
     private String[] availabilityTimes;
     private String[] hobbies;
     private String occupation;
+    private Gender gender;
     private String facebookUrl;
     private String instagramUrl;
     private java.time.LocalDate dateOfBirth;
