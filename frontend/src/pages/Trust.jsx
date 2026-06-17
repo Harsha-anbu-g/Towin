@@ -131,7 +131,53 @@ function ScoreSummary({ data }) {
   );
 }
 
-/* ── Profile card: 3 milestones, counts for every customer ───────────────── */
+/* ── One profile group = 1 point, earned only when every field is filled ──── */
+function ProfileGroup({ group }) {
+  const { label, completed, doneCount, itemCount, items } = group;
+  return (
+    <div style={{
+      borderRadius: '14px', padding: '14px 16px',
+      background: completed ? BG : '#fafafa',
+      border: `1px solid ${completed ? '#dbe7ef' : '#f0f0f0'}`,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
+        <p style={{ fontFamily: SFD, fontSize: '14px', fontWeight: 600, color: INK, margin: 0 }}>
+          {label}
+        </p>
+        <span style={{
+          fontFamily: SF, fontSize: '12px', fontWeight: 600,
+          color: completed ? '#fff' : FAINT,
+          background: completed ? SKY : '#ededf0',
+          borderRadius: '9999px', padding: '3px 10px', whiteSpace: 'nowrap', flexShrink: 0,
+        }}>
+          {completed ? '+1 point ✓' : `${doneCount}/${itemCount} · +1 point`}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+        {items.map(it => (
+          <div key={it.key} style={{ display: 'flex', alignItems: 'flex-start', gap: '9px' }}>
+            <span style={{ fontSize: '14px', lineHeight: '18px', color: it.completed ? BLUE : '#c0c0c8' }}>
+              {it.completed ? '✓' : '○'}
+            </span>
+            <div style={{ flex: 1 }}>
+              <span style={{ fontFamily: SF, fontSize: '13px', fontWeight: it.completed ? 600 : 500, color: it.completed ? BLUE : INK }}>
+                {it.label}
+              </span>
+              {!it.completed && it.tip && (
+                <p style={{ fontFamily: SF, fontSize: '11px', color: FAINT, margin: '1px 0 0', lineHeight: 1.4 }}>
+                  {it.tip}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Profile card: 3 groups of fields, each worth 1 point for every customer ── */
 function ProfileCard({ profile, onGoToProfile }) {
   const done = profile.earned >= profile.max;
   return (
@@ -142,7 +188,7 @@ function ProfileCard({ profile, onGoToProfile }) {
             Your profile
           </h3>
           <p style={{ fontFamily: SF, fontSize: '13px', color: FAINT, margin: 0 }}>
-            Adds up to 3 points to <em>every</em> customer you help
+            Fill a whole set to earn its point — and it counts for <em>every</em> customer you help
           </p>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -151,34 +197,8 @@ function ProfileCard({ profile, onGoToProfile }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
-        {profile.tasks.map(t => (
-          <div key={t.key} style={{
-            display: 'flex', alignItems: 'flex-start', gap: '11px',
-            padding: '12px 14px', borderRadius: '12px',
-            background: t.completed ? BG : '#fafafa',
-            border: `1px solid ${t.completed ? '#e0e0e0' : '#f0f0f0'}`,
-          }}>
-            <span style={{ fontSize: '15px', marginTop: '1px', color: t.completed ? BLUE : '#c0c0c8' }}>
-              {t.completed ? '✓' : '○'}
-            </span>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                <p style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: t.completed ? BLUE : INK, margin: 0 }}>
-                  {t.label}
-                </p>
-                <span style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: t.completed ? BLUE : FAINT, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {t.completed ? '+1 ✓' : '+1'}
-                </span>
-              </div>
-              {!t.completed && t.tip && (
-                <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: '3px 0 0', lineHeight: 1.4 }}>
-                  {t.tip}
-                </p>
-              )}
-            </div>
-          </div>
-        ))}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+        {profile.groups.map(g => <ProfileGroup key={g.key} group={g} />)}
       </div>
 
       {!done && (

@@ -24,14 +24,26 @@ public class TrustScoreBreakdownResponse {
     @Data
     @Builder
     public static class ProfileSection {
-        private int earned;          // 0–3
+        private int earned;          // 0–3 (one point per completed group)
         private int max;             // 3
-        private List<ProfileTask> tasks;
+        private List<ProfileGroup> groups;
+    }
+
+    /** A set of profile fields worth 1 point — earned only when every field is filled. */
+    @Data
+    @Builder
+    public static class ProfileGroup {
+        private String key;
+        private String label;
+        private boolean completed;   // all fields filled → +1 point
+        private int doneCount;       // fields filled
+        private int itemCount;       // fields in this group
+        private List<ProfileItem> items;
     }
 
     @Data
     @Builder
-    public static class ProfileTask {
+    public static class ProfileItem {
         private String key;
         private String label;
         private boolean completed;

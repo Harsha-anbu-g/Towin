@@ -74,7 +74,8 @@ public class TrustScoreService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        int profilePoints = calculateProfilePoints(user);
+        List<ProfileGroup> profileGroups = buildProfileGroups(user);
+        int profilePoints = completedGroups(profileGroups);
         Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
         List<CustomerCard> cards = new ArrayList<>();
@@ -110,7 +111,7 @@ public class TrustScoreService {
                 .profile(ProfileSection.builder()
                         .earned(profilePoints)
                         .max(PROFILE_MAX)
-                        .tasks(buildProfileTasks(user))
+                        .groups(profileGroups)
                         .build())
                 .customers(cards)
                 .build();
@@ -123,15 +124,13 @@ public class TrustScoreService {
         return Math.min(level.getValue() + 1, ROOTING_MAX);
     }
 
-    /** Profile = 3 simple milestones, 1 point each. */
+    /** Profile = 3 groups of fields; each fully-filled group is worth 1 whole point. */
     private int calculateProfilePoints(User user) {
-        HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
-        ElderProfile  e = elderProfileRepository.findByUserId(user.getId()).orElse(null);
-        int pts = 0;
-        if (hasPhoto(p, e)) pts++;
-        if (hasBio(p, e))   pts++;
-        if (isVerified(user)) pts++;
-        return pts;
+        return completedGroups(buildProfileGroups(user));
+    }
+
+    private int completedGroups(List<ProfileGroup> groups) {
+        return (int) groups.stream().filter(ProfileGroup::isCompleted).count();
     }
 
     /** Newest review rating per reviewer (the customer's latest word on you). */
@@ -143,38 +142,61 @@ public class TrustScoreService {
         return map;
     }
 
-    private List<ProfileTask> buildProfileTasks(User user) {
+    /**
+     * Splits the full profile into 3 groups, each worth 1 point. A group only
+     * scores when every field in it is filled — so points stay whole numbers.
+     */
+    private List<ProfileGroup> buildProfileGroups(User user) {
         HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
         ElderProfile  e = elderProfileRepository.findByUserId(user.getId()).orElse(null);
 
-        List<ProfileTask> tasks = new ArrayList<>();
-        tasks.add(task("photo", "Add a profile photo", hasPhoto(p, e),
-                "A clear photo helps people feel comfortable with you."));
-        tasks.add(task("bio", "Write a short bio", hasBio(p, e),
-                "A few words about yourself goes a long way."));
-        tasks.add(task("verified", "Verify yourself", isVerified(user),
-                "Verify your phone or your ID in Profile."));
-        return tasks;
+        boolean photo = (p != null && notBlank(p.getPhotoUrl())) || (e != null && notBlank(e.getPhotoUrl()));
+        boolean bio   = (p != null && notBlank(p.getBio()))      || (e != null && notBlank(e.getBio()));
+        boolean dob   = (p != null && p.getDateOfBirth() != null) || (e != null && user.getDateOfBirth() != null);
+        boolean occupation = (p != null && notBlank(p.getOccupation())) || (e != null && notBlank(e.getOccupation()));
+        boolean interests  = (p != null && hasItems(p.getHobbies()))    || (e != null && hasItems(e.getInterests()));
+        boolean social = (p != null && (notBlank(p.getFacebookUrl()) || notBlank(p.getInstagramUrl())))
+                      || (e != null && (notBlank(e.getFacebookUrl()) || notBlank(e.getInstagramUrl())));
+        boolean phoneVerified = user.isPhoneVerified();
+        boolean idVerified    = user.getVerificationStatus() == VerificationStatus.VERIFIED;
+
+        String interestsLabel = (p != null) ? "Your hobbies" : "Your interests";
+
+        List<ProfileGroup> groups = new ArrayList<>();
+        groups.add(group("introduce", "Introduce yourself", List.of(
+                item("photo", "Profile photo", photo, "Add a clear photo of yourself."),
+                item("bio",   "Short bio",     bio,   "Write a few lines about yourself."),
+                item("dob",   "Date of birth", dob,   "Add your date of birth.")
+        )));
+        groups.add(group("about", "Share more about you", List.of(
+                item("occupation", "Occupation",     occupation, "Add what you do — it helps others feel comfortable."),
+                item("interests",  interestsLabel,   interests,  "Add at least one. Shared interests start friendships."),
+                item("social",     "Social link",    social,     "Link your Facebook or Instagram.")
+        )));
+        groups.add(group("verify", "Verify yourself", List.of(
+                item("phone", "Phone verified", phoneVerified, "Verify your phone number in Profile."),
+                item("id",    "ID verified",    idVerified,    "Upload a government ID in Profile → Verification.")
+        )));
+        return groups;
     }
 
-    private ProfileTask task(String key, String label, boolean completed, String tip) {
-        return ProfileTask.builder()
+    private ProfileGroup group(String key, String label, List<ProfileItem> items) {
+        int done = (int) items.stream().filter(ProfileItem::isCompleted).count();
+        return ProfileGroup.builder()
+                .key(key).label(label).items(items)
+                .doneCount(done).itemCount(items.size())
+                .completed(done == items.size())
+                .build();
+    }
+
+    private ProfileItem item(String key, String label, boolean completed, String tip) {
+        return ProfileItem.builder()
                 .key(key).label(label).completed(completed)
                 .tip(completed ? null : tip)
                 .build();
     }
 
-    private boolean hasPhoto(HelperProfile p, ElderProfile e) {
-        return (p != null && notBlank(p.getPhotoUrl())) || (e != null && notBlank(e.getPhotoUrl()));
-    }
-
-    private boolean hasBio(HelperProfile p, ElderProfile e) {
-        return (p != null && notBlank(p.getBio())) || (e != null && notBlank(e.getBio()));
-    }
-
-    private boolean isVerified(User user) {
-        return user.isPhoneVerified() || user.getVerificationStatus() == VerificationStatus.VERIFIED;
-    }
+    private boolean hasItems(String[] arr) { return arr != null && arr.length > 0; }
 
     // ── Display helpers ──────────────────────────────────────────────────────
 

@@ -70,6 +70,32 @@ class TrustScoreServiceTest {
         return Connection.builder().userA(baseUser).userB(customer).currentTrustLevel(level).build();
     }
 
+    /** Completes the "Introduce yourself" group (photo + bio + date of birth). */
+    private HelperProfile introduceGroupFilled() {
+        return HelperProfile.builder()
+                .photoUrl("https://photo.jpg")
+                .bio("Hello, I love helping out.")
+                .dateOfBirth(java.time.LocalDate.of(1960, 1, 1))
+                .build();
+    }
+
+    /** Fills every profile field across all three groups. */
+    private HelperProfile fullProfile() {
+        return HelperProfile.builder()
+                .photoUrl("https://photo.jpg")
+                .bio("Hello, I love helping out.")
+                .dateOfBirth(java.time.LocalDate.of(1960, 1, 1))
+                .occupation("Teacher")
+                .hobbies(new String[]{"reading"})
+                .facebookUrl("https://facebook.com/me")
+                .build();
+    }
+
+    private void makeFullyVerified() {
+        baseUser.setPhoneVerified(true);
+        baseUser.setVerificationStatus(VerificationStatus.VERIFIED);
+    }
+
     // ── Profile (0–3, three milestones) ──────────────────────────────────────
 
     @Test
@@ -86,13 +112,25 @@ class TrustScoreServiceTest {
     }
 
     @Test
-    void profile_isThree_whenPhotoBioAndVerified() {
-        baseUser.setPhoneVerified(true); // counts as "verified"
-        HelperProfile profile = HelperProfile.builder()
-                .photoUrl("https://photo.jpg")
-                .bio("Hello, I love helping out.")
-                .build();
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
+    void profile_isOne_whenOnlyOneGroupComplete() {
+        // Photo + bio + DOB completes the "Introduce yourself" group only.
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(introduceGroupFilled()));
+        connections();
+        reviews();
+
+        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+
+        assertThat(r.getProfile().getEarned()).isEqualTo(1);
+        assertThat(r.getProfile().getGroups()).hasSize(3);
+        assertThat(r.getProfile().getGroups().get(0).isCompleted()).isTrue();
+        assertThat(r.getProfile().getGroups().get(0).getDoneCount()).isEqualTo(3);
+        assertThat(r.getProfile().getGroups().get(1).isCompleted()).isFalse();
+    }
+
+    @Test
+    void profile_isThree_whenEveryGroupComplete() {
+        makeFullyVerified();
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(fullProfile()));
         connections();
         reviews();
 
@@ -157,10 +195,8 @@ class TrustScoreServiceTest {
 
     @Test
     void total_sumsAcrossCustomers_includingProfilePerCustomer() {
-        baseUser.setPhoneVerified(true);
-        HelperProfile profile = HelperProfile.builder()
-                .photoUrl("https://photo.jpg").bio("hi").build();
-        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
+        makeFullyVerified();
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(fullProfile()));
 
         // profile points = 3 each
         connections(
