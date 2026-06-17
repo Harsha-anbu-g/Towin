@@ -36,6 +36,7 @@ class ConnectionServiceTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock com.towin.messaging.repository.MessageRepository messageRepository;
+    @Mock com.towin.common.service.TrustScoreService trustScoreService;
     ConnectionService connectionService;
 
     private User sender;
@@ -47,7 +48,7 @@ class ConnectionServiceTest {
         // which @InjectMocks cannot populate
         connectionService = new ConnectionService(
                 connectionRepository, userRepository, elderProfileRepository,
-                helperProfileRepository, Optional.empty(), messageRepository);
+                helperProfileRepository, Optional.empty(), messageRepository, trustScoreService);
         sender = buildUser(UUID.randomUUID(), "sender@test.com");
         target = buildUser(UUID.randomUUID(), "target@test.com");
     }

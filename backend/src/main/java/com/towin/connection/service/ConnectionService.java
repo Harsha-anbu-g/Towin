@@ -56,6 +56,7 @@ public class ConnectionService {
     private final HelperProfileRepository helperProfileRepository;
     private final Optional<ConnectionEventProducer> eventProducer;
     private final MessageRepository messageRepository;
+    private final com.towin.common.service.TrustScoreService trustScoreService;
 
     @Transactional
     public ConnectionResponse sendRequest(UUID senderId, ConnectionRequest request) {
@@ -133,6 +134,13 @@ public class ConnectionService {
         }
 
         Connection saved = connectionRepository.save(connection);
+
+        if (saved.getStatus() == ConnectionStatus.ACTIVE) {
+            // A new active customer = the first "Connected" rooting point for both sides.
+            trustScoreService.recalculate(saved.getUserA().getId());
+            trustScoreService.recalculate(saved.getUserB().getId());
+        }
+
         final ConnectionEvent.Type emitType = eventType;
         eventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
                 .type(emitType)
@@ -154,6 +162,10 @@ public class ConnectionService {
         }
         connection.setStatus(ConnectionStatus.ENDED);
         connectionRepository.save(connection);
+
+        // Customer is no longer active — drop their points from both scores.
+        trustScoreService.recalculate(connection.getUserA().getId());
+        trustScoreService.recalculate(connection.getUserB().getId());
     }
 
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status) {

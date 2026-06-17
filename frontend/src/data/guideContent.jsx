@@ -201,30 +201,31 @@ export const STEPS = [
       <>
         <StepTitle>Your Trust Score</StepTitle>
         <Lead>
-          Trust is earned, not given. Your Trust Score helps everyone feel safe and helps
-          elders choose who to count on.
+          Trust is earned, not given. Each person you help can earn you up to 15 points, and
+          your score is simply those points added up across everyone you help.
         </Lead>
-        <SubHead>It has three parts</SubHead>
+        <SubHead>Each person earns you up to 15 points</SubHead>
         <CardGrid>
-          <MiniCard title="Profile Score">
-            Fill in your profile. 8 details, each worth 0.25 points, up to 2.0: ID and phone
-            verified, photo, a social link, hobbies, your job, a few lines about you, and date of birth.
+          <MiniCard title="Trust stages — up to 7">
+            Your friendship moves through 7 stages, from first connected to fully trusted.
+            Each stage you reach with that person is worth 1 point.
           </MiniCard>
-          <MiniCard title="Rooting Score">
-            Earn points every time a friendship moves up a trust stage, added up across all
-            of your connections.
+          <MiniCard title="Their review — up to 5">
+            When the person you helped leaves you a review, you earn 1 point for each star,
+            so a 5-star review is 5 points.
           </MiniCard>
-          <MiniCard title="Review Score">
-            Every star rating you receive from the people you help adds up here.
+          <MiniCard title="Your profile — up to 3">
+            A photo, a short bio, and verifying yourself. Each is worth 1 point — and your
+            profile counts for every person you help.
           </MiniCard>
         </CardGrid>
         <SubHead>The five tiers</SubHead>
         <Bullets items={[
-          <><strong>New Member</strong>: 0 to 2 points.</>,
-          <><strong>Getting Started</strong>: 3 to 14 points.</>,
-          <><strong>Reliable</strong>: 15 to 49 points.</>,
-          <><strong>Highly Trusted</strong>: 50 to 119 points.</>,
-          <><strong>Community Champion</strong>: 120 points and above.</>,
+          <><strong>New Member</strong>: 0 points.</>,
+          <><strong>Getting Started</strong>: 1 to 14 points.</>,
+          <><strong>Reliable</strong>: 15 to 44 points.</>,
+          <><strong>Highly Trusted</strong>: 45 to 89 points.</>,
+          <><strong>Community Champion</strong>: 90 points and above.</>,
         ]} />
         <NoteBox>
           After a connection reaches a full friendship, both people leave a 1 to 5 star rating,
