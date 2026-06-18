@@ -102,7 +102,7 @@ export default function HelperDashboard() {
   const [elders, setElders] = useState([]);
   const [discovering, setDiscovering] = useState(false);
   const [discoverError, setDiscoverError] = useState(false);
-  const [tab, setTab] = useState('overview');
+  const [tab, setTab] = useState('connections');
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
   const [connectingTo, setConnectingTo] = useState(null);
@@ -268,11 +268,44 @@ export default function HelperDashboard() {
   }, [tab, connections, needs]);
 
   const tabs = [
-    ['overview', 'Home', 0],
     ['connections', 'My Elders', connBadge],
+    ['discover', 'Find New Elder', 0],
     ['browse', 'Browse Needs', browseBadge],
-    ['discover', 'Discover Elders', 0],
   ];
+
+  // One warm greeting, shown once at the top of the landing tab.
+  const greeting = (() => {
+    if (!profile?.name) return null;
+    const now = new Date();
+    const h = now.getHours();
+    const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    const firstName = profile.name.split(' ')[0];
+    const dateStr = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    return (
+      <div style={{
+        background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 60%, #EBF6EE 100%)',
+        border: '1px solid #D8EAF4', borderRadius: '18px',
+        padding: '26px 30px',
+      }}>
+        <p style={{
+          fontSize: '13px', fontWeight: 600, color: '#3D8AB0',
+          letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 6px',
+        }}>
+          {dateStr}
+        </p>
+        <p style={{
+          fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+          fontSize: '32px', fontWeight: 600, color: '#1d1d1f',
+          letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
+        }}>
+          {greet}, {firstName}
+        </p>
+        <p style={{ fontSize: '15px', color: '#5a6470', margin: '6px 0 0' }}>
+          Welcome back. Here&apos;s what&apos;s happening with the people you help.
+        </p>
+      </div>
+    );
+  })();
 
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
   const pendingApplications = needs.filter(n => applyMsg[n.id]);
@@ -340,212 +373,14 @@ export default function HelperDashboard() {
       <div className="dash-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* Overview tab */}
-          {tab === 'overview' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
-              {profile?.name && (() => {
-                const now = new Date();
-                const h = now.getHours();
-                const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-                const firstName = profile.name.split(' ')[0];
-                const dateStr = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-                return (
-                  <div style={{
-                    background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 60%, #EBF6EE 100%)',
-                    border: '1px solid #D8EAF4', borderRadius: '18px',
-                    padding: '26px 30px',
-                  }}>
-                    <p style={{
-                      fontSize: '13px', fontWeight: 600, color: '#3D8AB0',
-                      letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 6px',
-                    }}>
-                      {dateStr}
-                    </p>
-                    <p style={{
-                      fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-                      fontSize: '32px', fontWeight: 600, color: '#1d1d1f',
-                      letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
-                    }}>
-                      {greet}, {firstName}
-                    </p>
-                    <p style={{ fontSize: '15px', color: '#5a6470', margin: '6px 0 0' }}>
-                      Welcome back. Here&apos;s what&apos;s happening with the people you help.
-                    </p>
-                  </div>
-                );
-              })()}
-              {/* Quick actions — every main feature reachable in one click */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px' }}>
-                {[
-                  { label: 'Browse help requests', sub: 'Elders need a hand nearby', onClick: () => setTab('browse') },
-                  { label: 'Discover elders', sub: 'Make a new connection', onClick: () => setTab('discover') },
-                  { label: 'My Trust Score', sub: 'See how it grows', onClick: () => navigate('/trust') },
-                ].map(a => (
-                  <button key={a.label} onClick={a.onClick} style={{
-                    background: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '18px',
-                    padding: '16px 18px', textAlign: 'left', cursor: 'pointer',
-                    fontFamily: 'inherit', transition: 'box-shadow 0.15s, transform 0.15s',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(16,42,67,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
-                  >
-                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>{a.label} →</span>
-                    <span style={{ display: 'block', fontSize: '13px', color: '#7a7a7a', marginTop: '3px' }}>{a.sub}</span>
-                  </button>
-                ))}
-              </div>
-
-              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
-                Your Trust Journey
-              </h2>
-              <p style={{ fontSize: '15px', color: '#7a7a7a', margin: '-16px 0 0' }}>
-                Track how your relationships are growing with each elder.
-              </p>
-
-              {/* Trust Score card */}
-              <div
-                onClick={() => navigate('/trust')}
-                style={{
-                  background: '#ffffff', borderRadius: '18px',
-                  border: '1px solid #e0e0e0', padding: '20px 24px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  cursor: 'pointer', marginBottom: '16px',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
-                  transition: 'box-shadow 0.15s',
-                }}
-              >
-                <div>
-                  <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#a0a0a5', margin: '0 0 4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-                    Trust Score
-                  </p>
-                  <p style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0, letterSpacing: '-0.374px' }}>
-                    {profile?.trustScore ?? '—'}
-                  </p>
-                  <p style={{ fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif", fontSize: '13px', color: '#4FA3CE', margin: '2px 0 0', fontWeight: 600 }}>
-                    {profile?.trustTier ?? 'New Member'}
-                  </p>
-                </div>
-                <div style={{ fontSize: '28px', color: '#ececef' }}>→</div>
-              </div>
-
-              {loading && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {[1,2].map(i => (
-                    <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '120px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
-                  ))}
-                </div>
-              )}
-
-              {!loading && connections.filter(c => c.status === 'ACTIVE').length === 0 && (
-                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '56px 24px', border: '1px solid #e0e0e0' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#f5f5f7', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                  </div>
-                  <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>No active connections yet</p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '24px', maxWidth: '280px', margin: '0 auto 24px' }}>
-                    Connect with an elder to start building trust together.
-                  </p>
-                  <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '11px 28px', fontSize: '15px' }}>
-                    Discover Elders
-                  </button>
-                </div>
-              )}
-
-              {!loading && connections.filter(c => c.status === 'ACTIVE').sort((a,b) => (TRUST_LEVEL_ORDER[b.currentTrustLevel]??0)-(TRUST_LEVEL_ORDER[a.currentTrustLevel]??0)).map((conn, i) => (
-                <div key={conn.id} style={{
-                  background: '#ffffff', borderRadius: '18px', padding: '24px',
-                  border: '1px solid #e0e0e0',
-                  animation: `fadeSlideUp 0.4s ease ${i * 0.06}s both`,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '4px' }}>
-                    <div style={{
-                      width: '44px', height: '44px', borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '15px', fontWeight: 600, color: '#4FA3CE', flexShrink: 0,
-                    }}>
-                      {initials(conn.otherUserName)}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                      <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '2px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
-                      {conn.otherUserPhone && (
-                        <p style={{ fontSize: '13px', color: '#4FA3CE', margin: '4px 0 0', fontWeight: 500 }}>
-                          {conn.otherUserPhone}
-                        </p>
-                      )}
-                    </div>
-                    <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px', flexShrink: 0 }}>
-                      Message
-                    </button>
-                  </div>
-                  <TrustJourney
-                    currentTrustLevel={conn.currentTrustLevel}
-                    confirmedByMe={conn.confirmedByMe}
-                    confirmedByOther={conn.confirmedByOther}
-                    otherUserName={conn.otherUserName || 'them'}
-                    isElder={false}
-                    onConfirm={() => confirmTrust(conn.id)}
-                    confirming={confirmingTrust === conn.id}
-                  />
-                </div>
-              ))}
-
-              {!loading && connections.filter(c => c.status === 'PENDING').length > 0 && (
-                <div>
-                  <h3 style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 12px' }}>
-                    Pending Requests ({connections.filter(c => c.status === 'PENDING').length})
-                  </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {connections.filter(c => c.status === 'PENDING').sort((a,b) => (a.initiatedByMe ? 1 : 0) - (b.initiatedByMe ? 1 : 0)).map(conn => (
-                      <div key={conn.id} style={{
-                        background: '#ffffff', borderRadius: '14px', padding: '16px 20px',
-                        border: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{
-                            width: '38px', height: '38px', borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '13px', fontWeight: 600, color: '#4FA3CE',
-                          }}>
-                            {initials(conn.otherUserName)}
-                          </div>
-                          <div>
-                            <p style={{ fontWeight: 600, fontSize: '15px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                            <p style={{ fontSize: '12px', color: '#7a7a7a', margin: '2px 0 0' }}>
-                              {conn.initiatedByMe ? 'Request Sent' : 'Wants to connect'}
-                            </p>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                          {conn.otherUserId && (
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)}
-                              style={{ padding: '7px 14px', fontSize: '13px', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', cursor: 'pointer', color: '#5a6470', fontFamily: 'inherit', fontWeight: 500 }}>
-                              View Profile
-                            </button>
-                          )}
-                          {!conn.initiatedByMe && (
-                            <>
-                              <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                                className="btn-primary" style={{ padding: '7px 16px', fontSize: '13px' }}>Accept</button>
-                              <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                                className="btn-ghost" style={{ padding: '7px 14px', fontSize: '13px' }}>Decline</button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Connections tab */}
+          {/* My Elders tab (landing) */}
           {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+              {greeting}
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '8px 0 0' }}>
+                My Elders
+              </h2>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
@@ -562,7 +397,7 @@ export default function HelperDashboard() {
                   <p style={{ fontSize: '17px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>No connections yet</p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Discover elders near you and send a connection request to get started.</p>
                   <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
-                    Discover Elders
+                    Find New Elder
                   </button>
                 </div>
               )}
@@ -758,7 +593,7 @@ export default function HelperDashboard() {
             </div>
           )}
 
-          {/* Discover Elders tab */}
+          {/* Find New Elder tab */}
           {tab === 'discover' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <RadiusBar />
