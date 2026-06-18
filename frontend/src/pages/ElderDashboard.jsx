@@ -403,7 +403,7 @@ export default function ElderDashboard() {
             {tabs.map(([id, label, badge]) => {
               const active = tab === id;
               return (
-                <button key={id} onClick={() => setTab(id)} style={{
+                <button key={id} onClick={() => { setShowPostForm(false); setTab(id); }} style={{
                   flex: '1 1 auto',
                   height: '44px', padding: '0 18px',
                   fontSize: '15px', letterSpacing: '-0.1px',
@@ -432,13 +432,13 @@ export default function ElderDashboard() {
               flex: '0 0 auto',
               height: '44px', padding: '0 20px',
               fontSize: '15px', fontWeight: 700, letterSpacing: '-0.1px',
-              color: '#ffffff', background: '#4FA3CE',
-              border: '1px solid #4FA3CE', borderRadius: '10px',
+              color: '#3D8AB0', background: '#EAF5FB',
+              border: '1px solid #BFD9EA', borderRadius: '10px',
               cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit',
               transition: 'background 0.15s',
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#3D8AB0'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#4FA3CE'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#D8EAF4'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#EAF5FB'; }}
             >
               + Post Request
             </button>
@@ -850,22 +850,13 @@ export default function ElderDashboard() {
           {/* Post Request form — lives inside My Requests */}
           {tab === 'needs' && showPostForm && (
             <div style={{ background: '#ffffff', borderRadius: '18px', padding: '32px', border: '1px solid #e0e0e0' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                <h2 style={{
-                  fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-                  fontSize: '28px', fontWeight: 600, color: '#1d1d1f',
-                  letterSpacing: '-0.4px', marginBottom: '28px', marginTop: 0,
-                }}>
-                  Post a Help Request
-                </h2>
-                <button onClick={() => setShowPostForm(false)} style={{
-                  background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px',
-                  padding: '8px 18px', fontSize: '13px', color: '#5a6470',
-                  cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, flexShrink: 0,
-                }}>
-                  ← Back to my requests
-                </button>
-              </div>
+              <h2 style={{
+                fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
+                fontSize: '28px', fontWeight: 600, color: '#1d1d1f',
+                letterSpacing: '-0.4px', marginBottom: '28px', marginTop: 0,
+              }}>
+                Post a Help Request
+              </h2>
               <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
                 <FormField label="What do you need?">
                   <input value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
