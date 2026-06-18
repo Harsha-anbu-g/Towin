@@ -36,30 +36,21 @@ const card = {
   boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
 };
 
-/* ── Score ring: arc fills toward the next tier ──────────────────────────── */
+/* ── Score: a plain number — it keeps growing, so no bounded ring ─────────── */
 function ScoreRing({ score }) {
-  const r = 54;
-  const circ = 2 * Math.PI * r;
-  const idx = TIERS.reduce((acc, t, i) => (score >= t.min ? i : acc), 0);
-  const next = TIERS[idx + 1];
-  const curMin = TIERS[idx].min;
-  const pct = next ? Math.min((score - curMin) / (next.min - curMin), 1) : 1;
   return (
-    <svg width="148" height="148" viewBox="0 0 148 148">
-      <circle cx="74" cy="74" r={r} fill="none" stroke="#ececef" strokeWidth="10" />
-      <circle cx="74" cy="74" r={r} fill="none" stroke={SKY} strokeWidth="10"
-        strokeDasharray={`${pct * circ} ${circ}`} strokeLinecap="round"
-        transform="rotate(-90 74 74)"
-        style={{ transition: 'stroke-dasharray 0.7s ease' }} />
-      <text x="74" y="70" textAnchor="middle"
-        style={{ fontFamily: SFD, fontSize: '34px', fontWeight: 600, fill: INK }}>
+    <div style={{
+      width: '148px', flexShrink: 0,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+    }}>
+      <span style={{ fontFamily: SFD, fontSize: '64px', fontWeight: 600, color: INK, lineHeight: 1, letterSpacing: '-1px' }}>
         {score}
-      </text>
-      <text x="74" y="90" textAnchor="middle"
-        style={{ fontFamily: SF, fontSize: '12px', fill: FAINT }}>
+      </span>
+      <span style={{ fontFamily: SF, fontSize: '13px', color: FAINT, marginTop: '4px' }}>
         points
-      </text>
-    </svg>
+      </span>
+    </div>
   );
 }
 
