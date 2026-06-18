@@ -8,6 +8,7 @@ import Landing from './pages/Landing';
 import ElderDashboard from './pages/ElderDashboard';
 import HelperDashboard from './pages/HelperDashboard';
 import ProfileEdit from './pages/ProfileEdit';
+import ChangePassword from './pages/ChangePassword';
 import EmergencyContacts from './pages/EmergencyContacts';
 import Messages from './pages/Messages';
 import MessagesInbox from './pages/MessagesInbox';
@@ -101,6 +102,7 @@ function App() {
             <Route path="/auth/setup" element={<FinishSetup />} />
             <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
+            <Route path="/profile/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
             <Route path="/messages" element={<PrivateRoute><MessagesInbox /></PrivateRoute>} />
             <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
