@@ -712,14 +712,9 @@ export default function ElderDashboard() {
           {/* My Requests tab */}
           {tab === 'needs' && !showPostForm && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
-                  My Help Requests
-                </h2>
-                <button onClick={() => setShowPostForm(true)} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
-                  + New Request
-                </button>
-              </div>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+                My Help Requests
+              </h2>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
