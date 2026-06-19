@@ -265,17 +265,17 @@ export default function Login() {
             <GoogleButton label="Log in with Google" />
 
             {/* Divider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
               <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or log in with username</span>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{
                   display: 'block', fontSize: '13px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
+                  color: '#1d1d1f', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Username, Gmail, or phone
@@ -294,7 +294,7 @@ export default function Login() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '13px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
+                  color: '#1d1d1f', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Password
