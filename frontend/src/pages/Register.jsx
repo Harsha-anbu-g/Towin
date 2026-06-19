@@ -359,53 +359,70 @@ export default function Register() {
         overflowY: 'auto',
         padding: 0,
       }}>
-        {/* Light hero band */}
-        <div className="register-head" style={{
-          width: '100%',
-          background: '#ffffff',
-          borderBottom: '1px solid #ececef',
-        }}>
-          <h2 className="register-title">
-            Join ToWin.
-          </h2>
-          <p style={{
-            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            fontSize: '17px', color: '#7a7a7a',
-          }}>
-            Create your free account in minutes.
-          </p>
-        </div>
-
         {/* Form area */}
         <div style={{
           width: '100%', maxWidth: '440px',
           padding: '40px 24px 48px',
         }}>
+          {/* Log in / Create account switcher */}
+          <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
+            <button type="button" onClick={() => navigate('/login')} style={{
+              flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+              fontSize: '15px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              background: 'transparent', color: '#7a7a7a',
+            }}>Log in</button>
+            <button type="button" style={{
+              flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+              fontSize: '15px', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
+              background: '#ffffff', color: '#4FA3CE', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+            }}>Create account</button>
+          </div>
+
+          {/* Headline */}
+          <h2 style={{
+            fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
+            fontSize: '24px', fontWeight: 700, color: '#1d1d1f',
+            margin: '0 0 6px', letterSpacing: '-0.3px',
+          }}>
+            Join ToWin.
+          </h2>
+          <p style={{
+            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+            fontSize: '14px', color: '#7a7a7a', margin: '0 0 22px',
+          }}>
+            Create your free account in minutes.
+          </p>
+
           {/* Google sign-in */}
           <GoogleButton />
 
           {/* Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-            <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign in with email</span>
+            <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with a username</span>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
           </div>
 
           {/* Role selector — standalone at the top */}
           <div style={{
-            marginBottom: '24px', background: '#ffffff',
-            border: '1px solid rgba(191,217,234,0.6)', borderRadius: '18px',
-            padding: '20px 20px 18px',
-            boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07)',
+            marginBottom: '22px', background: '#F4FAFD',
+            border: '1.5px solid #D8EAF4', borderRadius: '16px',
+            padding: '18px',
           }}>
             <label style={{
-              display: 'block', fontSize: '13px', fontWeight: 600,
-              color: '#1d1d1f', marginBottom: '10px',
+              display: 'block', fontSize: '14px', fontWeight: 700,
+              color: '#1d1d1f', marginBottom: '3px', letterSpacing: '-0.2px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
             }}>
-              I am joining as
+              First, who are you joining as?
             </label>
-            <div className="role-grid">
+            <p style={{
+              fontSize: '13px', color: '#5a6470', margin: '0 0 14px',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+            }}>
+              Choose one — you can change it later.
+            </p>
+            <div className="role-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
               {ROLES.map(({ value, label, desc }) => {
                 const active = form.role === value;
                 return (
@@ -596,7 +613,7 @@ export default function Register() {
                   transition: 'background 0.15s',
                 }}
               >
-                {loading ? 'Signing in…' : 'Sign In'}
+                {loading ? 'Creating account…' : 'Create Account'}
               </button>
             </form>
           </div>
