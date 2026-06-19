@@ -416,13 +416,7 @@ export default function Register() {
             }}>
               First, who are you joining as?
             </label>
-            <p style={{
-              fontSize: '13px', color: '#5a6470', margin: '0 0 14px',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            }}>
-              Choose one — you can change it later.
-            </p>
-            <div className="role-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="role-grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: '12px' }}>
               {ROLES.map(({ value, label, desc }) => {
                 const active = form.role === value;
                 return (
