@@ -209,23 +209,34 @@ export default function Login() {
             border: '1px solid rgba(191,217,234,0.6)',
             boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
           }}>
+            {/* Log in / Create account switcher */}
+            <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
+              <button type="button" style={{
+                flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+                fontSize: '15px', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
+                background: '#ffffff', color: '#4FA3CE', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+              }}>Log in</button>
+              <button type="button" onClick={() => navigate('/register')} style={{
+                flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+                fontSize: '15px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                background: 'transparent', color: '#7a7a7a',
+              }}>Create account</button>
+            </div>
+
             {/* Headline */}
             <h2 style={{
               fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-              fontSize: '34px', fontWeight: 600, color: '#1d1d1f',
-              marginBottom: '8px', letterSpacing: '-0.3px',
+              fontSize: '24px', fontWeight: 700, color: '#1d1d1f',
+              marginBottom: '6px', letterSpacing: '-0.3px',
             }}>
               Welcome back.
             </h2>
             <p style={{
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              fontSize: '17px', color: '#7a7a7a', marginBottom: '20px',
+              fontSize: '14px', color: '#7a7a7a', marginBottom: '20px',
             }}>
               Log in to your ToWin account.
             </p>
-
-            {/* Hairline divider */}
-            <div style={{ height: '1px', background: '#e0e0e0', marginBottom: '24px' }} />
 
             {/* Session expired notice — explains why they're back here (H9) */}
             {sessionExpired && (
