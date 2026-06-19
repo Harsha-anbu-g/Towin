@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
-import TrustBadge from '../components/TrustBadge';
 import TrustJourney from '../components/TrustJourney';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
@@ -89,6 +88,31 @@ const statusStyle = (status) => {
 };
 
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
+
+// Category icon tiles — shared with the Browse Needs cards.
+const CATEGORY = {
+  COMPANIONSHIP:  { label: 'Companionship',  path: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>' },
+  TRANSPORTATION: { label: 'Transportation', path: '<path d="M5 17H3v-6l2-5h11l3 5h2v6h-2"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="17.5" cy="17.5" r="2"/>' },
+  ERRANDS:        { label: 'Errands',        path: '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>' },
+  CLEANING:       { label: 'Cleaning',       path: '<path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>' },
+  OTHER:          { label: 'Other',          path: '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>' },
+};
+const catLabel = (c) => CATEGORY[c]?.label || c;
+function CatIcon({ category, size = 22, stroke = '#5a6470' }) {
+  const c = CATEGORY[category] || CATEGORY.OTHER;
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: c.path }} />;
+}
+
+const TAB_ICONS = {
+  connections: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  discover:    '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  browse:      '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+};
+function TabIcon({ id, active }) {
+  const path = TAB_ICONS[id];
+  if (!path) return null;
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: active ? '#fff' : '#5a6470' }} dangerouslySetInnerHTML={{ __html: path }} />;
+}
 
 export default function HelperDashboard() {
   const navigate = useNavigate();
@@ -283,24 +307,24 @@ export default function HelperDashboard() {
     const dateStr = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     return (
       <div style={{
-        background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 60%, #EBF6EE 100%)',
-        border: '1px solid #D8EAF4', borderRadius: '18px',
-        padding: '26px 30px',
+        background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 60%, #EDF4F8 100%)',
+        border: '1px solid #D8EAF4', borderRadius: '20px',
+        padding: '28px 32px',
       }}>
         <p style={{
-          fontSize: '13px', fontWeight: 600, color: '#3D8AB0',
-          letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 6px',
+          fontSize: '14px', fontWeight: 700, color: '#3D8AB0',
+          letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 8px',
         }}>
           {dateStr}
         </p>
         <p style={{
           fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-          fontSize: '32px', fontWeight: 600, color: '#1d1d1f',
-          letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
+          fontSize: '36px', fontWeight: 700, color: '#1d1d1f',
+          letterSpacing: '-0.7px', margin: 0, lineHeight: 1.15,
         }}>
           {greet}, {firstName}
         </p>
-        <p style={{ fontSize: '15px', color: '#5a6470', margin: '6px 0 0' }}>
+        <p style={{ fontSize: '18px', color: '#5a6470', margin: '8px 0 0' }}>
           Welcome back. Here&apos;s what&apos;s happening with the people you help.
         </p>
       </div>
@@ -310,17 +334,18 @@ export default function HelperDashboard() {
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
   const pendingApplications = needs.filter(n => applyMsg[n.id]);
 
-  const RadiusBar = () => (
-    <div style={{ background: '#ffffff', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
-      <p style={{ fontSize: '13px', color: '#7a7a7a', margin: 0 }}>
+  const RadiusBar = ({ noun = 'people' }) => (
+    <div style={{ background: '#ffffff', borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: '9px', fontSize: '16px', color: '#3a4450' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         {locationStatus === 'asking' && 'Getting your location...'}
-        {locationStatus === 'granted' && `Showing within ${radiusKm} km of you`}
-        {locationStatus === 'denied' && 'Location denied, showing all'}
+        {locationStatus === 'granted' && `Showing ${noun} within ${radiusKm} km of you`}
+        {locationStatus === 'denied' && `Location unavailable, showing all ${noun}`}
         {locationStatus === 'idle' && 'Detecting location...'}
-      </p>
+      </span>
       {locationStatus === 'granted' && (
         <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
-          style={{ border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '5px 12px', fontSize: '13px', outline: 'none', background: '#fff', cursor: 'pointer' }}>
+          style={{ fontSize: '15px', fontWeight: 600, color: '#4FA3CE', background: '#EAF5FB', border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '7px 16px', outline: 'none', cursor: 'pointer' }}>
           {[5,10,25,50,100].map(v => <option key={v} value={v}>{v} km</option>)}
         </select>
       )}
@@ -345,13 +370,14 @@ export default function HelperDashboard() {
               return (
                 <button key={id} onClick={() => setTab(id)} style={{
                   flex: '1 1 auto',
-                  height: '44px', padding: '0 18px',
-                  fontSize: '15px', letterSpacing: '-0.1px',
-                  fontWeight: active ? 700 : 500,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
+                  height: '50px', padding: '0 20px',
+                  fontSize: '16px', letterSpacing: '-0.1px',
+                  fontWeight: active ? 700 : 600,
                   color: active ? '#ffffff' : '#5a6470',
                   background: active ? '#4FA3CE' : 'transparent',
                   border: active ? '1px solid #4FA3CE' : '1px solid transparent',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   cursor: 'pointer',
                   transition: 'background 0.15s, color 0.15s',
                   whiteSpace: 'nowrap',
@@ -361,6 +387,7 @@ export default function HelperDashboard() {
                   onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f0f0f3'; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
                 >
+                  <TabIcon id={id} active={active} />
                   {label}
                   <TabBadge count={badge} />
                 </button>
@@ -378,7 +405,7 @@ export default function HelperDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
               {greeting}
-              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '8px 0 0' }}>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '30px', fontWeight: 700, letterSpacing: '-0.5px', color: '#1d1d1f', margin: '8px 0 0' }}>
                 My Elders
               </h2>
               {loading && (
@@ -401,81 +428,85 @@ export default function HelperDashboard() {
                   </button>
                 </div>
               )}
-              {[...connections].sort(sortConnections).map((conn, i) => (
+              {[...connections].sort(sortConnections).map((conn, i) => {
+                const isIncoming = conn.status === 'PENDING' && !conn.initiatedByMe;
+                const avatar = (
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', fontWeight: 700, color: '#2E7DA6', flexShrink: 0 }}>
+                    {initials(conn.otherUserName)}
+                  </div>
+                );
+                return (
                 <div key={conn.id} style={{
-                  background: '#ffffff', borderRadius: '18px', padding: '24px',
-                  border: '1px solid #e0e0e0',
+                  background: '#ffffff', borderRadius: '20px', padding: '26px',
+                  border: isIncoming ? '1px solid #BFD9EA' : '1px solid #e0e0e0',
                   animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
-                      <div style={{
-                        width: '48px', height: '48px', borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontWeight: 600, color: '#4FA3CE', flexShrink: 0,
-                      }}>
-                        {initials(conn.otherUserName)}
+                  {isIncoming ? (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '18px', minWidth: 0 }}>
+                          {avatar}
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontWeight: 700, fontSize: '22px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
+                            <p style={{ fontSize: '16px', color: '#5a6470', margin: '5px 0 0' }}>wants to connect with you</p>
+                            {conn.requestMessage && (
+                              <p style={{ fontSize: '16px', color: '#5a6470', fontStyle: 'italic', margin: '8px 0 0' }}>"{conn.requestMessage}"</p>
+                            )}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#2E7DA6', background: '#E6F2FA', padding: '6px 14px', borderRadius: '9999px', letterSpacing: '0.4px', textTransform: 'uppercase' }}>New Request</span>
                       </div>
-                      <div>
-                        <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                        <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '3px 0 0' }}>{trustLabel(conn.currentTrustLevel)}</p>
-                        {conn.requestMessage && (
-                          <p style={{ fontSize: '13px', color: '#a0a0a5', fontStyle: 'italic', margin: '4px 0 0' }}>"{conn.requestMessage}"</p>
-                        )}
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                        <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
+                          style={{ flex: 1, height: '52px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '17px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>Accept</button>
+                        <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
+                          style={{ flex: 1, height: '52px', background: '#fff', color: '#5a6470', border: '1px solid #e0e0e0', borderRadius: '12px', fontSize: '17px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>Decline</button>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '18px', minWidth: 0 }}>
+                        {avatar}
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontWeight: 700, fontSize: '22px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
+                          {conn.status === 'ACTIVE' ? (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', margin: '6px 0 0', background: '#E6F2FA', padding: '4px 12px', borderRadius: '9999px' }}>
+                              <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#2E7DA6' }} />
+                              <span style={{ fontSize: '14px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
+                            </div>
+                          ) : (
+                            <span style={{ display: 'inline-block', margin: '6px 0 0', ...statusStyle('PENDING') }}>Request Sent</span>
+                          )}
+                          {conn.requestMessage && conn.status !== 'ACTIVE' && (
+                            <p style={{ fontSize: '15px', color: '#a0a0a5', fontStyle: 'italic', margin: '8px 0 0' }}>"{conn.requestMessage}"</p>
+                          )}
+                        </div>
+                      </div>
                       {conn.status === 'ACTIVE' && (
-                        <>
-                          <button onClick={() => navigate(`/messages/${conn.id}`)} className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px' }}>
-                            Message
-                          </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'stretch' }}>
+                          <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '50px', padding: '0 28px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '17px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>Message</button>
+                          {endingConn === conn.id ? (
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '13px', color: '#5a6470' }}>End connection?</span>
+                              <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ background: '#9b3535', color: '#fff', border: 'none', borderRadius: '9999px', padding: '7px 14px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
+                              <button onClick={() => setEndingConn(null)} style={{ background: '#fff', color: '#5a6470', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '7px 14px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                              <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ flex: 1, height: '42px', padding: '0 16px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                              <button onClick={() => setEndingConn(conn.id)} style={{ flex: 1, height: '42px', padding: '0 16px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '15px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            </div>
+                          )}
                           {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
-                            <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} className="btn-secondary" style={{ padding: '8px 18px', fontSize: '14px' }}>
-                              Review Elder
-                            </button>
+                            <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '42px', padding: '0 16px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>★ Review Elder</button>
                           )}
                           {reviewedConns.has(conn.id) && (
-                            <span style={{ fontSize: '12px', color: '#4FA3CE', fontWeight: 500 }}>Reviewed</span>
+                            <span style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 600, textAlign: 'center' }}>Reviewed</span>
                           )}
-                        </>
-                      )}
-                      {conn.status === 'PENDING' && !conn.initiatedByMe && (
-                        <>
-                          <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                            className="btn-primary" style={{ padding: '8px 18px', fontSize: '14px' }}>Accept</button>
-                          <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                            className="btn-ghost">Decline</button>
-                        </>
-                      )}
-                      <span style={statusStyle(conn.status === 'PENDING' && conn.initiatedByMe ? 'PENDING' : conn.status)}>
-                        {{ ACTIVE: 'Connected', PENDING: 'Request Sent' }[conn.status] || conn.status}
-                      </span>
-                      {conn.status === 'ACTIVE' && (
-                        endingConn === conn.id ? (
-                          <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                            <span style={{ fontSize: '12px', color: '#5a6470' }}>End this connection?</span>
-                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }}
-                              style={{ background: '#9b3535', color: '#fff', border: 'none', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-                              Yes, end
-                            </button>
-                            <button onClick={() => setEndingConn(null)}
-                              style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', color: '#5a6470', cursor: 'pointer', fontFamily: 'inherit' }}>
-                              Keep
-                            </button>
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => setEndingConn(conn.id)}
-                            style={{ background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', fontSize: '12px', color: '#7a7a7a', cursor: 'pointer', fontFamily: 'inherit' }}
-                          >
-                            End
-                          </button>
-                        )
+                        </div>
                       )}
                     </div>
-                  </div>
+                  )}
 
                   {reviewingConn === conn.id && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -522,14 +553,23 @@ export default function HelperDashboard() {
                     />
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
           {/* Browse Needs tab */}
           {tab === 'browse' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <RadiusBar />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '30px', fontWeight: 700, letterSpacing: '-0.5px', color: '#1d1d1f', margin: '0 0 6px' }}>
+                  Requests Near You
+                </h2>
+                <p style={{ fontSize: '18px', color: '#5a6470', margin: 0 }}>
+                  Elders nearby who could use a hand. Offer to help with one tap.
+                </p>
+              </div>
+              <RadiusBar noun="requests" />
               {needs.length === 0 && locationStatus !== 'asking' && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f5f5f7', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -545,58 +585,78 @@ export default function HelperDashboard() {
                   </p>
                 </div>
               )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[...needs].sort(sortNeeds).map((need, i) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {[...needs].sort(sortNeeds).map((need, i) => {
+                const applied = applyMsg[need.id]?.includes('!');
+                return (
                 <div key={need.id} style={{
-                  background: '#ffffff', borderRadius: '18px', padding: '20px',
+                  background: '#ffffff', borderRadius: '20px', padding: '24px',
                   border: '1px solid #e0e0e0',
                   animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', margin: 0 }}>{need.title}</p>
-                      {need.description && <p style={{ fontSize: '14px', color: '#7a7a7a', marginTop: '4px', lineHeight: 1.5 }}>{need.description}</p>}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
-                        <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#7a7a7a', padding: '3px 10px', borderRadius: '9999px' }}>{need.category}</span>
-                        {need.urgency === 'URGENT' && (
-                          <span style={{ fontSize: '12px', background: '#f3f4f6', color: '#5a6470', padding: '3px 10px', borderRadius: '9999px', fontWeight: 600 }}>Urgent</span>
-                        )}
-                        {need.distanceKm != null && (
-                          <span style={{ fontSize: '12px', color: '#a0a0a5', padding: '3px 0' }}>{need.distanceKm} km away</span>
-                        )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '46px', height: '46px', borderRadius: '13px', background: '#F2F4F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <CatIcon category={need.category} />
+                        </div>
+                        <p style={{ fontWeight: 700, fontSize: '21px', color: '#1d1d1f', margin: 0, lineHeight: 1.25 }}>{need.title}</p>
                       </div>
-                      <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '6px' }}>Posted by {need.elderName}</p>
+                      {need.description && <p style={{ fontSize: '17px', color: '#3a4450', margin: '12px 0 0', lineHeight: 1.5 }}>{need.description}</p>}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, background: '#F2F4F7', color: '#5a6470', padding: '5px 13px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
+                        {need.urgency === 'URGENT' && (
+                          <span style={{ fontSize: '14px', fontWeight: 700, background: '#EEF1F4', color: '#3a4450', padding: '5px 13px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
+                            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#cc0000' }} />Urgent
+                          </span>
+                        )}
+                        <span style={{ fontSize: '15px', color: '#8a929c' }}>
+                          {need.distanceKm != null ? `${Math.round(need.distanceKm * 10) / 10} km · ` : ''}Posted by {need.elderName}
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
-                      <button onClick={() => apply(need.id)} disabled={applying === need.id || !!applyMsg[need.id]}
-                        className={applyMsg[need.id]?.includes('!') ? '' : 'btn-primary'}
-                        style={applyMsg[need.id]?.includes('!') ? {
-                          fontSize: '13px', padding: '8px 18px', borderRadius: '9999px', border: 'none',
-                          background: '#f5f5f7', color: '#4FA3CE', cursor: 'default', fontWeight: 600
-                        } : { padding: '8px 18px', fontSize: '13px' }}>
-                        {applying === need.id ? '...' : applyMsg[need.id] || 'Apply'}
-                      </button>
-                      {applyMsg[need.id]?.includes('!') && (
+                    <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                      {applied ? (
+                        <span style={{ height: '48px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '0 22px', background: '#E6F2FA', color: '#2E7DA6', borderRadius: '9999px', fontSize: '16px', fontWeight: 700 }}>
+                          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2E7DA6" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          Applied
+                        </span>
+                      ) : (
+                        <button onClick={() => apply(need.id)} disabled={applying === need.id}
+                          style={{ height: '48px', padding: '0 30px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+                          {applying === need.id ? '...' : 'Offer to Help'}
+                        </button>
+                      )}
+                      {applied && (
                         <button onClick={() => withdrawApplication(need.id)}
-                          style={{ fontSize: '11px', color: '#5a6470', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
+                          style={{ fontSize: '13px', color: '#5a6470', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
                           Withdraw
                         </button>
                       )}
                     </div>
                   </div>
-                  {applyMsg[need.id] && !applyMsg[need.id].includes('!') && (
-                    <p style={{ fontSize: '12px', color: '#5a6470', marginTop: '8px' }}>{applyMsg[need.id]}</p>
+                  {applyMsg[need.id] && !applied && (
+                    <p style={{ fontSize: '14px', color: '#5a6470', marginTop: '10px' }}>{applyMsg[need.id]}</p>
                   )}
                 </div>
-              ))}
+                );
+              })}
               </div>
             </div>
           )}
 
           {/* Find New Elder tab */}
           {tab === 'discover' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <RadiusBar />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '30px', fontWeight: 700, letterSpacing: '-0.5px', color: '#1d1d1f', margin: '0 0 6px' }}>
+                  Find an Elder to Help
+                </h2>
+                <p style={{ fontSize: '18px', color: '#5a6470', margin: 0 }}>
+                  Reach out to elders near you and start building trust.
+                </p>
+              </div>
+              <RadiusBar noun="elders" />
               {/* Searching state — never flash a blank "nobody here" while loading (H1) */}
               {discovering && elders.length === 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -641,62 +701,59 @@ export default function HelperDashboard() {
                 const sent = connectMsg[elder.userId];
                 return (
                   <div key={elder.userId} style={{
-                    background: '#ffffff', borderRadius: '18px', padding: '20px',
+                    background: '#ffffff', borderRadius: '20px', padding: '24px',
                     border: '1px solid #e0e0e0',
                     animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
-                      <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
-                        <div style={{
-                          width: '52px', height: '52px', borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #EAF5FB, #BFD9EA)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '17px', fontWeight: 600, color: '#4FA3CE', flexShrink: 0,
-                        }}>
-                          {elder.name ? elder.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{elder.name || 'Elder'}</p>
-                            <TrustBadge tier={elder.trustTier} score={elder.trustScore} />
-                          </div>
-                          {elder.city && <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '3px 0 0' }}>{elder.city}</p>}
-                          {elder.distanceKm != null && (
-                            <p style={{ fontSize: '12px', color: '#a0a0a5', margin: '2px 0 0' }}>{Math.round(elder.distanceKm * 10) / 10} km away</p>
-                          )}
-                          {elder.bio && <p style={{ fontSize: '14px', color: '#7a7a7a', margin: '6px 0 0', lineHeight: 1.5 }}>{elder.bio}</p>}
-                          {elder.interests?.length > 0 && (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
-                              {elder.interests.map(interest => (
-                                <span key={interest} style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '2px 8px', borderRadius: '9999px' }}>{interest}</span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                    <div style={{ display: 'flex', gap: '18px', alignItems: 'flex-start' }}>
+                      <div style={{
+                        width: '58px', height: '58px', borderRadius: '50%',
+                        background: '#E6F2FA',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '20px', fontWeight: 700, color: '#2E7DA6', flexShrink: 0,
+                      }}>
+                        {initials(elder.name)}
                       </div>
-                      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                          <p style={{ fontWeight: 700, fontSize: '21px', color: '#1d1d1f', margin: 0 }}>{elder.name || 'Elder'}</p>
+                          {(elder.trustScore != null || elder.trustTier) && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '4px 11px', borderRadius: '9999px', fontSize: '13px', fontWeight: 700, color: '#2E7DA6' }}>
+                              {elder.trustTier || 'New'}{elder.trustScore != null ? ` · ${elder.trustScore}` : ''}
+                            </span>
+                          )}
+                        </div>
+                        {(elder.city || elder.distanceKm != null) && (
+                          <p style={{ fontSize: '16px', color: '#5a6470', margin: '6px 0 0' }}>
+                            {elder.city}{elder.city && elder.distanceKm != null ? ' · ' : ''}{elder.distanceKm != null ? `${Math.round(elder.distanceKm * 10) / 10} km away` : ''}
+                          </p>
+                        )}
+                        {elder.bio && <p style={{ fontSize: '16px', color: '#3a4450', margin: '10px 0 0', lineHeight: 1.5 }}>{elder.bio}</p>}
+                        {elder.interests?.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                            {elder.interests.map(interest => (
+                              <span key={interest} style={{ fontSize: '14px', fontWeight: 600, background: '#F2F4F7', color: '#5a6470', padding: '5px 13px', borderRadius: '9999px' }}>{interest}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'stretch', flexShrink: 0 }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: '12px', background: '#f5f5f7', color: '#4FA3CE', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600 }}>Connected</span>
+                          <span style={{ fontSize: '14px', background: '#E6F2FA', color: '#2E7DA6', padding: '12px 22px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Connected</span>
                         ) : sent ? (
                           <span style={{
-                            fontSize: '12px', padding: '6px 14px', borderRadius: '9999px', fontWeight: 600,
-                            background: sent.includes('!') ? '#f5f5f7' : '#f3f4f6',
-                            color: sent.includes('!') ? '#4FA3CE' : '#5a6470',
+                            fontSize: '14px', padding: '12px 22px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center',
+                            background: sent.includes('!') ? '#E6F2FA' : '#f3f4f6',
+                            color: sent.includes('!') ? '#2E7DA6' : '#5a6470',
                           }}>{sent}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
-                            className="btn-primary" style={{ padding: '8px 18px', fontSize: '13px' }}>
+                            style={{ height: '48px', padding: '0 26px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                             {connectingTo === elder.userId ? '...' : 'Connect'}
                           </button>
                         )}
-                        <button
-                          onClick={() => navigate(`/user/${elder.userId}`)}
-                          style={{
-                            background: 'none', border: 'none', cursor: 'pointer',
-                            fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, fontSize: '12px', color: '#4FA3CE', fontWeight: 600,
-                            padding: '4px 0',
-                          }}
-                        >
+                        <button onClick={() => navigate(`/user/${elder.userId}`)}
+                          style={{ height: '42px', padding: '0 16px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                           View Profile
                         </button>
                       </div>
