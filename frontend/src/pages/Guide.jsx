@@ -46,7 +46,7 @@ function RoleTab({ role, setRole }) {
       <button
         onClick={() => setRole(value)}
         style={{
-          flex: 1, padding: '12px 0', fontFamily: SF, fontSize: '16px',
+          flex: 1, padding: '11px 0', fontFamily: SF, fontSize: '15px',
           fontWeight: active ? 700 : 500,
           color: active ? '#fff' : '#5a6470',
           background: active ? SKY : '#fff',
@@ -111,14 +111,14 @@ export default function Guide() {
       <div style={{ maxWidth: '760px', margin: '0 auto', padding: '40px 24px 80px' }}>
 
         {/* Page heading */}
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: '22px' }}>
           <h1 style={{
-            fontFamily: SFD, fontSize: '34px', fontWeight: 600, color: '#1d1d1f',
-            letterSpacing: '-0.5px', margin: '0 0 8px',
+            fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: '#1d1d1f',
+            letterSpacing: '-0.4px', margin: '0 0 6px',
           }}>
             How It Works
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '16px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
             A short, step-by-step tour of the platform. Use Back and Next, or tap a dot to jump.
           </p>
         </div>
@@ -138,8 +138,8 @@ export default function Guide() {
         {/* Step card */}
         <div style={{
           background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-          padding: '32px 36px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-          minHeight: '320px',
+          padding: '24px 28px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+          minHeight: '280px',
         }}>
           {current.render(ctx)}
         </div>
@@ -150,7 +150,7 @@ export default function Guide() {
             onClick={() => setStep(s => Math.max(0, s - 1))}
             disabled={step === 0}
             style={{
-              padding: '13px 28px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
+              padding: '11px 24px', fontFamily: SF, fontSize: '15px', fontWeight: 600,
               borderRadius: '9999px', cursor: step === 0 ? 'default' : 'pointer',
               background: '#fff', color: step === 0 ? '#c8c8cd' : '#1d1d1f',
               border: '1px solid #e0e0e0',
@@ -162,7 +162,7 @@ export default function Guide() {
             <button
               onClick={() => setStep(s => Math.min(total - 1, s + 1))}
               style={{
-                padding: '13px 32px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
+                padding: '11px 28px', fontFamily: SF, fontSize: '15px', fontWeight: 600,
                 borderRadius: '9999px', cursor: 'pointer', background: SKY, color: '#fff',
                 border: 'none', boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
               }}

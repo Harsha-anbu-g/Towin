@@ -159,8 +159,8 @@ export default function Messages() {
      }}>
       {/* Chat header — iMessage style */}
       <header style={{
-        background: '#fafafc',
-        borderBottom: '1px solid #e0e0e0',
+        background: '#ffffff',
+        borderBottom: '1px solid #ececef',
         padding: '12px 20px',
         display: 'flex',
         alignItems: 'center',
@@ -194,23 +194,23 @@ export default function Messages() {
             <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ) : (
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '15px', fontWeight: 600, color: '#5a6470', fontFamily: SF }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '16px', fontWeight: 700, color: '#2E7DA6', fontFamily: SF }}>
             {initials(otherName)}
           </div>
         )}
 
-        <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.2px', margin: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.2px', margin: 0 }}>
             {otherName || 'Conversation'}
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
-            <span style={{ fontSize: '12px', color: '#7a7a7a' }}>
-              {trustLevel ? (TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')) : ''}
-            </span>
-            {otherTrustScore != null && (
-              <span style={{ fontSize: '12px', color: '#7a7a7a' }}>· Trust {otherTrustScore}</span>
-            )}
-          </div>
+          {trustLevel && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DA6', flexShrink: 0 }} />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#2E7DA6' }}>
+                {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ` · Trust ${otherTrustScore}` : ''}
+              </span>
+            </div>
+          )}
         </div>
 
         <button
@@ -221,11 +221,12 @@ export default function Messages() {
         </button>
       </header>
 
-      {/* Trust level banner */}
-      {banner && (
-        <div style={{ background: '#f5f5f7', borderBottom: '1px solid #e0e0e0', padding: '10px 20px' }}>
-          <p style={{ fontSize: '13px', color: '#7a7a7a', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
-            {banner.text}
+      {/* One consolidated trust hint (replaces the two stacked strips) */}
+      {trustLevel && (
+        <div style={{ background: '#F4FAFD', borderBottom: '1px solid #E2EEF5', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <p style={{ fontSize: '13px', color: '#5a6470', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
+            {banner ? banner.text : `You're at the ${TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')} stage with ${otherName}.`}
           </p>
         </div>
       )}
@@ -344,7 +345,7 @@ export default function Messages() {
                       <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '10px', fontWeight: 600, color: '#5a6470', fontFamily: SF }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '11px', fontWeight: 700, color: '#2E7DA6', fontFamily: SF }}>
                       {initials(otherName)}
                     </div>
                   )
@@ -384,36 +385,10 @@ export default function Messages() {
         </div>
       )}
 
-      {/* Trust badge strip if trust level set */}
-      {trustLevel && (
-        <div style={{
-          background: '#EAF5FB',
-          borderTop: '1px solid #e0e0e0',
-          padding: '10px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}>
-          <div style={{
-            fontSize: '12px',
-            fontWeight: 600,
-            background: '#4FA3CE',
-            color: '#ffffff',
-            padding: '4px 12px',
-            borderRadius: '9999px',
-          }}>
-            Trust: {TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')}
-          </div>
-          <p style={{ fontSize: '12px', color: '#7a7a7a', fontFamily: SFText }}>
-            Your connection level with {otherName}
-          </p>
-        </div>
-      )}
-
       {/* Input bar */}
       <form onSubmit={send} style={{
-        background: '#fafafc',
-        borderTop: '1px solid #e0e0e0',
+        background: '#ffffff',
+        borderTop: '1px solid #ececef',
         padding: '12px 16px',
         display: 'flex',
         gap: '10px',

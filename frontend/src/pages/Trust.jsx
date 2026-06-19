@@ -40,14 +40,14 @@ const card = {
 function ScoreRing({ score }) {
   return (
     <div style={{
-      width: '148px', flexShrink: 0,
+      width: '120px', flexShrink: 0,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
     }}>
-      <span style={{ fontFamily: SFD, fontSize: '64px', fontWeight: 600, color: INK, lineHeight: 1, letterSpacing: '-1px' }}>
+      <span style={{ fontFamily: SFD, fontSize: '44px', fontWeight: 700, color: INK, lineHeight: 1, letterSpacing: '-0.8px' }}>
         {score}
       </span>
-      <span style={{ fontFamily: SF, fontSize: '13px', color: FAINT, marginTop: '4px' }}>
+      <span style={{ fontFamily: SF, fontSize: '12px', color: FAINT, marginTop: '4px' }}>
         points
       </span>
     </div>
@@ -95,23 +95,23 @@ function ScoreSummary({ data }) {
   const next = TIERS[idx + 1];
   const toNext = next ? next.min - score : 0;
   return (
-    <div style={{ ...card, padding: '24px 20px', marginBottom: '20px' }}>
-      <div className="score-card-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+    <div style={{ ...card, padding: '20px', marginBottom: '16px' }}>
+      <div className="score-card-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
         <ScoreRing score={score} />
         <div style={{ flex: 1, minWidth: '220px' }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center',
             background: tierStyle.bg, color: tierStyle.color,
             border: `1px solid ${tierStyle.border}`,
-            borderRadius: '9999px', padding: '5px 16px',
-            fontSize: '13px', fontWeight: 600, fontFamily: SF, marginBottom: '12px',
+            borderRadius: '9999px', padding: '4px 13px',
+            fontSize: '12px', fontWeight: 600, fontFamily: SF, marginBottom: '10px',
           }}>
             {data.tier}
           </div>
-          <h2 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: INK, margin: '0 0 8px', letterSpacing: '-0.3px' }}>
+          <h2 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: INK, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
             {score} points
           </h2>
-          <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.55 }}>
+          <p style={{ fontFamily: SF, fontSize: '13px', color: GREY, margin: 0, lineHeight: 1.55 }}>
             {next
               ? <>You're <strong style={{ color: INK }}>{toNext}</strong> {toNext === 1 ? 'point' : 'points'} away from <strong style={{ color: INK }}>{next.name}</strong>. Every person you help fully adds up to <strong style={{ color: INK }}>15</strong> points.</>
               : <>You've reached the top tier. Keep helping — every person still adds up to 15 points.</>}
@@ -172,19 +172,19 @@ function ProfileGroup({ group }) {
 function ProfileCard({ profile, onGoToProfile }) {
   const done = profile.earned >= profile.max;
   return (
-    <div style={{ ...card, padding: '24px 28px', marginBottom: '16px' }}>
+    <div style={{ ...card, padding: '20px 22px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
         <div>
-          <h3 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: INK, margin: '0 0 4px' }}>
+          <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: '0 0 4px' }}>
             Your profile
           </h3>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: FAINT, margin: 0 }}>
+          <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: 0 }}>
             Fill a whole set to earn its point — and it counts for <em>every</em> customer you help
           </p>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <span style={{ fontFamily: SFD, fontSize: '26px', fontWeight: 600, color: INK }}>{profile.earned}</span>
-          <span style={{ fontFamily: SF, fontSize: '14px', color: FAINT }}> / {profile.max}</span>
+          <span style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 700, color: INK }}>{profile.earned}</span>
+          <span style={{ fontFamily: SF, fontSize: '13px', color: FAINT }}> / {profile.max}</span>
         </div>
       </div>
 
@@ -211,14 +211,14 @@ function ProfileCard({ profile, onGoToProfile }) {
 function Avatar({ name, photoUrl }) {
   const initial = (name || '?').trim().charAt(0).toUpperCase();
   if (photoUrl) {
-    return <img src={photoUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
+    return <img src={photoUrl} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
   }
   return (
     <div style={{
-      width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-      background: BG, border: '1px solid #e0e0e0',
+      width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+      background: '#E6F2FA', border: '1px solid #D8EAF4',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: BLUE,
+      fontFamily: SFD, fontSize: '16px', fontWeight: 700, color: '#2E7DA6',
     }}>{initial}</div>
   );
 }
@@ -226,11 +226,11 @@ function Avatar({ name, photoUrl }) {
 /* ── One card per customer, showing exactly what they earned you ─────────── */
 function CustomerCard({ c }) {
   return (
-    <div style={{ ...card, padding: '20px 22px', marginBottom: '14px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+    <div style={{ ...card, padding: '18px 20px', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
         <Avatar name={c.customerName} photoUrl={c.customerPhotoUrl} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: INK, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {c.customerName}
           </p>
           <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: '2px 0 0' }}>
@@ -238,8 +238,8 @@ function CustomerCard({ c }) {
           </p>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 600, color: INK, lineHeight: 1 }}>
-            {c.total}<span style={{ fontFamily: SF, fontSize: '13px', color: FAINT, fontWeight: 400 }}> / {c.totalMax}</span>
+          <div style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: INK, lineHeight: 1 }}>
+            {c.total}<span style={{ fontFamily: SF, fontSize: '12px', color: FAINT, fontWeight: 400 }}> / {c.totalMax}</span>
           </div>
           <div style={{ fontFamily: SF, fontSize: '11px', color: FAINT, marginTop: '2px' }}>points</div>
         </div>
@@ -280,11 +280,11 @@ export default function Trust() {
       <NavBar />
       <div style={{ maxWidth: '780px', margin: '0 auto', padding: '40px 24px 80px' }}>
 
-        <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontFamily: SFD, fontSize: '34px', fontWeight: 600, color: INK, margin: '0 0 8px', letterSpacing: '-0.5px' }}>
+        <div style={{ marginBottom: '22px' }}>
+          <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: INK, margin: '0 0 6px', letterSpacing: '-0.4px' }}>
             Your <span style={{ color: TRUST }}>Trust</span> Score
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '16px', color: GREY, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.5 }}>
             Each person you help can earn you up to <strong style={{ color: INK }}>15</strong> points:
             {' '}<strong style={{ color: INK }}>7</strong> for growing trust together,
             {' '}<strong style={{ color: INK }}>5</strong> from their review, and
@@ -309,8 +309,8 @@ export default function Trust() {
             <ScoreSummary data={data} />
             <ProfileCard profile={data.profile} onGoToProfile={() => navigate('/profile')} />
 
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '28px 0 14px' }}>
-              <h3 style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: INK, margin: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '24px 0 12px' }}>
+              <h3 style={{ fontFamily: SFD, fontSize: '17px', fontWeight: 700, color: INK, margin: 0 }}>
                 {isHelper ? 'People you help' : 'Your helpers'}
               </h3>
               {customers.length > 0 && (
