@@ -89,19 +89,15 @@ const statusStyle = (status) => {
 
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
-// Category icon tiles — shared with the Browse Needs cards.
+// Plain, everyday words for the help categories.
 const CATEGORY = {
-  COMPANIONSHIP:  { label: 'Companionship',  path: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>' },
-  TRANSPORTATION: { label: 'Transportation', path: '<path d="M5 17H3v-6l2-5h11l3 5h2v6h-2"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="17.5" cy="17.5" r="2"/>' },
-  ERRANDS:        { label: 'Errands',        path: '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>' },
-  CLEANING:       { label: 'Cleaning',       path: '<path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>' },
-  OTHER:          { label: 'Other',          path: '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>' },
+  COMPANIONSHIP:  'Company',
+  TRANSPORTATION: 'Rides',
+  ERRANDS:        'Shopping',
+  CLEANING:       'Cleaning',
+  OTHER:          'Other',
 };
-const catLabel = (c) => CATEGORY[c]?.label || c;
-function CatIcon({ category, size = 22, stroke = '#5a6470' }) {
-  const c = CATEGORY[category] || CATEGORY.OTHER;
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: c.path }} />;
-}
+const catLabel = (c) => CATEGORY[c] || c;
 
 const TAB_ICONS = {
   connections: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -596,12 +592,7 @@ export default function HelperDashboard() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: '#F2F4F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <CatIcon category={need.category} size={19} />
-                        </div>
-                        <p style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
-                      </div>
+                      <p style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
                       {need.description && <p style={{ fontSize: '14px', color: '#3a4450', margin: '10px 0 0', lineHeight: 1.5 }}>{need.description}</p>}
                       <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                         <span style={{ fontSize: '12px', fontWeight: 600, background: '#F2F4F7', color: '#5a6470', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
