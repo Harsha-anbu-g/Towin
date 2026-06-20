@@ -23,9 +23,9 @@ function Kicker({ children }) {
 function Title({ children }) {
   return (
     <h1 className="landing-title" style={{
-      fontFamily: SFD, fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
-      letterSpacing: '-0.374px', lineHeight: 1.1, textAlign: 'center',
-      margin: '0 0 14px',
+      fontFamily: SFD, fontSize: '46px', fontWeight: 600, color: '#1d1d1f',
+      letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: 'center',
+      margin: '0 0 16px',
     }}>{children}</h1>
   );
 }
@@ -33,8 +33,8 @@ function Title({ children }) {
 function Lead({ children }) {
   return (
     <p className="landing-lead" style={{
-      fontFamily: SF, fontSize: '19px', color: '#5a6470', lineHeight: 1.6,
-      textAlign: 'center', maxWidth: '540px', margin: '0 auto 22px',
+      fontFamily: SF, fontSize: '21px', color: '#5a6470', lineHeight: 1.6,
+      textAlign: 'center', maxWidth: '580px', margin: '0 auto 24px',
     }}>{children}</p>
   );
 }
@@ -42,8 +42,8 @@ function Lead({ children }) {
 function Body({ children }) {
   return (
     <p style={{
-      fontFamily: SF, fontSize: '17px', color: '#1d1d1f', lineHeight: 1.65,
-      textAlign: 'center', maxWidth: '540px', margin: '0 auto 16px',
+      fontFamily: SF, fontSize: '18px', color: '#1d1d1f', lineHeight: 1.65,
+      textAlign: 'center', maxWidth: '580px', margin: '0 auto 18px',
     }}>{children}</p>
   );
 }
@@ -52,12 +52,12 @@ function MiniCard({ title, children }) {
   return (
     <div style={{
       background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '18px',
-      padding: '18px 20px', textAlign: 'left',
+      padding: '20px 22px', textAlign: 'left',
     }}>
-      <p style={{ fontFamily: SFD, fontSize: '17px', fontWeight: 600, color: BLUE, margin: '0 0 6px' }}>
+      <p style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: BLUE, margin: '0 0 6px' }}>
         {title}
       </p>
-      <p style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
+      <p style={{ fontFamily: SF, fontSize: '16px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
         {children}
       </p>
     </div>
@@ -129,8 +129,8 @@ function NoteBox({ children }) {
   return (
     <div style={{
       background: '#ffffff', border: '1px solid #e8e8ed',
-      borderRadius: '14px', padding: '16px 20px', maxWidth: '540px',
-      margin: '22px auto 0', fontFamily: SF, fontSize: '15px',
+      borderRadius: '14px', padding: '18px 22px', maxWidth: '580px',
+      margin: '24px auto 0', fontFamily: SF, fontSize: '16px',
       color: '#5a6470', lineHeight: 1.6, textAlign: 'center',
     }}>{children}</div>
   );
@@ -156,8 +156,15 @@ export const SLIDES = [
         </div>
         <Title>ToWin</Title>
         <Lead>It takes two To Win.</Lead>
+        <p style={{
+          fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: BLUE,
+          textAlign: 'center', margin: '0 0 16px',
+        }}>
+          Connecting generations, building trust.
+        </p>
         <Body>
-          One who helps, one who gets help, and both win.
+          One who helps, one who gets help — and both win. A safer place for
+          elders and helpers to meet, talk, and grow trust at their own pace.
         </Body>
       </>
     ),
@@ -227,23 +234,48 @@ export const SLIDES = [
   },
   {
     id: 'rooting',
+    wide: true,
     render: () => (
-      <>
-        <Kicker>One step at a time</Kicker>
-        <Title>Rooting (<span style={{ color: '#10069f' }}>Trust</span> Ladder): how trust grows</Title>
-        <Lead>
-          Like a tree growing roots, every friendship on ToWin grows slowly,
-          through 7 simple stages:
-        </Lead>
-        <StageLadder stages={[
-          'Just Connected', 'Messaging', 'Phone Ready', 'Video Ready',
-          'Verified', 'Ready to Meet', 'Fully Trusted',
-        ]} />
-        <NoteBox>
-          <strong>Both people must agree to every step.</strong> Nothing personal,
-          like a phone number, is shared until trust has grown.
-        </NoteBox>
-      </>
+      <div className="landing-split" style={{
+        display: 'flex', alignItems: 'center', gap: '48px',
+      }}>
+        {/* Left: the story */}
+        <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
+          <p style={{
+            fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE,
+            letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 10px',
+          }}>One step at a time</p>
+          <h1 className="landing-title" style={{
+            fontFamily: SFD, fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
+            letterSpacing: '-0.5px', lineHeight: 1.12, textAlign: 'left', margin: '0 0 16px',
+          }}>
+            Rooting (<span style={{ color: '#10069f' }}>Trust</span> Ladder): how trust grows
+          </h1>
+          <p className="landing-lead" style={{
+            fontFamily: SF, fontSize: '20px', color: '#5a6470', lineHeight: 1.6,
+            textAlign: 'left', margin: '0 0 20px',
+          }}>
+            Like a tree growing roots, every friendship on ToWin grows slowly,
+            through 7 simple stages.
+          </p>
+          <div style={{
+            background: '#ffffff', border: '1px solid #e8e8ed',
+            borderRadius: '14px', padding: '16px 20px', fontFamily: SF,
+            fontSize: '15px', color: '#5a6470', lineHeight: 1.6, textAlign: 'left',
+          }}>
+            <strong>Both people must agree to every step.</strong> Nothing personal,
+            like a phone number, is shared until trust has grown.
+          </div>
+        </div>
+
+        {/* Right: the ladder */}
+        <div style={{ flexShrink: 0 }}>
+          <StageLadder stages={[
+            'Just Connected', 'Messaging', 'Phone Ready', 'Video Ready',
+            'Verified', 'Ready to Meet', 'Fully Trusted',
+          ]} />
+        </div>
+      </div>
     ),
   },
   {

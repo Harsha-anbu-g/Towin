@@ -443,4 +443,8 @@ img {
   .landing-title  { font-size: 29px !important; }
   .landing-lead   { font-size: 17px !important; }
   .landing-cards  { grid-template-columns: 1fr !important; }
+  .landing-split  { flex-direction: column !important; gap: 28px !important; }
+  .landing-split-text { text-align: center !important; }
+  .landing-split-text .landing-title,
+  .landing-split-text .landing-lead { text-align: center !important; }
 }

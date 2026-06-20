@@ -84,7 +84,7 @@ export default function Landing() {
           minHeight: '100%', display: 'flex',
           alignItems: 'center', justifyContent: 'center',
         }}>
-          <div key={slide.id} className="bf" style={{ width: '100%', maxWidth: '680px' }}>
+          <div key={slide.id} className="bf" style={{ width: '100%', maxWidth: slide.wide ? '880px' : '760px' }}>
             {slide.render()}
           </div>
         </div>
