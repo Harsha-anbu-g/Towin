@@ -17,7 +17,7 @@ export default function SiteFooter({ style }) {
     <footer style={{
       width: '100%',
       boxSizing: 'border-box',
-      padding: '28px 28px 18px',
+      padding: '24px 28px 6px',
       textAlign: 'right',
       ...style,
     }}>
