@@ -200,7 +200,8 @@ export default function Login() {
       <HeroPanel />
 
       {/* Right panel */}
-      <div className="auth-form">
+      <div className="auth-form" style={{ flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 0 }}>
         <div style={{ width: '100%', maxWidth: '380px' }}>
           {/* Form card */}
           <div className="auth-card" style={{
@@ -450,8 +451,9 @@ export default function Login() {
             </Link>
           </p>
         </div>
+        </div>
+        <SiteFooter />
       </div>
-      <SiteFooter />
     </div>
   );
 }

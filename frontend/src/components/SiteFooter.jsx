@@ -6,28 +6,29 @@ const YEAR = 2026;
 const COPYRIGHT = `© ${YEAR} ${OWNER}. All rights reserved.`;
 
 /**
- * Ultra-subtle copyright line pinned to the very bottom edge of the screen.
- * Used only on Login, Register and Feedback. It is `position: fixed` so it
- * sits at the laptop-screen edge regardless of page scroll, and
- * `pointer-events: none` so it never blocks anything beneath it.
+ * Regular in-flow footer shown at the bottom-right END of the page (Login,
+ * Register, Feedback). It scrolls with the content like a normal footer —
+ * you only see it once you reach the end of the page, not pinned to the
+ * screen. Pass `style` (e.g. `{ marginTop: 'auto' }`) to let it sink to the
+ * bottom of a flex-column container.
  */
-export default function SiteFooter() {
+export default function SiteFooter({ style }) {
   return (
-    <p style={{
-      position: 'fixed',
-      left: 0, right: 0, bottom: 0,
-      margin: 0,
-      padding: '2px 8px',
-      textAlign: 'center',
-      fontFamily: SF,
-      fontSize: '10px',
-      lineHeight: 1.3,
-      letterSpacing: '0.1px',
-      color: '#c2c2c8',
-      pointerEvents: 'none',
-      zIndex: 20,
+    <footer style={{
+      width: '100%',
+      boxSizing: 'border-box',
+      padding: '28px 28px 18px',
+      textAlign: 'right',
+      ...style,
     }}>
-      {COPYRIGHT}
-    </p>
+      <span style={{
+        fontFamily: SF,
+        fontSize: '12px',
+        color: '#8e8e93',
+        letterSpacing: '0.1px',
+      }}>
+        {COPYRIGHT}
+      </span>
+    </footer>
   );
 }
