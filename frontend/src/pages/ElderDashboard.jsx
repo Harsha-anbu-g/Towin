@@ -442,14 +442,14 @@ export default function ElderDashboard() {
               display: 'inline-flex', alignItems: 'center', gap: '7px',
               height: '44px', padding: '0 18px',
               fontSize: '15px', fontWeight: 700, letterSpacing: '-0.1px',
-              color: '#fff', background: '#4FA3CE',
-              border: '1px solid #4FA3CE', borderRadius: '10px',
+              color: '#fff', background: '#6B7280',
+              border: '1px solid #6B7280', borderRadius: '10px',
               cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit',
-              boxShadow: '0 2px 8px rgba(79,163,206,0.35)',
+              boxShadow: '0 2px 8px rgba(107,114,128,0.30)',
               transition: 'background 0.15s',
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#3D8AB0'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#4FA3CE'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#565d68'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#6B7280'; }}
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Post Request
