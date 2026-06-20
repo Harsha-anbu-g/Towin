@@ -48,35 +48,35 @@ function Body({ children }) {
   );
 }
 
-function MiniCard({ title, badge, stars, children }) {
+function MiniCard({ title, badge, stars, compact, children }) {
   return (
     <div style={{
-      background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '18px',
-      padding: '20px 22px', textAlign: 'left',
+      background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: compact ? '14px' : '18px',
+      padding: compact ? '9px 14px' : '20px 22px', textAlign: 'left',
     }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: '10px', marginBottom: '6px',
+        gap: '8px', marginBottom: compact ? '3px' : '6px',
       }}>
-        <p style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: BLUE, margin: 0 }}>
+        <p style={{ fontFamily: SFD, fontSize: compact ? '15px' : '18px', fontWeight: 600, color: BLUE, margin: 0 }}>
           {title}
         </p>
         {badge && (
           <span style={{
-            fontFamily: SFD, fontSize: '13px', fontWeight: 700, color: BLUE,
+            fontFamily: SFD, fontSize: '12px', fontWeight: 700, color: BLUE,
             background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
-            padding: '3px 11px', whiteSpace: 'nowrap', flexShrink: 0,
+            padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
           }}>{badge}</span>
         )}
       </div>
       {stars && (
-        <div aria-label="five stars" style={{ display: 'flex', gap: '3px', marginBottom: '8px' }}>
+        <div aria-label="five stars" style={{ display: 'flex', gap: '2px', marginBottom: compact ? '4px' : '8px' }}>
           {Array.from({ length: 5 }).map((_, i) => (
-            <span key={i} style={{ fontSize: '16px', lineHeight: 1, color: BLUE }}>★</span>
+            <span key={i} style={{ fontSize: compact ? '13px' : '16px', lineHeight: 1, color: BLUE }}>★</span>
           ))}
         </div>
       )}
-      <p style={{ fontFamily: SF, fontSize: '16px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
+      <p style={{ fontFamily: SF, fontSize: compact ? '13px' : '16px', color: '#5a6470', lineHeight: 1.5, margin: 0 }}>
         {children}
       </p>
     </div>
@@ -89,22 +89,14 @@ function ScoreSum() {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      gap: '14px', flexWrap: 'wrap', margin: '22px auto 0',
+      gap: '10px', background: '#ffffff', border: `1px solid ${BORDER}`,
+      borderRadius: '14px', padding: '11px 16px',
     }}>
-      <span style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#5a6470' }}>
-        3 + 7 + 5
+      <span style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: '#5a6470' }}>
+        3 + 7 + 5 =
       </span>
-      <span style={{ fontFamily: SF, fontSize: '18px', color: '#a0a0a5' }}>=</span>
-      <span style={{
-        display: 'inline-flex', alignItems: 'baseline', gap: '7px',
-        background: '#ffffff', border: `1px solid ${BORDER}`,
-        borderRadius: '9999px', padding: '8px 18px',
-      }}>
-        <span style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: BLUE }}>15</span>
-        <span style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470' }}>
-          points per person you help
-        </span>
-      </span>
+      <span style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 700, color: BLUE }}>15</span>
+      <span style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470' }}>points</span>
     </div>
   );
 }
@@ -254,29 +246,58 @@ export const SLIDES = [
   },
   {
     id: 'trust',
+    wide: true,
     render: () => (
-      <>
-        <Kicker>The real problem is trust</Kicker>
-        <Title><span style={{ color: '#9C7A3C' }}>Trust</span> is earned, not given</Title>
-        <Lead>
-          Letting someone new into your life is a big step. So every member
-          has a Trust Score. Each person they help can add up to 15 points,
-          built from three things:
-        </Lead>
-        <CardGrid>
-          <MiniCard title="Profile" badge="+3">
-            A full profile with ID, phone, and photo, all checked.
+      <div className="landing-split" style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
+        {/* Left: story */}
+        <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
+          <p style={{
+            fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE,
+            letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 10px',
+          }}>The real problem is trust</p>
+          <h1 className="landing-title" style={{
+            fontFamily: SFD, fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
+            letterSpacing: '-0.5px', lineHeight: 1.12, textAlign: 'left', margin: '0 0 16px',
+          }}>
+            <span style={{ color: '#9C7A3C' }}>Trust</span> is earned,<br />not given
+          </h1>
+          <p className="landing-lead" style={{
+            fontFamily: SF, fontSize: '18px', color: '#5a6470', lineHeight: 1.55,
+            textAlign: 'left', margin: '0 0 16px',
+          }}>
+            Letting someone new into your life is a big step. So every member
+            has a Trust Score, visible to elders before they ever say yes.
+          </p>
+          <div style={{
+            background: '#ffffff', border: '1px solid #e8e8ed',
+            borderRadius: '12px', padding: '11px 16px', fontFamily: SF,
+            fontSize: '14px', color: '#5a6470', lineHeight: 1.55, textAlign: 'left',
+          }}>
+            Each person helped adds up to <strong style={{ color: '#1d1d1f' }}>15 points</strong> to their score.
+          </div>
+        </div>
+
+        {/* Right: three score cards + total */}
+        <div style={{ flexShrink: 0, width: '280px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <MiniCard title="Profile" badge="+3" compact>
+            Full profile with ID, phone, and photo, all checked.
           </MiniCard>
-          <MiniCard title="Trust Ladder" badge="+7">
-            Points earned each time a friendship takes a step forward.
+          <MiniCard title="Trust Ladder" badge="+7" compact>
+            Points earned as a friendship grows step by step.
           </MiniCard>
-          <MiniCard title="Review" badge="+5" stars>
+          <MiniCard title="Review" badge="+5" stars compact>
             Star ratings from the people they have already helped.
           </MiniCard>
-        </CardGrid>
-        <ScoreSum />
-        <NoteBox>Elders see a helper&apos;s Trust Score before they ever say yes.</NoteBox>
-      </>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '7px 14px',
+          }}>
+            <span style={{ fontFamily: SFD, fontSize: '14px', fontWeight: 600, color: '#5a6470' }}>3 + 7 + 5 =</span>
+            <span style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: BLUE }}>15</span>
+            <span style={{ fontFamily: SF, fontSize: '13px', color: '#5a6470' }}>points</span>
+          </div>
+        </div>
+      </div>
     ),
   },
   {
