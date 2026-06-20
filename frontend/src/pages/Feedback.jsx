@@ -111,10 +111,7 @@ export default function Feedback() {
       `}</style>
 
       {/* ── Brand header ── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-        padding: '36px 16px 0',
-      }}>
+      <div className="fb-brand">
         <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <span style={{
           fontFamily: SF, fontSize: '24px', fontWeight: 600,
