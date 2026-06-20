@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import { Mail, Phone, MapPin, Briefcase, Code2, Camera, Globe, Star } from 'lucide-react';
+import SiteFooter from '../components/SiteFooter';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -294,6 +295,7 @@ export default function Feedback() {
         </div>
 
       </div>
+      <SiteFooter variant="line" />
     </div>
   );
 }

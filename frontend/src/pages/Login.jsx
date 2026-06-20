@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import SiteFooter from '../components/SiteFooter';
 
 function HeroPanel() {
   return (
@@ -448,6 +449,7 @@ export default function Login() {
               Share feedback
             </Link>
           </p>
+          <SiteFooter variant="line" />
         </div>
       </div>
     </div>
