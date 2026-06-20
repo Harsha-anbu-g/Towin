@@ -8,6 +8,21 @@ const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SKY = '#4FA3CE';
 
+function FlameIcon({ size = 56 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 2C12 2 7 7 7 12.5C7 15.5 9 18 12 18C15 18 17 15.5 17 12.5C17 10 15.5 8 14 7C14 9 13 10 12 10C11 10 10 9 10 7.5C10 5.5 12 2 12 2Z"
+        fill="#4FA3CE" opacity="0.85"
+      />
+      <path
+        d="M12 13C12 13 10.5 14.5 10.5 16C10.5 17.1 11.2 18 12 18C12.8 18 13.5 17.1 13.5 16C13.5 14.5 12 13 12 13Z"
+        fill="#1d1d1f" opacity="0.5"
+      />
+    </svg>
+  );
+}
+
 // Build the Monday–Sunday week containing today, marking which days fall inside
 // the current consecutive streak. Derived from currentStreak + lastCheckinDate
 // since the backend keeps no per-day history.
@@ -113,30 +128,35 @@ export default function Streaks() {
       <NavBar />
       <div style={{ flex: 1, display: 'flex' }}>
 
-      {/* Left — image panel (hidden on mobile) */}
+      {/* Left — art panel (hidden on mobile) */}
       <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
-        display: 'flex', alignItems: 'flex-end',
+        display: 'flex', alignItems: 'flex-start',
+        background: '#fafafc',
       }}>
         <img src="/journey.jpg" alt="" style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', zIndex: 0,
         }} />
-        {/* Legibility scrim so the tagline reads over the photo */}
+        {/* Soft white wash: lifts the heading off the art up top, and melts the
+            art into the page at the bottom — keeps the picture clean and white. */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0) 70%)',
+          background:
+            'linear-gradient(to bottom, rgba(250,250,252,0.88) 0%, rgba(250,250,252,0.45) 15%, rgba(250,250,252,0) 30%),' +
+            'linear-gradient(to top, #fafafc 0%, rgba(250,250,252,0) 15%)',
         }} />
-        {/* Tagline */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '44px' }}>
+        {/* Tagline pinned to the top */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '40px 44px' }}>
+          <FlameIcon size={46} />
           <h2 style={{
-            fontFamily: SF, fontSize: '30px', fontWeight: 700, color: '#fff',
-            letterSpacing: '-0.5px', margin: '0 0 12px', lineHeight: 1.2,
+            fontFamily: SF, fontSize: '30px', fontWeight: 700, color: '#1d1d1f',
+            letterSpacing: '-0.5px', margin: '14px 0 12px', lineHeight: 1.2,
           }}>
             Slow and steady<br />wins the day.
           </h2>
           <p style={{
-            fontSize: '16px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6,
+            fontSize: '16px', color: '#5a6470', lineHeight: 1.6,
             margin: 0, maxWidth: '280px',
           }}>
             Showing up each day keeps your connections warm and your{' '}
