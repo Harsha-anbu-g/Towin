@@ -1,4 +1,4 @@
-const TRUST = '#10069f';
+const TRUST = '#9C7A3C';
 
 const TIER_COLORS = {
   'Community Champion': { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },

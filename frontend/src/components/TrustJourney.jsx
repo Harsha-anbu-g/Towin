@@ -3,7 +3,7 @@ import { Slider } from './ui/slider';
 
 const SF    = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT   = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
-const TRUST = '#10069f';
+const TRUST = '#9C7A3C';
 
 /* H2: Real-world language — no technical enum names visible to user */
 const LEVELS = [

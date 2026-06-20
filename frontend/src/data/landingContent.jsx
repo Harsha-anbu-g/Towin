@@ -212,7 +212,7 @@ export const SLIDES = [
     render: () => (
       <>
         <Kicker>The real problem is trust</Kicker>
-        <Title><span style={{ color: '#10069f' }}>Trust</span> is earned, not given</Title>
+        <Title><span style={{ color: '#9C7A3C' }}>Trust</span> is earned, not given</Title>
         <Lead>
           Letting someone new into your life is a big step. So every member
           has a Trust Score, built from three things:
@@ -249,7 +249,7 @@ export const SLIDES = [
             fontFamily: SFD, fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
             letterSpacing: '-0.5px', lineHeight: 1.12, textAlign: 'left', margin: '0 0 16px',
           }}>
-            Rooting (<span style={{ color: '#10069f' }}>Trust</span> Ladder): how trust grows
+            Rooting (<span style={{ color: '#9C7A3C' }}>Trust</span> Ladder): how trust grows
           </h1>
           <p className="landing-lead" style={{
             fontFamily: SF, fontSize: '20px', color: '#5a6470', lineHeight: 1.6,
