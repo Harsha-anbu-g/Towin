@@ -295,7 +295,7 @@ export default function Feedback() {
         </div>
 
       </div>
-      <SiteFooter variant="line" />
+      <SiteFooter />
     </div>
   );
 }

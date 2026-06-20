@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
-import SiteFooter from '../components/SiteFooter';
 import { STEPS } from '../data/guideContent';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -173,8 +172,6 @@ export default function Guide() {
           )}
         </div>
       </div>
-
-      <SiteFooter />
     </div>
   );
 }
