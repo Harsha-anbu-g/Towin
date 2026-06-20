@@ -307,7 +307,6 @@ export default function Trust() {
         {data && (
           <>
             <ScoreSummary data={data} />
-            <ProfileCard profile={data.profile} onGoToProfile={() => navigate('/profile')} />
 
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '24px 0 12px' }}>
               <h3 style={{ fontFamily: SFD, fontSize: '17px', fontWeight: 700, color: INK, margin: 0 }}>
@@ -341,6 +340,10 @@ export default function Trust() {
             ) : (
               customers.map(c => <CustomerCard key={c.connectionId} c={c} />)
             )}
+
+            <div style={{ marginTop: '24px' }}>
+              <ProfileCard profile={data.profile} onGoToProfile={() => navigate('/profile')} />
+            </div>
           </>
         )}
       </div>

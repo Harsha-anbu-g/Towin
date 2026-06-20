@@ -484,44 +484,6 @@ export default function ProfileEdit() {
           {/* RIGHT: Reviews + Verification + Account */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-            {/* Reviews received */}
-            <BlurFade delay={4}>
-              <div style={card}>
-                <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
-                  Reviews Received {reviews.length > 0 && (
-                    <span style={{ fontSize: '16px', fontWeight: 400, color: '#a0a0a5' }}>({reviews.length})</span>
-                  )}
-                </p>
-                {reviews.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: LEAF_TINT, border: `1px solid ${LEAF_BORDER}`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <StarIcon size={20} color={STAR_GOLD} strokeWidth={2} fill={STAR_GOLD} />
-                    </div>
-                    <p style={{ fontSize: '14px', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {reviews.map(r => (
-                    <div key={r.id} style={{ border: '1px solid #e0e0e0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>{r.reviewerName}</p>
-                        <Stars rating={r.rating} />
-                      </div>
-                      {r.tags?.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                          {r.tags.map(t => (
-                            <span key={t} style={{ fontSize: '11px', background: 'rgba(0,102,204,0.08)', color: '#4FA3CE', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
-                          ))}
-                        </div>
-                      )}
-                      {r.comment && <p style={{ fontSize: '14px', color: '#7a7a7a', lineHeight: 1.6 }}>{r.comment}</p>}
-                      <p style={{ fontSize: '12px', color: '#a0a0a5' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </BlurFade>
-
             {/* Verification card */}
             <BlurFade delay={4}>
               <div style={card}>
@@ -605,6 +567,44 @@ export default function ProfileEdit() {
                     </div>
                   )}
                   {idMsg && <p style={{ fontSize: '13px', color: idMsg.includes('pending') ? SKY : MUTED, fontWeight: 500 }}>{idMsg}</p>}
+                </div>
+              </div>
+            </BlurFade>
+
+            {/* Reviews received */}
+            <BlurFade delay={4}>
+              <div style={card}>
+                <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
+                  Reviews Received {reviews.length > 0 && (
+                    <span style={{ fontSize: '16px', fontWeight: 400, color: '#a0a0a5' }}>({reviews.length})</span>
+                  )}
+                </p>
+                {reviews.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: LEAF_TINT, border: `1px solid ${LEAF_BORDER}`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <StarIcon size={20} color={STAR_GOLD} strokeWidth={2} fill={STAR_GOLD} />
+                    </div>
+                    <p style={{ fontSize: '14px', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {reviews.map(r => (
+                    <div key={r.id} style={{ border: '1px solid #e0e0e0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>{r.reviewerName}</p>
+                        <Stars rating={r.rating} />
+                      </div>
+                      {r.tags?.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {r.tags.map(t => (
+                            <span key={t} style={{ fontSize: '11px', background: 'rgba(0,102,204,0.08)', color: '#4FA3CE', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
+                          ))}
+                        </div>
+                      )}
+                      {r.comment && <p style={{ fontSize: '14px', color: '#7a7a7a', lineHeight: 1.6 }}>{r.comment}</p>}
+                      <p style={{ fontSize: '12px', color: '#a0a0a5' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </BlurFade>
