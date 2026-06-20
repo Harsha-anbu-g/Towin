@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import SiteFooter from '../components/SiteFooter';
 
 const TERMS_CONTENT = [
   { h: '1. Welcome to ToWin',
@@ -696,6 +697,8 @@ export default function Register() {
               How It Works
             </Link>
           </div>
+
+          <SiteFooter variant="line" />
         </div>
       </div>
 
