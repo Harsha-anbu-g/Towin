@@ -8,19 +8,33 @@ const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SKY = '#4FA3CE';
 
-function FlameIcon({ size = 56 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 2C12 2 7 7 7 12.5C7 15.5 9 18 12 18C15 18 17 15.5 17 12.5C17 10 15.5 8 14 7C14 9 13 10 12 10C11 10 10 9 10 7.5C10 5.5 12 2 12 2Z"
-        fill="#4FA3CE" opacity="0.85"
-      />
-      <path
-        d="M12 13C12 13 10.5 14.5 10.5 16C10.5 17.1 11.2 18 12 18C12.8 18 13.5 17.1 13.5 16C13.5 14.5 12 13 12 13Z"
-        fill="#1d1d1f" opacity="0.5"
-      />
-    </svg>
-  );
+// Build the Monday–Sunday week containing today, marking which days fall inside
+// the current consecutive streak. Derived from currentStreak + lastCheckinDate
+// since the backend keeps no per-day history.
+function buildWeek(streak) {
+  const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const mondayOffset = (today.getDay() + 6) % 7; // days since Monday
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - mondayOffset);
+
+  const current = streak?.currentStreak ?? 0;
+  const last = streak?.lastCheckinDate ? new Date(`${streak.lastCheckinDate}T00:00:00`) : null;
+  let runStart = null;
+  if (last && current > 0) {
+    runStart = new Date(last);
+    runStart.setDate(last.getDate() - (current - 1));
+  }
+
+  return labels.map((label, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const isFuture = d > today;
+    const isToday = d.getTime() === today.getTime();
+    const done = !!(runStart && last && d >= runStart && d <= last && !isFuture);
+    return { label, done, today: isToday && !done, future: isFuture };
+  });
 }
 
 function greeting() {
@@ -74,6 +88,7 @@ export default function Streaks() {
   const [checkingIn, setCheckingIn] = useState(false);
   const [justCheckedIn, setJustCheckedIn] = useState(false);
   const alreadyDone = streak?.alreadyCheckedIn || justCheckedIn;
+  const week = buildWeek(streak);
 
   async function handleCheckIn() {
     setCheckingIn(true);
@@ -101,11 +116,33 @@ export default function Streaks() {
       {/* Left — image panel (hidden on mobile) */}
       <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
+        display: 'flex', alignItems: 'flex-end',
       }}>
         <img src="/journey.jpg" alt="" style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', zIndex: 0,
         }} />
+        {/* Legibility scrim so the tagline reads over the photo */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 1,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0) 70%)',
+        }} />
+        {/* Tagline */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '44px' }}>
+          <h2 style={{
+            fontFamily: SF, fontSize: '30px', fontWeight: 700, color: '#fff',
+            letterSpacing: '-0.5px', margin: '0 0 12px', lineHeight: 1.2,
+          }}>
+            Slow and steady<br />wins the day.
+          </h2>
+          <p style={{
+            fontSize: '16px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6,
+            margin: 0, maxWidth: '280px',
+          }}>
+            Showing up each day keeps your connections warm and your{' '}
+            <span style={{ color: '#9C7A3C', fontWeight: 600 }}>trust</span> growing.
+          </p>
+        </div>
       </div>
 
       {/* Right — streak content */}
@@ -142,23 +179,58 @@ export default function Streaks() {
               <p style={{ fontSize: '16px', color: '#a0a0a5' }}>Loading…</p>
             ) : (
               <>
-                <FlameIcon size={56} />
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  background: '#EAF5FB', border: '1px solid #BFD9EA',
+                  borderRadius: '9999px', padding: '6px 16px', marginBottom: '18px',
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SKY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" />
+                  </svg>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#3D8AB0' }}>Current streak</span>
+                </div>
                 <p style={{
                   fontFamily: SF, fontSize: '80px', fontWeight: 600,
-                  color: '#1d1d1f', lineHeight: 1, margin: '16px 0 4px',
+                  color: '#1d1d1f', lineHeight: 1, margin: '0 0 4px',
                   letterSpacing: '-2px',
                 }}>
                   {streak?.currentStreak ?? 0}
                 </p>
                 <p style={{
                   fontSize: '18px', fontWeight: 600, color: '#7a7a7a',
-                  fontFamily: SFT, marginBottom: '8px',
+                  fontFamily: SFT, marginBottom: '22px',
                 }}>
-                  day streak
+                  days in a row
                 </p>
+
+                {/* Week tracker */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+                  {week.map((d, i) => (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#a0a0a5', fontFamily: SFT }}>{d.label}</span>
+                      <div style={{
+                        width: '34px', height: '34px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: d.done ? SKY : '#fff',
+                        border: d.done ? 'none' : d.today ? `2px solid ${SKY}` : '1px solid #e6e8ec',
+                        opacity: d.future ? 0.6 : 1,
+                      }}>
+                        {d.done && (
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                        {d.today && (
+                          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: SKY }} />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 {streak?.longestStreak > 0 && (
-                  <p style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: SFT }}>
-                    Best: {streak.longestStreak} {streak.longestStreak === 1 ? 'day' : 'days'}
+                  <p style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, margin: '18px 0 0' }}>
+                    Best streak: {streak.longestStreak} {streak.longestStreak === 1 ? 'day' : 'days'}
                   </p>
                 )}
               </>
@@ -175,28 +247,31 @@ export default function Streaks() {
             {dob && computeAge(dob) ? (() => {
               const age = computeAge(dob);
               return (
-                <>
-                  <p style={{
-                    fontFamily: SF, fontSize: '40px', fontWeight: 600,
-                    color: '#1a5c2e', lineHeight: 1, margin: '0 0 6px',
-                    letterSpacing: '-1px',
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                  <div>
+                    <p style={{
+                      fontFamily: SF, fontSize: '34px', fontWeight: 600,
+                      color: '#1a5c2e', lineHeight: 1, margin: '0 0 6px',
+                      letterSpacing: '-1px',
+                    }}>
+                      {age.totalDays.toLocaleString()}
+                    </p>
+                    <p style={{
+                      fontSize: '14px', fontWeight: 600, color: '#7a7a7a',
+                      fontFamily: SFT, margin: 0,
+                    }}>
+                      days you have lived
+                    </p>
+                  </div>
+                  <span style={{
+                    fontSize: '13px', color: '#a0a0a5', fontFamily: SFT,
+                    textAlign: 'right', lineHeight: 1.5, flexShrink: 0,
                   }}>
-                    {age.totalDays.toLocaleString()}
-                  </p>
-                  <p style={{
-                    fontSize: '15px', fontWeight: 600, color: '#7a7a7a',
-                    fontFamily: SFT, margin: '0 0 10px',
-                  }}>
-                    days you have lived
-                  </p>
-                  <p style={{
-                    fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, margin: 0,
-                  }}>
-                    {age.years} {age.years === 1 ? 'year' : 'years'},{' '}
+                    {age.years} {age.years === 1 ? 'year' : 'years'},<br />
                     {age.months} {age.months === 1 ? 'month' : 'months'},{' '}
                     {age.days} {age.days === 1 ? 'day' : 'days'} old
-                  </p>
-                </>
+                  </span>
+                </div>
               );
             })() : (
               <>
