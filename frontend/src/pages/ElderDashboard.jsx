@@ -136,7 +136,7 @@ export default function ElderDashboard() {
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
   const [tab, setTab] = useState('connections');
-  const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
+  const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
   const [accepting, setAccepting] = useState(null);
@@ -262,10 +262,15 @@ export default function ElderDashboard() {
   async function postNeed(e) {
     e.preventDefault(); setPosting(true); setPostMsg('');
     try {
-      const body = { ...needForm };
+      const { categoryOther, ...rest } = needForm;
+      const body = { ...rest };
+      if (needForm.category === 'OTHER') {
+        const detail = categoryOther.trim();
+        body.description = body.description ? `Kind of help: ${detail}\n\n${body.description}` : `Kind of help: ${detail}`;
+      }
       if (location) { body.locationLat = location.lat; body.locationLng = location.lng; }
       await api.post('/needs', body);
-      setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL' });
+      setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
       setPostMsg('Request posted!'); await loadNeeds(); setShowPostForm(false); setTab('needs');
     } catch (err) { setPostMsg(err?.response?.data?.message || 'Failed to post.'); }
     finally { setPosting(false); }
@@ -949,7 +954,7 @@ export default function ElderDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <label style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f' }}>What kind of help?</label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
-                    {['COMPANIONSHIP', 'TRANSPORTATION', 'ERRANDS', 'CLEANING'].map(key => {
+                    {['COMPANIONSHIP', 'TRANSPORTATION', 'ERRANDS', 'CLEANING', 'OTHER'].map(key => {
                       const selected = needForm.category === key;
                       return (
                         <div key={key} onClick={() => setNeedForm(f => ({ ...f, category: key }))}
@@ -959,6 +964,12 @@ export default function ElderDashboard() {
                       );
                     })}
                   </div>
+                  {needForm.category === 'OTHER' && (
+                    <input value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
+                      placeholder="Please tell us what kind of help" required autoFocus
+                      style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid #d8dce2', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: '#1d1d1f', outline: 'none', marginTop: '4px' }}
+                      onFocus={focusIn} onBlur={focusOut} />
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
