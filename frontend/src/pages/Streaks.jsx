@@ -148,10 +148,10 @@ export default function Streaks() {
         {/* Tagline pinned to the top-left */}
         <div style={{ position: 'relative', zIndex: 2, padding: '40px 44px' }}>
           <h2 style={{
-            fontFamily: SF, fontSize: '30px', fontWeight: 700, color: '#1d1d1f',
-            letterSpacing: '-0.5px', margin: 0, lineHeight: 1.25,
+            fontFamily: SF, fontSize: '22px', fontWeight: 700, color: '#1d1d1f',
+            letterSpacing: '-0.3px', margin: 0, lineHeight: 1.3,
           }}>
-            Slow, smooth<br />Smooth is fast and constant
+            Slow is smooth and<br />Smooth is fast and constant
           </h2>
         </div>
       </div>
