@@ -535,25 +535,25 @@ export default function HelperDashboard() {
                             <button onClick={() => setEndingConn(null)} style={{ height: '44px', padding: '0 18px', background: '#fff', color: '#5a6470', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', gap: '10px', marginTop: '18px', flexWrap: 'wrap' }}>
-                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ flex: 2, minWidth: '140px', height: '48px', padding: '0 22px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ flex: 2, minWidth: '120px', height: '40px', padding: '0 18px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ flex: 1, minWidth: '120px', height: '48px', padding: '0 18px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ flex: 1, minWidth: '100px', height: '40px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
-                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ flex: 1, minWidth: '120px', height: '48px', padding: '0 18px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px', whiteSpace: 'nowrap' }}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#4FA3CE" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ flex: 1, minWidth: '100px', height: '40px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#4FA3CE" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>
                             )}
                             {reviewedConns.has(conn.id) && (
-                              <span style={{ height: '48px', padding: '0 16px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#4FA3CE', fontWeight: 600 }}>
-                                <svg width="14" height="11" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#4FA3CE" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              <span style={{ height: '40px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4FA3CE', fontWeight: 600 }}>
+                                <svg width="13" height="10" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#4FA3CE" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                 Reviewed
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ height: '48px', padding: '0 20px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '15px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ height: '40px', padding: '0 16px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
                         )
                       )}
