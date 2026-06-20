@@ -55,6 +55,7 @@ export default function MessagesInbox() {
   const navigate = useNavigate();
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     api.get('/connections')
@@ -70,6 +71,13 @@ export default function MessagesInbox() {
       const tb = b.lastMessageAt ? new Date(b.lastMessageAt) : new Date(b.createdAt);
       return tb - ta;
     });
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? active.filter(c =>
+        (c.otherUserName || '').toLowerCase().includes(q) ||
+        (c.lastMessagePreview || '').toLowerCase().includes(q))
+    : active;
 
   return (
     <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
@@ -150,75 +158,130 @@ export default function MessagesInbox() {
         )}
 
         {!loading && active.length > 0 && (
-          <div style={{
-            background: '#ffffff',
-            border: '1px solid #ececef',
-            borderRadius: '18px',
-            overflow: 'hidden',
-          }}>
-            {active.map((c, i) => (
-              <BlurFade key={c.id} delay={1 + i * 0.3}>
-                <button
-                  onClick={() => navigate(`/messages/${c.id}`)}
-                  style={{
-                    width: '100%',
-                    background: 'transparent',
-                    border: 'none',
-                    borderBottom: i === active.length - 1 ? 'none' : '1px solid #ececef',
-                    padding: '14px 18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    fontFamily: SFText,
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#fafbfc'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <Avatar name={c.otherUserName} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                      <p style={{
-                        fontSize: '16px', fontWeight: c.unreadCount > 0 ? 700 : 600,
-                        color: '#1d1d1f', fontFamily: SF, margin: 0,
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                      }}>
-                        {c.otherUserName || 'User'}
-                      </p>
-                      <span style={{ fontSize: '12px', color: '#a0a0a5', flexShrink: 0, fontFamily: SFText }}>
-                        {timeAgo(c.lastMessageAt)}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                      <p style={{
-                        fontSize: '13px', margin: 0,
-                        color: c.unreadCount > 0 ? '#1d1d1f' : '#7a7a7a',
-                        fontWeight: c.unreadCount > 0 ? 500 : 400,
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                      }}>
-                        {c.lastMessagePreview || (TRUST_LABELS[c.currentTrustLevel] || 'Connected')}
-                      </p>
-                      {c.unreadCount > 0 && (
-                        <span style={{
-                          background: '#4FA3CE', color: '#fff',
-                          fontSize: '11px', fontWeight: 600, fontFamily: SFText,
-                          borderRadius: '9999px', padding: '2px 7px',
-                          flexShrink: 0, minWidth: '20px', textAlign: 'center',
-                        }}>
-                          {c.unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <svg width="10" height="16" viewBox="0 0 10 16" fill="none" style={{ flexShrink: 0, marginLeft: '4px' }}>
-                    <path d="M1.5 1L8.5 8L1.5 15" stroke="#c0c0c5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <>
+            {/* Search */}
+            <BlurFade delay={1}>
+              <div style={{ position: 'relative', marginBottom: '18px' }}>
+                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', display: 'flex' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a0a0a5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                   </svg>
-                </button>
-              </BlurFade>
-            ))}
-          </div>
+                </span>
+                <input
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="Search conversations"
+                  aria-label="Search conversations"
+                  style={{
+                    width: '100%', boxSizing: 'border-box', height: '48px',
+                    border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                    padding: '0 18px 0 44px', fontSize: '15px', fontFamily: SFText,
+                    color: '#1d1d1f', background: '#fff', outline: 'none',
+                    transition: 'border-color 0.15s',
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = '#4FA3CE'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#e0e0e0'}
+                />
+              </div>
+            </BlurFade>
+
+            {filtered.length === 0 ? (
+              <div style={{
+                background: '#ffffff', border: '1px solid #ececef',
+                borderRadius: '18px', padding: '40px 24px', textAlign: 'center',
+              }}>
+                <p style={{ fontSize: '15px', color: '#7a7a7a', margin: 0 }}>
+                  No conversations match “{query.trim()}”.
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                background: '#ffffff',
+                border: '1px solid #ececef',
+                borderRadius: '18px',
+                overflow: 'hidden',
+              }}>
+                {filtered.map((c, i) => {
+                  const trustLabel = TRUST_LABELS[c.currentTrustLevel];
+                  return (
+                  <BlurFade key={c.id} delay={1 + i * 0.3}>
+                    <button
+                      onClick={() => navigate(`/messages/${c.id}`)}
+                      style={{
+                        width: '100%',
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: i === filtered.length - 1 ? 'none' : '1px solid #ececef',
+                        padding: '14px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '14px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontFamily: SFText,
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#fafbfc'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <Avatar name={c.otherUserName} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                            <span style={{
+                              fontSize: '16px', fontWeight: c.unreadCount > 0 ? 700 : 600,
+                              color: '#1d1d1f', fontFamily: SF,
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            }}>
+                              {c.otherUserName || 'User'}
+                            </span>
+                            {trustLabel && (
+                              <span style={{
+                                fontSize: '11px', fontWeight: 600, fontFamily: SFText,
+                                color: '#9C7A3C', background: '#f5f5f7',
+                                border: '1px solid #e0e0e0', borderRadius: '9999px',
+                                padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
+                                letterSpacing: '0.1px',
+                              }}>
+                                {trustLabel}
+                              </span>
+                            )}
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#a0a0a5', flexShrink: 0, fontFamily: SFText }}>
+                            {timeAgo(c.lastMessageAt)}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <p style={{
+                            fontSize: '13px', margin: 0,
+                            color: c.unreadCount > 0 ? '#1d1d1f' : '#7a7a7a',
+                            fontWeight: c.unreadCount > 0 ? 500 : 400,
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          }}>
+                            {c.lastMessagePreview || 'No messages yet'}
+                          </p>
+                          {c.unreadCount > 0 && (
+                            <span style={{
+                              background: '#4FA3CE', color: '#fff',
+                              fontSize: '11px', fontWeight: 600, fontFamily: SFText,
+                              borderRadius: '9999px', padding: '2px 7px',
+                              flexShrink: 0, minWidth: '20px', textAlign: 'center',
+                            }}>
+                              {c.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <svg width="10" height="16" viewBox="0 0 10 16" fill="none" style={{ flexShrink: 0, marginLeft: '4px' }}>
+                        <path d="M1.5 1L8.5 8L1.5 15" stroke="#c0c0c5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </BlurFade>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
