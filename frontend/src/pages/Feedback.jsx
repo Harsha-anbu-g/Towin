@@ -264,7 +264,7 @@ export default function Feedback() {
           <div className="fb-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '18px 24px' }}>
             <div>
               <p style={{ fontFamily: SFText, fontSize: '12px', color: '#7a7a7a', margin: '0 0 2px' }}>Want to know more?</p>
-              <p style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>Visit my portfolio</p>
+              <p style={{ fontFamily: SF, fontSize: '14px', fontWeight: 700, color: '#9C7A3C', margin: 0 }}>Visit my portfolio</p>
             </div>
             <a
               href="https://portfolioharsha.vercel.app/"
