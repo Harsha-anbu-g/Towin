@@ -4,6 +4,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
+import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
@@ -136,6 +137,10 @@ export default function ElderDashboard() {
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
   const [tab, setTab] = useState('connections');
+  // Sub-filter segment per tab. null = follow the smart default (the segment
+  // that needs the user's action first); a value means the user picked one.
+  const [needsSeg, setNeedsSeg] = useState(null);
+  const [helpersSeg, setHelpersSeg] = useState(null);
   const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
@@ -394,6 +399,53 @@ export default function ElderDashboard() {
     );
   })();
 
+  // ── My Helpers — classify connections by trust state ──
+  const incomingPending = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+  const helperCounts = {
+    active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
+    building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
+    requests: connections.filter(c => c.status === 'PENDING').length,
+  };
+  const helpersDefault = incomingPending.length > 0 ? 'requests'
+    : helperCounts.active > 0 ? 'active'
+    : helperCounts.building > 0 ? 'building' : 'requests';
+  const activeHelpersSeg = helpersSeg ?? helpersDefault;
+  const helperSegments = [
+    { id: 'active',   label: 'Active',         count: helperCounts.active },
+    { id: 'building', label: 'Building Trust', count: helperCounts.building, color: '#9C7A3C' },
+    { id: 'requests', label: 'Requests',       count: helperCounts.requests },
+  ];
+  const visibleConnections = [...connections].filter(c => {
+    if (activeHelpersSeg === 'active')   return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
+    if (activeHelpersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
+    return c.status === 'PENDING';
+  }).sort(sortConnections);
+  const helpersEmptyText = {
+    active:   <>No fully trusted helpers yet. As your <span style={{ color: '#9C7A3C', fontWeight: 600 }}>trust</span> grows with a helper, they'll appear here.</>,
+    building: <>No connections in progress. Connect with a helper to start building <span style={{ color: '#9C7A3C', fontWeight: 600 }}>trust</span> together.</>,
+    requests: <>No pending requests. New connection requests will show up here.</>,
+  }[activeHelpersSeg];
+
+  // ── My Requests — classify needs by status ──
+  const needCounts = {
+    OPEN:      myNeeds.filter(n => n.status === 'OPEN').length,
+    ASSIGNED:  myNeeds.filter(n => n.status === 'ASSIGNED').length,
+    COMPLETED: myNeeds.filter(n => n.status === 'COMPLETED').length,
+  };
+  const needsDefault = needCounts.OPEN > 0 ? 'OPEN' : needCounts.ASSIGNED > 0 ? 'ASSIGNED' : 'COMPLETED';
+  const activeNeedsSeg = needsSeg ?? needsDefault;
+  const needsSegments = [
+    { id: 'OPEN',      label: 'Choose a Helper', count: needCounts.OPEN },
+    { id: 'ASSIGNED',  label: 'In Progress',     count: needCounts.ASSIGNED },
+    { id: 'COMPLETED', label: 'Completed',       count: needCounts.COMPLETED },
+  ];
+  const visibleNeeds = [...myNeeds].filter(n => n.status === activeNeedsSeg).sort(sortNeeds);
+  const needsEmptyText = {
+    OPEN:      'No open requests right now. Post a new request and helpers nearby will offer to help.',
+    ASSIGNED:  'Nothing in progress yet. Once you choose a helper, the request shows here to mark complete.',
+    COMPLETED: 'No finished requests yet. Completed help shows here so you can leave a review.',
+  }[activeNeedsSeg];
+
   return (
     <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
@@ -489,7 +541,15 @@ export default function ElderDashboard() {
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>Helpers in your area will send you connection requests. You'll see them here.</p>
                 </div>
               )}
-              {!loading && [...connections].sort(sortConnections).map((conn, i) => {
+              {!loading && connections.length > 0 && (
+                <SegmentedTabs segments={helperSegments} value={activeHelpersSeg} onChange={setHelpersSeg} />
+              )}
+              {!loading && connections.length > 0 && visibleConnections.length === 0 && (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
+                  {helpersEmptyText}
+                </SegmentEmpty>
+              )}
+              {!loading && visibleConnections.map((conn, i) => {
                 const isIncoming = conn.status === 'PENDING' && !conn.initiatedByMe;
                 const avatar = (
                   <div style={{
@@ -795,7 +855,15 @@ export default function ElderDashboard() {
                   </button>
                 </div>
               )}
-              {!loading && [...myNeeds].sort(sortNeeds).map((need, i) => {
+              {!loading && myNeeds.length > 0 && (
+                <SegmentedTabs segments={needsSegments} value={activeNeedsSeg} onChange={setNeedsSeg} />
+              )}
+              {!loading && myNeeds.length > 0 && visibleNeeds.length === 0 && (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}>
+                  {needsEmptyText}
+                </SegmentEmpty>
+              )}
+              {!loading && visibleNeeds.map((need, i) => {
                 const ns = NEED_STATUS[need.status] || NEED_STATUS.OPEN;
                 const acceptedApp = need.applications?.find(a => a.status === 'ACCEPTED');
                 return (
