@@ -107,7 +107,7 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
 | Area | Stack |
 |---|---|
 | **Frontend** | React 19 · Vite · React Router 7 · Tailwind CSS 4 · TanStack Query · Axios · Radix UI · Framer Motion |
-| **Backend** | Java 21 · Spring Boot 3 · REST API · Spring MVC · Lombok · Bean Validation |
+| **Backend** | Java 21 · Spring Boot 3.5 · REST API · Spring MVC · Lombok · Bean Validation |
 | **Security & Auth** | Spring Security · OAuth 2.0 (Google) · JWT · BCrypt · RBAC · rate limiting · CORS / CSP |
 | **Database & ORM** | PostgreSQL · Spring Data JPA / Hibernate · Flyway · connection pooling |
 | **Real-time** | Spring WebSocket · STOMP · SockJS |
@@ -178,7 +178,7 @@ ToWin was reviewed against the **OWASP Top 10 (2021)** and scanned with **SonarQ
 - **Auth & abuse limits** — OAuth 2.0 social login (Google), BCrypt password hashing, brute-force lockouts on login and OTP, IP rate limits on registration, and a per-user limiter on paid SMS sends to stop cost abuse.
 - **Injection & XSS** — 100% parameterized JPA queries, React auto-escaping, and a strict Content-Security-Policy; no `dangerouslySetInnerHTML` or `eval` anywhere.
 - **Hardening** — stateless sessions, an env-driven CORS allowlist (no `*`, applied to HTTP **and** WebSocket origins), security headers (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, CSP), generic error responses that never leak internals, and server-validated uploads with a server-set content-type.
-- **Dependencies (OWASP A06)** — Snyk surfaced **90 transitive backend CVEs** and several frontend CVEs that SonarQube and `npm audit` had missed; remediated by upgrading Spring Boot, the AWS SDK, and Twilio to backward-compatible lines → **0 vulnerable paths**, all 54 backend tests still passing.
+- **Dependencies (OWASP A06)** — Snyk's dependency scanner surfaced **90 vulnerable paths** in the backend (6 critical, 46 high) that SonarQube and `npm audit` had missed — mostly transitive CVEs in Spring's bundled Tomcat/Netty, the AWS SDK, and Twilio. Remediated by upgrading **Spring Boot 3.4 → 3.5.15**, **AWS SDK S3 → 2.39.6**, and **Twilio → 10.9.2** (all backward-compatible release lines), plus a `form-data` CRLF-injection override that `npm audit` had missed → **0 vulnerable paths**, all 54 backend tests still passing.
 
 ---
 
