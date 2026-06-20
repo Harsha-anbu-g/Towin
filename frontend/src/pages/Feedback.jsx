@@ -108,6 +108,18 @@ export default function Feedback() {
         }
       `}</style>
 
+      {/* ── Brand header ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+        padding: '36px 16px 0',
+      }}>
+        <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <span style={{
+          fontFamily: SF, fontSize: '24px', fontWeight: 600,
+          letterSpacing: '-0.374px', color: '#1a5c2e',
+        }}>ToWin</span>
+      </div>
+
       <div className="fb-shell">
 
         {/* ── LEFT: Feedback form ── */}
