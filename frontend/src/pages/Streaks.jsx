@@ -148,10 +148,9 @@ export default function Streaks() {
         }} />
         {/* Tagline pinned to the top */}
         <div style={{ position: 'relative', zIndex: 2, padding: '40px 44px' }}>
-          <FlameIcon size={46} />
           <h2 style={{
             fontFamily: SF, fontSize: '30px', fontWeight: 700, color: '#1d1d1f',
-            letterSpacing: '-0.5px', margin: '14px 0 12px', lineHeight: 1.2,
+            letterSpacing: '-0.5px', margin: '0 0 12px', lineHeight: 1.2,
           }}>
             Slow and steady<br />wins the day.
           </h2>
@@ -199,19 +198,10 @@ export default function Streaks() {
               <p style={{ fontSize: '16px', color: '#a0a0a5' }}>Loading…</p>
             ) : (
               <>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  background: '#EAF5FB', border: '1px solid #BFD9EA',
-                  borderRadius: '9999px', padding: '6px 16px', marginBottom: '18px',
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SKY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" />
-                  </svg>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#3D8AB0' }}>Current streak</span>
-                </div>
+                <FlameIcon size={56} />
                 <p style={{
                   fontFamily: SF, fontSize: '80px', fontWeight: 600,
-                  color: '#1d1d1f', lineHeight: 1, margin: '0 0 4px',
+                  color: '#1d1d1f', lineHeight: 1, margin: '16px 0 4px',
                   letterSpacing: '-2px',
                 }}>
                   {streak?.currentStreak ?? 0}
