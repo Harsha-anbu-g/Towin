@@ -94,11 +94,11 @@ export default function Feedback() {
         .fb-shell { display: grid; grid-template-columns: 1fr 360px; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 48px 32px; align-items: start; }
         .fb-left { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
         .fb-card { background: #fff; border-radius: 18px; border: 1px solid #e0e0e0; padding: 28px 28px; }
-        .fb-brand { display: flex; align-items: center; gap: 10px; max-width: 1100px; margin: 0 auto; padding: 36px 32px 0; }
+        .fb-brand { display: flex; align-items: center; gap: 10px; padding: 24px 20px 0; }
         .fb-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
         .fb-ratings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
         @media (max-width: 860px) {
-          .fb-brand { padding: 24px 16px 0; }
+          .fb-brand { padding: 20px 16px 0; }
           .fb-shell { grid-template-columns: 1fr; padding: 24px 16px; }
           .fb-left { position: static; }
           .fb-3col { grid-template-columns: 1fr; }
@@ -282,7 +282,7 @@ export default function Feedback() {
               target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
-                background: '#4FA3CE', color: '#fff', padding: '9px 16px',
+                background: '#9C7A3C', color: '#fff', padding: '9px 16px',
                 borderRadius: '9999px', fontSize: '13px', fontWeight: 600,
                 fontFamily: SFText, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
               }}
