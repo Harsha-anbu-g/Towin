@@ -131,36 +131,28 @@ export default function Streaks() {
       {/* Left — art panel (hidden on mobile) */}
       <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start',
         background: '#fafafc',
       }}>
         <img src="/journey.jpg" alt="" style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', zIndex: 0,
         }} />
-        {/* Edges melt into the page; the art's white middle band keeps the
-            centered tagline clear of any figures. */}
+        {/* Edges melt into the page; a soft wash up top keeps the heading legible. */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1,
           background:
-            'linear-gradient(to bottom, #fafafc 0%, rgba(250,250,252,0) 15%),' +
+            'linear-gradient(to bottom, rgba(250,250,252,0.85) 0%, rgba(250,250,252,0.4) 14%, rgba(250,250,252,0) 30%),' +
             'linear-gradient(to top, #fafafc 0%, rgba(250,250,252,0) 15%)',
         }} />
-        {/* Tagline centered in the art's clear middle band */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '40px 44px', textAlign: 'center' }}>
+        {/* Tagline pinned to the top-left */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '40px 44px' }}>
           <h2 style={{
             fontFamily: SF, fontSize: '30px', fontWeight: 700, color: '#1d1d1f',
-            letterSpacing: '-0.5px', margin: '0 0 12px', lineHeight: 1.2,
+            letterSpacing: '-0.5px', margin: 0, lineHeight: 1.25,
           }}>
-            Slow and steady<br />wins the day.
+            Slow, smooth<br />Smooth is fast and constant
           </h2>
-          <p style={{
-            fontSize: '16px', color: '#5a6470', lineHeight: 1.6,
-            margin: '0 auto', maxWidth: '300px',
-          }}>
-            Showing up each day keeps your connections warm and your{' '}
-            <span style={{ color: '#9C7A3C', fontWeight: 600 }}>trust</span> growing.
-          </p>
         </div>
       </div>
 
