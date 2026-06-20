@@ -7,7 +7,7 @@
 //   segment:   flex:1, height 46, radius 11. active = white + soft shadow +
 //              bold #1d1d1f; inactive = transparent + #7a7a7a
 //   count:     active = white on #4FA3CE; inactive = #9aa4af on #e6e8ec
-// A segment may pass its own `color` (e.g. trust golden #9C7A3C) to tint the label.
+// A segment may pass its own `color` to tint the label.
 
 export default function SegmentedTabs({ segments, value, onChange }) {
   return (

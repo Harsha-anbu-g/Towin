@@ -390,6 +390,12 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   .seg-tab { font-size: 13px; padding: 0 6px; gap: 5px; }
 }
 
+/* ─── Trust ladder stage labels ─── */
+.trust-ladder-stages { font-size: 12px; }
+@media (max-width: 640px) {
+  .trust-ladder-stages { font-size: 9px; }
+}
+
 /* ─── ProfileEdit responsive 2-col grid ─── */
 .profile-edit-grid {
   display: grid;
