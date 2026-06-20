@@ -698,6 +698,7 @@ export default function Register() {
             </Link>
           </div>
         </div>
+        <SiteFooter style={{ marginTop: 'auto' }} />
       </div>
 
       {legalOpen === 'terms' && (
@@ -706,7 +707,6 @@ export default function Register() {
       {legalOpen === 'privacy' && (
         <LegalModal title="Privacy Policy" sections={PRIVACY_CONTENT} onClose={() => setLegalOpen(null)} />
       )}
-      <SiteFooter />
     </div>
   );
 }
