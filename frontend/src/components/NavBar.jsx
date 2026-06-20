@@ -178,7 +178,7 @@ export default function NavBar() {
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
             }}>
               <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
-              <span style={{ color: trustActive ? '#fff' : '#9C7A3C' }}>Trust Score</span>
+              Trust Score
             </Link>
             <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
             {[
