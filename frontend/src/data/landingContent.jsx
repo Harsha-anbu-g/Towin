@@ -138,7 +138,7 @@ function StageLadder({ stages }) {
                   : i + 1}
               </div>
               {!isLast && (
-                <div style={{ flex: 1, width: '2px', minHeight: '16px', background: BORDER }} />
+                <div style={{ flex: 1, width: '2px', minHeight: '10px', background: BORDER }} />
               )}
             </div>
 
