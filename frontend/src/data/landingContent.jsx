@@ -110,34 +110,37 @@ function CardGrid({ children }) {
   );
 }
 
-// Vertical trust journey — one level passing to the next, the tortoise waiting
-// at the top as the goal. Mirrors the tortoise track on the dashboards, but down.
+// Vertical trust journey — the tortoise waits at the top as the goal, with the
+// first step at the bottom, so the eye climbs the ladder up to "Fully Trusted".
 function StageLadder({ stages }) {
+  // Given in journey order (first step → goal); render goal-first so it sits on top.
+  const ordered = [...stages].reverse();
   return (
     <div style={{ width: 'fit-content', maxWidth: '360px', margin: '0 auto' }}>
-      {stages.map((s, i) => {
-        const isLast = i === stages.length - 1;
-        const size = isLast ? 44 : 34;
+      {ordered.map((s, i) => {
+        const isGoal = i === 0;
+        const isBottom = i === ordered.length - 1;
+        const size = isGoal ? 44 : 34;
         return (
           <div key={s} style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
-            {/* Rail: numbered node + connector line down to the next node.
+            {/* Rail: node + connector line down to the next node.
                 Fixed width so every node shares one vertical centre line. */}
             <div style={{ width: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
               <div style={{
                 width: `${size}px`, height: `${size}px`, borderRadius: '50%',
-                background: isLast ? '#ffffff' : WASH,
-                border: isLast ? 'none' : `2px solid ${BORDER}`,
+                background: isGoal ? '#ffffff' : WASH,
+                border: isGoal ? 'none' : `2px solid ${BORDER}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: SFD, fontSize: '15px', fontWeight: 700,
                 color: BLUE, flexShrink: 0,
-                boxShadow: isLast ? '0 4px 14px rgba(61,138,176,0.35)' : 'none',
+                boxShadow: isGoal ? '0 4px 14px rgba(61,138,176,0.35)' : 'none',
               }}>
-                {isLast
+                {isGoal
                   ? <img src="/logo.png" alt="ToWin" draggable="false"
                       style={{ width: 26, height: 26, objectFit: 'contain', transform: 'rotate(90deg)' }} />
-                  : i + 1}
+                  : ordered.length - i}
               </div>
-              {!isLast && (
+              {!isBottom && (
                 <div style={{ flex: 1, width: '2px', minHeight: '10px', background: BORDER }} />
               )}
             </div>
@@ -146,13 +149,13 @@ function StageLadder({ stages }) {
             <div style={{
               minHeight: `${size}px`,
               display: 'flex', alignItems: 'center', gap: '10px',
-              paddingBottom: isLast ? 0 : '13px',
+              paddingBottom: isBottom ? 0 : '13px',
             }}>
               <span style={{
                 fontFamily: SF,
-                fontSize: isLast ? '19px' : '17px',
-                fontWeight: isLast ? 700 : 500,
-                color: isLast ? BLUE : '#1d1d1f',
+                fontSize: isGoal ? '19px' : '17px',
+                fontWeight: isGoal ? 700 : 500,
+                color: isGoal ? BLUE : '#1d1d1f',
               }}>{s}</span>
             </div>
           </div>
@@ -197,7 +200,7 @@ export const SLIDES = [
           fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: BLUE,
           textAlign: 'center', margin: '0 0 16px',
         }}>
-          Connecting generations, building trust.
+          Connecting generations, building <span style={{ color: '#9C7A3C' }}>trust</span>.
         </p>
         <Body>
           One who helps, one who gets help, and both win. A safer place for
