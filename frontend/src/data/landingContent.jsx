@@ -48,18 +48,63 @@ function Body({ children }) {
   );
 }
 
-function MiniCard({ title, children }) {
+function MiniCard({ title, badge, stars, children }) {
   return (
     <div style={{
       background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '18px',
       padding: '20px 22px', textAlign: 'left',
     }}>
-      <p style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: BLUE, margin: '0 0 6px' }}>
-        {title}
-      </p>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: '10px', marginBottom: '6px',
+      }}>
+        <p style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: BLUE, margin: 0 }}>
+          {title}
+        </p>
+        {badge && (
+          <span style={{
+            fontFamily: SFD, fontSize: '13px', fontWeight: 700, color: BLUE,
+            background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
+            padding: '3px 11px', whiteSpace: 'nowrap', flexShrink: 0,
+          }}>{badge}</span>
+        )}
+      </div>
+      {stars && (
+        <div aria-label="five stars" style={{ display: 'flex', gap: '3px', marginBottom: '8px' }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <span key={i} style={{ fontSize: '16px', lineHeight: 1, color: BLUE }}>★</span>
+          ))}
+        </div>
+      )}
       <p style={{ fontFamily: SF, fontSize: '16px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
         {children}
       </p>
+    </div>
+  );
+}
+
+// Shows the worked example — the three card badges add up to one clear total,
+// so "Trust Score" stops being abstract: 3 + 7 + 5 = 15 points per person helped.
+function ScoreSum() {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: '14px', flexWrap: 'wrap', margin: '22px auto 0',
+    }}>
+      <span style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, color: '#5a6470' }}>
+        3 + 7 + 5
+      </span>
+      <span style={{ fontFamily: SF, fontSize: '18px', color: '#a0a0a5' }}>=</span>
+      <span style={{
+        display: 'inline-flex', alignItems: 'baseline', gap: '7px',
+        background: '#ffffff', border: `1px solid ${BORDER}`,
+        borderRadius: '9999px', padding: '8px 18px',
+      }}>
+        <span style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: BLUE }}>15</span>
+        <span style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470' }}>
+          points per person you help
+        </span>
+      </span>
     </div>
   );
 }
@@ -215,19 +260,21 @@ export const SLIDES = [
         <Title><span style={{ color: '#9C7A3C' }}>Trust</span> is earned, not given</Title>
         <Lead>
           Letting someone new into your life is a big step. So every member
-          has a Trust Score, built from three things:
+          has a Trust Score. Each person they help can add up to 15 points,
+          built from three things:
         </Lead>
         <CardGrid>
-          <MiniCard title="Profile">
+          <MiniCard title="Profile" badge="+3">
             A full profile with ID, phone, and photo, all checked.
           </MiniCard>
-          <MiniCard title="Rooting (Trust Ladder)">
+          <MiniCard title="Trust Ladder" badge="+7">
             Points earned each time a friendship takes a step forward.
           </MiniCard>
-          <MiniCard title="Review">
+          <MiniCard title="Review" badge="+5" stars>
             Star ratings from the people they have already helped.
           </MiniCard>
         </CardGrid>
+        <ScoreSum />
         <NoteBox>Elders see a helper&apos;s Trust Score before they ever say yes.</NoteBox>
       </>
     ),
