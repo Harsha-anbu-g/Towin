@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SLIDES } from '../data/landingContent';
-import SiteFooter from '../components/SiteFooter';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -163,7 +162,6 @@ export default function Landing() {
           </div>
         )}
 
-        <SiteFooter variant="line" />
       </footer>
     </div>
   );

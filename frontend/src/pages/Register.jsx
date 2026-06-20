@@ -697,8 +697,6 @@ export default function Register() {
               How It Works
             </Link>
           </div>
-
-          <SiteFooter variant="line" />
         </div>
       </div>
 
@@ -708,6 +706,7 @@ export default function Register() {
       {legalOpen === 'privacy' && (
         <LegalModal title="Privacy Policy" sections={PRIVACY_CONTENT} onClose={() => setLegalOpen(null)} />
       )}
+      <SiteFooter />
     </div>
   );
 }

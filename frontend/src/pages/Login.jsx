@@ -449,9 +449,9 @@ export default function Login() {
               Share feedback
             </Link>
           </p>
-          <SiteFooter variant="line" />
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }
