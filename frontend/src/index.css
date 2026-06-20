@@ -384,6 +384,12 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   padding: 28px 40px 64px;
 }
 
+/* ─── Dashboard segmented sub-filters ─── */
+.seg-tab { font-size: 15px; }
+@media (max-width: 640px) {
+  .seg-tab { font-size: 13px; padding: 0 6px; gap: 5px; }
+}
+
 /* ─── ProfileEdit responsive 2-col grid ─── */
 .profile-edit-grid {
   display: grid;

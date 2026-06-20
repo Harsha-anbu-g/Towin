@@ -4,6 +4,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
+import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
@@ -123,6 +124,8 @@ export default function HelperDashboard() {
   const [discovering, setDiscovering] = useState(false);
   const [discoverError, setDiscoverError] = useState(false);
   const [tab, setTab] = useState('connections');
+  // Sub-filter for My Elders. null = follow the smart default (action-first).
+  const [eldersSeg, setEldersSeg] = useState(null);
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
   const [connectingTo, setConnectingTo] = useState(null);
@@ -348,6 +351,33 @@ export default function HelperDashboard() {
     </div>
   );
 
+  // ── My Elders — classify connections by trust state (mirrors the elder view) ──
+  const incomingPending = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+  const elderCounts = {
+    active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
+    building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
+    requests: connections.filter(c => c.status === 'PENDING').length,
+  };
+  const eldersDefault = incomingPending.length > 0 ? 'requests'
+    : elderCounts.active > 0 ? 'active'
+    : elderCounts.building > 0 ? 'building' : 'requests';
+  const activeEldersSeg = eldersSeg ?? eldersDefault;
+  const elderSegments = [
+    { id: 'active',   label: 'Active',         count: elderCounts.active },
+    { id: 'building', label: 'Building Trust', count: elderCounts.building, color: '#9C7A3C' },
+    { id: 'requests', label: 'Requests',       count: elderCounts.requests },
+  ];
+  const visibleConnections = [...connections].filter(c => {
+    if (activeEldersSeg === 'active')   return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
+    if (activeEldersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
+    return c.status === 'PENDING';
+  }).sort(sortConnections);
+  const eldersEmptyText = {
+    active:   <>No fully trusted elders yet. As your <span style={{ color: '#9C7A3C', fontWeight: 600 }}>trust</span> grows with an elder, they'll appear here.</>,
+    building: <>No connections in progress. Reach out to an elder to start building <span style={{ color: '#9C7A3C', fontWeight: 600 }}>trust</span> together.</>,
+    requests: <>No pending requests. New connection requests will show up here.</>,
+  }[activeEldersSeg];
+
   return (
     <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
@@ -424,7 +454,15 @@ export default function HelperDashboard() {
                   </button>
                 </div>
               )}
-              {[...connections].sort(sortConnections).map((conn, i) => {
+              {!loading && connections.length > 0 && (
+                <SegmentedTabs segments={elderSegments} value={activeEldersSeg} onChange={setEldersSeg} />
+              )}
+              {!loading && connections.length > 0 && visibleConnections.length === 0 && (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
+                  {eldersEmptyText}
+                </SegmentEmpty>
+              )}
+              {visibleConnections.map((conn, i) => {
                 const isIncoming = conn.status === 'PENDING' && !conn.initiatedByMe;
                 const avatar = (
                   <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: '#2E7DA6', flexShrink: 0 }}>
