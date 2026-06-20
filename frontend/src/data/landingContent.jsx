@@ -146,11 +146,11 @@ function StageLadder({ stages }) {
             <div style={{
               minHeight: `${size}px`,
               display: 'flex', alignItems: 'center', gap: '10px',
-              paddingBottom: isLast ? 0 : '16px',
+              paddingBottom: isLast ? 0 : '13px',
             }}>
               <span style={{
                 fontFamily: SF,
-                fontSize: isLast ? '18px' : '16px',
+                fontSize: isLast ? '19px' : '17px',
                 fontWeight: isLast ? 700 : 500,
                 color: isLast ? BLUE : '#1d1d1f',
               }}>{s}</span>
@@ -256,13 +256,13 @@ export const SLIDES = [
             letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 10px',
           }}>The real problem is trust</p>
           <h1 className="landing-title" style={{
-            fontFamily: SFD, fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
-            letterSpacing: '-0.5px', lineHeight: 1.12, textAlign: 'left', margin: '0 0 16px',
+            fontFamily: SFD, fontSize: '46px', fontWeight: 600, color: '#1d1d1f',
+            letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: 'left', margin: '0 0 16px',
           }}>
             <span style={{ color: '#9C7A3C' }}>Trust</span> is earned,<br />not given
           </h1>
           <p className="landing-lead" style={{
-            fontFamily: SF, fontSize: '18px', color: '#5a6470', lineHeight: 1.55,
+            fontFamily: SF, fontSize: '21px', color: '#5a6470', lineHeight: 1.55,
             textAlign: 'left', margin: '0 0 16px',
           }}>
             Letting someone new into your life is a big step. So every member
@@ -271,7 +271,7 @@ export const SLIDES = [
           <div style={{
             background: '#ffffff', border: '1px solid #e8e8ed',
             borderRadius: '12px', padding: '11px 16px', fontFamily: SF,
-            fontSize: '14px', color: '#5a6470', lineHeight: 1.55, textAlign: 'left',
+            fontSize: '16px', color: '#5a6470', lineHeight: 1.55, textAlign: 'left',
           }}>
             Each person helped adds up to <strong style={{ color: '#1d1d1f' }}>15 points</strong> to their score.
           </div>
@@ -314,13 +314,13 @@ export const SLIDES = [
             letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 10px',
           }}>One step at a time</p>
           <h1 className="landing-title" style={{
-            fontFamily: SFD, fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
-            letterSpacing: '-0.5px', lineHeight: 1.12, textAlign: 'left', margin: '0 0 16px',
+            fontFamily: SFD, fontSize: '44px', fontWeight: 600, color: '#1d1d1f',
+            letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: 'left', margin: '0 0 16px',
           }}>
             Rooting (<span style={{ color: '#9C7A3C' }}>Trust</span> Ladder): how trust grows
           </h1>
           <p className="landing-lead" style={{
-            fontFamily: SF, fontSize: '20px', color: '#5a6470', lineHeight: 1.6,
+            fontFamily: SF, fontSize: '21px', color: '#5a6470', lineHeight: 1.6,
             textAlign: 'left', margin: '0 0 20px',
           }}>
             Like a tree growing roots, every friendship on ToWin grows slowly,
@@ -329,7 +329,7 @@ export const SLIDES = [
           <div style={{
             background: '#ffffff', border: '1px solid #e8e8ed',
             borderRadius: '14px', padding: '16px 20px', fontFamily: SF,
-            fontSize: '15px', color: '#5a6470', lineHeight: 1.6, textAlign: 'left',
+            fontSize: '16px', color: '#5a6470', lineHeight: 1.6, textAlign: 'left',
           }}>
             <strong>Both people must agree to every step.</strong> Nothing personal,
             like a phone number, is shared until trust has grown.

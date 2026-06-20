@@ -238,7 +238,7 @@ export default function MessagesInbox() {
                             {trustLabel && (
                               <span style={{
                                 fontSize: '11px', fontWeight: 600, fontFamily: SFText,
-                                color: '#9C7A3C', background: '#f5f5f7',
+                                color: '#4FA3CE', background: '#f5f5f7',
                                 border: '1px solid #e0e0e0', borderRadius: '9999px',
                                 padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
                                 letterSpacing: '0.1px',
