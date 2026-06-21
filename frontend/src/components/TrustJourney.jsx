@@ -28,11 +28,9 @@ export default function TrustJourney({
   const pct = Math.round((idx / (LEVELS.length - 1)) * 100);
   const isTrusted = idx === LEVELS.length - 1;
 
-  // Reaching full trust turns the ladder leaf-green (the brand accent);
-  // every stage along the way stays sky-blue.
-  const accent       = isTrusted ? '#1a5c2e' : '#2E7DA6';
-  const accentBg     = isTrusted ? '#EBF6EE' : '#E6F2FA';
-  const accentBorder = isTrusted ? '#BFE0C9' : '#BFD9EA';
+  const accent       = '#2E7DA6';
+  const accentBg     = '#E6F2FA';
+  const accentBorder = '#BFD9EA';
   const barGradient  = 'linear-gradient(90deg,#7FC0E0,#4FA3CE)';
 
   // The contextual prompt + action under the ladder (non-trusted only).
@@ -74,7 +72,7 @@ export default function TrustJourney({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: accent }} />
-          <span style={{ fontSize: '15px', fontWeight: 700, color: isTrusted ? '#1a5c2e' : '#1d1d1f', fontFamily: SF }}>{current.label}</span>
+          <span style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF }}>{current.label}</span>
         </div>
         <span style={{ fontSize: '13px', fontWeight: 700, color: accent, background: accentBg, padding: '3px 10px', borderRadius: '9999px' }}>
           Stage {idx + 1} of {LEVELS.length} · {pct}%
