@@ -28,6 +28,13 @@ export default function TrustJourney({
   const pct = Math.round((idx / (LEVELS.length - 1)) * 100);
   const isTrusted = idx === LEVELS.length - 1;
 
+  // Reaching full trust turns the ladder leaf-green (the brand accent);
+  // every stage along the way stays sky-blue.
+  const accent       = isTrusted ? '#3D8B5A' : '#2E7DA6';
+  const accentBg     = isTrusted ? '#EBF6EE' : '#E6F2FA';
+  const accentBorder = isTrusted ? '#BFE0C9' : '#BFD9EA';
+  const barGradient  = isTrusted ? 'linear-gradient(90deg,#7CCBA0,#3D8B5A)' : 'linear-gradient(90deg,#7FC0E0,#4FA3CE)';
+
   // The contextual prompt + action under the ladder (non-trusted only).
   const advanceBtn = (label) => (
     <button onClick={onConfirm} disabled={confirming} style={{
@@ -66,10 +73,10 @@ export default function TrustJourney({
       {/* Header: current level + stage pill */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#2E7DA6' }} />
-          <span style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF }}>{current.label}</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: accent }} />
+          <span style={{ fontSize: '15px', fontWeight: 700, color: isTrusted ? '#3D8B5A' : '#1d1d1f', fontFamily: SF }}>{current.label}</span>
         </div>
-        <span style={{ fontSize: '13px', fontWeight: 700, color: '#2E7DA6', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: accent, background: accentBg, padding: '3px 10px', borderRadius: '9999px' }}>
           Stage {idx + 1} of {LEVELS.length} · {pct}%
         </span>
       </div>
@@ -77,9 +84,9 @@ export default function TrustJourney({
       {/* Progress bar — the tortoise rides along it to the current stage */}
       <div style={{ position: 'relative', height: '34px' }}>
         <div style={{ position: 'absolute', left: '17px', right: '17px', top: '50%', transform: 'translateY(-50%)', height: '9px', background: '#E2EEF5', borderRadius: '9999px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#7FC0E0,#4FA3CE)', borderRadius: '9999px', transition: 'width 0.4s ease' }} />
+          <div style={{ height: '100%', width: `${pct}%`, background: barGradient, borderRadius: '9999px', transition: 'width 0.4s ease' }} />
         </div>
-        <div style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${pct / 100})`, transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: '#E6F2FA', border: '2px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 0.4s ease' }} title={current.label}>
+        <div style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${pct / 100})`, transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: accentBg, border: `2px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 0.4s ease' }} title={current.label}>
           <img src="/tortoise-right.png" alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
         </div>
       </div>
@@ -87,7 +94,7 @@ export default function TrustJourney({
       {/* Ladder stage labels */}
       <div className="trust-ladder-stages" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', gap: '4px' }}>
         {LEVELS.map((level, i) => (
-          <span key={level.key} style={{ fontWeight: i === idx ? 700 : 400, color: i === idx ? '#2E7DA6' : '#7a8490', whiteSpace: 'nowrap', fontFamily: SFT }}>
+          <span key={level.key} style={{ fontWeight: i === idx ? 700 : 400, color: i === idx ? accent : '#7a8490', whiteSpace: 'nowrap', fontFamily: SFT }}>
             {level.short}
           </span>
         ))}
