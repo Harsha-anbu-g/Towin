@@ -372,9 +372,9 @@ export default function ElderDashboard() {
   }, [tab, connections, myNeeds]);
 
   const tabs = [
+    ['needs', 'My Requests', requestsBadge],
     ['connections', 'My Helpers', connBadge],
     ['discover', 'Find New Helper', 0],
-    ['needs', 'My Requests', requestsBadge],
   ];
 
   // ── My Helpers — classify connections by trust state ──
