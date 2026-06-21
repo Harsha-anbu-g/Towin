@@ -146,7 +146,17 @@ export default function ElderDashboard() {
     return next;
   }, { replace: true });
   const tab = searchParams.get('tab') || 'connections';
-  const setTab = (next) => setParam('tab', next);
+  // Switching tabs resets the sub-section, so each tab opens on its own default
+  // (My Helpers → Active) instead of carrying over a segment picked in another
+  // tab. A refresh keeps the current section because it reloads the URL as-is
+  // rather than going through this handler.
+  const setTab = (next) => setSearchParams(prev => {
+    const p = new URLSearchParams(prev);
+    p.set('tab', next);
+    p.delete('hseg');
+    p.delete('nseg');
+    return p;
+  }, { replace: true });
   // Sub-filter segment per tab. Param absent (null) = follow the smart default
   // (the segment that needs the user's action first); a value = user picked one.
   const needsSeg = searchParams.get('nseg');
