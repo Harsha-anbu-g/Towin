@@ -394,7 +394,7 @@ export default function ElderDashboard() {
     requests: connections.filter(c => c.status === 'PENDING').length,
   };
   // Always open on the Active section. Pending requests still appear in the
-  // Requests tab with their own count, so nothing is hidden — Active is simply
+  // New Invites tab with their own count, so nothing is hidden — Active is simply
   // what the dashboard lands on. A section the user explicitly picks wins via
   // the URL (?hseg=…) and survives a refresh.
   const helpersDefault = 'active';
@@ -402,7 +402,7 @@ export default function ElderDashboard() {
   const helperSegments = [
     { id: 'active',   label: 'Active',         count: helperCounts.active },
     { id: 'building', label: 'Building Trust', count: helperCounts.building },
-    { id: 'requests', label: 'Requests',       count: helperCounts.requests },
+    { id: 'requests', label: 'New Invites',     count: helperCounts.requests },
   ];
   const visibleConnections = [...connections].filter(c => {
     if (activeHelpersSeg === 'active')   return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
@@ -412,7 +412,7 @@ export default function ElderDashboard() {
   const helpersEmptyText = {
     active:   <>No fully trusted helpers yet. As your trust grows with a helper, they'll appear here.</>,
     building: <>No connections in progress. Connect with a helper to start building trust together.</>,
-    requests: <>No pending requests. New connection requests will show up here.</>,
+    requests: <>No new invites right now. New connection invites will show up here.</>,
   }[activeHelpersSeg];
 
   // ── My Requests — classify needs by status ──
@@ -424,7 +424,7 @@ export default function ElderDashboard() {
   const needsDefault = needCounts.OPEN > 0 ? 'OPEN' : needCounts.ASSIGNED > 0 ? 'ASSIGNED' : 'COMPLETED';
   const activeNeedsSeg = needsSeg ?? needsDefault;
   const needsSegments = [
-    { id: 'OPEN',      label: 'Choose a Helper', count: needCounts.OPEN },
+    { id: 'OPEN',      label: 'Pending Request',  count: needCounts.OPEN },
     { id: 'ASSIGNED',  label: 'In Progress',     count: needCounts.ASSIGNED },
     { id: 'COMPLETED', label: 'Completed',       count: needCounts.COMPLETED },
   ];
