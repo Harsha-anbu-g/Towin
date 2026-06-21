@@ -10,31 +10,33 @@ const BORDER = '#BFD9EA';
 
 // ── Presentational helpers ───────────────────────────────────────────────
 
-function Kicker({ children }) {
+function Kicker({ children, align = 'center' }) {
   return (
     <p style={{
       fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE,
       letterSpacing: '1.5px', textTransform: 'uppercase',
-      textAlign: 'center', margin: '0 0 10px',
+      textAlign: align, margin: '0 0 10px',
     }}>{children}</p>
   );
 }
 
-function Title({ children }) {
+function Title({ children, align = 'center' }) {
   return (
     <h1 className="landing-title" style={{
       fontFamily: SFD, fontSize: '46px', fontWeight: 600, color: '#1d1d1f',
-      letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: 'center',
+      letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: align,
       margin: '0 0 16px',
     }}>{children}</h1>
   );
 }
 
-function Lead({ children }) {
+function Lead({ children, align = 'center' }) {
+  const left = align === 'left';
   return (
     <p className="landing-lead" style={{
       fontFamily: SF, fontSize: '21px', color: '#5a6470', lineHeight: 1.6,
-      textAlign: 'center', maxWidth: '580px', margin: '0 auto 24px',
+      textAlign: align, maxWidth: left ? 'none' : '580px',
+      margin: left ? '0 0 16px' : '0 auto 24px',
     }}>{children}</p>
   );
 }
@@ -254,23 +256,14 @@ export const SLIDES = [
       <div className="landing-split" style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
         {/* Left: story */}
         <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
-          <p style={{
-            fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE,
-            letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 10px',
-          }}>The real problem is trust</p>
-          <h1 className="landing-title" style={{
-            fontFamily: SFD, fontSize: '46px', fontWeight: 600, color: '#1d1d1f',
-            letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: 'left', margin: '0 0 16px',
-          }}>
+          <Kicker align="left">The real problem is trust</Kicker>
+          <Title align="left">
             <span style={{ color: '#9C7A3C' }}>Trust</span> is earned,<br />not given
-          </h1>
-          <p className="landing-lead" style={{
-            fontFamily: SF, fontSize: '21px', color: '#5a6470', lineHeight: 1.55,
-            textAlign: 'left', margin: '0 0 16px',
-          }}>
+          </Title>
+          <Lead align="left">
             Letting someone new into your life is a big step. So every member
             has a Trust Score, visible to elders before they ever say yes.
-          </p>
+          </Lead>
           <div style={{
             background: '#ffffff', border: '1px solid #e8e8ed',
             borderRadius: '12px', padding: '11px 16px', fontFamily: SF,
@@ -312,23 +305,14 @@ export const SLIDES = [
       }}>
         {/* Left: the story */}
         <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
-          <p style={{
-            fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE,
-            letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 10px',
-          }}>One step at a time</p>
-          <h1 className="landing-title" style={{
-            fontFamily: SFD, fontSize: '44px', fontWeight: 600, color: '#1d1d1f',
-            letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: 'left', margin: '0 0 16px',
-          }}>
+          <Kicker align="left">One step at a time</Kicker>
+          <Title align="left">
             Rooting (<span style={{ color: '#9C7A3C' }}>Trust</span> Ladder): how trust grows
-          </h1>
-          <p className="landing-lead" style={{
-            fontFamily: SF, fontSize: '21px', color: '#5a6470', lineHeight: 1.6,
-            textAlign: 'left', margin: '0 0 20px',
-          }}>
+          </Title>
+          <Lead align="left">
             Like a tree growing roots, every friendship on ToWin grows slowly,
             through 7 simple stages.
-          </p>
+          </Lead>
           <div style={{
             background: '#ffffff', border: '1px solid #e8e8ed',
             borderRadius: '14px', padding: '16px 20px', fontFamily: SF,
@@ -343,7 +327,7 @@ export const SLIDES = [
         <div style={{ flexShrink: 0 }}>
           <StageLadder stages={[
             'Just Connected', 'Messaging', 'Phone Ready', 'Video Ready',
-            'Verified', 'Ready to Meet', 'Fully Trusted',
+            'Social Media', 'Ready to Meet', 'Fully Trusted',
           ]} />
         </div>
       </div>
