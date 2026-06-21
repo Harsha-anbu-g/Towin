@@ -33,7 +33,7 @@ export default function TrustJourney({
   const accent       = isTrusted ? '#1a5c2e' : '#2E7DA6';
   const accentBg     = isTrusted ? '#EBF6EE' : '#E6F2FA';
   const accentBorder = isTrusted ? '#BFE0C9' : '#BFD9EA';
-  const barGradient  = isTrusted ? 'linear-gradient(90deg,#4FA77B,#1a5c2e)' : 'linear-gradient(90deg,#7FC0E0,#4FA3CE)';
+  const barGradient  = isTrusted ? 'linear-gradient(90deg,#FBF6DD,#EBD77E)' : 'linear-gradient(90deg,#7FC0E0,#4FA3CE)';
 
   // The contextual prompt + action under the ladder (non-trusted only).
   const advanceBtn = (label) => (
