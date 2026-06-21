@@ -12,7 +12,7 @@ function HeroPanel() {
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'flex-end',
+      justifyContent: 'flex-start',
       padding: '52px 48px',
       background:
         'radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.55) 0%, transparent 55%),' +
@@ -27,7 +27,7 @@ function HeroPanel() {
         onDragStart={e => e.preventDefault()}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', objectPosition: 'center 70%', zIndex: 0,
+          objectFit: 'cover', objectPosition: 'center 15%', zIndex: 0,
           userSelect: 'none', WebkitUserDrag: 'none',
         }}
       />
@@ -55,8 +55,8 @@ function HeroPanel() {
         </p>
       </Link>
 
-      {/* Bottom content */}
-      <div style={{ position: 'relative', zIndex: 2 }}>
+      {/* Content — pushed below logo */}
+      <div style={{ position: 'relative', zIndex: 2, marginTop: '44px' }}>
         <span style={{
           display: 'inline-block', marginBottom: '14px',
           background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
@@ -74,7 +74,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.3px', fontWeight: 600,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Connecting generations,<br />building trust.
+          Connecting generations,<br />building <span style={{ color: '#9C7A3C' }}>trust</span>.
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
