@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
@@ -123,9 +123,20 @@ export default function HelperDashboard() {
   const [elders, setElders] = useState([]);
   const [discovering, setDiscovering] = useState(false);
   const [discoverError, setDiscoverError] = useState(false);
-  const [tab, setTab] = useState('connections');
-  // Sub-filter for My Elders. null = follow the smart default (action-first).
-  const [eldersSeg, setEldersSeg] = useState(null);
+  // Which tab/section is open lives in the URL (?tab=…&eseg=…) so a full page
+  // refresh restores the view the user was on instead of snapping back to the
+  // default. replace:true keeps tab switches out of the back-button history.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const setParam = (key, value) => setSearchParams(prev => {
+    const next = new URLSearchParams(prev);
+    if (value == null) next.delete(key); else next.set(key, value);
+    return next;
+  }, { replace: true });
+  const tab = searchParams.get('tab') || 'connections';
+  const setTab = (next) => setParam('tab', next);
+  // Sub-filter for My Elders. Param absent (null) = follow the smart default.
+  const eldersSeg = searchParams.get('eseg');
+  const setEldersSeg = (next) => setParam('eseg', next);
   const [applying, setApplying] = useState(null);
   const [applyMsg, setApplyMsg] = useState({});
   const [connectingTo, setConnectingTo] = useState(null);

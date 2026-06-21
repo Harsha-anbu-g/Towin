@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
@@ -136,11 +136,23 @@ export default function ElderDashboard() {
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
-  const [tab, setTab] = useState('connections');
-  // Sub-filter segment per tab. null = follow the smart default (the segment
-  // that needs the user's action first); a value means the user picked one.
-  const [needsSeg, setNeedsSeg] = useState(null);
-  const [helpersSeg, setHelpersSeg] = useState(null);
+  // Which tab/section is open lives in the URL (?tab=…&hseg=…&nseg=…) so a full
+  // page refresh restores the view the user was on instead of snapping back to
+  // the default. replace:true keeps tab switches out of the back-button history.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const setParam = (key, value) => setSearchParams(prev => {
+    const next = new URLSearchParams(prev);
+    if (value == null) next.delete(key); else next.set(key, value);
+    return next;
+  }, { replace: true });
+  const tab = searchParams.get('tab') || 'connections';
+  const setTab = (next) => setParam('tab', next);
+  // Sub-filter segment per tab. Param absent (null) = follow the smart default
+  // (the segment that needs the user's action first); a value = user picked one.
+  const needsSeg = searchParams.get('nseg');
+  const setNeedsSeg = (next) => setParam('nseg', next);
+  const helpersSeg = searchParams.get('hseg');
+  const setHelpersSeg = (next) => setParam('hseg', next);
   const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
