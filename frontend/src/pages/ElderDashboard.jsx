@@ -377,40 +377,6 @@ export default function ElderDashboard() {
     ['needs', 'My Requests', requestsBadge],
   ];
 
-  // One warm greeting, shown once at the top of the landing tab.
-  const greeting = (() => {
-    if (!profile?.name) return null;
-    const now = new Date();
-    const h = now.getHours();
-    const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-    const firstName = profile.name.split(' ')[0];
-    const dateStr = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-    return (
-      <div style={{
-        background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 55%, #EBF6EE 100%)',
-        border: '1px solid #D8EAF4', borderRadius: '18px',
-        padding: '24px 28px',
-      }}>
-        <p style={{
-          fontSize: '13px', fontWeight: 600, color: '#3D8AB0',
-          letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 6px',
-        }}>
-          {dateStr}
-        </p>
-        <p style={{
-          fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-          fontSize: '28px', fontWeight: 700, color: '#1d1d1f',
-          letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
-        }}>
-          {greet}, {firstName}
-        </p>
-        <p style={{ fontSize: '15px', color: '#5a6470', margin: '6px 0 0' }}>
-          Welcome back. Here's how your community is doing today.
-        </p>
-      </div>
-    );
-  })();
-
   // ── My Helpers — classify connections by trust state ──
   const helperCounts = {
     active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
@@ -534,7 +500,6 @@ export default function ElderDashboard() {
           {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100% { opacity:0.6 } 50% { opacity:1 } }`}</style>
-              {greeting}
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px', color: '#1d1d1f', margin: '8px 0 0' }}>
                 My Helpers
               </h2>
