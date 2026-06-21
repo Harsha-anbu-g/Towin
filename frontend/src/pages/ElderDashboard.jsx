@@ -372,8 +372,8 @@ export default function ElderDashboard() {
   }, [tab, connections, myNeeds]);
 
   const tabs = [
-    ['needs', 'My Requests', requestsBadge],
     ['connections', 'My Helpers', connBadge],
+    ['needs', 'My Requests', requestsBadge],
     ['discover', 'Find New Helper', 0],
   ];
 
