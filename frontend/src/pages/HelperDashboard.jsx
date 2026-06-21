@@ -5,6 +5,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
+import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
@@ -436,6 +437,8 @@ export default function HelperDashboard() {
 
       <div className="dash-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          <PeekabooCard />
 
           {/* My Elders tab (landing) */}
           {tab === 'connections' && (

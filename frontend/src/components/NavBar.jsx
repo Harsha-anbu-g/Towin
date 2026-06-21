@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, ShieldCheck, HelpCircle, Siren, Gamepad2 } from 'lucide-react';
+import { Home, MessageCircle, User, ShieldCheck, HelpCircle, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -16,13 +16,15 @@ export default function NavBar() {
   const [sosSent, setSosSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   // The beta banner sits above the nav, so the nav isn't always at viewport
   // top — measure its real bottom edge to anchor the mobile drawer below it.
   const navRef = useRef(null);
+  const accountRef = useRef(null);
   const [drawerTop, setDrawerTop] = useState(60);
-  // Collapse to the hamburger drawer below 1024px — the full desktop rail
-  // (logo + 6 links + Trust pill + SOS + Sign out) needs ~1000px to fit.
+  // Collapse to the hamburger drawer below 1024px — the desktop rail
+  // (logo + core links + Trust pill + SOS + account) needs ~1000px to fit.
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
@@ -34,8 +36,18 @@ export default function NavBar() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Close menu on route change
-  useEffect(() => { setMenuOpen(false); }, [pathname]);
+  // Close menus on route change
+  useEffect(() => { setMenuOpen(false); setAccountOpen(false); }, [pathname]);
+
+  // Close the account dropdown on outside click or Esc
+  useEffect(() => {
+    if (!accountOpen) return;
+    const onClick = (e) => { if (accountRef.current && !accountRef.current.contains(e.target)) setAccountOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setAccountOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    window.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onClick); window.removeEventListener('keydown', onKey); };
+  }, [accountOpen]);
 
   // Esc closes the open mobile drawer — user control & freedom (H3/H7)
   useEffect(() => {
@@ -124,6 +136,9 @@ export default function NavBar() {
   };
 
   const trustActive = pathname === '/trust';
+  const initials = user?.name
+    ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    : (user?.username?.[0]?.toUpperCase() || '?');
 
   return (
     <>
@@ -166,7 +181,6 @@ export default function NavBar() {
                 }}>{unread > 99 ? '99+' : unread}</span>
               )}
             </div>
-            <NavLink to="/profile" label="Profile" icon={User} />
             <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
             <Link to="/trust" style={{
               display: 'flex', alignItems: 'center', gap: '7px',
@@ -181,38 +195,13 @@ export default function NavBar() {
               Trust Score
             </Link>
             <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
-            {[
-              { to: '/how-it-works', label: 'Guide', icon: HelpCircle },
-              ...(isElder ? [{ to: '/emergency-contacts', label: 'Emergency', icon: Siren }] : []),
-            ].map(({ to, label, icon: Icon }) => {
-              const active = pathname === to;
-              return (
-                <Link key={to} to={to} style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  fontSize: '14px', fontFamily: SF, fontWeight: active ? 600 : 400,
-                  color: active ? '#4FA3CE' : '#9a9a9f',
-                  textDecoration: 'none', padding: '8px 12px', borderRadius: '10px',
-                  background: active ? 'rgba(79,163,206,0.08)' : 'transparent',
-                  whiteSpace: 'nowrap',
-                }}><Icon size={16} strokeWidth={2} aria-hidden="true" />{label}</Link>
-              );
-            })}
+            <NavLink to="/how-it-works" label="Guide" icon={HelpCircle} />
           </div>
         )}
 
         {/* Desktop right actions */}
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <Link to="/game" style={{
-              display: 'flex', alignItems: 'center', gap: '7px',
-              fontSize: '15px', fontWeight: 600, fontFamily: SF,
-              padding: '8px 16px', borderRadius: '9999px',
-              textDecoration: 'none', whiteSpace: 'nowrap',
-              background: pathname === '/game' ? '#3D8B5A' : '#EBF6EE',
-              color: pathname === '/game' ? '#fff' : '#3D8B5A',
-              border: `1.5px solid ${pathname === '/game' ? '#3D8B5A' : '#BFE0C9'}`,
-              transition: 'all 0.15s',
-            }}><Gamepad2 size={17} strokeWidth={2.2} aria-hidden="true" />Play Peekaboo</Link>
             {isElder && (
               <button onClick={triggerSos} disabled={sending}
                 title="Send an urgent alert to all your emergency contacts"
@@ -225,11 +214,56 @@ export default function NavBar() {
                 color: '#fff', opacity: sending ? 0.7 : 1,
               }}>{sosSent ? 'Help sent' : sending ? 'Sending…' : 'SOS'}</button>
             )}
-            <button onClick={() => setConfirmSignOut(true)} style={{
-              fontSize: '15px', fontFamily: SF, fontWeight: 500,
-              color: '#7a7a7a', background: 'none', border: 'none',
-              cursor: 'pointer', padding: '8px 14px', borderRadius: '8px',
-            }}>Log out</button>
+
+            {/* Account circle — Profile & Log out live here */}
+            <div ref={accountRef} style={{ position: 'relative' }}>
+              <button onClick={() => setAccountOpen(o => !o)}
+                aria-label="Account menu" aria-haspopup="true" aria-expanded={accountOpen}
+                style={{
+                  width: '40px', height: '40px', borderRadius: '50%', border: 'none',
+                  cursor: 'pointer', background: '#4FA3CE', color: '#fff',
+                  fontSize: '15px', fontWeight: 600, fontFamily: SF,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>{initials}</button>
+              {accountOpen && (
+                <div role="menu" style={{
+                  position: 'absolute', top: '52px', right: 0,
+                  background: '#fff', borderRadius: '14px',
+                  border: '1px solid #ececef', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  padding: '8px', minWidth: '210px', zIndex: 110,
+                }}>
+                  <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #f0f0f0', marginBottom: '6px' }}>
+                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f', margin: 0, fontFamily: SF }}>
+                      {user?.name || 'Your account'}
+                    </p>
+                    {user?.username && (
+                      <p style={{ fontSize: '13px', color: '#a0a0a5', margin: '2px 0 0' }}>@{user.username}</p>
+                    )}
+                  </div>
+                  <Link to="/profile" role="menuitem" onClick={() => setAccountOpen(false)} style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
+                    color: '#1d1d1f', fontSize: '15px', fontWeight: 500, fontFamily: SF,
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <User size={18} strokeWidth={2} aria-hidden="true" />Profile
+                  </Link>
+                  <button role="menuitem" onClick={() => { setAccountOpen(false); setConfirmSignOut(true); }} style={{
+                    display: 'flex', width: '100%', alignItems: 'center', gap: '10px',
+                    padding: '10px 12px', borderRadius: '10px', background: 'none', border: 'none',
+                    cursor: 'pointer', color: '#7a7a7a', fontSize: '15px', fontWeight: 500,
+                    fontFamily: SF, textAlign: 'left',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <LogOut size={18} strokeWidth={2} aria-hidden="true" />Log out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -291,8 +325,6 @@ export default function NavBar() {
             <MenuLink to="/profile" label="Profile" icon={User} />
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
-            <MenuLink to="/game" label="Play Peekaboo" icon={Gamepad2} />
-            {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '16px 0', marginTop: '4px',

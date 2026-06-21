@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, ShieldCheck, Star as StarIcon } from 'lucide-react';
+import { Phone, ShieldCheck, Star as StarIcon, Siren } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import TrustBadge from '../components/TrustBadge';
@@ -77,6 +77,7 @@ export default function ProfileEdit() {
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [profileData, setProfileData] = useState(null);
+  const [emContacts, setEmContacts] = useState([]);
 
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
@@ -93,6 +94,7 @@ export default function ProfileEdit() {
 
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
+    if (isElder) api.get('/emergency/contacts').then(r => setEmContacts(r.data)).catch(() => {});
     api.get('/profile/me').then(r => {
       const p = r.data;
       setProfileData(p);
@@ -570,6 +572,52 @@ export default function ProfileEdit() {
                 </div>
               </div>
             </BlurFade>
+
+            {/* Emergency Contacts — elders only. Full add/remove lives on its own page. */}
+            {isElder && (
+              <BlurFade delay={4}>
+                <div style={card}>
+                  <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
+                    Emergency Contacts
+                  </p>
+                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '16px', lineHeight: 1.5 }}>
+                    People we'll alert if you don't check in for several days, or when you press SOS.
+                  </p>
+
+                  {emContacts.length === 0 ? (
+                    <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '14px', color: MUTED, margin: 0 }}>
+                        No emergency contacts yet. Add up to 3 people who care about you.
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {emContacts.map(c => (
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 14px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: SKY_TINT, border: `1px solid ${SKY_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Siren size={18} color={SKY} strokeWidth={2} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>{c.name}</p>
+                            <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '1px 0 0' }}>
+                              {c.relationship ? `${c.relationship} · ` : ''}{c.phone}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button type="button" onClick={() => navigate('/emergency-contacts')} style={{
+                    width: '100%', marginTop: '16px', background: '#ffffff', color: SKY,
+                    border: `1.5px solid ${SKY}`, borderRadius: '9999px', padding: '10px 0',
+                    fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                  }}>
+                    Manage Emergency Contacts
+                  </button>
+                </div>
+              </BlurFade>
+            )}
 
             {/* Reviews received */}
             <BlurFade delay={4}>
