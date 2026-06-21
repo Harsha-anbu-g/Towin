@@ -182,7 +182,7 @@ export const STEPS = [
           <><strong>2. Messaging</strong>: send messages and share photos in a private chat.</>,
           <><strong>3. Phone Ready</strong>: share phone numbers and call each other.</>,
           <><strong>4. Video Ready</strong>: have a video call and meet face to face.</>,
-          <><strong>5. Verified</strong>: both IDs are checked and a verified badge appears.</>,
+          <><strong>5. Social Media Exchange</strong>: both share their Instagram, Facebook, or other social profiles.</>,
           <><strong>6. Ready to Meet</strong>: plan to meet in person; emergency contacts are told.</>,
           <><strong>7. Fully Trusted</strong>: a full, trusted friendship; leave and receive reviews.</>,
         ]} />
