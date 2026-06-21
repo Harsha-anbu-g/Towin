@@ -147,9 +147,9 @@ export default function Streaks() {
             'linear-gradient(to top, #fafafc 0%, rgba(250,250,252,0) 15%)',
         }} />
         {/* Tagline centered in the art's clear middle band */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '24px', textAlign: 'center' }}>
+        <div style={{ position: 'relative', zIndex: 2, padding: '24px', textAlign: 'center', transform: 'translateY(-44px)' }}>
           <h2 style={{
-            fontFamily: SF, fontSize: '22px', fontWeight: 700, color: '#1d1d1f',
+            fontFamily: SF, fontSize: '22px', fontWeight: 600, color: '#9a9da4',
             letterSpacing: '-0.3px', margin: 0, lineHeight: 1.3, whiteSpace: 'nowrap',
           }}>
             Slow is smooth and Smooth is fast and constant
