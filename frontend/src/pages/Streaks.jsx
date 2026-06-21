@@ -131,27 +131,28 @@ export default function Streaks() {
       {/* Left — art panel (hidden on mobile) */}
       <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: '#fafafc',
       }}>
         <img src="/journey.jpg" alt="" style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', zIndex: 0,
         }} />
-        {/* Edges melt into the page; a soft wash up top keeps the heading legible. */}
+        {/* Edges melt into the page; the art's white middle band keeps the
+            centered tagline clear of any figures. */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1,
           background:
-            'linear-gradient(to bottom, rgba(250,250,252,0.85) 0%, rgba(250,250,252,0.4) 14%, rgba(250,250,252,0) 30%),' +
+            'linear-gradient(to bottom, #fafafc 0%, rgba(250,250,252,0) 15%),' +
             'linear-gradient(to top, #fafafc 0%, rgba(250,250,252,0) 15%)',
         }} />
-        {/* Tagline pinned to the top-left */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '40px 44px' }}>
+        {/* Tagline centered in the art's clear middle band */}
+        <div style={{ position: 'relative', zIndex: 2, padding: '24px', textAlign: 'center' }}>
           <h2 style={{
             fontFamily: SF, fontSize: '22px', fontWeight: 700, color: '#1d1d1f',
-            letterSpacing: '-0.3px', margin: 0, lineHeight: 1.3,
+            letterSpacing: '-0.3px', margin: 0, lineHeight: 1.3, whiteSpace: 'nowrap',
           }}>
-            Slow is smooth and<br />Smooth is fast and constant
+            Slow is smooth and Smooth is fast and constant
           </h2>
         </div>
       </div>
