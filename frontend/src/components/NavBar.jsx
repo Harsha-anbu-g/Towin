@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, ShieldCheck, HelpCircle, LogOut } from 'lucide-react';
+import { Home, MessageCircle, User, ShieldCheck, HelpCircle, LogOut, Siren } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -251,6 +251,18 @@ export default function NavBar() {
                   >
                     <User size={18} strokeWidth={2} aria-hidden="true" />Profile
                   </Link>
+                  {isElder && (
+                    <Link to="/emergency-contacts" role="menuitem" onClick={() => setAccountOpen(false)} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
+                      color: '#1d1d1f', fontSize: '15px', fontWeight: 500, fontFamily: SF,
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <Siren size={18} strokeWidth={2} aria-hidden="true" />Emergency Contacts
+                    </Link>
+                  )}
                   <button role="menuitem" onClick={() => { setAccountOpen(false); setConfirmSignOut(true); }} style={{
                     display: 'flex', width: '100%', alignItems: 'center', gap: '10px',
                     padding: '10px 12px', borderRadius: '10px', background: 'none', border: 'none',
@@ -324,6 +336,7 @@ export default function NavBar() {
             <MenuLink to="/dashboard" label="Dashboard" icon={Home} />
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
+            {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
