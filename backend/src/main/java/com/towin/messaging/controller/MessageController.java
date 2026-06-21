@@ -23,7 +23,7 @@ public class MessageController {
     @GetMapping("/unread-count")
     public ResponseEntity<Integer> unreadCount(Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(messageService.totalUnreadCount(userId));
+        return ResponseEntity.ok(messageService.unreadConversationCount(userId));
     }
 
     @GetMapping("/{connectionId}")

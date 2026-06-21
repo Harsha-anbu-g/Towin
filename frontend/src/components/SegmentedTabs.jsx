@@ -7,7 +7,10 @@
 //   container: #eef1f4 fully-rounded pill, padding 5, flex with 6px gap
 //   segment:   flex:1, height 46, fully rounded. active = white + soft shadow +
 //              bold #4FA3CE; inactive = transparent + #7a7a7a
-//   count:     active = white on #4FA3CE; inactive = #9aa4af on #e6e8ec
+//   badge:     shown ONLY when a segment opts in with notify:true and has
+//              count > 0 — so status tabs (Active, Building Trust, In
+//              Progress, Completed) stay quiet, and only actionable ones
+//              (New Invites, Pending Request) draw the eye.
 // A segment may pass its own `color` to tint the label.
 
 export default function SegmentedTabs({ segments, value, onChange }) {
@@ -35,13 +38,15 @@ export default function SegmentedTabs({ segments, value, onChange }) {
             }}
           >
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{seg.label}</span>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-              borderRadius: '9999px', fontSize: '12px', fontWeight: 700, lineHeight: 1, flexShrink: 0,
-              color: active ? '#ffffff' : '#9aa4af',
-              background: active ? '#4FA3CE' : '#e6e8ec',
-            }}>{seg.count}</span>
+            {seg.notify && seg.count > 0 && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
+                borderRadius: '9999px', fontSize: '12px', fontWeight: 700, lineHeight: 1, flexShrink: 0,
+                color: active ? '#ffffff' : '#9aa4af',
+                background: active ? '#4FA3CE' : '#e6e8ec',
+              }}>{seg.count}</span>
+            )}
           </button>
         );
       })}

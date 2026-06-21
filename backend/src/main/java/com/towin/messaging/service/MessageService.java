@@ -52,11 +52,14 @@ public class MessageService {
         return toResponse(messageRepository.save(message));
     }
 
-    public int totalUnreadCount(UUID userId) {
-        return connectionRepository.findAllByUser(userId).stream()
-                .mapToInt(c -> (int) messageRepository
-                        .countByConnectionIdAndSenderIdNotAndSeenAtIsNull(c.getId(), userId))
-                .sum();
+    // Count of conversations (people) with at least one unread message — not the
+    // total number of unread messages. Two people who messaged you reads as "2",
+    // even if they sent five messages between them.
+    public int unreadConversationCount(UUID userId) {
+        return (int) connectionRepository.findAllByUser(userId).stream()
+                .filter(c -> messageRepository
+                        .countByConnectionIdAndSenderIdNotAndSeenAtIsNull(c.getId(), userId) > 0)
+                .count();
     }
 
     @Transactional
