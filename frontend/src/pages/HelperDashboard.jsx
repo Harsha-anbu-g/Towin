@@ -536,13 +536,13 @@ export default function HelperDashboard() {
                           </div>
                         ) : (
                           <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ flex: 2, minWidth: '110px', height: '36px', padding: '0 16px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ flex: 1, minWidth: '96px', height: '36px', padding: '0 12px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
-                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ flex: 1, minWidth: '96px', height: '36px', padding: '0 12px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="#4FA3CE" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>

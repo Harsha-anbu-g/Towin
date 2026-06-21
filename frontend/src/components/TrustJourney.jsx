@@ -74,13 +74,13 @@ export default function TrustJourney({
         </span>
       </div>
 
-      {/* Progress bar with the tortoise riding to the trusted end */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ flex: 1, height: '9px', background: '#E2EEF5', borderRadius: '9999px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, minWidth: pct > 0 ? '6px' : 0, background: 'linear-gradient(90deg,#7FC0E0,#4FA3CE)', borderRadius: '9999px', transition: 'width 0.4s ease' }} />
+      {/* Progress bar — the tortoise rides along it to the current stage */}
+      <div style={{ position: 'relative', height: '34px' }}>
+        <div style={{ position: 'absolute', left: '17px', right: '17px', top: '50%', transform: 'translateY(-50%)', height: '9px', background: '#E2EEF5', borderRadius: '9999px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#7FC0E0,#4FA3CE)', borderRadius: '9999px', transition: 'width 0.4s ease' }} />
         </div>
-        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#E6F2FA', border: '2px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} title={current.label}>
-          <img src="/tortoise-right.png" alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+        <div style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${pct / 100})`, transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: '#E6F2FA', border: '2px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 0.4s ease' }} title={current.label}>
+          <img src="/tortoise-right.png" alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
         </div>
       </div>
 
