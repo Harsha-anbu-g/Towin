@@ -136,9 +136,6 @@ export default function NavBar() {
   };
 
   const trustActive = pathname === '/trust';
-  const initials = user?.name
-    ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : (user?.username?.[0]?.toUpperCase() || '?');
 
   return (
     <>
@@ -185,23 +182,22 @@ export default function NavBar() {
             <Link to="/trust" style={{
               display: 'flex', alignItems: 'center', gap: '7px',
               fontSize: '15px', fontFamily: SF, fontWeight: 600,
-              color: trustActive ? '#fff' : '#4FA3CE',
-              background: trustActive ? '#4FA3CE' : 'rgba(79,163,206,0.1)',
-              border: `1.5px solid ${trustActive ? '#4FA3CE' : 'rgba(79,163,206,0.35)'}`,
+              color: trustActive ? '#fff' : '#9C7A3C',
+              background: trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.1)',
+              border: `1.5px solid ${trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.35)'}`,
               borderRadius: '9999px', padding: '6px 16px',
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
             }}>
               <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
               Trust Score
             </Link>
-            <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
-            <NavLink to="/how-it-works" label="Guide" icon={HelpCircle} />
           </div>
         )}
 
         {/* Desktop right actions */}
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <NavLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             {isElder && (
               <button onClick={triggerSos} disabled={sending}
                 title="Send an urgent alert to all your emergency contacts"
@@ -224,7 +220,12 @@ export default function NavBar() {
                   cursor: 'pointer', background: '#4FA3CE', color: '#fff',
                   fontSize: '15px', fontWeight: 600, fontFamily: SF,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>{initials}</button>
+                }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M12 14c-4.4 0-8 2.7-8 6v2h16v-2c0-3.3-3.6-6-8-6z" />
+                </svg>
+              </button>
               {accountOpen && (
                 <div role="menu" style={{
                   position: 'absolute', top: '52px', right: 0,

@@ -488,13 +488,13 @@ export default function ElderDashboard() {
               height: '44px', padding: '0 16px',
               fontSize: '15px', letterSpacing: '-0.1px',
               fontWeight: showPostForm ? 700 : 600,
-              color: showPostForm ? '#1d1d1f' : '#5a6470',
-              background: showPostForm ? '#f0f0f3' : 'transparent',
-              border: '1px solid transparent', borderRadius: '10px',
+              color: showPostForm ? '#ffffff' : '#4FA3CE',
+              background: showPostForm ? '#4FA3CE' : 'transparent',
+              border: '1.5px solid #4FA3CE', borderRadius: '10px',
               cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit',
               transition: 'background 0.15s, color 0.15s',
             }}
-              onMouseEnter={e => { if (!showPostForm) e.currentTarget.style.background = '#f0f0f3'; }}
+              onMouseEnter={e => { if (!showPostForm) e.currentTarget.style.background = 'rgba(79,163,206,0.08)'; }}
               onMouseLeave={e => { if (!showPostForm) e.currentTarget.style.background = 'transparent'; }}
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

@@ -3,42 +3,45 @@ import { Gamepad2 } from 'lucide-react';
 
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
-// Peekaboo used to live in the top nav. It now lives here as a friendly tile
-// on the dashboard, keeping the game one tap away without cluttering the bar.
+// Peekaboo used to live in the top nav. It now floats as a friendly button
+// in the bottom-left corner — mirroring the Feedback widget (bottom-right) —
+// so the game stays one tap away without cluttering the bar.
 export default function PeekabooCard() {
   return (
-    <Link to="/game" style={{
-      display: 'flex', alignItems: 'center', gap: '14px',
-      textDecoration: 'none',
-      background: '#EBF6EE',
-      border: '1.5px solid #BFE0C9',
-      borderRadius: '16px',
-      padding: '14px 18px',
-    }}>
-      <div style={{
-        width: '44px', height: '44px', borderRadius: '12px',
-        background: '#3D8B5A', color: '#fff',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <Gamepad2 size={22} strokeWidth={2.2} aria-hidden="true" />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '16px', fontWeight: 700, color: '#1a5c2e', fontFamily: SF, margin: 0 }}>
-          Play Peekaboo
-        </p>
-        <p style={{ fontSize: '13px', color: '#3D8B5A', fontFamily: SF, margin: '2px 0 0' }}>
-          A gentle memory game — take a break and have fun.
-        </p>
-      </div>
-      <span style={{
-        flexShrink: 0,
-        fontSize: '14px', fontWeight: 700, fontFamily: SF,
-        color: '#fff', background: '#3D8B5A',
-        borderRadius: '9999px', padding: '8px 18px',
-      }}>
-        Play
-      </span>
+    <Link
+      to="/game"
+      aria-label="Play Peekaboo"
+      style={{
+        position: 'fixed',
+        bottom: '28px',
+        left: '28px',
+        zIndex: 999,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        background: '#3D8B5A',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '9999px',
+        padding: '12px 20px',
+        fontSize: '14px',
+        fontWeight: 600,
+        textDecoration: 'none',
+        fontFamily: SF,
+        boxShadow: '0 4px 20px rgba(61,139,90,0.4)',
+        transition: 'transform 0.15s, box-shadow 0.15s',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'scale(1.04)';
+        e.currentTarget.style.boxShadow = '0 6px 24px rgba(61,139,90,0.55)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = '0 4px 20px rgba(61,139,90,0.4)';
+      }}
+    >
+      <Gamepad2 size={15} />
+      Play Peekaboo
     </Link>
   );
 }
