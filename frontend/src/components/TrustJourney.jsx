@@ -6,8 +6,8 @@ const LEVELS = [
   { key: 'DISCOVERED', label: 'Just Connected', short: 'Connected', nextAction: 'Both tap "Advance" to start messaging' },
   { key: 'MESSAGING',  label: 'Messaging',      short: 'Messaging', nextAction: 'Both agree you\'re comfortable sharing phone numbers' },
   { key: 'PHONE_CALL', label: 'Phone Ready',    short: 'Phone',     nextAction: 'Both agree you\'re comfortable with a video call' },
-  { key: 'VIDEO_CALL', label: 'Video Ready',    short: 'Video',     nextAction: 'Both confirm your identities are verified' },
-  { key: 'VERIFIED',   label: 'Verified',       short: 'Verified',  nextAction: 'Both agree to plan your first in-person meeting' },
+  { key: 'VIDEO_CALL', label: 'Video Ready',    short: 'Video',     nextAction: 'Both agree to exchange your social media profiles' },
+  { key: 'VERIFIED',   label: 'Social Media',   short: 'Socials',   nextAction: 'Both agree to plan your first in-person meeting' },
   { key: 'FIRST_MEET', label: 'Ready to Meet',  short: 'Met',       nextAction: 'Both confirm a fully trusted friendship' },
   { key: 'TRUSTED',    label: 'Fully Trusted',  short: 'Trusted',   nextAction: null },
 ];
