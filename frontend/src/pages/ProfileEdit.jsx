@@ -78,6 +78,12 @@ export default function ProfileEdit() {
   const [reviews, setReviews] = useState([]);
   const [profileData, setProfileData] = useState(null);
   const [emContacts, setEmContacts] = useState([]);
+  const [emShowAdd, setEmShowAdd] = useState(false);
+  const [emForm, setEmForm] = useState({ name: '', phone: '', relationship: '', inactivityDays: 5 });
+  const [emAdding, setEmAdding] = useState(false);
+  const [emMsg, setEmMsg] = useState('');
+  const [emPendingRemove, setEmPendingRemove] = useState(null);
+  const [emRemoving, setEmRemoving] = useState(false);
 
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
@@ -175,6 +181,33 @@ export default function ProfileEdit() {
       setPhotoMsg('Photo updated.'); setPhotoFile(null);
     } catch (err) { setPhotoMsg(err?.response?.data?.message || 'Upload failed.'); }
     finally { setUploadingPhoto(false); }
+  }
+
+  const emF = (key) => ({ value: emForm[key], onChange: e => setEmForm(p => ({ ...p, [key]: e.target.value })) });
+
+  async function addEmContact(e) {
+    e.preventDefault();
+    setEmAdding(true); setEmMsg('');
+    try {
+      const res = await api.post('/emergency/contacts', { ...emForm, inactivityDays: Number(emForm.inactivityDays) });
+      setEmContacts(prev => [...prev, res.data]);
+      setEmForm({ name: '', phone: '', relationship: '', inactivityDays: 5 });
+      setEmShowAdd(false);
+      setEmMsg('Contact added.');
+    } catch (err) {
+      setEmMsg(err?.response?.data?.message || 'Could not add contact.');
+    } finally { setEmAdding(false); }
+  }
+
+  async function removeEmContact(id) {
+    setEmRemoving(true);
+    try {
+      await api.delete(`/emergency/contacts/${id}`);
+      setEmContacts(prev => prev.filter(c => c.id !== id));
+      setEmPendingRemove(null);
+    } catch {
+      setEmMsg('Could not remove contact. Please try again.');
+    } finally { setEmRemoving(false); }
   }
 
   async function save(e) {
@@ -573,12 +606,15 @@ export default function ProfileEdit() {
               </div>
             </BlurFade>
 
-            {/* Emergency Contacts — elders only. Full add/remove lives on its own page. */}
+            {/* Emergency Contacts — elders only. Managed inline, right inside Profile. */}
             {isElder && (
               <BlurFade delay={4}>
                 <div style={card}>
                   <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
                     Emergency Contacts
+                    <span style={{ fontSize: '16px', fontWeight: 400, color: '#a0a0a5', marginLeft: '8px' }}>
+                      ({emContacts.length}/3)
+                    </span>
                   </p>
                   <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '16px', lineHeight: 1.5 }}>
                     People we'll alert if you don't check in for several days, or when you press SOS.
@@ -603,18 +639,76 @@ export default function ProfileEdit() {
                               {c.relationship ? `${c.relationship} · ` : ''}{c.phone}
                             </p>
                           </div>
+                          <button type="button" onClick={() => setEmPendingRemove(c)} style={{
+                            flexShrink: 0, background: 'transparent', color: '#9b3535',
+                            border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                            padding: '6px 14px', fontSize: '13px', fontWeight: 600,
+                            fontFamily: SFText, cursor: 'pointer',
+                          }}>
+                            Remove
+                          </button>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <button type="button" onClick={() => navigate('/emergency-contacts')} style={{
-                    width: '100%', marginTop: '16px', background: '#ffffff', color: SKY,
-                    border: `1.5px solid ${SKY}`, borderRadius: '9999px', padding: '10px 0',
-                    fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
-                  }}>
-                    Manage Emergency Contacts
-                  </button>
+                  {emMsg && (
+                    <p style={{ fontSize: '13px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? '#3D8AB0' : '#9b3535' }}>
+                      {emMsg}
+                    </p>
+                  )}
+
+                  {/* Add form — appears inline, no page change */}
+                  {emContacts.length < 3 && (
+                    emShowAdd ? (
+                      <form onSubmit={addEmContact} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px', borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
+                        <div className="two-col-grid" style={{ gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Name</label>
+                            <input {...emF('name')} className="field" placeholder="Contact name" required />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Phone</label>
+                            <input {...emF('phone')} className="field" placeholder="+1 555 000 0000" required />
+                          </div>
+                        </div>
+                        <div className="two-col-grid" style={{ gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Relationship</label>
+                            <input {...emF('relationship')} className="field" placeholder="Daughter, Doctor…" />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Alert after (days)</label>
+                            <input {...emF('inactivityDays')} type="number" min={1} max={30} className="field" />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button type="submit" disabled={emAdding} style={{
+                            flex: 1, background: SKY, color: '#fff', border: 'none',
+                            borderRadius: '9999px', padding: '10px 0', fontSize: '14px',
+                            fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                          }}>
+                            {emAdding ? 'Adding…' : 'Add Contact'}
+                          </button>
+                          <button type="button" onClick={() => { setEmShowAdd(false); setEmMsg(''); }} style={{
+                            flex: 1, background: 'transparent', color: '#7a7a7a',
+                            border: '1.5px solid #e0e0e0', borderRadius: '9999px', padding: '10px 0',
+                            fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                          }}>
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button type="button" onClick={() => { setEmShowAdd(true); setEmMsg(''); }} style={{
+                        width: '100%', marginTop: '16px', background: '#ffffff', color: SKY,
+                        border: `1.5px solid ${SKY}`, borderRadius: '9999px', padding: '10px 0',
+                        fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                      }}>
+                        + Add Contact
+                      </button>
+                    )
+                  )}
                 </div>
               </BlurFade>
             )}
@@ -751,6 +845,18 @@ export default function ProfileEdit() {
         cancelLabel="Stay Signed In"
         onConfirm={() => { setConfirmSignOut(false); logout(); navigate('/login'); }}
         onCancel={() => setConfirmSignOut(false)}
+      />
+
+      <ConfirmDialog
+        open={!!emPendingRemove}
+        danger
+        title={`Remove ${emPendingRemove?.name || 'this contact'}?`}
+        message="They will no longer be alerted if you trigger an SOS or go inactive. You can add them again later."
+        confirmLabel="Remove Contact"
+        cancelLabel="Keep"
+        loading={emRemoving}
+        onConfirm={() => emPendingRemove && removeEmContact(emPendingRemove.id)}
+        onCancel={() => setEmPendingRemove(null)}
       />
     </div>
   );
