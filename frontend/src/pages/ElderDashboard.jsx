@@ -412,15 +412,16 @@ export default function ElderDashboard() {
   })();
 
   // ── My Helpers — classify connections by trust state ──
-  const incomingPending = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const helperCounts = {
     active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
     building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
     requests: connections.filter(c => c.status === 'PENDING').length,
   };
-  const helpersDefault = incomingPending.length > 0 ? 'requests'
-    : helperCounts.active > 0 ? 'active'
-    : helperCounts.building > 0 ? 'building' : 'requests';
+  // Always open on the Active section. Pending requests still appear in the
+  // Requests tab with their own count, so nothing is hidden — Active is simply
+  // what the dashboard lands on. A section the user explicitly picks wins via
+  // the URL (?hseg=…) and survives a refresh.
+  const helpersDefault = 'active';
   const activeHelpersSeg = helpersSeg ?? helpersDefault;
   const helperSegments = [
     { id: 'active',   label: 'Active',         count: helperCounts.active },
