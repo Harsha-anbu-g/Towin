@@ -626,7 +626,7 @@ export default function ElderDashboard() {
                             <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
                               <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="#4FA3CE" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="#F4C95E" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>
                             )}
@@ -636,7 +636,7 @@ export default function ElderDashboard() {
                                 Reviewed
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: '#FEF2F2', color: '#CF6A66', border: '1px solid #F3CDCD', borderRadius: '9999px', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
                         )
                       )}
