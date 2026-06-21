@@ -19,25 +19,25 @@ export default function PeekabooCard() {
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        background: '#3D8B5A',
-        color: '#fff',
-        border: 'none',
+        background: '#EBF6EE',
+        color: '#3D8B5A',
+        border: '1.5px solid #BFE0C9',
         borderRadius: '9999px',
         padding: '12px 20px',
         fontSize: '14px',
         fontWeight: 600,
         textDecoration: 'none',
         fontFamily: SF,
-        boxShadow: '0 4px 20px rgba(61,139,90,0.4)',
+        boxShadow: '0 4px 20px rgba(61,139,90,0.18)',
         transition: 'transform 0.15s, box-shadow 0.15s',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'scale(1.04)';
-        e.currentTarget.style.boxShadow = '0 6px 24px rgba(61,139,90,0.55)';
+        e.currentTarget.style.boxShadow = '0 6px 24px rgba(61,139,90,0.3)';
       }}
       onMouseLeave={e => {
         e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = '0 4px 20px rgba(61,139,90,0.4)';
+        e.currentTarget.style.boxShadow = '0 4px 20px rgba(61,139,90,0.18)';
       }}
     >
       <Gamepad2 size={15} />
