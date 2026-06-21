@@ -598,9 +598,9 @@ export default function ElderDashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'User'}</p>
                             {conn.status === 'ACTIVE' ? (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2E7DA6' }} />
-                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: conn.currentTrustLevel === 'TRUSTED' ? '#EBF6EE' : '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: conn.currentTrustLevel === 'TRUSTED' ? '#3D8B5A' : '#2E7DA6' }} />
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: conn.currentTrustLevel === 'TRUSTED' ? '#3D8B5A' : '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
                               </div>
                             ) : (
                               <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
@@ -640,8 +640,8 @@ export default function ElderDashboard() {
                               </button>
                             )}
                             {reviewedConns.has(conn.id) && (
-                              <span style={{ height: '36px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4FA3CE', fontWeight: 600 }}>
-                                <svg width="13" height="10" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#4FA3CE" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              <span style={{ height: '36px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#3D8B5A', fontWeight: 600 }}>
+                                <svg width="13" height="10" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#3D8B5A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                 Reviewed
                               </span>
                             )}
