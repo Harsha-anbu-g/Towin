@@ -553,7 +553,7 @@ export default function HelperDashboard() {
                                 Reviewed
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
                         )
                       )}
