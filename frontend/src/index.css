@@ -391,7 +391,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 }
 
 /* ─── Trust ladder stage labels ─── */
-.trust-ladder-stages { font-size: 12px; }
+.trust-ladder-stages { font-size: 11px; }
 @media (max-width: 640px) {
   .trust-ladder-stages { font-size: 9px; }
 }

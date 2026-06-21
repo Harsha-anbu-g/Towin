@@ -553,10 +553,10 @@ export default function ElderDashboard() {
                 const isIncoming = conn.status === 'PENDING' && !conn.initiatedByMe;
                 const avatar = (
                   <div style={{
-                    width: '60px', height: '60px', borderRadius: '50%',
+                    width: '48px', height: '48px', borderRadius: '50%',
                     background: '#E6F2FA',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '22px', fontWeight: 700, color: '#2E7DA6', flexShrink: 0,
+                    fontSize: '17px', fontWeight: 700, color: '#2E7DA6', flexShrink: 0,
                   }}>
                     {initials(conn.otherUserName)}
                   </div>
@@ -592,28 +592,28 @@ export default function ElderDashboard() {
                   ) : (
                     <>
                       {/* Identity row */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         {avatar}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                            <p style={{ fontWeight: 700, fontSize: '22px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'User'}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{conn.otherUserName || 'User'}</p>
                             {conn.status === 'ACTIVE' ? (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: '#E6F2FA', padding: '4px 12px', borderRadius: '9999px' }}>
-                                <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#2E7DA6' }} />
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2E7DA6' }} />
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
                               </div>
                             ) : (
                               <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
                             )}
                           </div>
                           {conn.status === 'ACTIVE' && conn.otherUserPhone && (
-                            <p style={{ fontSize: '17px', color: '#3a4450', margin: '7px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6470" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            <p style={{ fontSize: '14px', color: '#3a4450', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a6470" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                               {conn.otherUserPhone}
                             </p>
                           )}
                           {conn.requestMessage && conn.status !== 'ACTIVE' && (
-                            <p style={{ fontSize: '14px', color: '#a0a0a5', fontStyle: 'italic', margin: '7px 0 0' }}>"{conn.requestMessage}"</p>
+                            <p style={{ fontSize: '13px', color: '#a0a0a5', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
                           )}
                         </div>
                       </div>
@@ -621,31 +621,31 @@ export default function ElderDashboard() {
                       {/* Action bar */}
                       {conn.status === 'ACTIVE' && (
                         endingConn === conn.id ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '18px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '15px', color: '#5a6470', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this helper'}?</span>
-                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '44px', padding: '0 18px', background: '#9b3535', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
-                            <button onClick={() => setEndingConn(null)} style={{ height: '44px', padding: '0 18px', background: '#fff', color: '#5a6470', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '14px', color: '#5a6470', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this helper'}?</span>
+                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '36px', padding: '0 16px', background: '#9b3535', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
+                            <button onClick={() => setEndingConn(null)} style={{ height: '36px', padding: '0 16px', background: '#fff', color: '#5a6470', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
-                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ flex: 2, minWidth: '120px', height: '40px', padding: '0 18px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ flex: 2, minWidth: '110px', height: '36px', padding: '0 16px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ flex: 1, minWidth: '100px', height: '40px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ flex: 1, minWidth: '96px', height: '36px', padding: '0 12px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
-                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ flex: 1, minWidth: '100px', height: '40px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#4FA3CE" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ flex: 1, minWidth: '96px', height: '36px', padding: '0 12px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="#4FA3CE" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>
                             )}
                             {reviewedConns.has(conn.id) && (
-                              <span style={{ height: '40px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4FA3CE', fontWeight: 600 }}>
+                              <span style={{ height: '36px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4FA3CE', fontWeight: 600 }}>
                                 <svg width="13" height="10" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="#4FA3CE" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                 Reviewed
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ height: '40px', padding: '0 16px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#8a929c', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
                         )
                       )}

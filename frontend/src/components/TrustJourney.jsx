@@ -31,10 +31,10 @@ export default function TrustJourney({
   // The contextual prompt + action under the ladder (non-trusted only).
   const advanceBtn = (label) => (
     <button onClick={onConfirm} disabled={confirming} style={{
-      flexShrink: 0, height: '40px', padding: '0 20px',
+      flexShrink: 0, height: '36px', padding: '0 16px',
       background: confirming ? '#e0e0e0' : '#4FA3CE',
       color: '#fff', border: 'none', borderRadius: '9999px',
-      fontSize: '14px', fontWeight: 700, fontFamily: SFT,
+      fontSize: '13px', fontWeight: 700, fontFamily: SFT,
       cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
     }}>{confirming ? '…' : label}</button>
   );
@@ -42,7 +42,7 @@ export default function TrustJourney({
   let footer;
   if (isTrusted) {
     footer = (
-      <p style={{ fontSize: '15px', color: '#5a6470', margin: '12px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
+      <p style={{ fontSize: '13px', color: '#5a6470', margin: '10px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
         You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.
       </p>
     );
@@ -54,38 +54,38 @@ export default function TrustJourney({
     else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} wants to advance your trust.`; button = advanceBtn('Accept →'); }
     else                                      { message = `You accepted — trust is advancing.`; }
     footer = (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #D8EAF4' }}>
-        <p style={{ fontSize: '14px', color: '#5a6470', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '180px', fontFamily: SFT }}>{message}</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #D8EAF4' }}>
+        <p style={{ fontSize: '13px', color: '#5a6470', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
         {button}
       </div>
     );
   }
 
   return (
-    <div style={{ marginTop: '22px', background: '#F4FAFD', border: '1px solid #D8EAF4', borderRadius: '16px', padding: '18px 20px' }}>
+    <div style={{ marginTop: '16px', background: '#F4FAFD', border: '1px solid #D8EAF4', borderRadius: '14px', padding: '14px 16px' }}>
       {/* Header: current level + stage pill */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-          <span style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#2E7DA6' }} />
-          <span style={{ fontSize: '17px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF }}>{current.label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#2E7DA6' }} />
+          <span style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF }}>{current.label}</span>
         </div>
-        <span style={{ fontSize: '15px', fontWeight: 700, color: '#2E7DA6', background: '#E6F2FA', padding: '4px 12px', borderRadius: '9999px' }}>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: '#2E7DA6', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
           Stage {idx + 1} of {LEVELS.length} · {pct}%
         </span>
       </div>
 
       {/* Progress bar with the tortoise riding to the trusted end */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ flex: 1, height: '12px', background: '#E2EEF5', borderRadius: '9999px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, minWidth: pct > 0 ? '8px' : 0, background: 'linear-gradient(90deg,#7FC0E0,#4FA3CE)', borderRadius: '9999px', transition: 'width 0.4s ease' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ flex: 1, height: '9px', background: '#E2EEF5', borderRadius: '9999px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, minWidth: pct > 0 ? '6px' : 0, background: 'linear-gradient(90deg,#7FC0E0,#4FA3CE)', borderRadius: '9999px', transition: 'width 0.4s ease' }} />
         </div>
-        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#E6F2FA', border: '2px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} title={current.label}>
-          <img src="/tortoise-right.png" alt="" style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
+        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#E6F2FA', border: '2px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} title={current.label}>
+          <img src="/tortoise-right.png" alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
         </div>
       </div>
 
       {/* Ladder stage labels */}
-      <div className="trust-ladder-stages" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', gap: '4px' }}>
+      <div className="trust-ladder-stages" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', gap: '4px' }}>
         {LEVELS.map((level, i) => (
           <span key={level.key} style={{ fontWeight: i === idx ? 700 : 400, color: i === idx ? '#2E7DA6' : '#7a8490', whiteSpace: 'nowrap', fontFamily: SFT }}>
             {level.short}
