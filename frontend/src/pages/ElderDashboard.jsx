@@ -403,7 +403,7 @@ export default function ElderDashboard() {
   const helperSegments = [
     { id: 'active',   label: 'Active',         count: helperCounts.active },
     { id: 'building', label: 'Building Trust', count: helperCounts.building },
-    { id: 'requests', label: 'New Invites',     count: helperCounts.requests },
+    { id: 'requests', label: 'New Invites',     count: helperCounts.requests, notify: true },
   ];
   const visibleConnections = [...connections].filter(c => {
     if (activeHelpersSeg === 'active')   return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
@@ -425,7 +425,7 @@ export default function ElderDashboard() {
   const needsDefault = needCounts.OPEN > 0 ? 'OPEN' : needCounts.ASSIGNED > 0 ? 'ASSIGNED' : 'COMPLETED';
   const activeNeedsSeg = needsSeg ?? needsDefault;
   const needsSegments = [
-    { id: 'OPEN',      label: 'Pending Request',  count: needCounts.OPEN },
+    { id: 'OPEN',      label: 'Pending Request',  count: needCounts.OPEN, notify: true },
     { id: 'ASSIGNED',  label: 'In Progress',     count: needCounts.ASSIGNED },
     { id: 'COMPLETED', label: 'Completed',       count: needCounts.COMPLETED },
   ];
