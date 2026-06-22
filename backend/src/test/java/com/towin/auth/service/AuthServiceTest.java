@@ -7,6 +7,8 @@ import com.towin.auth.security.LoginRateLimiter;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.EmailService;
+import com.towin.common.service.PostHogService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -25,6 +27,8 @@ class AuthServiceTest {
     @Mock PasswordEncoder passwordEncoder;
     @Mock JwtUtil jwtUtil;
     @Mock LoginRateLimiter loginRateLimiter;
+    @Mock PostHogService postHogService;
+    @Mock EmailService emailService;
     @InjectMocks AuthService authService;
 
     @Test
@@ -50,7 +54,7 @@ class AuthServiceTest {
             return u;
         });
         // RegisterRequest carries no email, so the token is minted with a null email claim.
-        when(jwtUtil.generateToken(userId.toString(), null, "ELDER")).thenReturn("mock-token");
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0, false)).thenReturn("mock-token");
 
         var response = authService.register(req);
 
@@ -105,7 +109,7 @@ class AuthServiceTest {
 
         when(userRepository.findByPhone("+14165550123")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
-        when(jwtUtil.generateToken(userId.toString(), null, "ELDER")).thenReturn("mock-token");
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0, false)).thenReturn("mock-token");
 
         var response = authService.login(req);
 
@@ -126,7 +130,7 @@ class AuthServiceTest {
 
         when(userRepository.findByPhone("+14165550123")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
-        when(jwtUtil.generateToken(userId.toString(), null, "ELDER")).thenReturn("mock-token");
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0, false)).thenReturn("mock-token");
 
         var response = authService.login(req);
 

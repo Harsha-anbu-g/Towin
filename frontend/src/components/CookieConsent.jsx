@@ -52,8 +52,9 @@ export default function CookieConsent() {
       }}
     >
       <span style={{ flex: 1, minWidth: 220 }}>
-        We store a small amount of data on your device to keep you signed in and remember your choices.
-        See our <Link to="/privacy" style={{ color: '#7cc4e8', textDecoration: 'underline' }}>Privacy Policy</Link>.
+        We keep you signed in and use tools that record how the site is used
+        (including replays of screen activity) to make it better. See our{' '}
+        <Link to="/privacy" style={{ color: '#7cc4e8', textDecoration: 'underline' }}>Privacy Policy</Link>.
       </span>
       <button
         onClick={accept}
