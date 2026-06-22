@@ -48,8 +48,9 @@ public class EmailService {
             mailSender.send(msg);
             log.info("Verification email sent");
         } catch (Exception e) {
+            // A mail outage must never fail the signup — the account is created and
+            // the user can request a fresh link later via "resend". Log and move on.
             log.error("Failed to send verification email: {}", e.getMessage());
-            throw new RuntimeException("Could not send verification email. Please try again.");
         }
     }
 }
