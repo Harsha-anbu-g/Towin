@@ -52,9 +52,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             return;
                         }
                         if (Boolean.TRUE.equals(user.getIsActive())) {
-                            List<SimpleGrantedAuthority> authorities = role != null
-                                    ? List.of(new SimpleGrantedAuthority(role))
-                                    : List.of();
+                            List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+                            if (role != null) authorities.add(new SimpleGrantedAuthority(role));
+                            // Verified email unlocks the gated write endpoints (see SecurityConfig).
+                            if (user.isEmailVerified()) authorities.add(new SimpleGrantedAuthority("VERIFIED"));
                             UsernamePasswordAuthenticationToken auth =
                                     new UsernamePasswordAuthenticationToken(userId, null, authorities);
                             SecurityContextHolder.getContext().setAuthentication(auth);

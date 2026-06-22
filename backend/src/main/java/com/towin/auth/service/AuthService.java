@@ -8,10 +8,12 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.EmailService;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.emergency.service.SosService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,10 @@ public class AuthService {
     private final TrustScoreService trustScoreService;
     private final LoginRateLimiter loginRateLimiter;
     private final OtpRateLimiter otpRateLimiter;
+    private final EmailService emailService;
+
+    @Value("${app.mail.verify-base-url}")
+    private String verifyBaseUrl;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -48,13 +54,21 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username already taken");
         }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("An account with this email already exists");
+        }
 
         // Phone is no longer collected at sign-up; users add it later from their profile.
+        String verificationToken = newVerificationToken();
         User user = User.builder()
                 .username(request.getUsername())
+                .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .dateOfBirth(request.getDateOfBirth())
+                .emailVerified(false)
+                .emailVerificationToken(verificationToken)
+                .emailVerificationExpiresAt(LocalDateTime.now().plusHours(24))
                 .build();
 
         User saved = userRepository.save(user);
@@ -62,7 +76,10 @@ public class AuthService {
             throw new IllegalStateException("User ID was not generated after save");
         }
         String id = saved.getId().toString();
-        String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name());
+        emailService.sendVerificationEmail(saved.getEmail(),
+                verifyBaseUrl + "/verify-email?token=" + verificationToken);
+        String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name(),
+                saved.getTokenVersion(), false);
         return new AuthResponse(token, saved.getRole().name(), id);
     }
 
@@ -82,6 +99,7 @@ public class AuthService {
                 .phone(phone)
                 .passwordHash(passwordEncoder.encode(password))
                 .role(role)
+                .emailVerified(true)
                 .build();
 
         User saved = userRepository.save(user);
@@ -102,8 +120,46 @@ public class AuthService {
         }
 
         loginRateLimiter.reset(id);
-        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name(), user.getTokenVersion());
+        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name(),
+                user.getTokenVersion(), user.isEmailVerified());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired verification link."));
+        if (user.getEmailVerificationExpiresAt() == null
+                || user.getEmailVerificationExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("This verification link has expired. Request a new one.");
+        }
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationExpiresAt(null);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void resendVerification(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (user.isEmailVerified()) {
+            return; // already verified — nothing to do
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            throw new IllegalArgumentException("This account has no email to verify.");
+        }
+        String token = newVerificationToken();
+        user.setEmailVerificationToken(token);
+        user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(24));
+        userRepository.save(user);
+        emailService.sendVerificationEmail(user.getEmail(),
+                verifyBaseUrl + "/verify-email?token=" + token);
+    }
+
+    private String newVerificationToken() {
+        return UUID.randomUUID().toString().replace("-", "")
+                + Long.toHexString(SECURE_RANDOM.nextLong());
     }
 
     @Transactional

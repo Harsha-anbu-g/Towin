@@ -42,6 +42,17 @@ spring:
         provider:
           google:
             issuer-uri: https://accounts.google.com
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 aws:
   region: ${AWS_REGION:us-east-1}
@@ -59,6 +70,9 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   oauth:
     frontend-redirect: ${APP_OAUTH_FRONTEND_REDIRECT:http://localhost:5173}
+  mail:
+    from: ${MAIL_FROM:${MAIL_USERNAME:}}
+    verify-base-url: ${APP_VERIFY_BASE_URL:http://localhost:5173}
   kafka:
     enabled: ${APP_KAFKA_ENABLED:false}
   redis:

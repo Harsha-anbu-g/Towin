@@ -295,6 +295,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .passwordHash(passwordEncoder.encode(rawPassword))
                 .role(role)
                 .verificationStatus(VerificationStatus.VERIFIED)
+                .emailVerified(true)
                 .locationLat(LAT.add(jitter(email)))
                 .locationLng(LNG.add(jitter(email + "lng")))
                 .city("Toronto")
