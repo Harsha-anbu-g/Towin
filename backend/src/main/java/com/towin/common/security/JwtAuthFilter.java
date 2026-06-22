@@ -22,6 +22,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final org.slf4j.Logger log =
+        org.slf4j.LoggerFactory.getLogger(JwtAuthFilter.class);
+
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
@@ -38,11 +41,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 Claims claims = jwtUtil.extractAllClaims(token);
                 String userId = claims.getSubject();
                 String role = claims.get("role", String.class);
+                int claimedVersion = jwtUtil.extractTokenVersion(token);
                 if (userId != null) {
                     // The user row is loaded anyway for lastSeenAt, so checking
                     // isActive here is free — a suspended or deleted account
                     // loses its token immediately instead of after 24 h expiry
                     userRepository.findById(UUID.fromString(userId)).ifPresent(user -> {
+                        if (claimedVersion != user.getTokenVersion()) {
+                            log.warn("Token version mismatch for user {} — token issued before password change", userId);
+                            return;
+                        }
                         if (Boolean.TRUE.equals(user.getIsActive())) {
                             List<SimpleGrantedAuthority> authorities = role != null
                                     ? List.of(new SimpleGrantedAuthority(role))
@@ -59,8 +67,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         }
                     });
                 }
-            } catch (JwtException | IllegalArgumentException ignored) {
-                // invalid token — leave security context empty
+            } catch (JwtException | IllegalArgumentException e) {
+                log.warn("Rejected invalid JWT on {} {}: {}", request.getMethod(), request.getRequestURI(), e.getMessage());
             }
         }
         chain.doFilter(request, response);

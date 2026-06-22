@@ -28,15 +28,29 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String userId, String email, String role) {
+    public String generateToken(String userId, String email, String role, int tokenVersion) {
         return Jwts.builder()
                 .subject(userId)
                 .claim("email", email)
                 .claim("role", role)
+                .claim("tv", tokenVersion)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key)
                 .compact();
+    }
+
+    public String generateToken(String userId, String email, String role) {
+        return generateToken(userId, email, role, 0);
+    }
+
+    public int extractTokenVersion(String token) {
+        try {
+            Integer tv = parseClaims(token).get("tv", Integer.class);
+            return tv != null ? tv : 0;
+        } catch (JwtException | IllegalArgumentException e) {
+            return -1;
+        }
     }
 
     private io.jsonwebtoken.Claims parseClaims(String token) {

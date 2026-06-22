@@ -48,8 +48,18 @@ public class SecurityConfig {
                 .contentTypeOptions(ct -> {})
                 .referrerPolicy(rp -> rp.policy(
                     org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000))
                 .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; frame-ancestors 'none'")
+                    .policyDirectives(
+                        "default-src 'self'; " +
+                        "img-src 'self' https://*.amazonaws.com data: blob:; " +
+                        "connect-src 'self' wss: https://accounts.google.com https://*.amazonaws.com; " +
+                        "style-src 'self' 'unsafe-inline'; " +
+                        "font-src 'self' data:; " +
+                        "frame-ancestors 'none'"
+                    )
                 )
             )
             .authorizeHttpRequests(auth -> auth
@@ -69,8 +79,21 @@ public class SecurityConfig {
                 .successHandler(oauthSuccessHandler)
                 .failureHandler(oauthFailureHandler)
             )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
+                        .warn("401 Unauthorized: {} {}", request.getMethod(), request.getRequestURI());
+                    response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
+                        .warn("403 Forbidden: {} {}", request.getMethod(), request.getRequestURI());
+                    response.sendError(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                })
+            )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
+        http.addFilterAfter(permissionsPolicyFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -87,6 +110,15 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    @Bean
+    public jakarta.servlet.Filter permissionsPolicyFilter() {
+        return (request, response, chain) -> {
+            ((jakarta.servlet.http.HttpServletResponse) response)
+                .setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)");
+            chain.doFilter(request, response);
+        };
     }
 
     @Bean

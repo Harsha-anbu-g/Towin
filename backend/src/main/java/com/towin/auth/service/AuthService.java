@@ -102,7 +102,7 @@ public class AuthService {
         }
 
         loginRateLimiter.reset(id);
-        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name(), user.getTokenVersion());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
     }
 
@@ -123,6 +123,7 @@ public class AuthService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setTokenVersion(user.getTokenVersion() + 1);
         userRepository.save(user);
     }
 
