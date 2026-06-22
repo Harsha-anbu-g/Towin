@@ -329,14 +329,10 @@ export default function Register() {
     setFieldErrors({});
     try {
       const { username, email, password, role } = form;
-      const { data } = await api.post('/auth/register', { username, email, password, role });
-      login(data.token);
-      navigate(
-        data.role === 'ADMIN' ? '/admin' :
-        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' :
-        '/dashboard',
-        { replace: true }
-      );
+      // No account is created yet — the backend holds the signup until the user
+      // opens the email link. So we don't log in here; we send them to check email.
+      await api.post('/auth/register', { username, email, password, role });
+      navigate('/check-email', { replace: true, state: { email } });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

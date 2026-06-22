@@ -22,7 +22,9 @@ import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
 import CookieConsent from './components/CookieConsent';
 import VerifyEmail from './pages/VerifyEmail';
-import VerifyPending from './pages/VerifyPending';
+import CheckEmail from './pages/CheckEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Feedback from './pages/Feedback';
 import Guide from './pages/Guide';
 import OAuthCallback from './pages/OAuthCallback';
@@ -55,21 +57,14 @@ function BfCacheGuard() {
   return null;
 }
 
-// A logged-in user whose email isn't verified can't reach any app page —
-// they're held at /verify-pending until they open the link and sign in again.
-const needsVerify = (user) => user && user.emailVerified === false;
-
 function PrivateRoute({ children }) {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
-  if (needsVerify(user)) return <Navigate to="/verify-pending" replace />;
-  return children;
+  return user ? children : <Navigate to="/login" replace />;
 }
 
 function PublicRoute({ children }) {
   const { user } = useAuth();
   if (!user) return children;
-  if (needsVerify(user)) return <Navigate to="/verify-pending" replace />;
   if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
   // Elders land on the daily check-in first — keeps the post-login flow
   // consistent even when navigation races the auth context update
@@ -80,7 +75,6 @@ function PublicRoute({ children }) {
 function ElderOnly({ children }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (needsVerify(user)) return <Navigate to="/verify-pending" replace />;
   if (user.role === 'ELDER' || user.role === 'BOTH') return children;
   return <Navigate to="/dashboard" replace />;
 }
@@ -127,7 +121,9 @@ function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/verify-pending" element={<VerifyPending />} />
+            <Route path="/check-email" element={<CheckEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
           </div>
