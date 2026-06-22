@@ -24,6 +24,8 @@ import Feedback from './pages/Feedback';
 import Guide from './pages/Guide';
 import OAuthCallback from './pages/OAuthCallback';
 import FinishSetup from './pages/FinishSetup';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 
 function BfCacheGuard() {
   const { user, logout } = useAuth();
@@ -111,6 +113,8 @@ function App() {
             <Route path="/trust" element={<PrivateRoute><Trust /></PrivateRoute>} />
             <Route path="/user/:id" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
           </div>
