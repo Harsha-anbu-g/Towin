@@ -72,7 +72,9 @@ app:
     frontend-redirect: ${APP_OAUTH_FRONTEND_REDIRECT:http://localhost:5173}
   mail:
     from: ${MAIL_FROM:${MAIL_USERNAME:}}
+    from-name: ${MAIL_FROM_NAME:ToWin}
     verify-base-url: ${APP_VERIFY_BASE_URL:http://localhost:5173}
+    brevo-api-key: ${BREVO_API_KEY:}
   kafka:
     enabled: ${APP_KAFKA_ENABLED:false}
   redis:
