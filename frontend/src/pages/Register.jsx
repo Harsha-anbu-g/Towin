@@ -267,7 +267,7 @@ export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    username: '', password: '', confirmPassword: '',
+    username: '', email: '', password: '', confirmPassword: '',
     role: 'ELDER',
   });
   const [error, setError] = useState('');
@@ -322,13 +322,14 @@ export default function Register() {
     setError('');
     const errs = {};
     if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = 'Username must be 3-20 characters: lowercase letters, numbers, underscores only';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address';
     if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
-      const { username, password, role } = form;
-      const { data } = await api.post('/auth/register', { username, password, role });
+      const { username, email, password, role } = form;
+      const { data } = await api.post('/auth/register', { username, email, password, role });
       login(data.token);
       navigate(
         data.role === 'ADMIN' ? '/admin' :
@@ -496,6 +497,29 @@ export default function Register() {
                 {fieldErrors.username && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
                 <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   3-20 characters. Letters, numbers, underscores. Visible to others.
+                </p>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label style={{
+                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  color: '#1d1d1f', marginBottom: '6px',
+                  fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                }}>
+                  Email
+                </label>
+                <input
+                  type="email" autoComplete="email" required
+                  className="field"
+                  value={form.email}
+                  onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
+                  placeholder="you@example.com"
+                  style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
+                />
+                {fieldErrors.email && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
+                <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+                  We'll send a link to confirm it's really you.
                 </p>
               </div>
 

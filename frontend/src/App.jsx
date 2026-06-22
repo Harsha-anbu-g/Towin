@@ -21,6 +21,8 @@ import PeekabooGame from './pages/PeekabooGame';
 import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
 import CookieConsent from './components/CookieConsent';
+import VerifyBanner from './components/VerifyBanner';
+import VerifyEmail from './pages/VerifyEmail';
 import Feedback from './pages/Feedback';
 import Guide from './pages/Guide';
 import OAuthCallback from './pages/OAuthCallback';
@@ -93,6 +95,7 @@ function App() {
               off-screen by the banner's height. */}
           <div style={{ display: 'flex', flexDirection: 'column', height: '100svh' }}>
           <BetaBanner />
+          <VerifyBanner />
           <BfCacheGuard />
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
           <Routes>
@@ -116,6 +119,7 @@ function App() {
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
           </div>

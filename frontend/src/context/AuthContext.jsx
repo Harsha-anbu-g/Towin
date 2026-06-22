@@ -22,16 +22,17 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('token');
       return null;
     }
-    // Role and userId come from the signed JWT — not from writable localStorage
-    return { token, role: payload.role, userId: payload.sub };
+    // Role, userId and emailVerified come from the signed JWT — not from
+    // writable localStorage. Absent `ev` (old/grandfathered tokens) = verified.
+    return { token, role: payload.role, userId: payload.sub, emailVerified: payload.ev !== false };
   });
 
   const login = (token) => {
     const payload = parseJwtPayload(token);
     if (!payload) return;
     localStorage.setItem('token', token);
-    // Only the token is persisted; role/userId are always derived from it
-    setUser({ token, role: payload.role, userId: payload.sub });
+    // Only the token is persisted; the rest is always derived from it
+    setUser({ token, role: payload.role, userId: payload.sub, emailVerified: payload.ev !== false });
   };
 
   const logout = () => {
