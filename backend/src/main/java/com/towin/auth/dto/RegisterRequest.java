@@ -16,5 +16,6 @@ public class RegisterRequest {
     @NotNull
     private UserRole role;
 
+    @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;
 }
