@@ -56,9 +56,17 @@ export default function VerifyPending() {
       <p style={{ color: '#718096', marginBottom: 8 }}>
         We sent a verification link to{email ? <> <strong>{email}</strong></> : ' your email'}.
       </p>
-      <p style={{ color: '#718096', marginBottom: 28 }}>
-        Open it to activate your account — then sign in again to continue. Be sure to check your Spam folder.
+      <p style={{ color: '#718096', marginBottom: 20 }}>
+        Open it to activate your account, then sign in again to continue.
       </p>
+
+      <div style={{
+        background: '#FBEED9', color: '#7a5b1e', borderRadius: 10,
+        padding: '12px 16px', marginBottom: 28, fontSize: 14, lineHeight: 1.5, textAlign: 'left',
+      }}>
+        📁 <strong>Can't find it?</strong> Please check your <strong>Spam</strong> or <strong>Junk</strong> folder —
+        the ToWin verification email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox.
+      </div>
 
       <button onClick={resend} disabled={sending} style={primaryBtn}>
         {sending ? 'Sending…' : 'Resend email'}
