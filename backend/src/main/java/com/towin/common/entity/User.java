@@ -103,6 +103,10 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "token_version")
+    @Builder.Default
+    private int tokenVersion = 0;
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
