@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
 import com.towin.need.entity.Need;
+import com.towin.need.repository.NeedApplicationRepository;
 import com.towin.need.repository.NeedRepository;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
@@ -26,6 +27,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final NeedRepository needRepository;
+    private final NeedApplicationRepository needApplicationRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final TrustScoreService trustScoreService;
@@ -48,6 +50,12 @@ public class ReviewService {
         if (request.getNeedId() != null) {
             need = needRepository.findById(request.getNeedId())
                     .orElseThrow(() -> new IllegalArgumentException("Need not found"));
+            // Verify reviewer participated in this need
+            boolean isElder = need.getElder().getId().equals(reviewerId);
+            boolean isHelper = needApplicationRepository.existsByNeedIdAndHelperId(need.getId(), reviewerId);
+            if (!isElder && !isHelper) {
+                throw new IllegalArgumentException("You can only review users from needs you participated in");
+            }
         }
 
         Review review = Review.builder()
