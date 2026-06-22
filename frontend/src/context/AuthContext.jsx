@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import posthog from 'posthog-js';
 
 const AuthContext = createContext(null);
 
@@ -33,11 +34,14 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', token);
     // Only the token is persisted; the rest is always derived from it
     setUser({ token, role: payload.role, userId: payload.sub, emailVerified: payload.ev !== false });
+    // Tie analytics events to this user (matches the backend distinct_id).
+    posthog.identify(payload.sub, { role: payload.role });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    posthog.reset();
   };
 
   return (

@@ -140,6 +140,13 @@
             <version>10.9.2</version>
         </dependency>
 
+        <!-- PostHog product analytics -->
+        <dependency>
+            <groupId>com.posthog.java</groupId>
+            <artifactId>posthog</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -3,6 +3,7 @@ package com.towin.auth;
 import com.towin.auth.service.AuthService;
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.PostHogService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,6 +22,7 @@ import static org.mockito.Mockito.*;
 class AuthServiceVerifyEmailTest {
 
     @Mock UserRepository userRepository;
+    @Mock PostHogService postHogService;
     @InjectMocks AuthService authService;
 
     private User userWithToken(String token, LocalDateTime expiry) {
@@ -41,6 +44,7 @@ class AuthServiceVerifyEmailTest {
         assertThat(u.isEmailVerified()).isTrue();
         assertThat(u.getEmailVerificationToken()).isNull();
         verify(userRepository).save(u);
+        verify(postHogService).capture(u.getId().toString(), "email_verified", Map.of());
     }
 
     @Test

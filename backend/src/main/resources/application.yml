@@ -90,6 +90,10 @@ twilio:
   auth-token: ${TWILIO_AUTH_TOKEN:}
   from-number: ${TWILIO_FROM_NUMBER:}
 
+posthog:
+  api-key: ${POSTHOG_API_KEY:}
+  host: ${POSTHOG_HOST:https://us.i.posthog.com}
+
 server:
   port: ${PORT:8080}
   forward-headers-strategy: framework

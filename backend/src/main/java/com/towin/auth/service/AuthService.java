@@ -9,6 +9,7 @@ import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.EmailService;
+import com.towin.common.service.PostHogService;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.emergency.service.SosService;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -40,6 +42,7 @@ public class AuthService {
     private final LoginRateLimiter loginRateLimiter;
     private final OtpRateLimiter otpRateLimiter;
     private final EmailService emailService;
+    private final PostHogService postHogService;
 
     @Value("${app.mail.verify-base-url}")
     private String verifyBaseUrl;
@@ -78,6 +81,7 @@ public class AuthService {
         String id = saved.getId().toString();
         emailService.sendVerificationEmail(saved.getEmail(),
                 verifyBaseUrl + "/verify-email?token=" + verificationToken);
+        postHogService.capture(id, "user_signed_up", Map.of("role", saved.getRole().name()));
         String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name(),
                 saved.getTokenVersion(), false);
         return new AuthResponse(token, saved.getRole().name(), id);
@@ -137,6 +141,7 @@ public class AuthService {
         user.setEmailVerificationToken(null);
         user.setEmailVerificationExpiresAt(null);
         userRepository.save(user);
+        postHogService.capture(user.getId().toString(), "email_verified", Map.of());
     }
 
     @Transactional
