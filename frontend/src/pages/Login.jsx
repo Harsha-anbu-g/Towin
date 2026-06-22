@@ -263,8 +263,11 @@ export default function Login() {
               </div>
             )}
 
-            {/* Google log-in */}
+            {/* Google log-in — the easiest path, especially for new users */}
             <GoogleButton label="Log in with Google" />
+            <p style={{ textAlign: 'center', fontSize: '12.5px', color: '#a0a0a5', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+              Fastest way in — no password to remember.
+            </p>
 
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
@@ -326,12 +329,12 @@ export default function Login() {
                 {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
-                  <Link to="/feedback" style={{
+                  <Link to="/forgot-password" style={{
                     fontSize: '13px', color: '#4FA3CE',
                     textDecoration: 'none',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
-                    Forgot password? Contact us
+                    Forgot password?
                   </Link>
                 </div>
               </div>

@@ -38,7 +38,7 @@ export default function VerifyEmail() {
           <div style={{ fontSize: 44, marginBottom: 12 }}>✅</div>
           <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Email verified!</h1>
           <p style={{ color: '#718096', marginBottom: 24 }}>
-            Thanks for confirming. You now have full access to ToWin.
+            Your account is ready. Please log in to get started.
           </p>
           <Link to="/login" style={linkStyle}>Go to login →</Link>
         </>
@@ -48,10 +48,9 @@ export default function VerifyEmail() {
           <div style={{ fontSize: 44, marginBottom: 12 }}>⚠️</div>
           <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Link didn't work</h1>
           <p style={{ color: '#718096', marginBottom: 24 }}>
-            This verification link is invalid or has expired. Log in and use the
-            “Resend” button to get a fresh one.
+            This link is invalid or has expired. Please sign up again to get a fresh one.
           </p>
-          <Link to="/login" style={linkStyle}>Go to login →</Link>
+          <Link to="/register" style={linkStyle}>Back to sign up →</Link>
         </>
       )}
     </div>
