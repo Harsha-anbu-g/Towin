@@ -47,7 +47,7 @@ public class SosService {
 
     public void sendSmsPublic(String toNumber, String body) {
         if (accountSid.isBlank() || authToken.isBlank() || fromNumber.isBlank()) {
-            log.info("Twilio not configured — would send SMS to {}: {}", toNumber, body);
+            log.info("Twilio not configured — SMS suppressed (dev mode)");
             return;
         }
         try {
@@ -57,9 +57,9 @@ public class SosService {
                     new com.twilio.type.PhoneNumber(fromNumber),
                     body
             ).create();
-            log.info("SMS sent to {}", toNumber);
+            log.info("SMS sent successfully");
         } catch (Exception e) {
-            log.error("Failed to send OTP SMS to {}: {}", toNumber, e.getMessage());
+            log.error("Failed to send OTP SMS: {}", e.getMessage());
             throw new RuntimeException("Could not send verification code: " + e.getMessage());
         }
     }
@@ -72,7 +72,7 @@ public class SosService {
 
     private void sendSms(String toNumber, String body) {
         if (accountSid.isBlank() || authToken.isBlank() || fromNumber.isBlank()) {
-            log.info("Twilio not configured — would send SMS to {}: {}", toNumber, body);
+            log.info("Twilio not configured — SMS suppressed (dev mode)");
             return;
         }
         try {
@@ -82,9 +82,9 @@ public class SosService {
                     new com.twilio.type.PhoneNumber(fromNumber),
                     body
             ).create();
-            log.info("SMS sent to {}", toNumber);
+            log.info("SMS sent successfully");
         } catch (Exception e) {
-            log.error("Failed to send SMS to {}: {}", toNumber, e.getMessage());
+            log.error("Failed to send SMS: {}", e.getMessage());
         }
     }
 }
