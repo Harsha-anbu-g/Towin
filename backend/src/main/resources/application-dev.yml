@@ -3,7 +3,7 @@ spring:
     username: postgres
     # Quoted so YAML keeps it as the string "0000"; unquoted it parses as the
     # integer 0, and Spring then sends "0" as the password → Flyway auth fails.
-    password: "0000"
+    password: "${DB_PASSWORD:0000}"
   jpa:
     show-sql: true
 
