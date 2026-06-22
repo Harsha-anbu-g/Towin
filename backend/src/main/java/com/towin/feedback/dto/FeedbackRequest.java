@@ -1,5 +1,6 @@
 package com.towin.feedback.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import lombok.Data;
 @Data
 public class FeedbackRequest {
     private String name;
+    @Email
     private String email;
     private String phone;
 

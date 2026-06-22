@@ -53,9 +53,9 @@ public class ProfileController {
     @PutMapping("/phone")
     public ResponseEntity<ProfileResponse> updatePhone(
             Authentication auth,
-            @RequestBody Map<String, String> body) {
+            @Valid @RequestBody PhoneUpdateRequest request) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(profileService.updatePhone(userId, body.get("phone")));
+        return ResponseEntity.ok(profileService.updatePhone(userId, request.getPhone()));
     }
 
     @PutMapping("/location")
