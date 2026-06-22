@@ -20,6 +20,7 @@ import UserProfile from './pages/UserProfile';
 import PeekabooGame from './pages/PeekabooGame';
 import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
+import CookieConsent from './components/CookieConsent';
 import Feedback from './pages/Feedback';
 import Guide from './pages/Guide';
 import OAuthCallback from './pages/OAuthCallback';
@@ -119,6 +120,7 @@ function App() {
           </Routes>
           </div>
           <FeedbackWidget />
+          <CookieConsent />
           </div>
         </BrowserRouter>
       </AuthProvider>
