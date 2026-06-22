@@ -85,7 +85,8 @@ public class OAuthService {
             }
             // Always set/update role during first setup
             existing.setRole(request.getRole());
-            if (existing.getPasswordHash() == null) {
+            if (existing.getPasswordHash() == null
+                    && request.getPassword() != null && !request.getPassword().isBlank()) {
                 existing.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             }
             if (existing.getFullName() == null || existing.getFullName().isBlank()) {
@@ -110,7 +111,8 @@ public class OAuthService {
                 .email(email)
                 .fullName(googleName)
                 .phone(request.getPhone())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .passwordHash(request.getPassword() != null && !request.getPassword().isBlank()
+                        ? passwordEncoder.encode(request.getPassword()) : null)
                 .role(request.getRole())
                 .authProvider("GOOGLE")
                 .setupCompleted(true)

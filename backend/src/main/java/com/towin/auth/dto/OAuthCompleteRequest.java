@@ -19,6 +19,8 @@ public class OAuthCompleteRequest {
     private String phone;
     @NotBlank @Pattern(regexp = "^[a-z0-9_]{3,20}$", message = "Username must be 3-20 characters: lowercase letters, numbers, underscores only")
     private String username;
-    @NotBlank @Size(min = 8, message = "Password must be at least 8 characters")
+    // Optional — Google sign-up no longer forces a password. Users can set one
+    // later via the "Forgot password" flow if they want password login too.
+    @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 }

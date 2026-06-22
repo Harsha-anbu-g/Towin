@@ -70,4 +70,33 @@ public class EmailService {
             log.error("Failed to send verification email: {}", e.getMessage());
         }
     }
+
+    public void sendPasswordResetEmail(String to, String resetLink) {
+        if (!configured) {
+            log.info("Mail not configured — password reset link for {}: {}", to, resetLink);
+            return;
+        }
+        try {
+            Map<String, Object> body = Map.of(
+                "sender", Map.of("name", fromName, "email", fromEmail),
+                "to", List.of(Map.of("email", to)),
+                "subject", "Reset your ToWin password",
+                "textContent",
+                    "We received a request to reset your ToWin password.\n\n" +
+                    "Open this link to choose a new password:\n" +
+                    resetLink + "\n\n" +
+                    "This link expires in 1 hour. If you didn't request this, you can ignore this email."
+            );
+            brevo.post()
+                    .uri("/smtp/email")
+                    .header("api-key", apiKey)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Password reset email sent");
+        } catch (Exception e) {
+            log.error("Failed to send password reset email: {}", e.getMessage());
+        }
+    }
 }

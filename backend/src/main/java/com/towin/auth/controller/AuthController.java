@@ -22,10 +22,11 @@ public class AuthController {
     private final IpRateLimiter ipRateLimiter;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request,
-                                                 HttpServletRequest http) {
+    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request,
+                                         HttpServletRequest http) {
         ipRateLimiter.check(http);
-        return ResponseEntity.ok(authService.register(request));
+        authService.register(request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/login")
@@ -86,10 +87,24 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<Void> resendVerification(Authentication auth, HttpServletRequest http) {
+    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ForgotPasswordRequest request,
+                                                   HttpServletRequest http) {
         ipRateLimiter.check(http);
-        UUID userId = UUID.fromString(auth.getName());
-        authService.resendVerification(userId);
+        authService.resendVerification(request.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
+                                               HttpServletRequest http) {
+        ipRateLimiter.check(http);
+        authService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok().build();
     }
 }

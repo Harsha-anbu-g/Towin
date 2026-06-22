@@ -23,6 +23,12 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES = new HashMap<>();
         SAFE_MESSAGES.put("User not found",                               "Invalid request.");
         SAFE_MESSAGES.put("Invalid request.",                             "Invalid request.");
+        SAFE_MESSAGES.put("Email already registered",                     "Email already registered.");
+        SAFE_MESSAGES.put("Username already taken",                       "Username already taken. Please choose another.");
+        SAFE_MESSAGES.put("Invalid or expired verification link.",        "Invalid or expired verification link.");
+        SAFE_MESSAGES.put("This verification link has expired.",          "This verification link has expired. Please sign up again.");
+        SAFE_MESSAGES.put("Invalid or expired reset link.",              "Invalid or expired reset link.");
+        SAFE_MESSAGES.put("This reset link has expired.",                "This reset link has expired. Request a new one.");
         SAFE_MESSAGES.put("Invalid or expired code.",                     "Invalid or expired code.");
         SAFE_MESSAGES.put("Too many attempts.",                           "Too many attempts. Try again in 15 minutes.");
         SAFE_MESSAGES.put("Verification code has expired.",               "Verification code has expired. Request a new one.");
