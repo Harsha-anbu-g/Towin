@@ -29,7 +29,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
+                                              HttpServletRequest http) {
+        ipRateLimiter.check(http);
         return ResponseEntity.ok(authService.login(request));
     }
 
@@ -43,7 +45,9 @@ public class AuthController {
     @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(
             Authentication auth,
-            @Valid @RequestBody ChangePasswordRequest request) {
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpServletRequest http) {
+        ipRateLimiter.check(http);
         UUID userId = UUID.fromString(auth.getName());
         authService.changePassword(userId, request);
         return ResponseEntity.ok().build();
@@ -52,7 +56,9 @@ public class AuthController {
     @PostMapping("/verify-id")
     public ResponseEntity<VerifyIdResponse> verifyId(
             Authentication auth,
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest http) {
+        ipRateLimiter.check(http);
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(authService.verifyId(userId, file));
     }
@@ -67,7 +73,7 @@ public class AuthController {
     @PostMapping("/verify-phone/confirm")
     public ResponseEntity<Void> confirmPhoneOtp(
             Authentication auth,
-            @RequestBody PhoneVerifyRequest request) {
+            @Valid @RequestBody PhoneVerifyRequest request) {
         UUID userId = UUID.fromString(auth.getName());
         authService.confirmPhoneOtp(userId, request.getOtp());
         return ResponseEntity.ok().build();
