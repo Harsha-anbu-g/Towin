@@ -78,4 +78,18 @@ public class AuthController {
         authService.confirmPhoneOtp(userId, request.getOtp());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        authService.verifyEmail(request.getToken());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(Authentication auth, HttpServletRequest http) {
+        ipRateLimiter.check(http);
+        UUID userId = UUID.fromString(auth.getName());
+        authService.resendVerification(userId);
+        return ResponseEntity.ok().build();
+    }
 }

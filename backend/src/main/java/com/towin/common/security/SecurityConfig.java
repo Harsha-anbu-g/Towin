@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -63,14 +64,22 @@ public class SecurityConfig {
                 )
             )
             .authorizeHttpRequests(auth -> auth
-                // Self-service password change requires a valid session — must sit
-                // before the broad /api/auth/** permitAll so it is actually enforced.
+                // Self-service password change + resend-verification require a valid
+                // session — must sit before the broad /api/auth/** permitAll.
                 .requestMatchers("/api/auth/change-password").authenticated()
+                .requestMatchers("/api/auth/resend-verification").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/feedback").permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                // Email-verification gate: unverified new users can browse and edit
+                // their profile, but these write actions require a verified email.
+                .requestMatchers(HttpMethod.POST, "/api/needs/**").hasAuthority("VERIFIED")
+                .requestMatchers(HttpMethod.DELETE, "/api/needs/**").hasAuthority("VERIFIED")
+                .requestMatchers(HttpMethod.POST, "/api/connections/**").hasAuthority("VERIFIED")
+                .requestMatchers(HttpMethod.POST, "/api/messages/**").hasAuthority("VERIFIED")
+                .requestMatchers(HttpMethod.POST, "/api/reviews/**").hasAuthority("VERIFIED")
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth

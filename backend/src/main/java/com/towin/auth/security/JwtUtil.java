@@ -29,11 +29,16 @@ public class JwtUtil {
     }
 
     public String generateToken(String userId, String email, String role, int tokenVersion) {
+        return generateToken(userId, email, role, tokenVersion, true);
+    }
+
+    public String generateToken(String userId, String email, String role, int tokenVersion, boolean emailVerified) {
         return Jwts.builder()
                 .subject(userId)
                 .claim("email", email)
                 .claim("role", role)
                 .claim("tv", tokenVersion)
+                .claim("ev", emailVerified)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key)
@@ -41,7 +46,7 @@ public class JwtUtil {
     }
 
     public String generateToken(String userId, String email, String role) {
-        return generateToken(userId, email, role, 0);
+        return generateToken(userId, email, role, 0, true);
     }
 
     public int extractTokenVersion(String token) {

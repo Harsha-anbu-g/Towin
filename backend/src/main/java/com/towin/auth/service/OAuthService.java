@@ -92,6 +92,7 @@ public class OAuthService {
                 existing.setFullName(googleName);
             }
             existing.setSetupCompleted(true);
+            existing.setEmailVerified(true); // Google has already verified this address
             userRepository.save(existing);
             String jwt = jwtUtil.generateToken(existing.getId().toString(), existing.getEmail(), existing.getRole().name());
             return new AuthResponse(jwt, existing.getRole().name(), existing.getId().toString());
@@ -113,6 +114,7 @@ public class OAuthService {
                 .role(request.getRole())
                 .authProvider("GOOGLE")
                 .setupCompleted(true)
+                .emailVerified(true) // Google has already verified this address
                 .build();
 
         User saved = userRepository.save(user);
