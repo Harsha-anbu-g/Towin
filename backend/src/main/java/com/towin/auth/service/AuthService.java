@@ -58,7 +58,9 @@ public class AuthService {
             throw new IllegalArgumentException("Username already taken");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("An account with this email already exists");
+            // Message must match a GlobalExceptionHandler safe-message key so the
+            // user sees a clear reason instead of the generic "Invalid request."
+            throw new IllegalArgumentException("Email already registered");
         }
 
         // Phone is no longer collected at sign-up; users add it later from their profile.
