@@ -235,7 +235,7 @@ export default function Login() {
             </h2>
             <p style={{
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              fontSize: '14px', color: '#7a7a7a', marginBottom: '20px',
+              fontSize: '16px', color: '#7a7a7a', marginBottom: '20px',
             }}>
               Log in to your ToWin account.
             </p>
@@ -245,7 +245,7 @@ export default function Login() {
               <div style={{
                 background: '#EAF5FB', border: '1px solid #BFD9EA',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '14px', color: '#3D8AB0', marginBottom: '20px',
+                fontSize: '15px', color: '#3D8AB0', marginBottom: '20px',
                 lineHeight: 1.45,
               }}>
                 For your safety, you were logged out after a period of inactivity. Please log in again.
@@ -257,7 +257,7 @@ export default function Login() {
               <div style={{
                 background: '#fef2f2', border: '1px solid #fecaca',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '14px', color: '#dc2626', marginBottom: '20px',
+                fontSize: '15px', color: '#dc2626', marginBottom: '20px',
               }}>
                 {error}
               </div>
@@ -265,21 +265,21 @@ export default function Login() {
 
             {/* Google log-in — the easiest path, especially for new users */}
             <GoogleButton label="Log in with Google" />
-            <p style={{ textAlign: 'center', fontSize: '12.5px', color: '#a0a0a5', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+            <p style={{ textAlign: 'center', fontSize: '14px', color: '#a0a0a5', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
               Fastest way in — no password to remember.
             </p>
 
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-              <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or log in with username</span>
+              <span style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or log in with username</span>
               <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  display: 'block', fontSize: '15px', fontWeight: 600,
                   color: '#1d1d1f', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
@@ -290,15 +290,14 @@ export default function Login() {
                   className="field"
                   value={form.identifier}
                   onChange={e => { setForm({ ...form, identifier: e.target.value }); setFieldErrors(f => ({ ...f, identifier: '' })); }}
-                  placeholder="your_username / you@gmail.com / +1234567890"
                   style={{ borderColor: fieldErrors.identifier ? '#fca5a5' : undefined }}
                 />
-                {fieldErrors.identifier && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
+                {fieldErrors.identifier && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
               </div>
 
               <div>
                 <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  display: 'block', fontSize: '15px', fontWeight: 600,
                   color: '#1d1d1f', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
@@ -310,7 +309,6 @@ export default function Login() {
                     className="field"
                     value={form.password}
                     onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
-                    placeholder="••••••••"
                     style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined, paddingRight: '44px' }}
                   />
                   <button
@@ -326,11 +324,11 @@ export default function Login() {
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
+                {fieldErrors.password && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
                   <Link to="/forgot-password" style={{
-                    fontSize: '13px', color: '#4FA3CE',
+                    fontSize: '15px', color: '#4FA3CE',
                     textDecoration: 'none',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
