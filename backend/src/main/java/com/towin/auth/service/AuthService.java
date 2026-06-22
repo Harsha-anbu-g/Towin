@@ -4,9 +4,11 @@ import com.towin.auth.dto.*;
 import com.towin.auth.security.JwtUtil;
 import com.towin.auth.security.LoginRateLimiter;
 import com.towin.auth.security.OtpRateLimiter;
+import com.towin.common.entity.PendingRegistration;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
+import com.towin.common.repository.PendingRegistrationRepository;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.EmailService;
 import com.towin.common.service.PostHogService;
@@ -43,12 +45,17 @@ public class AuthService {
     private final OtpRateLimiter otpRateLimiter;
     private final EmailService emailService;
     private final PostHogService postHogService;
+    private final PendingRegistrationRepository pendingRepository;
 
     @Value("${app.mail.verify-base-url}")
     private String verifyBaseUrl;
 
+    /**
+     * Manual signup. We do NOT create a real account here — we hold the signup in
+     * pending_registrations and only create the User when the email link is clicked.
+     */
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public void register(RegisterRequest request) {
         if (request.getRole() != UserRole.ELDER
                 && request.getRole() != UserRole.HELPER
                 && request.getRole() != UserRole.BOTH) {
@@ -58,35 +65,28 @@ public class AuthService {
             throw new IllegalArgumentException("Username already taken");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            // Message must match a GlobalExceptionHandler safe-message key so the
-            // user sees a clear reason instead of the generic "Invalid request."
             throw new IllegalArgumentException("Email already registered");
         }
 
-        // Phone is no longer collected at sign-up; users add it later from their profile.
+        // Replace any earlier unverified attempt for this email so re-registering just refreshes the link.
+        pendingRepository.deleteByEmail(request.getEmail());
+
         String verificationToken = newVerificationToken();
-        User user = User.builder()
+        PendingRegistration pending = PendingRegistration.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(request.getRole().name())
                 .dateOfBirth(request.getDateOfBirth())
-                .emailVerified(false)
-                .emailVerificationToken(verificationToken)
-                .emailVerificationExpiresAt(LocalDateTime.now().plusHours(24))
+                .token(verificationToken)
+                .expiresAt(LocalDateTime.now().plusHours(24))
                 .build();
+        pendingRepository.save(pending);
 
-        User saved = userRepository.save(user);
-        if (saved.getId() == null) {
-            throw new IllegalStateException("User ID was not generated after save");
-        }
-        String id = saved.getId().toString();
-        emailService.sendVerificationEmail(saved.getEmail(),
+        emailService.sendVerificationEmail(request.getEmail(),
                 verifyBaseUrl + "/verify-email?token=" + verificationToken);
-        postHogService.capture(id, "user_signed_up", Map.of("role", saved.getRole().name()));
-        String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name(),
-                saved.getTokenVersion(), false);
-        return new AuthResponse(token, saved.getRole().name(), id);
+        postHogService.capture("pending:" + request.getEmail(), "user_signup_started",
+                Map.of("role", request.getRole().name()));
     }
 
     @Transactional
@@ -127,46 +127,84 @@ public class AuthService {
 
         loginRateLimiter.reset(id);
         String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name(),
-                user.getTokenVersion(), user.isEmailVerified());
+                user.getTokenVersion());
         return new AuthResponse(token, user.getRole().name(), user.getId().toString());
     }
 
+    /** Clicking the email link is what actually creates the account. */
     @Transactional
     public void verifyEmail(String token) {
-        User user = userRepository.findByEmailVerificationToken(token)
+        PendingRegistration pending = pendingRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired verification link."));
-        if (user.getEmailVerificationExpiresAt() == null
-                || user.getEmailVerificationExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("This verification link has expired. Request a new one.");
+        if (pending.getExpiresAt() == null || pending.getExpiresAt().isBefore(LocalDateTime.now())) {
+            pendingRepository.delete(pending);
+            throw new IllegalArgumentException("This verification link has expired. Please sign up again.");
         }
-        user.setEmailVerified(true);
-        user.setEmailVerificationToken(null);
-        user.setEmailVerificationExpiresAt(null);
-        userRepository.save(user);
-        postHogService.capture(user.getId().toString(), "email_verified", Map.of());
+        // Re-check uniqueness at creation time — someone may have taken it since signup.
+        if (userRepository.existsByEmail(pending.getEmail())) {
+            pendingRepository.delete(pending);
+            throw new IllegalArgumentException("Email already registered");
+        }
+        if (userRepository.existsByUsername(pending.getUsername())) {
+            throw new IllegalArgumentException("Username already taken");
+        }
+
+        User user = User.builder()
+                .username(pending.getUsername())
+                .email(pending.getEmail())
+                .passwordHash(pending.getPasswordHash())
+                .role(UserRole.valueOf(pending.getRole()))
+                .dateOfBirth(pending.getDateOfBirth())
+                .emailVerified(true)
+                .build();
+        User saved = userRepository.save(user);
+        pendingRepository.delete(pending);
+        postHogService.capture(saved.getId().toString(), "user_signed_up",
+                Map.of("role", saved.getRole().name()));
     }
 
+    /** Re-send the pending verification link. Anti-enumeration: no-op if no pending signup exists. */
     @Transactional
-    public void resendVerification(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        if (user.isEmailVerified()) {
-            return; // already verified — nothing to do
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            throw new IllegalArgumentException("This account has no email to verify.");
-        }
-        String token = newVerificationToken();
-        user.setEmailVerificationToken(token);
-        user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(24));
-        userRepository.save(user);
-        emailService.sendVerificationEmail(user.getEmail(),
-                verifyBaseUrl + "/verify-email?token=" + token);
+    public void resendVerification(String email) {
+        pendingRepository.findFirstByEmailOrderByCreatedAtDesc(email).ifPresent(pending -> {
+            pending.setToken(newVerificationToken());
+            pending.setExpiresAt(LocalDateTime.now().plusHours(24));
+            pendingRepository.save(pending);
+            emailService.sendVerificationEmail(email,
+                    verifyBaseUrl + "/verify-email?token=" + pending.getToken());
+        });
     }
 
     private String newVerificationToken() {
         return UUID.randomUUID().toString().replace("-", "")
                 + Long.toHexString(SECURE_RANDOM.nextLong());
+    }
+
+    /** Email a password-reset link. Anti-enumeration: always returns normally. */
+    @Transactional
+    public void forgotPassword(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            String token = newVerificationToken();
+            user.setPasswordResetToken(token);
+            user.setPasswordResetExpiresAt(LocalDateTime.now().plusHours(1));
+            userRepository.save(user);
+            emailService.sendPasswordResetEmail(email, verifyBaseUrl + "/reset-password?token=" + token);
+        });
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByPasswordResetToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired reset link."));
+        if (user.getPasswordResetExpiresAt() == null
+                || user.getPasswordResetExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("This reset link has expired. Request a new one.");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setTokenVersion(user.getTokenVersion() + 1); // invalidate any existing sessions
+        user.setPasswordResetToken(null);
+        user.setPasswordResetExpiresAt(null);
+        userRepository.save(user);
     }
 
     @Transactional
