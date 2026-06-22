@@ -1,5 +1,6 @@
 package com.towin.admin;
 
+import com.towin.account.AccountService;
 import com.towin.admin.dto.*;
 import com.towin.common.entity.User;
 import com.towin.common.enums.VerificationStatus;
@@ -7,7 +8,6 @@ import com.towin.common.repository.UserRepository;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.repository.ConnectionRepository;
-import com.towin.emergency.repository.EmergencyContactRepository;
 import com.towin.messaging.repository.MessageRepository;
 import com.towin.need.repository.NeedApplicationRepository;
 import com.towin.need.repository.NeedRepository;
@@ -37,10 +37,10 @@ public class AdminService {
     private final NeedRepository needRepository;
     private final NeedApplicationRepository needApplicationRepository;
     private final MessageRepository messageRepository;
-    private final EmergencyContactRepository emergencyContactRepository;
     private final TrustProgressionLogRepository trustProgressionLogRepository;
     private final S3Service s3Service;
     private final TrustScoreService trustScoreService;
+    private final AccountService accountService;
 
     public List<AdminUserResponse> getAllUsers() {
         return userRepository.findAll().stream()
@@ -114,29 +114,9 @@ public class AdminService {
         if (user.getRole() == com.towin.common.enums.UserRole.ADMIN) {
             throw new IllegalArgumentException("Cannot delete another admin account");
         }
-
-        String photoUrl = getPhotoUrl(userId);
-        if (photoUrl != null) s3Service.deleteFile(photoUrl);
-        if (user.getIdDocumentUrl() != null) s3Service.deleteFile(user.getIdDocumentUrl());
-
-        // Delete messages involving this user's connections or sent by this user
-        messageRepository.deleteByConnectionUserIdOrSenderId(userId);
-        // Delete reviews and reports referencing this user
-        reviewRepository.deleteByReviewerIdOrRevieweeId(userId, userId);
-        reportRepository.deleteByReporterIdOrReportedUserId(userId, userId);
-        // Delete need applications this user submitted as a helper
-        needApplicationRepository.deleteByHelperId(userId);
-        // Delete applications on needs posted by this elder (from other helpers), then delete the needs
-        needRepository.findByElderIdOrderByCreatedAtDesc(userId, org.springframework.data.domain.Pageable.unpaged())
-                .forEach(need -> needApplicationRepository.deleteByNeedId(need.getId()));
-        needRepository.deleteByElderId(userId);
-        // Delete emergency contacts, trust logs, connections, profiles
-        emergencyContactRepository.deleteByElderId(userId);
-        trustProgressionLogRepository.deleteByUserId(userId);
-        connectionRepository.deleteByUserId(userId);
-        elderProfileRepository.deleteByUserId(userId);
-        helperProfileRepository.deleteByUserId(userId);
-        userRepository.delete(user);
+        // The full cascade lives in AccountService so the admin delete and the
+        // self-service delete can never clean up different sets of records.
+        accountService.purgeUserData(userId);
     }
 
     public List<AdminVerificationResponse> getPendingVerifications() {
