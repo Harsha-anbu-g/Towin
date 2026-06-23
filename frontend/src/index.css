@@ -466,3 +466,30 @@ img {
   .landing-split-text .landing-title,
   .landing-split-text .landing-lead { text-align: center !important; }
 }
+
+/* ─── Reduced motion ──────────────────────────────────────────────────────
+   Respect the OS "Reduce Motion" accessibility setting. Important for older
+   users and anyone prone to motion discomfort (vestibular issues). We near-zero
+   the duration rather than `animation: none` on purpose: entrance reveals like
+   .bf start at opacity:0 and rely on the animation to fade in, so `none` would
+   leave that content invisible — collapsing the duration lets it resolve
+   instantly to its final, visible frame. Colors, gradients, shadows and layout
+   are untouched; only motion is removed. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Keyboard focus visibility (accessibility) ───────────────────────────
+   A clear focus ring on every interactive element for keyboard/switch users.
+   :focus-visible only triggers for keyboard navigation (never on mouse click),
+   so the look is unchanged for pointer users. Inputs keep their own focus glow;
+   this adds the ring buttons/links were missing. */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
