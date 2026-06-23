@@ -66,7 +66,7 @@ const TIER_COLORS = {
   'Community Champion': { bg: '#FFF7E6', color: '#92400e', border: '#FDE68A' },
   'Highly Trusted':     { bg: BG, color: BLUE, border: '#A8D4EC' },
   'Reliable':           { bg: BG, color: BLUE, border: '#A8D4EC' },
-  'Getting Started':    { bg: '#F3F4F6', color: '#5a6470', border: '#D1D5DB' },
+  'Getting Started':    { bg: '#F3F4F6', color: 'var(--ink-slate)', border: '#D1D5DB' },
   'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
 };
 
@@ -168,9 +168,9 @@ export default function UserProfile() {
 
         {error && (
           <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
+            background: 'var(--red-tint)', border: '1px solid #fecaca',
             borderRadius: '14px', padding: '16px 20px',
-            fontFamily: SF, fontSize: '15px', color: '#dc2626',
+            fontFamily: SF, fontSize: '15px', color: 'var(--red-error)',
           }}>
             {error}
           </div>
@@ -318,7 +318,7 @@ export default function UserProfile() {
                       {rv.tags?.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '6px' }}>
                           {rv.tags.map(t => (
-                            <span key={t} style={{ fontFamily: SF, fontSize: '12px', background: 'var(--surface)', color: '#5a6470', borderRadius: '9999px', padding: '3px 9px' }}>
+                            <span key={t} style={{ fontFamily: SF, fontSize: '12px', background: 'var(--surface)', color: 'var(--ink-slate)', borderRadius: '9999px', padding: '3px 9px' }}>
                               {t}
                             </span>
                           ))}

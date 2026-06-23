@@ -47,7 +47,7 @@ export default function ResetPassword() {
     return (
       <div style={{ ...wrap, textAlign: 'center' }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Invalid link</h1>
-        <p style={{ color: '#718096', marginBottom: 24 }}>This reset link is missing its token.</p>
+        <p style={{ color: 'var(--slate)', marginBottom: 24 }}>This reset link is missing its token.</p>
         <Link to="/forgot-password" style={linkStyle}>Request a new link</Link>
       </div>
     );
@@ -58,7 +58,7 @@ export default function ResetPassword() {
       <div style={{ ...wrap, textAlign: 'center' }}>
         <div style={{ fontSize: 44, marginBottom: 16 }}>✅</div>
         <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Password updated</h1>
-        <p style={{ color: '#718096', marginBottom: 24 }}>You can now log in with your new password.</p>
+        <p style={{ color: 'var(--slate)', marginBottom: 24 }}>You can now log in with your new password.</p>
         <Link to="/login" style={linkStyle}>Go to log in →</Link>
       </div>
     );
@@ -82,7 +82,7 @@ export default function ResetPassword() {
           onChange={e => { setConfirm(e.target.value); setError(''); }}
           style={input}
         />
-        {error && <p style={{ color: '#dc2626', fontSize: 14, marginBottom: 12 }}>{error}</p>}
+        {error && <p style={{ color: 'var(--red-error)', fontSize: 14, marginBottom: 12 }}>{error}</p>}
         <button type="submit" disabled={loading} style={btn}>
           {loading ? 'Saving…' : 'Update password'}
         </button>

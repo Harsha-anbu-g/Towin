@@ -24,10 +24,10 @@ const TIERS = [
 ];
 
 const TIER_COLORS = {
-  'Community Champion': { bg: '#FFF7E6', color: '#5a6470', border: '#FDE68A' },
+  'Community Champion': { bg: '#FFF7E6', color: 'var(--ink-slate)', border: '#FDE68A' },
   'Highly Trusted':     { bg: BG, color: BLUE, border: '#A8D4EC' },
   'Reliable':           { bg: BG, color: BLUE, border: '#A8D4EC' },
-  'Getting Started':    { bg: '#F3F4F6', color: '#5a6470', border: '#D1D5DB' },
+  'Getting Started':    { bg: '#F3F4F6', color: 'var(--ink-slate)', border: '#D1D5DB' },
   'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
 };
 
@@ -216,9 +216,9 @@ function Avatar({ name, photoUrl }) {
   return (
     <div style={{
       width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-      background: '#E6F2FA', border: '1px solid #D8EAF4',
+      background: 'var(--blue-tint)', border: '1px solid #D8EAF4',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: SFD, fontSize: '16px', fontWeight: 700, color: '#2E7DA6',
+      fontFamily: SFD, fontSize: '16px', fontWeight: 700, color: 'var(--blue-deep)',
     }}>{initial}</div>
   );
 }
@@ -299,7 +299,7 @@ export default function Trust() {
         )}
 
         {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '14px', padding: '16px 20px', fontFamily: SF, fontSize: '15px', color: '#dc2626' }}>
+          <div style={{ background: 'var(--red-tint)', border: '1px solid #fecaca', borderRadius: '14px', padding: '16px 20px', fontFamily: SF, fontSize: '15px', color: 'var(--red-error)' }}>
             {error}
           </div>
         )}

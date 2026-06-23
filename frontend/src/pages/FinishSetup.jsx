@@ -37,7 +37,7 @@ export default function FinishSetup() {
         justifyContent: 'center', height: '100%', padding: '40px 24px',
         fontFamily: SF, textAlign: 'center',
       }}>
-        <p style={{ color: '#5a6470', marginBottom: '20px' }}>
+        <p style={{ color: 'var(--ink-slate)', marginBottom: '20px' }}>
           This page is only accessible after signing in with Google.
         </p>
         <Link to="/login" style={{
@@ -113,9 +113,9 @@ export default function FinishSetup() {
 
         {googleEmail && (
           <div style={{
-            background: '#EAF5FB', border: `1px solid ${BORDER}`,
+            background: 'var(--blue-wash)', border: `1px solid ${BORDER}`,
             borderRadius: '10px', padding: '10px 14px',
-            fontSize: '14px', color: '#3D8AB0', marginBottom: '24px',
+            fontSize: '14px', color: 'var(--blue-teal)', marginBottom: '24px',
             textAlign: 'center',
           }}>
             Signing in as <strong>{googleEmail}</strong>
@@ -124,9 +124,9 @@ export default function FinishSetup() {
 
         {error && (
           <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
+            background: 'var(--red-tint)', border: '1px solid #fecaca',
             borderRadius: '11px', padding: '12px 16px',
-            fontSize: '15px', color: '#dc2626', marginBottom: '20px',
+            fontSize: '15px', color: 'var(--red-error)', marginBottom: '20px',
           }}>
             {error}
           </div>
@@ -187,7 +187,7 @@ export default function FinishSetup() {
                 style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
               />
             </div>
-            {fieldErrors.username && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.username}</p>}
+            {fieldErrors.username && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.username}</p>}
             <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
               3-20 characters. Visible to others on your profile.
             </p>
@@ -210,7 +210,7 @@ export default function FinishSetup() {
               style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
             />
             {fieldErrors.phone && (
-              <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.phone}</p>
+              <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.phone}</p>
             )}
             <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
               Only shared after both people reach the Phone Ready trust stage.

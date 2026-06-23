@@ -96,7 +96,7 @@ export default function ChangePassword() {
                     placeholder="Type it again" className="field" required style={inputStyle} />
                 </div>
                 {msg && (
-                  <p style={{ fontSize: '14px', color: '#5a6470', fontWeight: 500, margin: 0 }}>
+                  <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, margin: 0 }}>
                     {msg}
                   </p>
                 )}

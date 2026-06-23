@@ -153,7 +153,7 @@ export default function NavBar() {
         {/* Brand */}
         <Link to="/dashboard" style={{
           fontSize: '21px', fontWeight: 600, fontFamily: SFD,
-          letterSpacing: '-0.374px', color: '#1a5c2e',
+          letterSpacing: '-0.374px', color: 'var(--green-deep)',
           textDecoration: 'none', flexShrink: 0,
           display: 'inline-flex', alignItems: 'center', gap: '8px',
           marginRight: isMobile ? 0 : '32px',
@@ -171,7 +171,7 @@ export default function NavBar() {
               {unread > 0 && (
                 <span style={{
                   position: 'absolute', top: '6px', right: '6px',
-                  background: '#9b3535', color: '#fff',
+                  background: 'var(--red-deep)', color: '#fff',
                   fontSize: '10px', fontWeight: 700, fontFamily: SF,
                   borderRadius: '9999px', padding: '1px 5px',
                   minWidth: '16px', textAlign: 'center', pointerEvents: 'none',
@@ -286,7 +286,7 @@ export default function NavBar() {
             {unread > 0 && (
               <Link to="/messages" style={{ textDecoration: 'none' }}>
                 <span style={{
-                  background: '#9b3535', color: '#fff', fontSize: '12px',
+                  background: 'var(--red-deep)', color: '#fff', fontSize: '12px',
                   fontWeight: 700, fontFamily: SF, borderRadius: '9999px',
                   padding: '3px 8px',
                 }}>{unread}</span>

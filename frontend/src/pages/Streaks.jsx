@@ -254,7 +254,7 @@ export default function Streaks() {
                   <div>
                     <p style={{
                       fontFamily: SF, fontSize: '34px', fontWeight: 600,
-                      color: '#1a5c2e', lineHeight: 1, margin: '0 0 6px',
+                      color: 'var(--green-deep)', lineHeight: 1, margin: '0 0 6px',
                       letterSpacing: '-1px',
                     }}>
                       {age.totalDays.toLocaleString()}
@@ -312,7 +312,7 @@ export default function Streaks() {
                   borderRadius: '14px', padding: '14px 20px',
                   textAlign: 'center',
                 }}>
-                  <p style={{ fontSize: '16px', color: '#5a6470', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
+                  <p style={{ fontSize: '16px', color: 'var(--ink-slate)', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
                     You have already checked in today.
                   </p>
                   <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: SFT, margin: '4px 0 0' }}>

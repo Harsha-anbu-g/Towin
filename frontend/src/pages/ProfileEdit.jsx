@@ -382,7 +382,7 @@ export default function ProfileEdit() {
                           background: 'var(--surface)', border: '1.5px solid #e0e0e0',
                           fontSize: '15px', color: 'var(--ink)', lineHeight: 1.6,
                         }}>
-                          <span style={{ fontWeight: 600, fontSize: '20px', color: '#1a5c2e' }}>
+                          <span style={{ fontWeight: 600, fontSize: '20px', color: 'var(--green-deep)' }}>
                             {age.years}
                           </span>
                           <span style={{ color: 'var(--ink-3)' }}> years old</span>
@@ -640,7 +640,7 @@ export default function ProfileEdit() {
                             </p>
                           </div>
                           <button type="button" onClick={() => setEmPendingRemove(c)} style={{
-                            flexShrink: 0, background: 'transparent', color: '#9b3535',
+                            flexShrink: 0, background: 'transparent', color: 'var(--red-deep)',
                             border: '1.5px solid #e0e0e0', borderRadius: '9999px',
                             padding: '6px 14px', fontSize: '14px', fontWeight: 600,
                             fontFamily: SFText, cursor: 'pointer',

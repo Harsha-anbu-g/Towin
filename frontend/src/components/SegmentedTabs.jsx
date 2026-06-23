@@ -58,10 +58,10 @@ export default function SegmentedTabs({ segments, value, onChange }) {
 export function SegmentEmpty({ icon, children }) {
   return (
     <div style={{ background: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '18px', padding: '40px 24px', textAlign: 'center' }}>
-      <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#EAF5FB', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--blue-wash)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {icon}
       </div>
-      <p style={{ fontSize: '16px', color: '#5a6470', lineHeight: 1.6, maxWidth: '380px', margin: '0 auto' }}>{children}</p>
+      <p style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.6, maxWidth: '380px', margin: '0 auto' }}>{children}</p>
     </div>
   );
 }

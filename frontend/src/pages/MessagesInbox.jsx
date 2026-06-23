@@ -36,7 +36,7 @@ const Avatar = ({ name, size = 52 }) => (
     width: `${size}px`,
     height: `${size}px`,
     borderRadius: '50%',
-    background: '#EAF5FB',
+    background: 'var(--blue-wash)',
     border: '1px solid #BFD9EA',
     color: 'var(--blue)',
     flexShrink: 0,
@@ -130,7 +130,7 @@ export default function MessagesInbox() {
             }}>
               <div style={{
                 width: '64px', height: '64px', borderRadius: '50%',
-                background: '#EAF5FB', margin: '0 auto 16px',
+                background: 'var(--blue-wash)', margin: '0 auto 16px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

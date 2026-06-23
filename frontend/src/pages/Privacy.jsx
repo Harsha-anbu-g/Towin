@@ -11,7 +11,7 @@ export default function Privacy() {
         ← Back
       </button>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Privacy Policy</h1>
-      <p style={{ color: '#718096', fontSize: 15, marginBottom: 32 }}>Last updated: June 2026</p>
+      <p style={{ color: 'var(--slate)', fontSize: 15, marginBottom: 32 }}>Last updated: June 2026</p>
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>What we collect</h2>

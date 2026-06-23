@@ -19,7 +19,7 @@ export default function PeekabooCard() {
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        background: '#EBF6EE',
+        background: 'var(--green-tint)',
         color: '#3D8B5A',
         border: '1.5px solid #BFE0C9',
         borderRadius: '9999px',

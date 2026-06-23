@@ -40,7 +40,7 @@ export default function ForgotPassword() {
       <div style={{ ...wrap, textAlign: 'center' }}>
         <div style={{ fontSize: 44, marginBottom: 16 }}>✉️</div>
         <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Check your email</h1>
-        <p style={{ color: '#718096', marginBottom: 24 }}>
+        <p style={{ color: 'var(--slate)', marginBottom: 24 }}>
           If an account exists for that email, we've sent a link to reset your password.
           Be sure to check your Spam folder.
         </p>
@@ -52,7 +52,7 @@ export default function ForgotPassword() {
   return (
     <div style={wrap}>
       <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Reset your password</h1>
-      <p style={{ color: '#718096', marginBottom: 24, fontSize: 16 }}>
+      <p style={{ color: 'var(--slate)', marginBottom: 24, fontSize: 16 }}>
         Enter your email and we'll send you a link to set a new password.
       </p>
       <form onSubmit={submit}>

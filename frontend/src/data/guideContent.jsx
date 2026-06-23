@@ -22,7 +22,7 @@ function StepTitle({ children }) {
 function Lead({ children }) {
   return (
     <p style={{
-      fontFamily: SF, fontSize: '16px', color: '#5a6470',
+      fontFamily: SF, fontSize: '16px', color: 'var(--ink-slate)',
       lineHeight: 1.6, margin: '0 0 16px',
     }}>{children}</p>
   );
@@ -70,7 +70,7 @@ function MiniCard({ title, children }) {
       <p style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: BLUE, margin: '0 0 5px' }}>
         {title}
       </p>
-      <p style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
+      <p style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)', lineHeight: 1.55, margin: 0 }}>
         {children}
       </p>
     </div>
@@ -90,7 +90,7 @@ function NoteBox({ children }) {
     <div style={{
       marginTop: '18px', background: 'var(--surface-pearl)', border: '1px solid #e8e8ed',
       borderRadius: '14px', padding: '14px 16px',
-      fontFamily: SF, fontSize: '14px', color: '#5a6470', lineHeight: 1.6,
+      fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)', lineHeight: 1.6,
     }}>{children}</div>
   );
 }

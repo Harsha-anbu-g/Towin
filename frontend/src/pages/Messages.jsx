@@ -194,7 +194,7 @@ export default function Messages() {
             <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ) : (
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '16px', fontWeight: 700, color: '#2E7DA6', fontFamily: SF }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '16px', fontWeight: 700, color: 'var(--blue-deep)', fontFamily: SF }}>
             {initials(otherName)}
           </div>
         )}
@@ -204,9 +204,9 @@ export default function Messages() {
             {otherName || 'Conversation'}
           </p>
           {trustLevel && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DA6', flexShrink: 0 }} />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#2E7DA6' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--blue-deep)', flexShrink: 0 }} />
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--blue-deep)' }}>
                 {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ` · Trust ${otherTrustScore}` : ''}
               </span>
             </div>
@@ -225,7 +225,7 @@ export default function Messages() {
       {trustLevel && (
         <div style={{ background: '#F4FAFD', borderBottom: '1px solid #E2EEF5', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <p style={{ fontSize: '14px', color: '#5a6470', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
+          <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
             {banner ? banner.text : `You're at the ${TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')} stage with ${otherName}.`}
           </p>
         </div>
@@ -300,7 +300,7 @@ export default function Messages() {
                 <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             ) : (
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', fontWeight: 600, color: '#5a6470', fontFamily: SF }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', fontWeight: 600, color: 'var(--ink-slate)', fontFamily: SF }}>
                 {initials(otherName)}
               </div>
             )}
@@ -345,7 +345,7 @@ export default function Messages() {
                       <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: '#2E7DA6', fontFamily: SF }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: 'var(--blue-deep)', fontFamily: SF }}>
                       {initials(otherName)}
                     </div>
                   )
