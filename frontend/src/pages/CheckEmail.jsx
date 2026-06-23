@@ -47,7 +47,7 @@ export default function CheckEmail() {
 
       <div style={{
         background: '#FBEED9', color: '#7a5b1e', borderRadius: 10,
-        padding: '12px 16px', marginBottom: 28, fontSize: 15, lineHeight: 1.5, textAlign: 'left',
+        padding: '12px 16px', marginBottom: 28, fontSize: 'var(--text-sm)', lineHeight: 1.5, textAlign: 'left',
       }}>
         📁 <strong>Can't find it?</strong> Please check your <strong>Spam</strong> or <strong>Junk</strong> folder —
         the ToWin email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox.
@@ -56,7 +56,7 @@ export default function CheckEmail() {
       <button onClick={resend} disabled={sending} style={primaryBtn}>
         {sending ? 'Sending…' : 'Resend email'}
       </button>
-      <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 15 }}>
+      <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' }}>
         Back to log in
       </Link>
     </div>

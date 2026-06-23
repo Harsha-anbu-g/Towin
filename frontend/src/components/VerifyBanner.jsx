@@ -36,7 +36,7 @@ export default function VerifyBanner() {
       gap: 10,
       flexWrap: 'wrap',
       padding: '10px 20px',
-      fontSize: 15,
+      fontSize: 'var(--text-sm)',
       fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
       boxSizing: 'border-box',
       zIndex: 1000,

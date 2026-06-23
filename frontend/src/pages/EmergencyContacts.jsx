@@ -170,7 +170,7 @@ export default function EmergencyContacts() {
             <p style={{
               textAlign: 'center',
               marginTop: '12px',
-              fontSize: '15px',
+              fontSize: 'var(--text-sm)',
               fontWeight: 500,
               color: sosSent ? '#3D8AB0' : '#cc0000',
             }}>
@@ -192,7 +192,7 @@ export default function EmergencyContacts() {
             marginBottom: '20px',
           }}>
             <h2 style={{
-              fontSize: '28px',
+              fontSize: 'var(--text-xl)',
               fontWeight: 600,
               color: 'var(--ink)',
               fontFamily: SF,
@@ -212,7 +212,7 @@ export default function EmergencyContacts() {
                   border: 'none',
                   borderRadius: '9999px',
                   padding: '8px 20px',
-                  fontSize: '15px',
+                  fontSize: 'var(--text-sm)',
                   fontWeight: 600,
                   fontFamily: SFText,
                   cursor: 'pointer',
@@ -252,7 +252,7 @@ export default function EmergencyContacts() {
               <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
                 No contacts yet
               </p>
-              <p style={{ fontSize: '15px', color: 'var(--ink-3)' }}>Add up to 3 people who care about you.</p>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>Add up to 3 people who care about you.</p>
             </div>
           </BlurFade>
         )}
@@ -276,18 +276,18 @@ export default function EmergencyContacts() {
                     {/* Default human-silhouette avatar */}
                     <DefaultAvatar color={accent} size={52} />
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, marginBottom: '4px' }}>
+                      <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, marginBottom: '4px' }}>
                         {c.name}
                       </p>
                       {c.relationship && (
-                        <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '6px' }}>
+                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '6px' }}>
                           {c.relationship}
                         </p>
                       )}
                       <p style={{ fontSize: '16px', color: 'var(--ink)', fontWeight: 500, marginBottom: '2px' }}>
                         {c.phone}
                       </p>
-                      <p style={{ fontSize: '13px', color: 'var(--ink-4)' }}>
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>
                         Alerts after {c.inactivityDays} inactive days
                       </p>
                     </div>
@@ -300,7 +300,7 @@ export default function EmergencyContacts() {
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '10px 0',
-                      fontSize: '15px',
+                      fontSize: 'var(--text-sm)',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',
@@ -320,7 +320,7 @@ export default function EmergencyContacts() {
                         border: '1.5px solid #e0e0e0',
                         borderRadius: '9999px',
                         padding: '10px 0',
-                        fontSize: '15px',
+                        fontSize: 'var(--text-sm)',
                         fontWeight: 600,
                         fontFamily: SFText,
                         cursor: 'pointer',
@@ -345,7 +345,7 @@ export default function EmergencyContacts() {
               marginBottom: '20px',
             }}>
               <p style={{
-                fontSize: '22px',
+                fontSize: 'var(--text-lg)',
                 fontWeight: 600,
                 color: 'var(--ink)',
                 fontFamily: SF,
@@ -384,7 +384,7 @@ export default function EmergencyContacts() {
                   </div>
                 </div>
                 {msg && (
-                  <p style={{ fontSize: '15px', color: msg.includes('added') ? '#3D8AB0' : '#cc0000', fontWeight: 500 }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('added') ? '#3D8AB0' : '#cc0000', fontWeight: 500 }}>
                     {msg}
                   </p>
                 )}

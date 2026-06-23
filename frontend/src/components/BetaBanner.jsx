@@ -25,7 +25,7 @@ export default function BetaBanner() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '10px 20px',
-      fontSize: '15px',
+      fontSize: 'var(--text-sm)',
       fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
       position: 'relative',
       zIndex: 1000,
@@ -38,7 +38,7 @@ export default function BetaBanner() {
           style={{
             background: 'none', border: 'none', color: '#fff',
             fontWeight: 600, cursor: 'pointer', textDecoration: 'underline',
-            fontSize: '15px', fontFamily: 'inherit', padding: 0,
+            fontSize: 'var(--text-sm)', fontFamily: 'inherit', padding: 0,
           }}
         >
           Give Feedback →
@@ -50,7 +50,7 @@ export default function BetaBanner() {
         style={{
           position: 'absolute', right: '16px',
           background: 'none', border: 'none', color: '#fff',
-          fontSize: '18px', cursor: 'pointer', lineHeight: 1,
+          fontSize: 'var(--text-base)', cursor: 'pointer', lineHeight: 1,
         }}
       >
         ×

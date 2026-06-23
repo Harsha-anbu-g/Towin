@@ -80,7 +80,7 @@ export const MinimalistHero = ({
           style={{
             padding: '10px 22px', borderRadius: '9999px',
             background: 'var(--blue)', color: '#fff', border: 'none',
-            fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+            fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer',
             textDecoration: 'none', display: 'inline-block',
             transition: 'background 0.15s',
           }}
@@ -110,7 +110,7 @@ export const MinimalistHero = ({
             {mainText}
           </p>
           <a href={ctaHref} style={{
-            marginTop: '20px', display: 'inline-block', fontSize: '15px', fontWeight: 600,
+            marginTop: '20px', display: 'inline-block', fontSize: 'var(--text-sm)', fontWeight: 600,
             color: 'var(--blue)', textDecoration: 'underline', textUnderlineOffset: '3px',
           }}>
             {ctaLabel} →

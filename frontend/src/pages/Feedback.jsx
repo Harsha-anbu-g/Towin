@@ -129,7 +129,7 @@ export default function Feedback() {
             background: 'var(--blue-wash)', border: '1px solid #BFD9EA', borderRadius: '14px',
             padding: '14px 20px', marginBottom: '16px',
           }}>
-            <p style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink)', margin: 0, lineHeight: 1.55 }}>
+            <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0, lineHeight: 1.55 }}>
               <strong>ToWin is an early prototype.</strong> You&apos;re trying a work in
               progress. A full mobile app is planned for the future. Your feedback
               here directly shapes what gets built.
@@ -137,7 +137,7 @@ export default function Feedback() {
           </div>
           {submitted ? (
             <div className="fb-card" style={{ textAlign: 'center', padding: '64px 36px' }}>
-              <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>
+              <h2 style={{ fontFamily: SF, fontSize: 'var(--text-xl)', fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>
                 Thank you
               </h2>
               <p style={{ fontFamily: SFText, fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
@@ -149,13 +149,13 @@ export default function Feedback() {
               <h2 style={{ fontFamily: SF, fontSize: '26px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 4px' }}>
                 Share Your Feedback
               </h2>
-              <p style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink-3)', margin: '0 0 24px' }}>
+              <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '0 0 24px' }}>
                 All fields are optional except your message.
               </p>
               {error && (
                 <div style={{
                   background: 'var(--red-tint)', border: '1px solid #fecaca', borderRadius: '10px',
-                  padding: '12px 16px', fontSize: '15px', color: 'var(--red-error)',
+                  padding: '12px 16px', fontSize: 'var(--text-sm)', color: 'var(--red-error)',
                   marginBottom: '20px', fontFamily: SFText,
                 }}>
                   {error}
@@ -182,7 +182,7 @@ export default function Feedback() {
                 <div style={{ height: '1px', background: 'var(--border)' }} />
                 <div>
                   <label style={labelStyle}>Message <span style={{ color: 'var(--red-error)' }}>*</span></label>
-                  <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
+                  <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
                     Be honest! Include <strong style={{ color: 'var(--ink)' }}>at least one thing you didn't like</strong>. That's where the real value is.
                   </p>
                   <textarea required rows={7} style={{ ...inputStyle, resize: 'vertical' }}
@@ -199,7 +199,7 @@ export default function Feedback() {
                   <div className="fb-ratings">
                     {RATINGS.map(({ key, label }) => (
                       <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        <span style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink)' }}>{label}</span>
+                        <span style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)' }}>{label}</span>
                         <StarRating value={ratings[key] || 0} onChange={val => setRating(key, val)} />
                       </div>
                     ))}
@@ -242,13 +242,13 @@ export default function Feedback() {
             <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue)', fontWeight: 600, margin: '0 0 2px' }}>
               Full-Stack Engineer · Aspiring Entrepreneur · AI-Driven Developer
             </p>
-            <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 16px' }}>
+            <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 16px' }}>
               Master's in Applied Computer Science · Concordia University, Montreal
             </p>
 
             <div style={{ height: '1px', background: 'var(--border)', margin: '0 0 16px' }} />
 
-            <p style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink)', fontWeight: 600, margin: '0 0 6px', lineHeight: 1.5 }}>
+            <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)', fontWeight: 600, margin: '0 0 6px', lineHeight: 1.5 }}>
               This isn't a university project. ToWin is my future startup.
             </p>
             <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)', margin: '0 0 20px', lineHeight: 1.6 }}>
@@ -275,8 +275,8 @@ export default function Feedback() {
           {/* Portfolio link */}
           <div className="fb-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '18px 24px' }}>
             <div>
-              <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 2px' }}>Want to know more?</p>
-              <p style={{ fontFamily: SF, fontSize: '15px', fontWeight: 700, color: 'var(--trust-gold)', margin: 0 }}>Visit my portfolio</p>
+              <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 2px' }}>Want to know more?</p>
+              <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--trust-gold)', margin: 0 }}>Visit my portfolio</p>
             </div>
             <a
               href="https://portfolioharsha.vercel.app/"

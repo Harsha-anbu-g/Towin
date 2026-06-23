@@ -43,7 +43,7 @@ function Bullets({ items }) {
       {items.map((it, i) => (
         <li key={i} style={{
           display: 'flex', gap: '10px', alignItems: 'flex-start',
-          fontFamily: SF, fontSize: '15px', color: 'var(--ink)', lineHeight: 1.5,
+          fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink)', lineHeight: 1.5,
         }}>
           <span style={{
             flexShrink: 0, width: '22px', height: '22px', borderRadius: '50%',
@@ -67,7 +67,7 @@ function MiniCard({ title, children }) {
       background: WASH, border: `1px solid ${BORDER}`, borderRadius: '14px',
       padding: '16px 18px',
     }}>
-      <p style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: BLUE, margin: '0 0 5px' }}>
+      <p style={{ fontFamily: SFD, fontSize: 'var(--text-sm)', fontWeight: 600, color: BLUE, margin: '0 0 5px' }}>
         {title}
       </p>
       <p style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)', lineHeight: 1.55, margin: 0 }}>
@@ -111,7 +111,7 @@ export const STEPS = [
           so no one feels alone and everyday help is easy to find.
         </Lead>
         <SubHead>Why we built it</SubHead>
-        <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink)', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink)', lineHeight: 1.6, margin: 0 }}>
           Many older people have no safe, trusted way to meet new friends or get a hand with
           daily tasks. ToWin gives them one, built around trust that grows one small step
           at a time, so no one ever has to rush or feel unsafe.
@@ -299,7 +299,7 @@ export const STEPS = [
           onClick={restart}
           style={{
             width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: SF, fontSize: '15px', color: 'var(--ink-3)', marginTop: '14px',
+            fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginTop: '14px',
             textDecoration: 'underline', textUnderlineOffset: '3px',
           }}
         >

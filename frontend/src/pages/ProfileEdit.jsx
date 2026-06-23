@@ -256,7 +256,7 @@ export default function ProfileEdit() {
   };
 
   const sectionHeader = (title) => (
-    <p style={{ fontSize: '22px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
+    <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
       {title}
     </p>
   );
@@ -286,7 +286,7 @@ export default function ProfileEdit() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '28px',
+            fontSize: 'var(--text-xl)',
             fontWeight: 600,
             color: '#fff',
             position: 'relative',
@@ -302,7 +302,7 @@ export default function ProfileEdit() {
             <input type="file" accept="image/*" id="photo-upload" onChange={e => setPhotoFile(e.target.files[0])}
               style={{ display: 'none' }} />
             <label htmlFor="photo-upload" style={{
-              fontSize: '15px',
+              fontSize: 'var(--text-sm)',
               fontWeight: 600,
               color: 'var(--blue)',
               cursor: 'pointer',
@@ -322,7 +322,7 @@ export default function ProfileEdit() {
                 border: 'none',
                 borderRadius: '9999px',
                 padding: '6px 16px',
-                fontSize: '15px',
+                fontSize: 'var(--text-sm)',
                 fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: SFText,
@@ -347,7 +347,7 @@ export default function ProfileEdit() {
             {isElder ? 'Elder' : 'Helper'}
           </p>
           {profileData?.username && (
-            <p style={{ fontSize: '15px', color: 'var(--ink-4)', marginBottom: '12px', marginTop: '0' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', marginBottom: '12px', marginTop: '0' }}>
               @{profileData.username}
             </p>
           )}
@@ -380,14 +380,14 @@ export default function ProfileEdit() {
                         <div style={{
                           padding: '10px 14px', borderRadius: '12px',
                           background: 'var(--surface)', border: '1.5px solid #e0e0e0',
-                          fontSize: '15px', color: 'var(--ink)', lineHeight: 1.6,
+                          fontSize: 'var(--text-sm)', color: 'var(--ink)', lineHeight: 1.6,
                         }}>
                           <span style={{ fontWeight: 600, fontSize: '20px', color: 'var(--green-deep)' }}>
                             {age.years}
                           </span>
                           <span style={{ color: 'var(--ink-3)' }}> years old</span>
                           <br />
-                          <span style={{ fontSize: '13px', color: 'var(--ink-4)' }}>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>
                             {age.totalDays.toLocaleString()} days · {age.months} mo {age.days} d
                           </span>
                         </div>
@@ -487,7 +487,7 @@ export default function ProfileEdit() {
                   </FieldRow>
 
                   {msg && (
-                    <p style={{ fontSize: '15px', color: msg.includes('saved') ? '#4FA3CE' : '#5a6470', fontWeight: 500, marginTop: '8px' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('saved') ? '#4FA3CE' : '#5a6470', fontWeight: 500, marginTop: '8px' }}>
                       {msg}
                     </p>
                   )}
@@ -532,7 +532,7 @@ export default function ProfileEdit() {
                         <Phone size={18} color={SKY} strokeWidth={2} />
                       </div>
                       <div>
-                        <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Phone Number</p>
+                        <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>Phone Number</p>
                         <p style={{ fontSize: '14px', color: 'var(--ink-3)' }}>{profileData?.phone || 'No number on file'}</p>
                       </div>
                     </div>
@@ -544,7 +544,7 @@ export default function ProfileEdit() {
 
                   {!editingPhone ? (
                     <button onClick={() => { setEditingPhone(true); setNewPhone(profileData?.phone || ''); }}
-                      className="ghost-btn" style={{ alignSelf: 'flex-start', fontSize: '13px', padding: '5px 14px' }}>
+                      className="ghost-btn" style={{ alignSelf: 'flex-start', fontSize: 'var(--text-xs)', padding: '5px 14px' }}>
                       Change number
                     </button>
                   ) : (
@@ -579,7 +579,7 @@ export default function ProfileEdit() {
                         <ShieldCheck size={18} color={SKY} strokeWidth={2} />
                       </div>
                       <div>
-                        <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>ID Document</p>
+                        <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>ID Document</p>
                         <p style={{ fontSize: '14px', color: 'var(--ink-3)' }}>Driver's licence or passport</p>
                       </div>
                     </div>
@@ -610,19 +610,19 @@ export default function ProfileEdit() {
             {isElder && (
               <BlurFade delay={4}>
                 <div style={card}>
-                  <p style={{ fontSize: '22px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
+                  <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
                     Emergency Contacts
                     <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-4)', marginLeft: '8px' }}>
                       ({emContacts.length}/3)
                     </span>
                   </p>
-                  <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.5 }}>
                     People we'll alert if you don't check in for several days, or when you press SOS.
                   </p>
 
                   {emContacts.length === 0 ? (
                     <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '15px', color: MUTED, margin: 0 }}>
+                      <p style={{ fontSize: 'var(--text-sm)', color: MUTED, margin: 0 }}>
                         No emergency contacts yet. Add up to 3 people who care about you.
                       </p>
                     </div>
@@ -634,7 +634,7 @@ export default function ProfileEdit() {
                             <Siren size={18} color={SKY} strokeWidth={2} />
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>{c.name}</p>
+                            <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>{c.name}</p>
                             <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '1px 0 0' }}>
                               {c.relationship ? `${c.relationship} · ` : ''}{c.phone}
                             </p>
@@ -685,7 +685,7 @@ export default function ProfileEdit() {
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button type="submit" disabled={emAdding} style={{
                             flex: 1, background: SKY, color: '#fff', border: 'none',
-                            borderRadius: '9999px', padding: '10px 0', fontSize: '15px',
+                            borderRadius: '9999px', padding: '10px 0', fontSize: 'var(--text-sm)',
                             fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                           }}>
                             {emAdding ? 'Adding…' : 'Add Contact'}
@@ -693,7 +693,7 @@ export default function ProfileEdit() {
                           <button type="button" onClick={() => { setEmShowAdd(false); setEmMsg(''); }} style={{
                             flex: 1, background: 'transparent', color: 'var(--ink-3)',
                             border: '1.5px solid #e0e0e0', borderRadius: '9999px', padding: '10px 0',
-                            fontSize: '15px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                            fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                           }}>
                             Cancel
                           </button>
@@ -703,7 +703,7 @@ export default function ProfileEdit() {
                       <button type="button" onClick={() => { setEmShowAdd(true); setEmMsg(''); }} style={{
                         width: '100%', marginTop: '16px', background: '#ffffff', color: SKY,
                         border: `1.5px solid ${SKY}`, borderRadius: '9999px', padding: '10px 0',
-                        fontSize: '15px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                        fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                       }}>
                         + Add Contact
                       </button>
@@ -716,7 +716,7 @@ export default function ProfileEdit() {
             {/* Reviews received */}
             <BlurFade delay={4}>
               <div style={card}>
-                <p style={{ fontSize: '22px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
+                <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '20px' }}>
                   Reviews Received {reviews.length > 0 && (
                     <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-4)' }}>({reviews.length})</span>
                   )}
@@ -726,14 +726,14 @@ export default function ProfileEdit() {
                     <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: LEAF_TINT, border: `1px solid ${LEAF_BORDER}`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <StarIcon size={20} color={STAR_GOLD} strokeWidth={2} fill={STAR_GOLD} />
                     </div>
-                    <p style={{ fontSize: '15px', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {reviews.map(r => (
                     <div key={r.id} style={{ border: '1px solid #e0e0e0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>{r.reviewerName}</p>
+                        <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>{r.reviewerName}</p>
                         <Stars rating={r.rating} />
                       </div>
                       {r.tags?.length > 0 && (
@@ -743,8 +743,8 @@ export default function ProfileEdit() {
                           ))}
                         </div>
                       )}
-                      {r.comment && <p style={{ fontSize: '15px', color: 'var(--ink-3)', lineHeight: 1.6 }}>{r.comment}</p>}
-                      <p style={{ fontSize: '13px', color: 'var(--ink-4)' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
+                      {r.comment && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', lineHeight: 1.6 }}>{r.comment}</p>}
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
                     </div>
                   ))}
                 </div>
@@ -759,7 +759,7 @@ export default function ProfileEdit() {
                 padding: '20px 24px',
                 border: `1px solid ${BORDER}`,
               }}>
-                <p style={{ fontSize: '15px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '14px' }}>
+                <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '14px' }}>
                   Account
                 </p>
 
@@ -767,7 +767,7 @@ export default function ProfileEdit() {
                 {profileData?.username && (
                   <div style={{ marginBottom: '10px', padding: '10px 14px', background: 'var(--surface)', borderRadius: '10px' }}>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 2px' }}>Username</p>
-                    <p style={{ fontSize: '15px', color: 'var(--ink)', margin: 0 }}>@{profileData.username}</p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0 }}>@{profileData.username}</p>
                   </div>
                 )}
 
@@ -782,7 +782,7 @@ export default function ProfileEdit() {
                     </svg>
                     <div>
                       <p style={{ fontSize: '12px', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 1px' }}>Linked Google Account</p>
-                      <p style={{ fontSize: '15px', color: 'var(--ink)', margin: 0 }}>{profileData.email}</p>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0 }}>{profileData.email}</p>
                     </div>
                   </div>
                 )}
@@ -799,7 +799,7 @@ export default function ProfileEdit() {
                       border: `1.5px solid ${SKY}`,
                       borderRadius: '9999px',
                       padding: '10px 0',
-                      fontSize: '15px',
+                      fontSize: 'var(--text-sm)',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',
@@ -821,7 +821,7 @@ export default function ProfileEdit() {
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '10px 0',
-                      fontSize: '15px',
+                      fontSize: 'var(--text-sm)',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',

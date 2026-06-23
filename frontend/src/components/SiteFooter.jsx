@@ -23,7 +23,7 @@ export default function SiteFooter({ style }) {
     }}>
       <span style={{
         fontFamily: SF,
-        fontSize: '13px',
+        fontSize: 'var(--text-xs)',
         color: '#8e8e93',
         letterSpacing: '0.1px',
       }}>

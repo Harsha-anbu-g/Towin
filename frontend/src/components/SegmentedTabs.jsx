@@ -42,7 +42,7 @@ export default function SegmentedTabs({ segments, value, onChange }) {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-                borderRadius: '9999px', fontSize: '13px', fontWeight: 700, lineHeight: 1, flexShrink: 0,
+                borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, lineHeight: 1, flexShrink: 0,
                 color: active ? '#ffffff' : '#9aa4af',
                 background: active ? '#4FA3CE' : '#e6e8ec',
               }}>{seg.count}</span>

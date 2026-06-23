@@ -82,7 +82,7 @@ function ScoreRing({ score }) {
         transform="rotate(-90 44 44)"
         style={{ transition: 'stroke-dasharray 0.7s ease' }} />
       <text x="44" y="40" textAnchor="middle"
-        style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 600, fill: '#1d1d1f' }}>
+        style={{ fontFamily: SFD, fontSize: 'var(--text-base)', fontWeight: 600, fill: '#1d1d1f' }}>
         {score ?? 0}
       </text>
       <text x="44" y="54" textAnchor="middle"
@@ -147,7 +147,7 @@ export default function UserProfile() {
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: '6px',
-            fontFamily: SF, fontSize: '15px', color: SKY, fontWeight: 600,
+            fontFamily: SF, fontSize: 'var(--text-sm)', color: SKY, fontWeight: 600,
             marginBottom: '24px', padding: 0,
           }}
         >
@@ -170,7 +170,7 @@ export default function UserProfile() {
           <div style={{
             background: 'var(--red-tint)', border: '1px solid #fecaca',
             borderRadius: '14px', padding: '16px 20px',
-            fontFamily: SF, fontSize: '15px', color: 'var(--red-error)',
+            fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--red-error)',
           }}>
             {error}
           </div>
@@ -191,18 +191,18 @@ export default function UserProfile() {
                     {profile.name || 'User'}
                   </h1>
                   {profile.username && (
-                    <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-3)', margin: '0 0 8px' }}>
+                    <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '0 0 8px' }}>
                       @{profile.username}
                     </p>
                   )}
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {profile.verificationStatus === 'VERIFIED' && (
-                      <span style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>
+                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>
                         ✓ ID Verified
                       </span>
                     )}
                     {profile.phoneVerified && (
-                      <span style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>
+                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>
                         ✓ Phone Verified
                       </span>
                     )}
@@ -265,7 +265,7 @@ export default function UserProfile() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   {profile.skillsOffered?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Skills Offered</p>
+                      <p style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Skills Offered</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.skillsOffered.map(s => <Pill key={s} label={s} />)}
                       </div>
@@ -273,7 +273,7 @@ export default function UserProfile() {
                   )}
                   {profile.hobbies?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Hobbies</p>
+                      <p style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Hobbies</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.hobbies.map(h => <Pill key={h} label={h} />)}
                       </div>
@@ -281,7 +281,7 @@ export default function UserProfile() {
                   )}
                   {profile.languages?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Languages</p>
+                      <p style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Languages</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.languages.map(l => <Pill key={l} label={l} />)}
                       </div>
@@ -294,7 +294,7 @@ export default function UserProfile() {
             {/* Reviews */}
             <Section title={`Reviews${reviews.length > 0 ? ` (${reviews.length})` : ''}`}>
               {reviews.length === 0 ? (
-                <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-4)', margin: 0 }}>
+                <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-4)', margin: 0 }}>
                   No reviews yet.
                 </p>
               ) : (
@@ -311,7 +311,7 @@ export default function UserProfile() {
                             {rv.safetyConcern ? 'Anonymous' : (rv.reviewerName || 'Elder')}
                           </span>
                         </div>
-                        <span style={{ fontFamily: SF, fontSize: '13px', color: 'var(--ink-4)' }}>
+                        <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>
                           {timeAgo(rv.createdAt)}
                         </span>
                       </div>
@@ -325,7 +325,7 @@ export default function UserProfile() {
                         </div>
                       )}
                       {rv.comment && (
-                        <p style={{ fontFamily: SF, fontSize: '15px', color: '#5a5a5a', margin: 0, lineHeight: 1.55 }}>
+                        <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: '#5a5a5a', margin: 0, lineHeight: 1.55 }}>
                           {rv.comment}
                         </p>
                       )}

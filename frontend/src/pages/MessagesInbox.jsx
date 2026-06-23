@@ -137,10 +137,10 @@ export default function MessagesInbox() {
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
               </div>
-              <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
+              <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
                 No conversations yet
               </p>
-              <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '20px' }}>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '20px' }}>
                 Connect with someone on your dashboard to start chatting.
               </p>
               <button
@@ -148,7 +148,7 @@ export default function MessagesInbox() {
                 style={{
                   background: 'var(--blue)', color: '#fff', border: 'none',
                   borderRadius: '9999px', padding: '10px 22px',
-                  fontSize: '15px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                  fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                 }}
               >
                 Go to Dashboard
@@ -247,7 +247,7 @@ export default function MessagesInbox() {
                               </span>
                             )}
                           </span>
-                          <span style={{ fontSize: '13px', color: 'var(--ink-4)', flexShrink: 0, fontFamily: SFText }}>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', flexShrink: 0, fontFamily: SFText }}>
                             {timeAgo(c.lastMessageAt)}
                           </span>
                         </div>

@@ -97,7 +97,7 @@ export default function FinishSetup() {
         </div>
 
         <h2 style={{
-          fontFamily: SFD, fontSize: '28px', fontWeight: 600,
+          fontFamily: SFD, fontSize: 'var(--text-xl)', fontWeight: 600,
           color: 'var(--ink)', textAlign: 'center', margin: '0 0 8px',
           letterSpacing: '-0.3px',
         }}>
@@ -126,7 +126,7 @@ export default function FinishSetup() {
           <div style={{
             background: 'var(--red-tint)', border: '1px solid #fecaca',
             borderRadius: '11px', padding: '12px 16px',
-            fontSize: '15px', color: 'var(--red-error)', marginBottom: '20px',
+            fontSize: 'var(--text-sm)', color: 'var(--red-error)', marginBottom: '20px',
           }}>
             {error}
           </div>
@@ -154,12 +154,12 @@ export default function FinishSetup() {
                       transition: 'all 0.15s',
                     }}>
                     <div style={{
-                      fontSize: '15px', fontWeight: 600,
+                      fontSize: 'var(--text-sm)', fontWeight: 600,
                       color: active ? BLUE : '#1d1d1f', marginBottom: '4px',
                     }}>
                       {label}
                     </div>
-                    <div style={{ fontSize: '13px', color: active ? '#7BB8D6' : '#a0a0a5', lineHeight: 1.3 }}>
+                    <div style={{ fontSize: 'var(--text-xs)', color: active ? '#7BB8D6' : '#a0a0a5', lineHeight: 1.3 }}>
                       {desc}
                     </div>
                   </button>
@@ -187,8 +187,8 @@ export default function FinishSetup() {
                 style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
               />
             </div>
-            {fieldErrors.username && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.username}</p>}
-            <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
+            {fieldErrors.username && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.username}</p>}
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
               3-20 characters. Visible to others on your profile.
             </p>
           </div>
@@ -210,9 +210,9 @@ export default function FinishSetup() {
               style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
             />
             {fieldErrors.phone && (
-              <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.phone}</p>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.phone}</p>
             )}
-            <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
               Only shared after both people reach the Phone Ready trust stage.
             </p>
           </div>
