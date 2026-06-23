@@ -82,7 +82,7 @@ export default function ConfirmDialog({
             {title}
           </h3>
           {message && (
-            <p style={{ margin: 0, fontSize: '15px', color: '#5a6b75', lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: '16px', color: '#5a6b75', lineHeight: 1.5 }}>
               {message}
             </p>
           )}
@@ -98,7 +98,7 @@ export default function ConfirmDialog({
               flex: 1, height: '44px',
               background: '#ffffff', color: '#5a6470',
               border: '1.5px solid #e0e0e0', borderRadius: '9999px',
-              fontSize: '15px', fontWeight: 600, fontFamily: SFT,
+              fontSize: '16px', fontWeight: 600, fontFamily: SFT,
               cursor: loading ? 'not-allowed' : 'pointer',
             }}
           >
@@ -112,7 +112,7 @@ export default function ConfirmDialog({
               flex: 1, height: '44px',
               background: accent, color: '#ffffff',
               border: 'none', borderRadius: '9999px',
-              fontSize: '15px', fontWeight: 600, fontFamily: SFT,
+              fontSize: '16px', fontWeight: 600, fontFamily: SFT,
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1,
             }}

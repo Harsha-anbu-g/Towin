@@ -181,7 +181,7 @@ export default function NavBar() {
             <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
             <Link to="/trust" style={{
               display: 'flex', alignItems: 'center', gap: '7px',
-              fontSize: '15px', fontFamily: SF, fontWeight: 600,
+              fontSize: '16px', fontFamily: SF, fontWeight: 600,
               color: trustActive ? '#fff' : '#9C7A3C',
               background: trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.1)',
               border: `1.5px solid ${trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.35)'}`,
@@ -203,7 +203,7 @@ export default function NavBar() {
                 title="Send an urgent alert to all your emergency contacts"
                 aria-label="Send SOS alert to your emergency contacts"
                 style={{
-                fontSize: '15px', fontWeight: 700, fontFamily: SF,
+                fontSize: '16px', fontWeight: 700, fontFamily: SF,
                 padding: '10px 22px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? '#4FA3CE' : sending ? '#7a2a2a' : '#9b3535',
@@ -218,7 +218,7 @@ export default function NavBar() {
                 style={{
                   width: '40px', height: '40px', borderRadius: '50%', border: 'none',
                   cursor: 'pointer', background: '#4FA3CE', color: '#fff',
-                  fontSize: '15px', fontWeight: 600, fontFamily: SF,
+                  fontSize: '16px', fontWeight: 600, fontFamily: SF,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
@@ -234,17 +234,17 @@ export default function NavBar() {
                   padding: '8px', minWidth: '210px', zIndex: 110,
                 }}>
                   <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #f0f0f0', marginBottom: '6px' }}>
-                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f', margin: 0, fontFamily: SF }}>
+                    <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', margin: 0, fontFamily: SF }}>
                       {user?.name || 'Your account'}
                     </p>
                     {user?.username && (
-                      <p style={{ fontSize: '13px', color: '#a0a0a5', margin: '2px 0 0' }}>@{user.username}</p>
+                      <p style={{ fontSize: '14px', color: '#a0a0a5', margin: '2px 0 0' }}>@{user.username}</p>
                     )}
                   </div>
                   <Link to="/profile" role="menuitem" onClick={() => setAccountOpen(false)} style={{
                     display: 'flex', alignItems: 'center', gap: '10px',
                     padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                    color: '#1d1d1f', fontSize: '15px', fontWeight: 500, fontFamily: SF,
+                    color: '#1d1d1f', fontSize: '16px', fontWeight: 500, fontFamily: SF,
                   }}
                     onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
@@ -255,7 +255,7 @@ export default function NavBar() {
                     <Link to="/emergency-contacts" role="menuitem" onClick={() => setAccountOpen(false)} style={{
                       display: 'flex', alignItems: 'center', gap: '10px',
                       padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                      color: '#1d1d1f', fontSize: '15px', fontWeight: 500, fontFamily: SF,
+                      color: '#1d1d1f', fontSize: '16px', fontWeight: 500, fontFamily: SF,
                     }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
@@ -266,7 +266,7 @@ export default function NavBar() {
                   <button role="menuitem" onClick={() => { setAccountOpen(false); setConfirmSignOut(true); }} style={{
                     display: 'flex', width: '100%', alignItems: 'center', gap: '10px',
                     padding: '10px 12px', borderRadius: '10px', background: 'none', border: 'none',
-                    cursor: 'pointer', color: '#7a7a7a', fontSize: '15px', fontWeight: 500,
+                    cursor: 'pointer', color: '#7a7a7a', fontSize: '16px', fontWeight: 500,
                     fontFamily: SF, textAlign: 'left',
                   }}
                     onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
@@ -286,7 +286,7 @@ export default function NavBar() {
             {unread > 0 && (
               <Link to="/messages" style={{ textDecoration: 'none' }}>
                 <span style={{
-                  background: '#9b3535', color: '#fff', fontSize: '11px',
+                  background: '#9b3535', color: '#fff', fontSize: '12px',
                   fontWeight: 700, fontFamily: SF, borderRadius: '9999px',
                   padding: '3px 8px',
                 }}>{unread}</span>
@@ -297,7 +297,7 @@ export default function NavBar() {
                 title="Send an urgent alert to all your emergency contacts"
                 aria-label="Send SOS alert to your emergency contacts"
                 style={{
-                fontSize: '13px', fontWeight: 700, fontFamily: SF,
+                fontSize: '14px', fontWeight: 700, fontFamily: SF,
                 padding: '7px 14px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? '#4FA3CE' : '#9b3535',

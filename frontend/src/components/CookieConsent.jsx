@@ -47,7 +47,7 @@ export default function CookieConsent() {
         gap: 12,
         boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
         zIndex: 1000,
-        fontSize: 14,
+        fontSize: 15,
         lineHeight: 1.5,
       }}
     >
@@ -64,7 +64,7 @@ export default function CookieConsent() {
           border: 'none',
           borderRadius: 8,
           padding: '8px 18px',
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: 600,
           cursor: 'pointer',
           whiteSpace: 'nowrap',

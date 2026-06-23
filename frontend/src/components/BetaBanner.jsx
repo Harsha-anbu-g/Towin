@@ -25,7 +25,7 @@ export default function BetaBanner() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '10px 20px',
-      fontSize: '14px',
+      fontSize: '15px',
       fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
       position: 'relative',
       zIndex: 1000,
@@ -38,7 +38,7 @@ export default function BetaBanner() {
           style={{
             background: 'none', border: 'none', color: '#fff',
             fontWeight: 600, cursor: 'pointer', textDecoration: 'underline',
-            fontSize: '14px', fontFamily: 'inherit', padding: 0,
+            fontSize: '15px', fontFamily: 'inherit', padding: 0,
           }}
         >
           Give Feedback →

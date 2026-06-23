@@ -6,7 +6,7 @@ const NavLink = ({ href, children }) => (
   <a
     href={href}
     className="text-sm font-medium tracking-widest text-foreground/60 transition-colors hover:text-foreground"
-    style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '13px',
+    style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '14px',
       letterSpacing: '0.1em', fontWeight: 500, transition: 'color 0.15s' }}
     onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
     onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
@@ -80,7 +80,7 @@ export const MinimalistHero = ({
           style={{
             padding: '10px 22px', borderRadius: '9999px',
             background: '#4FA3CE', color: '#fff', border: 'none',
-            fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+            fontSize: '15px', fontWeight: 600, cursor: 'pointer',
             textDecoration: 'none', display: 'inline-block',
             transition: 'background 0.15s',
           }}
@@ -106,11 +106,11 @@ export const MinimalistHero = ({
           transition={{ duration: 0.6, delay: 0.8 }}
           style={{ textAlign: 'left' }}
         >
-          <p style={{ fontSize: '15px', lineHeight: 1.7, color: 'rgba(255,255,255,0.65)', maxWidth: '220px' }}>
+          <p style={{ fontSize: '16px', lineHeight: 1.7, color: 'rgba(255,255,255,0.65)', maxWidth: '220px' }}>
             {mainText}
           </p>
           <a href={ctaHref} style={{
-            marginTop: '20px', display: 'inline-block', fontSize: '14px', fontWeight: 600,
+            marginTop: '20px', display: 'inline-block', fontSize: '15px', fontWeight: 600,
             color: '#4FA3CE', textDecoration: 'underline', textUnderlineOffset: '3px',
           }}>
             {ctaLabel} →
@@ -186,7 +186,7 @@ export const MinimalistHero = ({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1.3 }}
-          style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}
+          style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}
         >
           {locationText}
         </motion.div>

@@ -39,7 +39,7 @@ export default function TrustJourney({
       flexShrink: 0, height: '36px', padding: '0 16px',
       background: confirming ? '#e0e0e0' : '#4FA3CE',
       color: '#fff', border: 'none', borderRadius: '9999px',
-      fontSize: '13px', fontWeight: 700, fontFamily: SFT,
+      fontSize: '14px', fontWeight: 700, fontFamily: SFT,
       cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
     }}>{confirming ? '…' : label}</button>
   );
@@ -47,7 +47,7 @@ export default function TrustJourney({
   let footer;
   if (isTrusted) {
     footer = (
-      <p style={{ fontSize: '13px', color: '#5a6470', margin: '10px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
+      <p style={{ fontSize: '14px', color: '#5a6470', margin: '10px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
         You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.
       </p>
     );
@@ -60,7 +60,7 @@ export default function TrustJourney({
     else                                      { message = `You accepted — trust is advancing.`; }
     footer = (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #D8EAF4' }}>
-        <p style={{ fontSize: '13px', color: '#5a6470', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
+        <p style={{ fontSize: '14px', color: '#5a6470', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
         {button}
       </div>
     );
@@ -72,9 +72,9 @@ export default function TrustJourney({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: accent }} />
-          <span style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF }}>{current.label}</span>
+          <span style={{ fontSize: '16px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF }}>{current.label}</span>
         </div>
-        <span style={{ fontSize: '13px', fontWeight: 700, color: accent, background: accentBg, padding: '3px 10px', borderRadius: '9999px' }}>
+        <span style={{ fontSize: '14px', fontWeight: 700, color: accent, background: accentBg, padding: '3px 10px', borderRadius: '9999px' }}>
           Stage {idx + 1} of {LEVELS.length} · {pct}%
         </span>
       </div>
