@@ -479,7 +479,7 @@ export default function ElderDashboard() {
                   flex: '1 1 auto',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   height: '44px', padding: '0 16px',
-                  fontSize: '15px', letterSpacing: '-0.1px',
+                  fontSize: '16px', letterSpacing: '-0.1px',
                   fontWeight: active ? 700 : 600,
                   color: active ? '#ffffff' : '#5a6470',
                   background: active ? '#4FA3CE' : 'transparent',
@@ -509,7 +509,7 @@ export default function ElderDashboard() {
               flex: '0 0 auto',
               display: 'inline-flex', alignItems: 'center', gap: '7px',
               height: '44px', padding: '0 16px',
-              fontSize: '15px', letterSpacing: '-0.1px',
+              fontSize: '16px', letterSpacing: '-0.1px',
               fontWeight: showPostForm ? 700 : 600,
               color: showPostForm ? '#ffffff' : '#4FA3CE',
               background: showPostForm ? '#4FA3CE' : 'transparent',
@@ -1020,26 +1020,26 @@ export default function ElderDashboard() {
           {/* Post Request form — lives inside My Requests */}
           {tab === 'needs' && showPostForm && (
             <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid #e0e0e0' }}>
-              <button type="button" onClick={() => setShowPostForm(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#4FA3CE', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
+              <button type="button" onClick={() => setShowPostForm(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#4FA3CE', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 Back to my requests
               </button>
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '24px', fontWeight: 700, color: '#1d1d1f', letterSpacing: '-0.4px', margin: '0 0 6px' }}>
                 Ask for Help
               </h2>
-              <p style={{ fontSize: '15px', color: '#5a6470', margin: '0 0 24px' }}>
+              <p style={{ fontSize: '16px', color: '#5a6470', margin: '0 0 24px' }}>
                 Tell us what you need. Helpers near you will offer to assist — it only takes a minute.
               </p>
               <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f' }}>What do you need help with?</label>
+                  <label style={{ fontSize: '16px', fontWeight: 700, color: '#1d1d1f' }}>What do you need help with?</label>
                   <input value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
                     placeholder="e.g. Help with grocery shopping" required
                     style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid #d8dce2', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: '#1d1d1f', outline: 'none' }}
                     onFocus={focusIn} onBlur={focusOut} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f' }}>Add a few details</label>
+                  <label style={{ fontSize: '16px', fontWeight: 700, color: '#1d1d1f' }}>Add a few details</label>
                   <textarea value={needForm.description} onChange={e => setNeedForm(f => ({...f, description: e.target.value}))}
                     placeholder="When do you need it, and anything that would help the helper..." rows={4}
                     style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #d8dce2', borderRadius: '12px', padding: '12px 16px', fontSize: '16px', fontFamily: 'inherit', color: '#1d1d1f', outline: 'none', resize: 'vertical', lineHeight: 1.5 }}
@@ -1047,7 +1047,7 @@ export default function ElderDashboard() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f' }}>What kind of help?</label>
+                  <label style={{ fontSize: '16px', fontWeight: 700, color: '#1d1d1f' }}>What kind of help?</label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
                     {['COMPANIONSHIP', 'TRANSPORTATION', 'ERRANDS', 'CLEANING', 'OTHER'].map(key => {
                       const selected = needForm.category === key;
@@ -1068,7 +1068,7 @@ export default function ElderDashboard() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '15px', fontWeight: 700, color: '#1d1d1f' }}>How urgent is it?</label>
+                  <label style={{ fontSize: '16px', fontWeight: 700, color: '#1d1d1f' }}>How urgent is it?</label>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     {[['NORMAL', 'Normal'], ['URGENT', 'Urgent']].map(([key, label]) => {
                       const selected = needForm.urgency === key;
@@ -1083,18 +1083,18 @@ export default function ElderDashboard() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '9px', fontSize: '14px', color: '#5a6470', padding: '2px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '9px', fontSize: '15px', color: '#5a6470', padding: '2px 0' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0, background: locationStatus === 'granted' ? '#2E7DA6' : locationStatus === 'denied' ? '#d0d0d5' : '#e0e0e0' }} />
                   {locationStatus === 'asking' && 'Getting your location…'}
                   {locationStatus === 'granted' && 'Location on. Nearby helpers will be matched first.'}
                   {locationStatus === 'denied' && 'Location off. Your request will still reach all helpers.'}
                   {locationStatus === 'idle' && (
-                    <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#4FA3CE', padding: 0, fontWeight: 600 }}>
+                    <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '15px', color: '#4FA3CE', padding: 0, fontWeight: 600 }}>
                       Share location to reach nearby helpers first
                     </button>
                   )}
                 </div>
-                {postMsg && <p style={{ fontSize: '14px', color: postMsg.includes('!') ? '#2E7DA6' : '#5a6470', fontWeight: 500 }}>{postMsg}</p>}
+                {postMsg && <p style={{ fontSize: '15px', color: postMsg.includes('!') ? '#2E7DA6' : '#5a6470', fontWeight: 500 }}>{postMsg}</p>}
                 <button type="submit" disabled={posting} style={{ height: '50px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', boxShadow: '0 3px 12px rgba(79,163,206,0.35)' }}>
                   {posting ? 'Posting...' : 'Post My Request'}
                 </button>
