@@ -154,7 +154,7 @@ function HeroPanel() {
     }}>
       {/* Hero photo — elder and younger person walking hand in hand */}
       <img
-        src="/walking.png"
+        src="/walking.jpg"
         alt="An elder and younger person walking together hand in hand"
         draggable="false"
         onDragStart={e => e.preventDefault()}
