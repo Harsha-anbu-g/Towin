@@ -21,7 +21,7 @@ function HeroPanel() {
     }}>
       {/* Hero photo — handshake between elder and younger hand */}
       <img
-        src="/image3.png"
+        src="/image3.jpg"
         alt="A handshake between an elder and a younger person"
         draggable="false"
         onDragStart={e => e.preventDefault()}
