@@ -438,6 +438,12 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   .auth-form > div > div { padding-left: 16px !important; padding-right: 16px !important; }
 }
 
+/* Register hero — widen on desktop only, so both people in the photo fit fully
+   under the cover crop. Mobile/tablet keep the shared .auth-hero behavior. */
+@media (min-width: 901px) {
+  .auth-hero--wide { flex: 0 0 52%; }
+}
+
 /* ── Global: prevent images from being dragged ───────────────────────── */
 img {
   -webkit-user-drag: none;
