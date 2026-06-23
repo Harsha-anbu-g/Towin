@@ -17,21 +17,31 @@
 
 /* ─── Design tokens ─── */
 :root {
-  /* Apple Action Blue */
-  --blue:         #4FA3CE;
+  /* Brand blue — sky-blue scale */
+  --blue:         #4FA3CE;   /* primary action */
   --blue-focus:   #0071e3;
   --blue-dark:    #004499;
   --blue-on-dark: #4FA3CE;
+  --blue-deep:    #2E7DA6;   /* text/icons on light */
+  --blue-teal:    #3D8AB0;
+  --blue-mid:     #7BB8D6;   /* loading / disabled */
+  --blue-soft:    #BFD9EA;   /* soft borders */
+  --blue-tint:    #E6F2FA;   /* light fills */
+  --blue-wash:    #EAF5FB;   /* lighter fills */
 
   /* Typography colors */
-  --ink:    #1d1d1f;
-  --ink-2:  #333333;
-  --ink-3:  #7a7a7a;
-  --ink-4:  #a0a0a5;
+  --ink:            #1d1d1f;
+  --ink-2:          #333333;
+  --ink-3:          #7a7a7a;
+  --ink-4:          #a0a0a5;
+  --ink-slate:      #5a6470;  /* common secondary text */
+  --ink-slate-dark: #3a4450;
+  --slate:          #718096;
 
   /* Surfaces */
   --canvas:         #ffffff;
   --surface:        #f5f5f7;
+  --surface-2:      #f3f4f6;
   --surface-pearl:  #fafafc;
   --surface-dark:   #272729;
   --surface-black:  #000000;
@@ -41,8 +51,42 @@
   --border-soft: #f0f0f0;
 
   /* Semantic */
-  --red:   #cc0000;
-  --amber: #b05000;
+  --red:        #cc0000;
+  --red-error:  #dc2626;   /* form-field errors */
+  --red-tint:   #fef2f2;   /* error background */
+  --red-soft:   #fca5a5;   /* error border */
+  --red-deep:   #9b3535;   /* destructive (end connection) */
+  --amber:      #b05000;
+  --green-deep: #1a5c2e;   /* trusted / success text */
+  --green-tint: #ebf6ee;   /* success background */
+  --trust-gold: #9C7A3C;   /* ALWAYS used for "trust" text */
+
+  /* Radius scale */
+  --radius-sm:   8px;
+  --radius-md:   11px;   /* inputs */
+  --radius-lg:   14px;
+  --radius-xl:   18px;   /* cards */
+  --radius-2xl:  20px;
+  --radius-pill: 9999px;
+
+  /* Spacing scale — 8px base; adopt in new code instead of raw px */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+
+  /* Type scale — base body is 18px for elderly readability; never below 16px */
+  --text-xs:   13px;   /* badges / fine print only */
+  --text-sm:   15px;   /* helper text / labels */
+  --text-base: 18px;   /* body */
+  --text-lg:   22px;
+  --text-xl:   28px;
+  --text-2xl:  34px;
+  --text-3xl:  40px;
 
   /* Typography */
   --font-display: -apple-system, 'SF Pro Display', system-ui, sans-serif;
@@ -55,7 +99,7 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 18px;
+  font-size: var(--text-base);
   line-height: 1.47;
   letter-spacing: -0.374px;
   color: var(--ink);
@@ -172,7 +216,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   animation: shimmer 4s linear infinite;
   color: #fff;
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 13px 28px;
   font-size: 16px;
   font-weight: 600;
@@ -189,7 +233,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 .ghost-btn {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 8px 18px;
   font-size: 13px;
   font-family: var(--font-body);
@@ -205,7 +249,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   background: var(--blue);
   color: #fff;
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 9px 20px;
   font-size: 13px;
   font-weight: 600;
@@ -222,7 +266,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   background: var(--blue);
   color: #fff;
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 11px 22px;
   font-family: var(--font-body);
   font-size: 17px;
@@ -239,7 +283,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   box-sizing: border-box;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 11px;
+  border-radius: var(--radius-md);
   padding: 12px 16px;
   font-family: var(--font-body);
   font-size: 17px;
@@ -258,7 +302,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 .card {
   background: var(--canvas);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
 }
 
 /* Status pills */
@@ -268,7 +312,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
   font-size: 11px;
   font-weight: 700;
   padding: 3px 10px;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
@@ -372,7 +416,7 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 @media (max-width: 480px) {
   .auth-hero  { display: none; }
   .auth-form  { padding: 24px 16px; }
-  .auth-form .auth-card { padding: 28px 22px !important; border-radius: 14px !important; }
+  .auth-form .auth-card { padding: 28px 22px !important; border-radius: var(--radius-lg) !important; }
   .auth-form h2 { font-size: 26px !important; }
   /* Register page inner band — its inline padding 40px 64px is too wide on phones */
   .auth-form > div > div { padding-left: 16px !important; padding-right: 16px !important; }
