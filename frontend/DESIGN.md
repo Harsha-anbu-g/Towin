@@ -73,25 +73,23 @@ All motion must respect "reduce motion" (see Accessibility).
 
 ## Shape & spacing
 
-- **Radius:** inputs ~11px, cards 18–20px, pills `9999px`. Keep these three
-  grammars; avoid in-between values.
-- **Spacing:** loose and breathable. Cards pad ~20–28px; sections stack with
-  12–20px gaps.
+Use the token scales in `:root` (avoid hardcoding px):
+- **Radius:** `--radius-md` 11px (inputs) · `--radius-lg` 14px · `--radius-xl` 18px ·
+  `--radius-2xl` 20px (cards) · `--radius-pill` 9999px. Avoid in-between values.
+- **Spacing:** `--space-1`…`--space-12` on an 8px base. Loose and breathable.
+- **Type:** `--text-xs`…`--text-3xl`; `--text-base` is 18px (body). Never < 16px.
 
 ## Components (implemented)
 
 Buttons (in `src/index.css`):
-- `.btn-primary` / `.primary-btn` / `.apple-pill-btn-primary` — sky-blue pills.
+- `.btn-primary` / `.primary-btn` — sky-blue pills (primary action).
 - `.shimmer-btn` — animated primary CTA for hero moments.
 - `.ghost-btn` — bordered secondary.
 
 Surfaces & inputs:
-- `.card` / `.apple-card` — white, rounded ~18–20px, hairline border.
-- `.field` / `.apple-input` — 17px text, soft surface fill, blue focus glow.
+- `.card` — white, `--radius-2xl`, hairline border.
+- `.field` — 17px text, soft surface fill, blue focus glow.
 - `.pill` — small uppercase status chips.
-
-> Note: several of these overlap (e.g. `.field`≈`.apple-input`, `.card`≈`.apple-card`,
-> four primary-button variants). Consolidation is a known cleanup — see Known Gaps.
 
 ## Accessibility (first-class)
 
@@ -108,7 +106,7 @@ Surfaces & inputs:
 ## Do / Don't
 
 **Do**
-- Use `--blue` for every "click me" signal; `#9C7A3C` for trust text.
+- Use `--blue` for every "click me" signal; `--trust-gold` for trust text.
 - Keep copy in plain, everyday words (see brand voice). Tagline is exactly
   "It takes two To Win."
 - Prefer larger text and generous spacing — our users thank you for it.
@@ -118,15 +116,20 @@ Surfaces & inputs:
 - Don't set body text below 16px.
 - Don't ship continuous motion without a reduced-motion fallback.
 
-## Known gaps (tracked, not yet fixed)
+## Known gaps (tracked)
 
-- **Inline hex sprawl:** ~1,300+ colors are hard-coded inline instead of using
-  the `--token` variables, so the "locked palette" isn't centrally enforced.
-  A token migration is the proper fix (high-value, large, do carefully).
-- **`--green` is teal:** the token named `--green` holds `#3D8AB0` (a teal-blue),
-  not a leaf-green. Either rename the token or supply the intended green.
-- **Component duplication:** `.field`/`.apple-input`, `.card`/`.apple-card`, and
-  four primary-button variants should be consolidated.
-- **Touch targets:** some 36–40px pill buttons are below the 44px minimum.
-- **Images:** a few public PNGs are multi-MB and unoptimized; consider WebP +
-  responsive sizes. (`logo.png` and `tortoise-logo.png` are byte-identical dupes.)
+- **Token migration is partial:** `color`/`background`/`borderColor` literals now
+  use `var(--token)`, but values inside ternaries, template strings, and SVG
+  `fill`/`stroke` remain raw hex (SVG attributes can't take `var()`). Finishing
+  these needs per-case work, not a sweep.
+- **Touch targets:** some 36–40px pill buttons are below the 44px minimum
+  (deferred — layout-sensitive).
+- **Type-scale adoption:** inline `fontSize` values don't all map onto the
+  `--text-*` scale yet; new code should use the tokens.
+- **Hero photos** could still gain responsive `srcset`/WebP; the heavy assets are
+  already optimized (logos 55KB, heroes JPEG ~200–310KB).
+
+**Resolved since the audit:** dead files & dead `apple-*` CSS removed; misnamed/
+unused `--green` removed; favicon 915KB→4KB; unused Google Fonts dropped;
+reduced-motion + keyboard-focus added; social/SEO meta added; full palette +
+radius/spacing/type token scales formalized and base components wired.
