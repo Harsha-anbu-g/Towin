@@ -721,14 +721,14 @@ export default function ElderDashboard() {
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px', color: '#1d1d1f', margin: '0 0 6px' }}>
                   Find a New Helper
                 </h2>
-                <p style={{ fontSize: '15px', color: '#5a6470', margin: 0 }}>
+                <p style={{ fontSize: '16px', color: '#5a6470', margin: 0 }}>
                   Browse helpers near you and reach out to connect.
                 </p>
               </div>
 
               {/* Radius bar */}
               <div style={{ background: '#ffffff', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#3a4450' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', color: '#3a4450' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   {locationStatus === 'asking' && 'Getting your location…'}
                   {locationStatus === 'granted' && `Showing helpers within ${radiusKm} km of you`}
@@ -737,7 +737,7 @@ export default function ElderDashboard() {
                 </span>
                 {locationStatus === 'granted' && (
                   <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
-                    style={{ fontSize: '13px', fontWeight: 600, color: '#4FA3CE', background: '#EAF5FB', border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
+                    style={{ fontSize: '14px', fontWeight: 600, color: '#4FA3CE', background: '#EAF5FB', border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
                     {[5, 10, 25, 50, 100].map(v => <option key={v} value={v}>{v} km</option>)}
                   </select>
                 )}
@@ -749,7 +749,7 @@ export default function ElderDashboard() {
                   {[1,2].map(i => (
                     <div key={i} style={{ background: '#f5f5f7', borderRadius: '18px', height: '110px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
                   ))}
-                  <p style={{ fontSize: '14px', color: '#7a7a7a', textAlign: 'center', margin: 0 }}>Looking for helpers near you…</p>
+                  <p style={{ fontSize: '15px', color: '#7a7a7a', textAlign: 'center', margin: 0 }}>Looking for helpers near you…</p>
                 </div>
               )}
 
@@ -757,8 +757,8 @@ export default function ElderDashboard() {
               {!discovering && discoverError && (
                 <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #fecaca', padding: '40px 24px', textAlign: 'center' }}>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Couldn't load helpers</p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
-                  <button onClick={() => loadHelpers()} className="btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+                  <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
+                  <button onClick={() => loadHelpers()} className="btn-primary" style={{ padding: '10px 24px', fontSize: '15px' }}>
                     Try Again
                   </button>
                 </div>
@@ -769,7 +769,7 @@ export default function ElderDashboard() {
                   <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                     {locationStatus === 'granted' ? 'No helpers found nearby' : 'No helpers available right now'}
                   </p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a' }}>
+                  <p style={{ fontSize: '15px', color: '#7a7a7a' }}>
                     {locationStatus === 'granted'
                       ? 'Try a larger radius above, or check back later.'
                       : 'New helpers join often. Please check back soon.'}
@@ -800,42 +800,42 @@ export default function ElderDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <p style={{ fontWeight: 600, fontSize: '18px', color: '#1d1d1f', margin: 0 }}>{helper.name || 'Helper'}</p>
                           {(helper.trustScore != null || helper.trustTier) && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 700, color: '#2E7DA6' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px', fontSize: '13px', fontWeight: 700, color: '#2E7DA6' }}>
                               ★ {helper.trustScore ?? '—'}{helper.trustTier ? ` · ${helper.trustTier}` : ''}
                             </span>
                           )}
                         </div>
                         {(helper.city || helper.distanceKm > 0) && (
-                          <p style={{ fontSize: '14px', color: '#5a6470', margin: '4px 0 0' }}>
+                          <p style={{ fontSize: '15px', color: '#5a6470', margin: '4px 0 0' }}>
                             {helper.city}{helper.city && helper.distanceKm > 0 ? ' · ' : ''}{helper.distanceKm > 0 ? `${Math.round(helper.distanceKm * 10) / 10} km away` : ''}
                           </p>
                         )}
-                        {helper.bio && <p style={{ fontSize: '14px', color: '#3a4450', margin: '8px 0 0', lineHeight: 1.5 }}>{helper.bio}</p>}
+                        {helper.bio && <p style={{ fontSize: '15px', color: '#3a4450', margin: '8px 0 0', lineHeight: 1.5 }}>{helper.bio}</p>}
                         {helper.skillsOffered?.length > 0 && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
                             {helper.skillsOffered.map(s => (
-                              <span key={s} style={{ fontSize: '12px', fontWeight: 600, background: '#F2F4F7', color: '#5a6470', padding: '4px 11px', borderRadius: '9999px' }}>{s}</span>
+                              <span key={s} style={{ fontSize: '13px', fontWeight: 600, background: '#F2F4F7', color: '#5a6470', padding: '4px 11px', borderRadius: '9999px' }}>{s}</span>
                             ))}
                           </div>
                         )}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: '12px', background: '#E6F2FA', color: '#2E7DA6', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Connected</span>
+                          <span style={{ fontSize: '13px', background: '#E6F2FA', color: '#2E7DA6', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Connected</span>
                         ) : sent ? (
                           <span style={{
-                            fontSize: '12px', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center',
+                            fontSize: '13px', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center',
                             background: sent.includes('!') ? '#E6F2FA' : '#f3f4f6',
                             color: sent.includes('!') ? '#2E7DA6' : '#5a6470',
                           }}>{sent}</span>
                         ) : (
                           <button onClick={() => connectToHelper(helper.userId)} disabled={connectingTo === helper.userId}
-                            style={{ height: '40px', padding: '0 22px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                            style={{ height: '40px', padding: '0 22px', background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                             {connectingTo === helper.userId ? '…' : 'Connect'}
                           </button>
                         )}
                         <button onClick={() => navigate(`/user/${helper.userId}`)}
-                          style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                          style={{ height: '36px', padding: '0 14px', background: '#fff', color: '#4FA3CE', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                           View Profile
                         </button>
                       </div>
