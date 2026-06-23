@@ -30,14 +30,14 @@ export default function VerifyEmail() {
       {state === 'verifying' && (
         <>
           <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Verifying your email…</h1>
-          <p style={{ color: '#718096' }}>Just a moment.</p>
+          <p style={{ color: 'var(--slate)' }}>Just a moment.</p>
         </>
       )}
       {state === 'success' && (
         <>
           <div style={{ fontSize: 44, marginBottom: 12 }}>✅</div>
           <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Email verified!</h1>
-          <p style={{ color: '#718096', marginBottom: 24 }}>
+          <p style={{ color: 'var(--slate)', marginBottom: 24 }}>
             Your account is ready. Please log in to get started.
           </p>
           <Link to="/login" style={linkStyle}>Go to login →</Link>
@@ -47,7 +47,7 @@ export default function VerifyEmail() {
         <>
           <div style={{ fontSize: 44, marginBottom: 12 }}>⚠️</div>
           <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Link didn't work</h1>
-          <p style={{ color: '#718096', marginBottom: 24 }}>
+          <p style={{ color: 'var(--slate)', marginBottom: 24 }}>
             This link is invalid or has expired. Please sign up again to get a fresh one.
           </p>
           <Link to="/register" style={linkStyle}>Back to sign up →</Link>

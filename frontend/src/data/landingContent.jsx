@@ -34,7 +34,7 @@ function Lead({ children, align = 'center' }) {
   const left = align === 'left';
   return (
     <p className="landing-lead" style={{
-      fontFamily: SF, fontSize: '21px', color: '#5a6470', lineHeight: 1.6,
+      fontFamily: SF, fontSize: '21px', color: 'var(--ink-slate)', lineHeight: 1.6,
       textAlign: align, maxWidth: left ? 'none' : '580px',
       margin: left ? '0 0 16px' : '0 auto 24px',
     }}>{children}</p>
@@ -78,7 +78,7 @@ function MiniCard({ title, badge, stars, compact, children }) {
           ))}
         </div>
       )}
-      <p style={{ fontFamily: SF, fontSize: compact ? '13px' : '16px', color: '#5a6470', lineHeight: 1.5, margin: 0 }}>
+      <p style={{ fontFamily: SF, fontSize: compact ? '13px' : '16px', color: 'var(--ink-slate)', lineHeight: 1.5, margin: 0 }}>
         {children}
       </p>
     </div>
@@ -94,11 +94,11 @@ function ScoreSum() {
       gap: '10px', background: '#ffffff', border: `1px solid ${BORDER}`,
       borderRadius: '14px', padding: '11px 16px',
     }}>
-      <span style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: '#5a6470' }}>
+      <span style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: 'var(--ink-slate)' }}>
         3 + 7 + 5 =
       </span>
       <span style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 700, color: BLUE }}>15</span>
-      <span style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470' }}>points</span>
+      <span style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-slate)' }}>points</span>
     </div>
   );
 }
@@ -173,7 +173,7 @@ function NoteBox({ children }) {
       background: '#ffffff', border: '1px solid #e8e8ed',
       borderRadius: '14px', padding: '18px 22px', maxWidth: '580px',
       margin: '24px auto 0', fontFamily: SF, fontSize: '16px',
-      color: '#5a6470', lineHeight: 1.6, textAlign: 'center',
+      color: 'var(--ink-slate)', lineHeight: 1.6, textAlign: 'center',
     }}>{children}</div>
   );
 }
@@ -202,7 +202,7 @@ export const SLIDES = [
           fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: BLUE,
           textAlign: 'center', margin: '0 0 16px',
         }}>
-          Connecting generations, building <span style={{ color: '#9C7A3C' }}>trust</span>.
+          Connecting generations, building <span style={{ color: 'var(--trust-gold)' }}>trust</span>.
         </p>
         <Body>
           One who helps, one who gets help, and both win. A safer place for
@@ -258,7 +258,7 @@ export const SLIDES = [
         <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
           <Kicker align="left">The real problem is trust</Kicker>
           <Title align="left">
-            <span style={{ color: '#9C7A3C' }}>Trust</span> is earned,<br />not given
+            <span style={{ color: 'var(--trust-gold)' }}>Trust</span> is earned,<br />not given
           </Title>
           <Lead align="left">
             Letting someone new into your life is a big step. So every member
@@ -267,7 +267,7 @@ export const SLIDES = [
           <div style={{
             background: '#ffffff', border: '1px solid #e8e8ed',
             borderRadius: '12px', padding: '11px 16px', fontFamily: SF,
-            fontSize: '16px', color: '#5a6470', lineHeight: 1.55, textAlign: 'left',
+            fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.55, textAlign: 'left',
           }}>
             Each person helped adds up to <strong style={{ color: 'var(--ink)' }}>15 points</strong> to their score.
           </div>
@@ -288,9 +288,9 @@ export const SLIDES = [
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
             background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '7px 14px',
           }}>
-            <span style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: '#5a6470' }}>3 + 7 + 5 =</span>
+            <span style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: 'var(--ink-slate)' }}>3 + 7 + 5 =</span>
             <span style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: BLUE }}>15</span>
-            <span style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470' }}>points</span>
+            <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)' }}>points</span>
           </div>
         </div>
       </div>
@@ -307,7 +307,7 @@ export const SLIDES = [
         <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
           <Kicker align="left">One step at a time</Kicker>
           <Title align="left">
-            Rooting (<span style={{ color: '#9C7A3C' }}>Trust</span> Ladder): how trust grows
+            Rooting (<span style={{ color: 'var(--trust-gold)' }}>Trust</span> Ladder): how trust grows
           </Title>
           <Lead align="left">
             Like a tree growing roots, every friendship on ToWin grows slowly,
@@ -316,7 +316,7 @@ export const SLIDES = [
           <div style={{
             background: '#ffffff', border: '1px solid #e8e8ed',
             borderRadius: '14px', padding: '16px 20px', fontFamily: SF,
-            fontSize: '16px', color: '#5a6470', lineHeight: 1.6, textAlign: 'left',
+            fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.6, textAlign: 'left',
           }}>
             <strong>Both people must agree to every step.</strong> Nothing personal,
             like a phone number, is shared until trust has grown.

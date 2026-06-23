@@ -96,7 +96,7 @@ export default function ConfirmDialog({
             disabled={loading}
             style={{
               flex: 1, height: '44px',
-              background: '#ffffff', color: '#5a6470',
+              background: '#ffffff', color: 'var(--ink-slate)',
               border: '1.5px solid #e0e0e0', borderRadius: '9999px',
               fontSize: '16px', fontWeight: 600, fontFamily: SFT,
               cursor: loading ? 'not-allowed' : 'pointer',

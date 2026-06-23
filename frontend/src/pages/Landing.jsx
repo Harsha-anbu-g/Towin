@@ -119,7 +119,7 @@ export default function Landing() {
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   fontFamily: SF, fontSize: '16px', fontWeight: 600,
-                  color: '#5a6470', padding: '8px 4px',
+                  color: 'var(--ink-slate)', padding: '8px 4px',
                 }}
               >
                 Back

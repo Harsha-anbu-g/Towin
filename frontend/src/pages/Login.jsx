@@ -74,7 +74,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.3px', fontWeight: 600,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Connecting generations,<br />building <span style={{ color: '#9C7A3C' }}>trust</span>.
+          Connecting generations,<br />building <span style={{ color: 'var(--trust-gold)' }}>trust</span>.
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -243,9 +243,9 @@ export default function Login() {
             {/* Session expired notice — explains why they're back here (H9) */}
             {sessionExpired && (
               <div style={{
-                background: '#EAF5FB', border: '1px solid #BFD9EA',
+                background: 'var(--blue-wash)', border: '1px solid #BFD9EA',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '15px', color: '#3D8AB0', marginBottom: '20px',
+                fontSize: '15px', color: 'var(--blue-teal)', marginBottom: '20px',
                 lineHeight: 1.45,
               }}>
                 For your safety, you were logged out after a period of inactivity. Please log in again.
@@ -255,9 +255,9 @@ export default function Login() {
             {/* Error state */}
             {error && (
               <div style={{
-                background: '#fef2f2', border: '1px solid #fecaca',
+                background: 'var(--red-tint)', border: '1px solid #fecaca',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '15px', color: '#dc2626', marginBottom: '20px',
+                fontSize: '15px', color: 'var(--red-error)', marginBottom: '20px',
               }}>
                 {error}
               </div>
@@ -292,7 +292,7 @@ export default function Login() {
                   onChange={e => { setForm({ ...form, identifier: e.target.value }); setFieldErrors(f => ({ ...f, identifier: '' })); }}
                   style={{ borderColor: fieldErrors.identifier ? '#fca5a5' : undefined }}
                 />
-                {fieldErrors.identifier && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
+                {fieldErrors.identifier && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
               </div>
 
               <div>
@@ -324,7 +324,7 @@ export default function Login() {
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {fieldErrors.password && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
+                {fieldErrors.password && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
                   <Link to="/forgot-password" style={{
@@ -372,7 +372,7 @@ export default function Login() {
 
           {/* Demo accounts — standalone below the card */}
           <div style={{
-            marginTop: '24px', background: '#EAF5FB',
+            marginTop: '24px', background: 'var(--blue-wash)',
             border: '1px solid #BFD9EA', borderRadius: '16px',
             padding: '18px 18px 16px',
           }}>
@@ -384,7 +384,7 @@ export default function Login() {
               Just want to see how it works?
             </p>
             <p style={{
-              fontSize: '13px', color: '#5a6470', textAlign: 'center',
+              fontSize: '13px', color: 'var(--ink-slate)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
@@ -417,7 +417,7 @@ export default function Login() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
                 >
                   <span>
-                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
+                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: 'var(--blue-teal)' }}>
                       {guestLoading === role ? 'Opening…' : label}
                     </span>
                     <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-3)', marginTop: '2px' }}>

@@ -457,9 +457,9 @@ export default function Register() {
             {/* Error state */}
             {error && (
               <div style={{
-                background: '#fef2f2', border: '1px solid #fecaca',
+                background: 'var(--red-tint)', border: '1px solid #fecaca',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '15px', color: '#dc2626', marginBottom: '20px',
+                fontSize: '15px', color: 'var(--red-error)', marginBottom: '20px',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               }}>
                 {error}
@@ -483,7 +483,7 @@ export default function Register() {
                   onChange={e => { setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }); setFieldErrors(f => ({ ...f, username: '' })); }}
                   style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined }}
                 />
-                {fieldErrors.username && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
+                {fieldErrors.username && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
                 <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   3-20 characters. Letters, numbers, underscores. Visible to others.
                 </p>
@@ -505,7 +505,7 @@ export default function Register() {
                   onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
                   style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
                 />
-                {fieldErrors.email && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
+                {fieldErrors.email && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
                 <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   We'll send a link to confirm it's really you.
                 </p>
@@ -533,7 +533,7 @@ export default function Register() {
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {fieldErrors.password && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
+                {fieldErrors.password && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {form.password && (
                   <div style={{ marginTop: '6px', display: 'flex', gap: '3px', alignItems: 'center' }}>
                     {[1,2,3,4].map(i => (
@@ -574,7 +574,7 @@ export default function Register() {
                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {fieldErrors.confirmPassword && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.confirmPassword}</p>}
+                {fieldErrors.confirmPassword && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.confirmPassword}</p>}
                 {form.confirmPassword && form.password && form.confirmPassword === form.password && (
                   <p style={{ fontSize: '13px', color: '#5FA670', marginTop: '4px', fontFamily: 'inherit' }}>Passwords match</p>
                 )}
@@ -637,7 +637,7 @@ export default function Register() {
 
           {/* Demo accounts — at the bottom, same as login page */}
           <div style={{
-            marginTop: '24px', background: '#EAF5FB',
+            marginTop: '24px', background: 'var(--blue-wash)',
             border: '1px solid #BFD9EA', borderRadius: '16px',
             padding: '18px 18px 16px',
           }}>
@@ -649,7 +649,7 @@ export default function Register() {
               Just want to see how it works?
             </p>
             <p style={{
-              fontSize: '14px', color: '#5a6470', textAlign: 'center',
+              fontSize: '14px', color: 'var(--ink-slate)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
@@ -682,7 +682,7 @@ export default function Register() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
                 >
                   <span>
-                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
+                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: 'var(--blue-teal)' }}>
                       {guestLoading === role ? 'Opening…' : label}
                     </span>
                     <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>

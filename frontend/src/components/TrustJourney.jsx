@@ -47,7 +47,7 @@ export default function TrustJourney({
   let footer;
   if (isTrusted) {
     footer = (
-      <p style={{ fontSize: '14px', color: '#5a6470', margin: '10px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
+      <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '10px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
         You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.
       </p>
     );
@@ -60,7 +60,7 @@ export default function TrustJourney({
     else                                      { message = `You accepted — trust is advancing.`; }
     footer = (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #D8EAF4' }}>
-        <p style={{ fontSize: '14px', color: '#5a6470', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
+        <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
         {button}
       </div>
     );

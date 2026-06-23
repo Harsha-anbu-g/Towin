@@ -53,10 +53,10 @@ export default function VerifyPending() {
     <div style={card}>
       <div style={{ fontSize: 44, marginBottom: 16 }}>✉️</div>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Verify your email</h1>
-      <p style={{ color: '#718096', marginBottom: 8 }}>
+      <p style={{ color: 'var(--slate)', marginBottom: 8 }}>
         We sent a verification link to{email ? <> <strong>{email}</strong></> : ' your email'}.
       </p>
-      <p style={{ color: '#718096', marginBottom: 20 }}>
+      <p style={{ color: 'var(--slate)', marginBottom: 20 }}>
         Open it to activate your account, then sign in again to continue.
       </p>
 

@@ -55,9 +55,9 @@ export default function OAuthCallback() {
       {error ? (
         <div style={{ textAlign: 'center', maxWidth: '380px' }}>
           <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
+            background: 'var(--red-tint)', border: '1px solid #fecaca',
             borderRadius: '14px', padding: '20px 24px',
-            fontSize: '16px', color: '#dc2626', marginBottom: '20px',
+            fontSize: '16px', color: 'var(--red-error)', marginBottom: '20px',
           }}>
             {error}
           </div>
@@ -74,7 +74,7 @@ export default function OAuthCallback() {
           </button>
         </div>
       ) : (
-        <div style={{ textAlign: 'center', color: '#5a6470' }}>
+        <div style={{ textAlign: 'center', color: 'var(--ink-slate)' }}>
           <div style={{
             width: '40px', height: '40px', borderRadius: '50%',
             border: '3px solid #BFD9EA', borderTopColor: '#4FA3CE',

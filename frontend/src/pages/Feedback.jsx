@@ -116,7 +116,7 @@ export default function Feedback() {
         <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <span style={{
           fontFamily: SF, fontSize: '24px', fontWeight: 600,
-          letterSpacing: '-0.374px', color: '#1a5c2e',
+          letterSpacing: '-0.374px', color: 'var(--green-deep)',
         }}>ToWin</span>
       </div>
 
@@ -126,7 +126,7 @@ export default function Feedback() {
         <div>
           {/* Prototype notice */}
           <div style={{
-            background: '#EAF5FB', border: '1px solid #BFD9EA', borderRadius: '14px',
+            background: 'var(--blue-wash)', border: '1px solid #BFD9EA', borderRadius: '14px',
             padding: '14px 20px', marginBottom: '16px',
           }}>
             <p style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink)', margin: 0, lineHeight: 1.55 }}>
@@ -154,8 +154,8 @@ export default function Feedback() {
               </p>
               {error && (
                 <div style={{
-                  background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px',
-                  padding: '12px 16px', fontSize: '15px', color: '#dc2626',
+                  background: 'var(--red-tint)', border: '1px solid #fecaca', borderRadius: '10px',
+                  padding: '12px 16px', fontSize: '15px', color: 'var(--red-error)',
                   marginBottom: '20px', fontFamily: SFText,
                 }}>
                   {error}
@@ -181,7 +181,7 @@ export default function Feedback() {
                 </div>
                 <div style={{ height: '1px', background: 'var(--border)' }} />
                 <div>
-                  <label style={labelStyle}>Message <span style={{ color: '#dc2626' }}>*</span></label>
+                  <label style={labelStyle}>Message <span style={{ color: 'var(--red-error)' }}>*</span></label>
                   <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
                     Be honest! Include <strong style={{ color: 'var(--ink)' }}>at least one thing you didn't like</strong>. That's where the real value is.
                   </p>
@@ -276,14 +276,14 @@ export default function Feedback() {
           <div className="fb-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '18px 24px' }}>
             <div>
               <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 2px' }}>Want to know more?</p>
-              <p style={{ fontFamily: SF, fontSize: '15px', fontWeight: 700, color: '#9C7A3C', margin: 0 }}>Visit my portfolio</p>
+              <p style={{ fontFamily: SF, fontSize: '15px', fontWeight: 700, color: 'var(--trust-gold)', margin: 0 }}>Visit my portfolio</p>
             </div>
             <a
               href="https://portfolioharsha.vercel.app/"
               target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
-                background: '#9C7A3C', color: '#fff', padding: '9px 16px',
+                background: 'var(--trust-gold)', color: '#fff', padding: '9px 16px',
                 borderRadius: '9999px', fontSize: '14px', fontWeight: 600,
                 fontFamily: SFText, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
               }}
