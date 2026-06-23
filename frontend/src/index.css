@@ -277,6 +277,17 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 .btn-primary:hover { opacity: 0.85; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ─── Touch targets (accessibility) ───────────────────────────────────────
+   Floor the pill buttons at 44px tall (WCAG 2.5.5 / Apple HIG) for older users,
+   and center their content. Scoped to these real buttons so inline link-style
+   buttons (e.g. Terms/Privacy inside a sentence) are unaffected. */
+.shimmer-btn, .ghost-btn, .primary-btn, .btn-primary {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Input field */
 .field {
   width: 100%;
