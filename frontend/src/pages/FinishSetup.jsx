@@ -98,13 +98,13 @@ export default function FinishSetup() {
 
         <h2 style={{
           fontFamily: SFD, fontSize: '28px', fontWeight: 600,
-          color: '#1d1d1f', textAlign: 'center', margin: '0 0 8px',
+          color: 'var(--ink)', textAlign: 'center', margin: '0 0 8px',
           letterSpacing: '-0.3px',
         }}>
           One last step
         </h2>
         <p style={{
-          fontSize: '16px', color: '#7a7a7a', textAlign: 'center',
+          fontSize: '16px', color: 'var(--ink-3)', textAlign: 'center',
           margin: '0 0 28px', lineHeight: 1.5,
         }}>
           {googleName ? `Welcome, ${googleName.split(' ')[0]}! ` : ''}
@@ -137,7 +137,7 @@ export default function FinishSetup() {
           <div>
             <label style={{
               display: 'block', fontSize: '14px', fontWeight: 600,
-              color: '#1d1d1f', marginBottom: '10px',
+              color: 'var(--ink)', marginBottom: '10px',
             }}>
               I am joining as
             </label>
@@ -170,13 +170,13 @@ export default function FinishSetup() {
 
           {/* Username */}
           <div>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
               Username
             </label>
             <div style={{ position: 'relative' }}>
               <span style={{
                 position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
-                fontSize: '16px', color: '#a0a0a5', pointerEvents: 'none',
+                fontSize: '16px', color: 'var(--ink-4)', pointerEvents: 'none',
               }}>@</span>
               <input
                 type="text" autoComplete="username" required
@@ -188,7 +188,7 @@ export default function FinishSetup() {
               />
             </div>
             {fieldErrors.username && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.username}</p>}
-            <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
               3-20 characters. Visible to others on your profile.
             </p>
           </div>
@@ -197,7 +197,7 @@ export default function FinishSetup() {
           <div>
             <label style={{
               display: 'block', fontSize: '14px', fontWeight: 600,
-              color: '#1d1d1f', marginBottom: '6px',
+              color: 'var(--ink)', marginBottom: '6px',
             }}>
               Phone number
             </label>
@@ -212,7 +212,7 @@ export default function FinishSetup() {
             {fieldErrors.phone && (
               <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.phone}</p>
             )}
-            <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
               Only shared after both people reach the Phone Ready trust stage.
             </p>
           </div>

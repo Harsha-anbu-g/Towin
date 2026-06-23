@@ -82,7 +82,7 @@ function LegalModal({ title, sections, onClose }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
         }}>
           <h3 style={{
-            margin: 0, fontSize: '22px', fontWeight: 600, color: '#1d1d1f',
+            margin: 0, fontSize: '22px', fontWeight: 600, color: 'var(--ink)',
             fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
             letterSpacing: '-0.3px',
           }}>{title}</h3>
@@ -93,13 +93,13 @@ function LegalModal({ title, sections, onClose }) {
               width: '32px', height: '32px', borderRadius: '50%',
               border: '1px solid #e0e0e0', background: '#ffffff',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '18px', color: '#7a7a7a',
+              fontSize: '18px', color: 'var(--ink-3)',
             }}
           >×</button>
         </div>
         <div style={{ padding: '20px 32px 28px', overflowY: 'auto' }}>
           <p style={{
-            fontSize: '12px', color: '#a0a0a5', textTransform: 'uppercase',
+            fontSize: '12px', color: 'var(--ink-4)', textTransform: 'uppercase',
             letterSpacing: '0.5px', fontWeight: 600, margin: '0 0 18px',
           }}>
             Placeholder document, prototype only
@@ -107,7 +107,7 @@ function LegalModal({ title, sections, onClose }) {
           {sections.map(s => (
             <div key={s.h} style={{ marginBottom: '20px' }}>
               <h4 style={{
-                fontSize: '15px', fontWeight: 600, color: '#1d1d1f',
+                fontSize: '15px', fontWeight: 600, color: 'var(--ink)',
                 margin: '0 0 6px',
               }}>{s.h}</h4>
               <p style={{
@@ -124,7 +124,7 @@ function LegalModal({ title, sections, onClose }) {
             onClick={onClose}
             style={{
               height: '40px', padding: '0 22px',
-              background: '#4FA3CE', color: '#ffffff',
+              background: 'var(--blue)', color: '#ffffff',
               border: 'none', borderRadius: '9999px',
               fontSize: '14px', fontWeight: 600, cursor: 'pointer',
               fontFamily: 'inherit',
@@ -234,7 +234,7 @@ function GoogleButton() {
         width: '100%', height: '48px',
         background: '#ffffff', border: '1.5px solid #e0e0e0',
         borderRadius: '9999px', textDecoration: 'none',
-        fontSize: '16px', fontWeight: 500, color: '#1d1d1f',
+        fontSize: '16px', fontWeight: 500, color: 'var(--ink)',
         fontFamily: SF, cursor: 'pointer',
         boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
         transition: 'border-color 0.15s, box-shadow 0.15s',
@@ -308,11 +308,11 @@ export default function Register() {
   const eyeBtn = {
     position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
     background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
-    color: '#7a7a7a', display: 'flex',
+    color: 'var(--ink-3)', display: 'flex',
   };
 
   const linkBtn = {
-    color: '#4FA3CE', background: 'none', border: 'none', padding: 0,
+    color: 'var(--blue)', background: 'none', border: 'none', padding: 0,
     cursor: 'pointer', font: 'inherit', textDecoration: 'underline',
   };
 
@@ -367,26 +367,26 @@ export default function Register() {
             <button type="button" onClick={() => navigate('/login')} style={{
               flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
               fontSize: '15px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              background: 'transparent', color: '#7a7a7a',
+              background: 'transparent', color: 'var(--ink-3)',
             }}>Log in</button>
             <button type="button" style={{
               flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
               fontSize: '15px', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
-              background: '#ffffff', color: '#4FA3CE', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+              background: '#ffffff', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
             }}>Create account</button>
           </div>
 
           {/* Headline */}
           <h2 style={{
             fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-            fontSize: '24px', fontWeight: 700, color: '#1d1d1f',
+            fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
             margin: '0 0 6px', letterSpacing: '-0.3px',
           }}>
             Join ToWin.
           </h2>
           <p style={{
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            fontSize: '16px', color: '#7a7a7a', margin: '0 0 22px',
+            fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 22px',
           }}>
             Create your free account in minutes.
           </p>
@@ -396,9 +396,9 @@ export default function Register() {
 
           {/* Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-            <span style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with a username</span>
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+            <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with a username</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
           </div>
 
           {/* Role selector — standalone at the top */}
@@ -409,7 +409,7 @@ export default function Register() {
           }}>
             <label style={{
               display: 'block', fontSize: '15px', fontWeight: 700,
-              color: '#1d1d1f', marginBottom: '3px', letterSpacing: '-0.2px',
+              color: 'var(--ink)', marginBottom: '3px', letterSpacing: '-0.2px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
             }}>
               First, who are you joining as?
@@ -471,7 +471,7 @@ export default function Register() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '15px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
+                  color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Username
@@ -484,7 +484,7 @@ export default function Register() {
                   style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined }}
                 />
                 {fieldErrors.username && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
-                <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+                <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   3-20 characters. Letters, numbers, underscores. Visible to others.
                 </p>
               </div>
@@ -493,7 +493,7 @@ export default function Register() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '15px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
+                  color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Email
@@ -506,7 +506,7 @@ export default function Register() {
                   style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
                 />
                 {fieldErrors.email && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
-                <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+                <p style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   We'll send a link to confirm it's really you.
                 </p>
               </div>
@@ -515,7 +515,7 @@ export default function Register() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '15px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
+                  color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Password
@@ -545,7 +545,7 @@ export default function Register() {
                         transition: 'background 0.2s',
                       }} />
                     ))}
-                    <span style={{ fontSize: '12px', color: '#7a7a7a', marginLeft: '6px', fontFamily: 'inherit' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--ink-3)', marginLeft: '6px', fontFamily: 'inherit' }}>
                       {['','Weak','Fair','Good','Strong'][pwdStrength(form.password)]}
                     </span>
                   </div>
@@ -556,7 +556,7 @@ export default function Register() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '15px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '6px',
+                  color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Re-enter password
@@ -592,7 +592,7 @@ export default function Register() {
                   style={{ marginTop: '2px', accentColor: '#4FA3CE', flexShrink: 0 }}
                 />
                 <span style={{
-                  fontSize: '14px', color: '#7a7a7a', lineHeight: 1.5,
+                  fontSize: '14px', color: 'var(--ink-3)', lineHeight: 1.5,
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   I agree to the{' '}
@@ -625,12 +625,12 @@ export default function Register() {
 
           {/* Log in link — returning users */}
           <p style={{
-            textAlign: 'center', fontSize: '15px', color: '#7a7a7a',
+            textAlign: 'center', fontSize: '15px', color: 'var(--ink-3)',
             marginTop: '20px',
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
           }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' }}>
               Log in
             </Link>
           </p>
@@ -642,7 +642,7 @@ export default function Register() {
             padding: '18px 18px 16px',
           }}>
             <p style={{
-              fontSize: '15px', fontWeight: 600, color: '#1d1d1f', textAlign: 'center',
+              fontSize: '15px', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 4px',
             }}>
@@ -685,11 +685,11 @@ export default function Register() {
                     <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
                       {guestLoading === role ? 'Opening…' : label}
                     </span>
-                    <span style={{ display: 'block', fontSize: '13px', color: '#7a7a7a', marginTop: '2px' }}>
+                    <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>
                       {sub}
                     </span>
                   </span>
-                  <span aria-hidden="true" style={{ fontSize: '17px', color: '#4FA3CE', fontWeight: 700 }}>→</span>
+                  <span aria-hidden="true" style={{ fontSize: '17px', color: 'var(--blue)', fontWeight: 700 }}>→</span>
                 </button>
               ))}
             </div>
@@ -698,7 +698,7 @@ export default function Register() {
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
+              background: 'var(--blue)', color: '#ffffff', textDecoration: 'none',
               borderRadius: '9999px', padding: '11px 24px',
               fontSize: '15px', fontWeight: 400,
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',

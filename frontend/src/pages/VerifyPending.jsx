@@ -40,12 +40,12 @@ export default function VerifyPending() {
     fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: '#2d3748',
   };
   const primaryBtn = {
-    background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: 10,
+    background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10,
     padding: '12px 22px', fontSize: 17, fontWeight: 600, cursor: sending ? 'default' : 'pointer',
     opacity: sending ? 0.6 : 1, width: '100%', marginBottom: 12,
   };
   const linkBtn = {
-    background: 'none', border: 'none', color: '#4FA3CE', fontWeight: 600,
+    background: 'none', border: 'none', color: 'var(--blue)', fontWeight: 600,
     cursor: 'pointer', textDecoration: 'underline', fontSize: 15,
   };
 

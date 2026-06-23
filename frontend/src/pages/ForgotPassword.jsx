@@ -29,11 +29,11 @@ export default function ForgotPassword() {
     border: '1px solid #d8dce2', boxSizing: 'border-box', marginBottom: 14,
   };
   const btn = {
-    width: '100%', background: '#4FA3CE', color: '#fff', border: 'none',
+    width: '100%', background: 'var(--blue)', color: '#fff', border: 'none',
     borderRadius: 10, padding: '12px', fontSize: 17, fontWeight: 600,
     cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1,
   };
-  const linkStyle = { color: '#4FA3CE', fontWeight: 600, textDecoration: 'underline', fontSize: 15 };
+  const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 15 };
 
   if (sent) {
     return (
@@ -56,7 +56,7 @@ export default function ForgotPassword() {
         Enter your email and we'll send you a link to set a new password.
       </p>
       <form onSubmit={submit}>
-        <label htmlFor="fp-email" style={{ display: 'block', fontSize: 15, fontWeight: 600, color: '#1d1d1f', marginBottom: 8 }}>
+        <label htmlFor="fp-email" style={{ display: 'block', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
           Email
         </label>
         <input

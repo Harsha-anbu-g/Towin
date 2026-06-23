@@ -13,7 +13,7 @@ const BORDER = '#BFD9EA';
 function StepTitle({ children }) {
   return (
     <h2 style={{
-      fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: '#1d1d1f',
+      fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: 'var(--ink)',
       letterSpacing: '-0.3px', margin: '0 0 10px', lineHeight: 1.25,
     }}>{children}</h2>
   );
@@ -31,7 +31,7 @@ function Lead({ children }) {
 function SubHead({ children }) {
   return (
     <h3 style={{
-      fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: '#1d1d1f',
+      fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: 'var(--ink)',
       margin: '20px 0 10px',
     }}>{children}</h3>
   );
@@ -43,7 +43,7 @@ function Bullets({ items }) {
       {items.map((it, i) => (
         <li key={i} style={{
           display: 'flex', gap: '10px', alignItems: 'flex-start',
-          fontFamily: SF, fontSize: '15px', color: '#1d1d1f', lineHeight: 1.5,
+          fontFamily: SF, fontSize: '15px', color: 'var(--ink)', lineHeight: 1.5,
         }}>
           <span style={{
             flexShrink: 0, width: '22px', height: '22px', borderRadius: '50%',
@@ -88,7 +88,7 @@ function CardGrid({ children }) {
 function NoteBox({ children }) {
   return (
     <div style={{
-      marginTop: '18px', background: '#fafafc', border: '1px solid #e8e8ed',
+      marginTop: '18px', background: 'var(--surface-pearl)', border: '1px solid #e8e8ed',
       borderRadius: '14px', padding: '14px 16px',
       fontFamily: SF, fontSize: '14px', color: '#5a6470', lineHeight: 1.6,
     }}>{children}</div>
@@ -111,7 +111,7 @@ export const STEPS = [
           so no one feels alone and everyday help is easy to find.
         </Lead>
         <SubHead>Why we built it</SubHead>
-        <p style={{ fontFamily: SF, fontSize: '15px', color: '#1d1d1f', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink)', lineHeight: 1.6, margin: 0 }}>
           Many older people have no safe, trusted way to meet new friends or get a hand with
           daily tasks. ToWin gives them one, built around trust that grows one small step
           at a time, so no one ever has to rush or feel unsafe.
@@ -299,7 +299,7 @@ export const STEPS = [
           onClick={restart}
           style={{
             width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: SF, fontSize: '15px', color: '#7a7a7a', marginTop: '14px',
+            fontFamily: SF, fontSize: '15px', color: 'var(--ink-3)', marginTop: '14px',
             textDecoration: 'underline', textUnderlineOffset: '3px',
           }}
         >

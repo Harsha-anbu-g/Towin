@@ -105,7 +105,7 @@ export default function Guide() {
   const ctx = { role, isLoggedIn, navigate, restart: () => setStep(0) };
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc' }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)' }}>
       {isLoggedIn ? <NavBar /> : <PublicHeader />}
 
       <div style={{ maxWidth: '760px', margin: '0 auto', padding: '40px 24px 80px' }}>
@@ -113,12 +113,12 @@ export default function Guide() {
         {/* Page heading */}
         <div style={{ marginBottom: '22px' }}>
           <h1 style={{
-            fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: '#1d1d1f',
+            fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
             letterSpacing: '-0.4px', margin: '0 0 6px',
           }}>
             How It Works
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '15px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
             A short, step-by-step tour of the platform. Use Back and Next, or tap a dot to jump.
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function Guide() {
         {/* Progress */}
         <ProgressDots count={total} current={step} onJump={setStep} />
         <p style={{
-          fontFamily: SF, fontSize: '14px', color: '#a0a0a5', textAlign: 'center',
+          fontFamily: SF, fontSize: '14px', color: 'var(--ink-4)', textAlign: 'center',
           margin: '0 0 20px',
         }}>
           Step {step + 1} of {total} · {current.navLabel}

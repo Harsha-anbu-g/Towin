@@ -77,7 +77,7 @@ export default function ConfirmDialog({
         <div style={{ padding: '26px 26px 20px' }}>
           <h3 id="confirm-title" style={{
             margin: '0 0 8px', fontSize: '20px', fontWeight: 600,
-            color: '#1d1d1f', fontFamily: SFD, letterSpacing: '-0.3px',
+            color: 'var(--ink)', fontFamily: SFD, letterSpacing: '-0.3px',
           }}>
             {title}
           </h3>

@@ -72,7 +72,7 @@ export default function TrustJourney({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: accent }} />
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#1d1d1f', fontFamily: SF }}>{current.label}</span>
+          <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)', fontFamily: SF }}>{current.label}</span>
         </div>
         <span style={{ fontSize: '14px', fontWeight: 700, color: accent, background: accentBg, padding: '3px 10px', borderRadius: '9999px' }}>
           Stage {idx + 1} of {LEVELS.length} · {pct}%

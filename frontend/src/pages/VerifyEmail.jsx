@@ -23,7 +23,7 @@ export default function VerifyEmail() {
     maxWidth: 460, margin: '0 auto', padding: '56px 24px', textAlign: 'center',
     fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: '#2d3748',
   };
-  const linkStyle = { color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' };
+  const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' };
 
   return (
     <div style={card}>

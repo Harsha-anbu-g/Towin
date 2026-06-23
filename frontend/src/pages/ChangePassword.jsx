@@ -10,7 +10,7 @@ const SKY = '#4FA3CE';
 
 const labelStyle = {
   display: 'block', fontSize: '14px', fontWeight: 600,
-  color: '#7a7a7a', marginBottom: '6px',
+  color: 'var(--ink-3)', marginBottom: '6px',
 };
 const inputStyle = { width: '100%', boxSizing: 'border-box' };
 
@@ -37,7 +37,7 @@ export default function ChangePassword() {
   }
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '32px 20px 80px' }}>
 
@@ -59,16 +59,16 @@ export default function ChangePassword() {
 
         <BlurFade delay={1}>
           <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid #e0e0e0' }}>
-            <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
+            <p style={{ fontSize: '22px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
               Change Password
             </p>
-            <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '22px' }}>
+            <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '22px' }}>
               Enter your current password, then choose a new one.
             </p>
 
             {done ? (
               <div>
-                <p style={{ fontSize: '16px', color: '#4FA3CE', fontWeight: 600, marginBottom: '20px' }}>
+                <p style={{ fontSize: '16px', color: 'var(--blue)', fontWeight: 600, marginBottom: '20px' }}>
                   ✓ Password changed. You can use your new password next time you sign in.
                 </p>
                 <button onClick={() => navigate('/profile')} className="primary-btn" style={{ fontSize: '16px' }}>

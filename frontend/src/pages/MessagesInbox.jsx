@@ -38,7 +38,7 @@ const Avatar = ({ name, size = 52 }) => (
     borderRadius: '50%',
     background: '#EAF5FB',
     border: '1px solid #BFD9EA',
-    color: '#4FA3CE',
+    color: 'var(--blue)',
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
@@ -80,7 +80,7 @@ export default function MessagesInbox() {
     : active;
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
 
       <BlurFade delay={1}>
@@ -93,7 +93,7 @@ export default function MessagesInbox() {
           <h1 style={{
             fontSize: 'clamp(28px, 7vw, 40px)',
             fontWeight: 600,
-            color: '#1d1d1f',
+            color: 'var(--ink)',
             fontFamily: SF,
             letterSpacing: '-0.8px',
             marginBottom: '8px',
@@ -137,16 +137,16 @@ export default function MessagesInbox() {
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
               </div>
-              <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', fontFamily: SF }}>
+              <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
                 No conversations yet
               </p>
-              <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '20px' }}>
+              <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '20px' }}>
                 Connect with someone on your dashboard to start chatting.
               </p>
               <button
                 onClick={() => navigate('/dashboard')}
                 style={{
-                  background: '#4FA3CE', color: '#fff', border: 'none',
+                  background: 'var(--blue)', color: '#fff', border: 'none',
                   borderRadius: '9999px', padding: '10px 22px',
                   fontSize: '15px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                 }}
@@ -176,7 +176,7 @@ export default function MessagesInbox() {
                     width: '100%', boxSizing: 'border-box', height: '48px',
                     border: '1.5px solid #e0e0e0', borderRadius: '9999px',
                     padding: '0 18px 0 44px', fontSize: '16px', fontFamily: SFText,
-                    color: '#1d1d1f', background: '#fff', outline: 'none',
+                    color: 'var(--ink)', background: '#fff', outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
                   onFocus={e => e.currentTarget.style.borderColor = '#4FA3CE'}
@@ -190,7 +190,7 @@ export default function MessagesInbox() {
                 background: '#ffffff', border: '1px solid #ececef',
                 borderRadius: '18px', padding: '40px 24px', textAlign: 'center',
               }}>
-                <p style={{ fontSize: '16px', color: '#7a7a7a', margin: 0 }}>
+                <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
                   No conversations match “{query.trim()}”.
                 </p>
               </div>
@@ -230,7 +230,7 @@ export default function MessagesInbox() {
                           <span style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                             <span style={{
                               fontSize: '16px', fontWeight: c.unreadCount > 0 ? 700 : 600,
-                              color: '#1d1d1f', fontFamily: SF,
+                              color: 'var(--ink)', fontFamily: SF,
                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                             }}>
                               {c.otherUserName || 'User'}
@@ -238,7 +238,7 @@ export default function MessagesInbox() {
                             {trustLabel && (
                               <span style={{
                                 fontSize: '12px', fontWeight: 600, fontFamily: SFText,
-                                color: '#4FA3CE', background: '#f5f5f7',
+                                color: 'var(--blue)', background: 'var(--surface)',
                                 border: '1px solid #e0e0e0', borderRadius: '9999px',
                                 padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
                                 letterSpacing: '0.1px',
@@ -247,7 +247,7 @@ export default function MessagesInbox() {
                               </span>
                             )}
                           </span>
-                          <span style={{ fontSize: '13px', color: '#a0a0a5', flexShrink: 0, fontFamily: SFText }}>
+                          <span style={{ fontSize: '13px', color: 'var(--ink-4)', flexShrink: 0, fontFamily: SFText }}>
                             {timeAgo(c.lastMessageAt)}
                           </span>
                         </div>
@@ -262,7 +262,7 @@ export default function MessagesInbox() {
                           </p>
                           {c.unreadCount > 0 && (
                             <span style={{
-                              background: '#4FA3CE', color: '#fff',
+                              background: 'var(--blue)', color: '#fff',
                               fontSize: '12px', fontWeight: 600, fontFamily: SFText,
                               borderRadius: '9999px', padding: '2px 7px',
                               flexShrink: 0, minWidth: '20px', textAlign: 'center',

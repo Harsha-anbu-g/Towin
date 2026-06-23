@@ -16,11 +16,11 @@ function ConfirmButton({ label, style, onConfirm }) {
     return (
       <span style={{ display: 'flex', gap: '4px' }}>
         <button onClick={() => { onConfirm(); setConfirming(false); }}
-          style={{ fontSize: '13px', background: '#cc0000', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: '13px', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
           Sure?
         </button>
         <button onClick={() => setConfirming(false)}
-          style={{ fontSize: '13px', background: '#e0e0e0', color: '#1d1d1f', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: '13px', background: 'var(--border)', color: 'var(--ink)', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
           No
         </button>
       </span>
@@ -104,8 +104,8 @@ function FeedbackTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p style={{ fontFamily: SFText, color: '#7a7a7a', padding: '24px' }}>Loading feedback…</p>;
-  if (!rows.length) return <p style={{ fontFamily: SFText, color: '#7a7a7a', padding: '24px' }}>No feedback yet.</p>;
+  if (loading) return <p style={{ fontFamily: SFText, color: 'var(--ink-3)', padding: '24px' }}>Loading feedback…</p>;
+  if (!rows.length) return <p style={{ fontFamily: SFText, color: 'var(--ink-3)', padding: '24px' }}>No feedback yet.</p>;
 
   return (
     <div style={{ padding: '24px 0' }}>
@@ -117,10 +117,10 @@ function FeedbackTab() {
           const a = avgRating(rows, key);
           return (
             <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 600, color: '#4FA3CE', fontFamily: SF }}>
+              <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--blue)', fontFamily: SF }}>
                 {a ?? '—'}
               </div>
-              <div style={{ fontSize: '12px', color: '#7a7a7a', fontFamily: SFText }}>{label}</div>
+              <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontFamily: SFText }}>{label}</div>
             </div>
           );
         })}
@@ -129,16 +129,16 @@ function FeedbackTab() {
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: SFText, fontSize: '14px' }}>
           <thead>
-            <tr style={{ background: '#f5f5f7', textAlign: 'left' }}>
+            <tr style={{ background: 'var(--surface)', textAlign: 'left' }}>
               {['Date', 'Name', 'Email', 'Phone', ...RATING_LABELS.map(r => r.label), 'Message'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', color: '#1d1d1f', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                <th key={h} style={{ padding: '10px 12px', color: 'var(--ink)', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map(r => (
               <tr key={r.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ padding: '10px 12px', color: '#7a7a7a', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '10px 12px', color: 'var(--ink-3)', whiteSpace: 'nowrap' }}>
                   {new Date(r.createdAt).toLocaleDateString()}
                 </td>
                 <td style={{ padding: '10px 12px' }}>{r.name ?? '—'}</td>
@@ -149,7 +149,7 @@ function FeedbackTab() {
                     {r[key] != null ? `${r[key]} ⭐` : '—'}
                   </td>
                 ))}
-                <td style={{ padding: '10px 12px', maxWidth: '240px', color: '#1d1d1f' }}>{r.message}</td>
+                <td style={{ padding: '10px 12px', maxWidth: '240px', color: 'var(--ink)' }}>{r.message}</td>
               </tr>
             ))}
           </tbody>
@@ -224,18 +224,18 @@ export default function Admin() {
     textAlign: 'left',
     fontSize: '12px',
     fontWeight: 600,
-    color: '#a0a0a5',
+    color: 'var(--ink-4)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     fontFamily: SFText,
     borderBottom: '1px solid #e0e0e0',
-    background: '#fafafc',
+    background: 'var(--surface-pearl)',
   };
 
   const tdStyle = {
     padding: '14px 16px',
     fontSize: '15px',
-    color: '#1d1d1f',
+    color: 'var(--ink)',
     fontFamily: SFText,
     borderBottom: '1px solid #f5f5f7',
     verticalAlign: 'middle',
@@ -262,7 +262,7 @@ export default function Admin() {
   });
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
 
       {/* Hero header — calm sky-blue, matches the rest of the app */}
       <div style={{
@@ -297,7 +297,7 @@ export default function Admin() {
           </svg>
         </div>
         <h1 style={{
-          fontSize: '40px', fontWeight: 600, color: '#1d1d1f',
+          fontSize: '40px', fontWeight: 600, color: 'var(--ink)',
           fontFamily: SF, letterSpacing: '-0.8px', marginBottom: '8px',
         }}>
           Admin
@@ -319,10 +319,10 @@ export default function Admin() {
               padding: '16px 18px',
               textAlign: 'left',
             }}>
-              <p style={{ fontSize: '26px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
+              <p style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
                 {stat.value}
               </p>
-              <p style={{ fontSize: '13px', color: '#7a7a7a', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
+              <p style={{ fontSize: '13px', color: 'var(--ink-3)', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
                 {stat.label}
               </p>
             </div>
@@ -367,7 +367,7 @@ export default function Admin() {
                 {hasBadge && (
                   <span style={{
                     fontSize: '12px', fontWeight: 600,
-                    color: '#ffffff', background: '#cc0000',
+                    color: '#ffffff', background: 'var(--red)',
                     borderRadius: '9999px', padding: '1px 8px',
                   }}>
                     {reports.length}
@@ -396,9 +396,9 @@ export default function Admin() {
                   border: '1.5px solid #e0e0e0',
                   fontSize: '15px',
                   fontFamily: SFText,
-                  color: '#1d1d1f',
+                  color: 'var(--ink)',
                   outline: 'none',
-                  background: '#fafafc',
+                  background: 'var(--surface-pearl)',
                 }}
               />
             </div>
@@ -432,7 +432,7 @@ export default function Admin() {
                           }}>
                             {u.email?.[0]?.toUpperCase() || '?'}
                           </div>
-                          <span style={{ fontSize: '14px', color: '#1d1d1f', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '14px', color: 'var(--ink)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {u.email}
                           </span>
                         </div>
@@ -444,14 +444,14 @@ export default function Admin() {
                         </span>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '13px', color: '#7a7a7a', fontWeight: 500 }}>{u.trustTier || '—'}</span>
+                        <span style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500 }}>{u.trustTier || '—'}</span>
                       </td>
                       <td style={tdStyle}>{statusBadge(u.isActive)}</td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '13px', color: '#7a7a7a' }}>{u.verificationStatus}</span>
+                        <span style={{ fontSize: '13px', color: 'var(--ink-3)' }}>{u.verificationStatus}</span>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '13px', color: '#a0a0a5' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--ink-4)' }}>
                           {new Date(u.createdAt).toLocaleDateString()}
                         </span>
                       </td>
@@ -477,7 +477,7 @@ export default function Admin() {
 
             {/* Pagination controls */}
             <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', borderTop: '1px solid #e0e0e0' }}>
-              <span style={{ fontSize: '14px', color: '#7a7a7a', fontFamily: SFText }}>
+              <span style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText }}>
                 Page {clampedPage + 1} of {userPageCount}
               </span>
               <button
@@ -516,7 +516,7 @@ export default function Admin() {
         {tab === 'Verifications' && (
           <div style={card}>
             {verifications.length === 0 && (
-              <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '15px', textAlign: 'center' }}>
+              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: '15px', textAlign: 'center' }}>
                 No pending verifications.
               </p>
             )}
@@ -534,8 +534,8 @@ export default function Admin() {
                     <td style={tdStyle}>{v.email}</td>
                     <td style={tdStyle}>
                       {v.idDocumentUrl
-                        ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: '#4FA3CE', fontSize: '14px', fontWeight: 600 }}>View Document</a>
-                        : <span style={{ color: '#a0a0a5' }}>—</span>}
+                        ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', fontSize: '14px', fontWeight: 600 }}>View Document</a>
+                        : <span style={{ color: 'var(--ink-4)' }}>—</span>}
                     </td>
                     <td style={tdStyle}>{new Date(v.createdAt).toLocaleDateString()}</td>
                     <td style={tdStyle}>
@@ -558,7 +558,7 @@ export default function Admin() {
         {tab === 'Reports' && (
           <div style={card}>
             {reports.length === 0 && (
-              <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '15px', textAlign: 'center' }}>
+              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: '15px', textAlign: 'center' }}>
                 No reports.
               </p>
             )}
@@ -576,7 +576,7 @@ export default function Admin() {
                     <td style={tdStyle}>{r.reporterEmail}</td>
                     <td style={tdStyle}>{r.reportedEmail}</td>
                     <td style={tdStyle}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#cc0000', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
                         {r.reason}
                       </span>
                     </td>
@@ -604,7 +604,7 @@ export default function Admin() {
             </div>
             <div style={card}>
               {reviews.length === 0 && (
-                <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '15px', textAlign: 'center' }}>No reviews.</p>
+                <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: '15px', textAlign: 'center' }}>No reviews.</p>
               )}
               <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
                 <thead>
@@ -623,8 +623,8 @@ export default function Admin() {
                       <td style={tdStyle}>{r.tags?.join(', ')}</td>
                       <td style={tdStyle}>
                         {r.safetyConcern
-                          ? <span style={{ fontSize: '13px', color: '#cc0000', fontWeight: 600 }}>Safety Flag</span>
-                          : <span style={{ fontSize: '13px', color: '#a0a0a5' }}>—</span>}
+                          ? <span style={{ fontSize: '13px', color: 'var(--red)', fontWeight: 600 }}>Safety Flag</span>
+                          : <span style={{ fontSize: '13px', color: 'var(--ink-4)' }}>—</span>}
                       </td>
                       <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>
                       <td style={tdStyle}>
@@ -669,7 +669,7 @@ export default function Admin() {
                         <td style={tdStyle}>{c.userAEmail}</td>
                         <td style={tdStyle}>{c.userBEmail}</td>
                         <td style={tdStyle}>
-                          <span style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 600 }}>{c.trustLevel}</span>
+                          <span style={{ fontSize: '13px', color: 'var(--blue)', fontWeight: 600 }}>{c.trustLevel}</span>
                         </td>
                         <td style={tdStyle}>{c.status}</td>
                         <td style={tdStyle}>{new Date(c.createdAt).toLocaleDateString()}</td>
