@@ -42,7 +42,6 @@
 
   /* Semantic */
   --red:   #cc0000;
-  --green: #3D8AB0;
   --amber: #b05000;
 
   /* Typography */
@@ -445,12 +444,14 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 }
 
 /* ── Global: prevent images from being dragged ───────────────────────── */
+/* Prevent image drag/save without blocking clicks: pointer-events:none was a
+   footgun (it silently disables any clickable image). Drag is still prevented
+   via -webkit-user-drag + the draggable="false" attributes on images. */
 img {
   -webkit-user-drag: none;
   user-drag: none;
   -webkit-user-select: none;
   user-select: none;
-  pointer-events: none;
 }
 
 /* ── Landing story slides ─────────────────────────────────────────────── */
