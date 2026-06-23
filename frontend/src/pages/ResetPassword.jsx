@@ -40,13 +40,13 @@ export default function ResetPassword() {
     borderRadius: 10, padding: '12px', fontSize: 17, fontWeight: 600,
     cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1,
   };
-  const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 15 };
-  const labelStyle = { display: 'block', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 };
+  const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' };
+  const labelStyle = { display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: 8 };
 
   if (!token) {
     return (
       <div style={{ ...wrap, textAlign: 'center' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Invalid link</h1>
+        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>Invalid link</h1>
         <p style={{ color: 'var(--slate)', marginBottom: 24 }}>This reset link is missing its token.</p>
         <Link to="/forgot-password" style={linkStyle}>Request a new link</Link>
       </div>
@@ -57,7 +57,7 @@ export default function ResetPassword() {
     return (
       <div style={{ ...wrap, textAlign: 'center' }}>
         <div style={{ fontSize: 44, marginBottom: 16 }}>✅</div>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Password updated</h1>
+        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>Password updated</h1>
         <p style={{ color: 'var(--slate)', marginBottom: 24 }}>You can now log in with your new password.</p>
         <Link to="/login" style={linkStyle}>Go to log in →</Link>
       </div>
@@ -66,7 +66,7 @@ export default function ResetPassword() {
 
   return (
     <div style={wrap}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Choose a new password</h1>
+      <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 8 }}>Choose a new password</h1>
       <form onSubmit={submit} style={{ marginTop: 16 }}>
         <label htmlFor="rp-pw" style={labelStyle}>New password (at least 8 characters)</label>
         <input
@@ -87,7 +87,7 @@ export default function ResetPassword() {
           {loading ? 'Saving…' : 'Update password'}
         </button>
       </form>
-      <p style={{ marginTop: 18, fontSize: 15 }}>
+      <p style={{ marginTop: 18, fontSize: 'var(--text-sm)' }}>
         <Link to="/login" style={linkStyle}>Back to log in</Link>
       </p>
     </div>

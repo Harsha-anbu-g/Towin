@@ -44,7 +44,7 @@ function Lead({ children, align = 'center' }) {
 function Body({ children }) {
   return (
     <p style={{
-      fontFamily: SF, fontSize: '18px', color: 'var(--ink)', lineHeight: 1.65,
+      fontFamily: SF, fontSize: 'var(--text-base)', color: 'var(--ink)', lineHeight: 1.65,
       textAlign: 'center', maxWidth: '580px', margin: '0 auto 18px',
     }}>{children}</p>
   );
@@ -65,7 +65,7 @@ function MiniCard({ title, badge, stars, compact, children }) {
         </p>
         {badge && (
           <span style={{
-            fontFamily: SFD, fontSize: '13px', fontWeight: 700, color: BLUE,
+            fontFamily: SFD, fontSize: 'var(--text-xs)', fontWeight: 700, color: BLUE,
             background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
             padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
           }}>{badge}</span>
@@ -97,8 +97,8 @@ function ScoreSum() {
       <span style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: 'var(--ink-slate)' }}>
         3 + 7 + 5 =
       </span>
-      <span style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 700, color: BLUE }}>15</span>
-      <span style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-slate)' }}>points</span>
+      <span style={{ fontFamily: SFD, fontSize: 'var(--text-lg)', fontWeight: 700, color: BLUE }}>15</span>
+      <span style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>points</span>
     </div>
   );
 }
@@ -288,7 +288,7 @@ export const SLIDES = [
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
             background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '7px 14px',
           }}>
-            <span style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: 'var(--ink-slate)' }}>3 + 7 + 5 =</span>
+            <span style={{ fontFamily: SFD, fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink-slate)' }}>3 + 7 + 5 =</span>
             <span style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: BLUE }}>15</span>
             <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)' }}>points</span>
           </div>

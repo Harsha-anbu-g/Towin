@@ -118,7 +118,7 @@ export default function Guide() {
           }}>
             How It Works
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
             A short, step-by-step tour of the platform. Use Back and Next, or tap a dot to jump.
           </p>
         </div>

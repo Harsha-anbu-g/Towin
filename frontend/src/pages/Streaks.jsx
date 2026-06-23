@@ -149,7 +149,7 @@ export default function Streaks() {
         {/* Tagline centered in the art's clear middle band */}
         <div style={{ position: 'relative', zIndex: 2, padding: '24px', textAlign: 'center', transform: 'translateY(-30px)' }}>
           <h2 style={{
-            fontFamily: SF, fontSize: '22px', fontWeight: 600, color: '#9a9da4',
+            fontFamily: SF, fontSize: 'var(--text-lg)', fontWeight: 600, color: '#9a9da4',
             letterSpacing: '-0.3px', margin: 0, lineHeight: 1.3, whiteSpace: 'nowrap',
           }}>
             Slow is smooth and Smooth is fast and constant
@@ -167,7 +167,7 @@ export default function Streaks() {
 
           {/* Greeting */}
           <p style={{
-            fontSize: '18px', color: 'var(--ink-3)', fontFamily: SFT,
+            fontSize: 'var(--text-base)', color: 'var(--ink-3)', fontFamily: SFT,
             marginBottom: '8px', fontWeight: 500,
           }}>
             {greeting()}
@@ -200,7 +200,7 @@ export default function Streaks() {
                   {streak?.currentStreak ?? 0}
                 </p>
                 <p style={{
-                  fontSize: '18px', fontWeight: 600, color: 'var(--ink-3)',
+                  fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink-3)',
                   fontFamily: SFT, marginBottom: '22px',
                 }}>
                   days in a row
@@ -210,7 +210,7 @@ export default function Streaks() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
                   {week.map((d, i) => (
                     <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', fontFamily: SFT }}>{d.label}</span>
+                      <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--ink-4)', fontFamily: SFT }}>{d.label}</span>
                       <div style={{
                         width: '34px', height: '34px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -232,7 +232,7 @@ export default function Streaks() {
                 </div>
 
                 {streak?.longestStreak > 0 && (
-                  <p style={{ fontSize: '15px', color: 'var(--ink-4)', fontFamily: SFT, margin: '18px 0 0' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, margin: '18px 0 0' }}>
                     Best streak: {streak.longestStreak} {streak.longestStreak === 1 ? 'day' : 'days'}
                   </p>
                 )}
@@ -253,14 +253,14 @@ export default function Streaks() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
                   <div>
                     <p style={{
-                      fontFamily: SF, fontSize: '34px', fontWeight: 600,
+                      fontFamily: SF, fontSize: 'var(--text-2xl)', fontWeight: 600,
                       color: 'var(--green-deep)', lineHeight: 1, margin: '0 0 6px',
                       letterSpacing: '-1px',
                     }}>
                       {age.totalDays.toLocaleString()}
                     </p>
                     <p style={{
-                      fontSize: '15px', fontWeight: 600, color: 'var(--ink-3)',
+                      fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink-3)',
                       fontFamily: SFT, margin: 0,
                     }}>
                       days you have lived
@@ -279,12 +279,12 @@ export default function Streaks() {
             })() : (
               <>
                 <p style={{
-                  fontFamily: SF, fontSize: '18px', fontWeight: 600,
+                  fontFamily: SF, fontSize: 'var(--text-base)', fontWeight: 600,
                   color: 'var(--ink)', margin: '0 0 6px',
                 }}>
                   How many days have you lived?
                 </p>
-                <p style={{ fontSize: '15px', color: 'var(--ink-4)', fontFamily: SFT, margin: '0 0 14px' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, margin: '0 0 14px' }}>
                   Add your date of birth in your profile to see your life in days.
                 </p>
                 <button
@@ -292,7 +292,7 @@ export default function Streaks() {
                   style={{
                     background: 'none', border: '1.5px solid #e0e0e0',
                     borderRadius: '9999px', padding: '8px 20px',
-                    fontSize: '15px', fontWeight: 600, color: 'var(--blue)',
+                    fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue)',
                     fontFamily: SFT, cursor: 'pointer',
                   }}
                 >
@@ -360,7 +360,7 @@ export default function Streaks() {
                 >
                   {checkingIn ? 'Checking in…' : "I'm here today"}
                 </button>
-                <p style={{ textAlign: 'center', fontSize: '15px', color: 'var(--ink-4)', fontFamily: SFT, lineHeight: 1.5, marginTop: '12px' }}>
+                <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, lineHeight: 1.5, marginTop: '12px' }}>
                   Tap to log today and keep your streak alive.
                 </p>
                 <div style={{ textAlign: 'center', marginTop: '8px' }}>

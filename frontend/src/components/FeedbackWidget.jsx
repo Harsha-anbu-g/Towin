@@ -31,7 +31,7 @@ export default function FeedbackWidget() {
         border: 'none',
         borderRadius: '9999px',
         padding: '12px 20px',
-        fontSize: '15px',
+        fontSize: 'var(--text-sm)',
         fontWeight: 600,
         cursor: 'pointer',
         fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,

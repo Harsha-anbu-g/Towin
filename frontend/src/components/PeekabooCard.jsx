@@ -24,7 +24,7 @@ export default function PeekabooCard() {
         border: '1.5px solid #BFE0C9',
         borderRadius: '9999px',
         padding: '12px 20px',
-        fontSize: '15px',
+        fontSize: 'var(--text-sm)',
         fontWeight: 600,
         textDecoration: 'none',
         fontFamily: SF,

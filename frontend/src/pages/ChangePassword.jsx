@@ -47,7 +47,7 @@ export default function ChangePassword() {
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: '6px',
-            fontFamily: SFText, fontSize: '15px', color: SKY, fontWeight: 600,
+            fontFamily: SFText, fontSize: 'var(--text-sm)', color: SKY, fontWeight: 600,
             marginBottom: '24px', padding: 0,
           }}
         >
@@ -59,10 +59,10 @@ export default function ChangePassword() {
 
         <BlurFade delay={1}>
           <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid #e0e0e0' }}>
-            <p style={{ fontSize: '22px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
+            <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
               Change Password
             </p>
-            <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '22px' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '22px' }}>
               Enter your current password, then choose a new one.
             </p>
 

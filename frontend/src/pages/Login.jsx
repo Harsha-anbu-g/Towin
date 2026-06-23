@@ -62,7 +62,7 @@ function HeroPanel() {
           background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           border: '1px solid rgba(255,255,255,0.35)', borderRadius: '9999px',
-          padding: '7px 18px', fontSize: '13px', fontWeight: 600,
+          padding: '7px 18px', fontSize: 'var(--text-xs)', fontWeight: 600,
           letterSpacing: '0.4px', color: '#fff',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
         }}>
@@ -70,7 +70,7 @@ function HeroPanel() {
         </span>
         <h1 style={{
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-          fontSize: '40px', lineHeight: 1.15, color: '#fff',
+          fontSize: 'var(--text-3xl)', lineHeight: 1.15, color: '#fff',
           marginBottom: '16px', letterSpacing: '-0.3px', fontWeight: 600,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
@@ -215,12 +215,12 @@ export default function Login() {
             <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
               <button type="button" style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
-                fontSize: '15px', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
+                fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
                 background: '#ffffff', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}>Log in</button>
               <button type="button" onClick={() => navigate('/register')} style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
-                fontSize: '15px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 background: 'transparent', color: 'var(--ink-3)',
               }}>Create account</button>
             </div>
@@ -245,7 +245,7 @@ export default function Login() {
               <div style={{
                 background: 'var(--blue-wash)', border: '1px solid #BFD9EA',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '15px', color: 'var(--blue-teal)', marginBottom: '20px',
+                fontSize: 'var(--text-sm)', color: 'var(--blue-teal)', marginBottom: '20px',
                 lineHeight: 1.45,
               }}>
                 For your safety, you were logged out after a period of inactivity. Please log in again.
@@ -257,7 +257,7 @@ export default function Login() {
               <div style={{
                 background: 'var(--red-tint)', border: '1px solid #fecaca',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '15px', color: 'var(--red-error)', marginBottom: '20px',
+                fontSize: 'var(--text-sm)', color: 'var(--red-error)', marginBottom: '20px',
               }}>
                 {error}
               </div>
@@ -279,7 +279,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{
-                  display: 'block', fontSize: '15px', fontWeight: 600,
+                  display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600,
                   color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
@@ -292,12 +292,12 @@ export default function Login() {
                   onChange={e => { setForm({ ...form, identifier: e.target.value }); setFieldErrors(f => ({ ...f, identifier: '' })); }}
                   style={{ borderColor: fieldErrors.identifier ? '#fca5a5' : undefined }}
                 />
-                {fieldErrors.identifier && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
+                {fieldErrors.identifier && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
               </div>
 
               <div>
                 <label style={{
-                  display: 'block', fontSize: '15px', fontWeight: 600,
+                  display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600,
                   color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
@@ -324,11 +324,11 @@ export default function Login() {
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {fieldErrors.password && <p style={{ fontSize: '13px', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
+                {fieldErrors.password && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
                   <Link to="/forgot-password" style={{
-                    fontSize: '15px', color: 'var(--blue)',
+                    fontSize: 'var(--text-sm)', color: 'var(--blue)',
                     textDecoration: 'none',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
@@ -377,14 +377,14 @@ export default function Login() {
             padding: '18px 18px 16px',
           }}>
             <p style={{
-              fontSize: '15px', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
+              fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 4px',
             }}>
               Just want to see how it works?
             </p>
             <p style={{
-              fontSize: '13px', color: 'var(--ink-slate)', textAlign: 'center',
+              fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
@@ -417,7 +417,7 @@ export default function Login() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
                 >
                   <span>
-                    <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: 'var(--blue-teal)' }}>
+                    <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
                       {guestLoading === role ? 'Opening…' : label}
                     </span>
                     <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-3)', marginTop: '2px' }}>
@@ -435,7 +435,7 @@ export default function Login() {
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               background: 'var(--blue)', color: '#ffffff', textDecoration: 'none',
               borderRadius: '9999px', padding: '11px 24px',
-              fontSize: '15px', fontWeight: 400,
+              fontSize: 'var(--text-sm)', fontWeight: 400,
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
             }}>
@@ -443,7 +443,7 @@ export default function Login() {
             </Link>
           </div>
           <p style={{
-            textAlign: 'center', fontSize: '13px', color: 'var(--ink-4)',
+            textAlign: 'center', fontSize: 'var(--text-xs)', color: 'var(--ink-4)',
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
             marginTop: '12px',
           }}>

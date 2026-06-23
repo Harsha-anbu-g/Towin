@@ -206,7 +206,7 @@ export default function Messages() {
           {trustLevel && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--blue-deep)', flexShrink: 0 }} />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--blue-deep)' }}>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)' }}>
                 {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ` · Trust ${otherTrustScore}` : ''}
               </span>
             </div>
@@ -300,7 +300,7 @@ export default function Messages() {
                 <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             ) : (
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', fontWeight: 600, color: 'var(--ink-slate)', fontFamily: SF }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 'var(--text-xl)', fontWeight: 600, color: 'var(--ink-slate)', fontFamily: SF }}>
                 {initials(otherName)}
               </div>
             )}
@@ -308,7 +308,7 @@ export default function Messages() {
               {otherName}
             </p>
             {loadError !== 'trust' && (
-              <p style={{ fontSize: '15px', color: 'var(--ink-4)' }}>No messages yet. Send the first message to {otherName}.</p>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)' }}>No messages yet. Send the first message to {otherName}.</p>
             )}
           </div>
         )}
@@ -323,7 +323,7 @@ export default function Messages() {
               {showDateSep && (
                 <div style={{ textAlign: 'center', margin: '16px 0 8px' }}>
                   <span style={{
-                    fontSize: '13px',
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--ink-4)',
                     fontFamily: SFText,
                     fontWeight: 500,
@@ -379,7 +379,7 @@ export default function Messages() {
           background: '#fef3c7', borderTop: '1px solid #fde68a',
           padding: '12px 20px', textAlign: 'center',
         }}>
-          <p style={{ fontSize: '15px', color: '#92400e', fontFamily: SFText, margin: 0 }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#92400e', fontFamily: SFText, margin: 0 }}>
             Messaging is locked. Both of you need to click <strong>Confirm Trust</strong> on the dashboard to unlock messages.
           </p>
         </div>

@@ -33,13 +33,13 @@ export default function ForgotPassword() {
     borderRadius: 10, padding: '12px', fontSize: 17, fontWeight: 600,
     cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1,
   };
-  const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 15 };
+  const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' };
 
   if (sent) {
     return (
       <div style={{ ...wrap, textAlign: 'center' }}>
         <div style={{ fontSize: 44, marginBottom: 16 }}>✉️</div>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Check your email</h1>
+        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>Check your email</h1>
         <p style={{ color: 'var(--slate)', marginBottom: 24 }}>
           If an account exists for that email, we've sent a link to reset your password.
           Be sure to check your Spam folder.
@@ -51,12 +51,12 @@ export default function ForgotPassword() {
 
   return (
     <div style={wrap}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Reset your password</h1>
+      <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 8 }}>Reset your password</h1>
       <p style={{ color: 'var(--slate)', marginBottom: 24, fontSize: 16 }}>
         Enter your email and we'll send you a link to set a new password.
       </p>
       <form onSubmit={submit}>
-        <label htmlFor="fp-email" style={{ display: 'block', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
+        <label htmlFor="fp-email" style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
           Email
         </label>
         <input
@@ -69,7 +69,7 @@ export default function ForgotPassword() {
           {loading ? 'Sending…' : 'Send reset link'}
         </button>
       </form>
-      <p style={{ marginTop: 18, fontSize: 15 }}>
+      <p style={{ marginTop: 18, fontSize: 'var(--text-sm)' }}>
         <Link to="/login" style={linkStyle}>Back to log in</Link>
       </p>
     </div>

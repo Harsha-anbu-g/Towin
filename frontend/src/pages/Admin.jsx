@@ -16,11 +16,11 @@ function ConfirmButton({ label, style, onConfirm }) {
     return (
       <span style={{ display: 'flex', gap: '4px' }}>
         <button onClick={() => { onConfirm(); setConfirming(false); }}
-          style={{ fontSize: '13px', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: 'var(--text-xs)', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
           Sure?
         </button>
         <button onClick={() => setConfirming(false)}
-          style={{ fontSize: '13px', background: 'var(--border)', color: 'var(--ink)', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: 'var(--text-xs)', background: 'var(--border)', color: 'var(--ink)', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
           No
         </button>
       </span>
@@ -32,7 +32,7 @@ function ConfirmButton({ label, style, onConfirm }) {
 }
 
 const actionBtn = (color, bg) => ({
-  fontSize: '13px',
+  fontSize: 'var(--text-xs)',
   fontWeight: 600,
   color,
   background: bg,
@@ -117,7 +117,7 @@ function FeedbackTab() {
           const a = avgRating(rows, key);
           return (
             <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--blue)', fontFamily: SF }}>
+              <div style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue)', fontFamily: SF }}>
                 {a ?? '—'}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontFamily: SFText }}>{label}</div>
@@ -234,7 +234,7 @@ export default function Admin() {
 
   const tdStyle = {
     padding: '14px 16px',
-    fontSize: '15px',
+    fontSize: 'var(--text-sm)',
     color: 'var(--ink)',
     fontFamily: SFText,
     borderBottom: '1px solid #f5f5f7',
@@ -249,7 +249,7 @@ export default function Admin() {
   };
 
   const subTabStyle = (active, accent = '#4FA3CE') => ({
-    fontSize: '15px',
+    fontSize: 'var(--text-sm)',
     fontWeight: active ? 700 : 500,
     color: active ? '#ffffff' : '#1d1d1f',
     background: active ? accent : '#ffffff',
@@ -297,7 +297,7 @@ export default function Admin() {
           </svg>
         </div>
         <h1 style={{
-          fontSize: '40px', fontWeight: 600, color: 'var(--ink)',
+          fontSize: 'var(--text-3xl)', fontWeight: 600, color: 'var(--ink)',
           fontFamily: SF, letterSpacing: '-0.8px', marginBottom: '8px',
         }}>
           Admin
@@ -322,7 +322,7 @@ export default function Admin() {
               <p style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
                 {stat.value}
               </p>
-              <p style={{ fontSize: '13px', color: 'var(--ink-3)', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
                 {stat.label}
               </p>
             </div>
@@ -394,7 +394,7 @@ export default function Admin() {
                   padding: '9px 16px',
                   borderRadius: '9999px',
                   border: '1.5px solid #e0e0e0',
-                  fontSize: '15px',
+                  fontSize: 'var(--text-sm)',
                   fontFamily: SFText,
                   color: 'var(--ink)',
                   outline: 'none',
@@ -444,14 +444,14 @@ export default function Admin() {
                         </span>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500 }}>{u.trustTier || '—'}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', fontWeight: 500 }}>{u.trustTier || '—'}</span>
                       </td>
                       <td style={tdStyle}>{statusBadge(u.isActive)}</td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '13px', color: 'var(--ink-3)' }}>{u.verificationStatus}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)' }}>{u.verificationStatus}</span>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '13px', color: 'var(--ink-4)' }}>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>
                           {new Date(u.createdAt).toLocaleDateString()}
                         </span>
                       </td>
@@ -516,7 +516,7 @@ export default function Admin() {
         {tab === 'Verifications' && (
           <div style={card}>
             {verifications.length === 0 && (
-              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: '15px', textAlign: 'center' }}>
+              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
                 No pending verifications.
               </p>
             )}
@@ -558,7 +558,7 @@ export default function Admin() {
         {tab === 'Reports' && (
           <div style={card}>
             {reports.length === 0 && (
-              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: '15px', textAlign: 'center' }}>
+              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
                 No reports.
               </p>
             )}
@@ -576,7 +576,7 @@ export default function Admin() {
                     <td style={tdStyle}>{r.reporterEmail}</td>
                     <td style={tdStyle}>{r.reportedEmail}</td>
                     <td style={tdStyle}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
+                      <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--red)', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
                         {r.reason}
                       </span>
                     </td>
@@ -604,7 +604,7 @@ export default function Admin() {
             </div>
             <div style={card}>
               {reviews.length === 0 && (
-                <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: '15px', textAlign: 'center' }}>No reviews.</p>
+                <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>No reviews.</p>
               )}
               <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
                 <thead>
@@ -623,8 +623,8 @@ export default function Admin() {
                       <td style={tdStyle}>{r.tags?.join(', ')}</td>
                       <td style={tdStyle}>
                         {r.safetyConcern
-                          ? <span style={{ fontSize: '13px', color: 'var(--red)', fontWeight: 600 }}>Safety Flag</span>
-                          : <span style={{ fontSize: '13px', color: 'var(--ink-4)' }}>—</span>}
+                          ? <span style={{ fontSize: 'var(--text-xs)', color: 'var(--red)', fontWeight: 600 }}>Safety Flag</span>
+                          : <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>—</span>}
                       </td>
                       <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>
                       <td style={tdStyle}>
@@ -669,7 +669,7 @@ export default function Admin() {
                         <td style={tdStyle}>{c.userAEmail}</td>
                         <td style={tdStyle}>{c.userBEmail}</td>
                         <td style={tdStyle}>
-                          <span style={{ fontSize: '13px', color: 'var(--blue)', fontWeight: 600 }}>{c.trustLevel}</span>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--blue)', fontWeight: 600 }}>{c.trustLevel}</span>
                         </td>
                         <td style={tdStyle}>{c.status}</td>
                         <td style={tdStyle}>{new Date(c.createdAt).toLocaleDateString()}</td>

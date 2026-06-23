@@ -354,7 +354,7 @@ export default function HelperDashboard() {
         </p>
         <p style={{
           fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-          fontSize: '28px', fontWeight: 700, color: 'var(--ink)',
+          fontSize: 'var(--text-xl)', fontWeight: 700, color: 'var(--ink)',
           letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
         }}>
           {greet}, {firstName}
@@ -371,7 +371,7 @@ export default function HelperDashboard() {
 
   const RadiusBar = ({ noun = 'people' }) => (
     <div style={{ background: '#ffffff', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
-      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', color: 'var(--ink-slate-dark)' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         {locationStatus === 'asking' && 'Getting your location...'}
         {locationStatus === 'granted' && `Showing ${noun} within ${radiusKm} km of you`}
@@ -469,7 +469,7 @@ export default function HelperDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
               {greeting}
-              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
                 My Elders
               </h2>
               {loading && (
@@ -486,8 +486,8 @@ export default function HelperDashboard() {
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No connections yet</p>
-                  <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Discover elders near you and send a connection request to get started.</p>
-                  <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '15px' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Discover elders near you and send a connection request to get started.</p>
+                  <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
                     Find New Elder
                   </button>
                 </div>
@@ -519,14 +519,14 @@ export default function HelperDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
                           {avatar}
                           <div style={{ minWidth: 0 }}>
-                            <p style={{ fontWeight: 600, fontSize: '18px', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                            <p style={{ fontSize: '15px', color: 'var(--ink-slate)', margin: '4px 0 0' }}>wants to connect with you</p>
+                            <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
+                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>wants to connect with you</p>
                             {conn.requestMessage && (
-                              <p style={{ fontSize: '15px', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
+                              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
                             )}
                           </div>
                         </div>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Request</span>
+                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Request</span>
                       </div>
                       <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
                         <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
@@ -542,7 +542,7 @@ export default function HelperDashboard() {
                         {avatar}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <p style={{ fontWeight: 600, fontSize: '18px', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
+                            <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
                             {conn.status === 'ACTIVE' ? (
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: conn.currentTrustLevel === 'TRUSTED' ? '#EBF6EE' : '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
                                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: conn.currentTrustLevel === 'TRUSTED' ? '#1a5c2e' : '#2E7DA6' }} />
@@ -553,7 +553,7 @@ export default function HelperDashboard() {
                             )}
                           </div>
                           {conn.status === 'ACTIVE' && conn.otherUserPhone && (
-                            <p style={{ fontSize: '15px', color: 'var(--ink-slate-dark)', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '7px' }}>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a6470" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                               {conn.otherUserPhone}
                             </p>
@@ -568,13 +568,13 @@ export default function HelperDashboard() {
                       {conn.status === 'ACTIVE' && (
                         endingConn === conn.id ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '15px', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this elder'}?</span>
+                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this elder'}?</span>
                             <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '36px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
                             <button onClick={() => setEndingConn(null)} style={{ height: '36px', padding: '0 16px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
                           </div>
                         ) : (
                           <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
@@ -600,7 +600,7 @@ export default function HelperDashboard() {
 
                   {reviewingConn === conn.id && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Rate {conn.otherUserName || 'this elder'}</p>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>Rate {conn.otherUserName || 'this elder'}</p>
                       <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {REVIEW_TAGS.map(t => (
@@ -616,7 +616,7 @@ export default function HelperDashboard() {
                       </div>
                       <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
                         placeholder="Any comments? (optional)" rows={2}
-                        style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: '15px', outline: 'none', fontFamily: 'inherit' }} />
+                        style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: 'var(--text-sm)', outline: 'none', fontFamily: 'inherit' }} />
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--ink-3)', cursor: 'pointer' }}>
                         <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
                         Report a safety concern
@@ -652,7 +652,7 @@ export default function HelperDashboard() {
           {tab === 'browse' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
-                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
                   Requests Near You
                 </h2>
                 <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
@@ -668,7 +668,7 @@ export default function HelperDashboard() {
                     </svg>
                   </div>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No requests found</p>
-                  <p style={{ fontSize: '15px', color: 'var(--ink-3)' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>
                     {locationStatus === 'granted'
                       ? `Nothing within ${radiusKm} km right now. Use the radius selector above to expand your search area.`
                       : 'No open requests right now. Check back soon or enable location to filter by distance.'}
@@ -687,11 +687,11 @@ export default function HelperDashboard() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
-                      {need.description && <p style={{ fontSize: '15px', color: 'var(--ink-slate-dark)', margin: '10px 0 0', lineHeight: 1.5 }}>{need.description}</p>}
+                      {need.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '10px 0 0', lineHeight: 1.5 }}>{need.description}</p>}
                       <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
                         {need.urgency === 'URGENT' && (
-                          <span style={{ fontSize: '13px', fontWeight: 700, background: '#EEF1F4', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: '#EEF1F4', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />Urgent
                           </span>
                         )}
@@ -702,13 +702,13 @@ export default function HelperDashboard() {
                     </div>
                     <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                       {applied ? (
-                        <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '0 18px', background: 'var(--green-tint)', color: 'var(--green-deep)', borderRadius: '9999px', fontSize: '15px', fontWeight: 700 }}>
+                        <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '0 18px', background: 'var(--green-tint)', color: 'var(--green-deep)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a5c2e" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                           Applied
                         </span>
                       ) : (
                         <button onClick={() => apply(need.id)} disabled={applying === need.id}
-                          style={{ height: '40px', padding: '0 24px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '15px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+                          style={{ height: '40px', padding: '0 24px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
                           {applying === need.id ? '...' : 'Offer to Help'}
                         </button>
                       )}
@@ -721,7 +721,7 @@ export default function HelperDashboard() {
                     </div>
                   </div>
                   {applyMsg[need.id] && !applied && (
-                    <p style={{ fontSize: '15px', color: 'var(--ink-slate)', marginTop: '10px' }}>{applyMsg[need.id]}</p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginTop: '10px' }}>{applyMsg[need.id]}</p>
                   )}
                 </div>
                 );
@@ -734,7 +734,7 @@ export default function HelperDashboard() {
           {tab === 'discover' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
-                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
+                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
                   Find an Elder to Help
                 </h2>
                 <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
@@ -748,7 +748,7 @@ export default function HelperDashboard() {
                   {[1,2].map(i => (
                     <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '110px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
                   ))}
-                  <p style={{ fontSize: '15px', color: 'var(--ink-3)', textAlign: 'center', margin: 0 }}>Looking for elders near you…</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', textAlign: 'center', margin: 0 }}>Looking for elders near you…</p>
                 </div>
               )}
 
@@ -756,8 +756,8 @@ export default function HelperDashboard() {
               {!discovering && discoverError && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '40px 24px', border: '1px solid #fecaca' }}>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Couldn't load elders</p>
-                  <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
-                  <button onClick={() => loadElders()} className="btn-primary" style={{ padding: '10px 24px', fontSize: '15px' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
+                  <button onClick={() => loadElders()} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
                     Try Again
                   </button>
                 </div>
@@ -773,7 +773,7 @@ export default function HelperDashboard() {
                   <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                     {locationStatus === 'granted' ? 'No elders found nearby' : 'No elders available right now'}
                   </p>
-                  <p style={{ fontSize: '15px', color: 'var(--ink-3)' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>
                     {locationStatus === 'granted'
                       ? 'Try a larger radius above, or check back later.'
                       : 'New members join often. Please check back soon.'}
@@ -801,39 +801,39 @@ export default function HelperDashboard() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <p style={{ fontWeight: 600, fontSize: '18px', color: 'var(--ink)', margin: 0 }}>{elder.name || 'Elder'}</p>
+                          <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{elder.name || 'Elder'}</p>
                           {(elder.trustScore != null || elder.trustTier) && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: '13px', fontWeight: 700, color: 'var(--blue-deep)' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)' }}>
                               {elder.trustTier || 'New'}{elder.trustScore != null ? ` · ${elder.trustScore}` : ''}
                             </span>
                           )}
                         </div>
                         {(elder.city || elder.distanceKm != null) && (
-                          <p style={{ fontSize: '15px', color: 'var(--ink-slate)', margin: '4px 0 0' }}>
+                          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>
                             {elder.city}{elder.city && elder.distanceKm != null ? ' · ' : ''}{elder.distanceKm != null ? `${Math.round(elder.distanceKm * 10) / 10} km away` : ''}
                           </p>
                         )}
-                        {elder.bio && <p style={{ fontSize: '15px', color: 'var(--ink-slate-dark)', margin: '8px 0 0', lineHeight: 1.5 }}>{elder.bio}</p>}
+                        {elder.bio && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '8px 0 0', lineHeight: 1.5 }}>{elder.bio}</p>}
                         {elder.interests?.length > 0 && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
                             {elder.interests.map(interest => (
-                              <span key={interest} style={{ fontSize: '13px', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{interest}</span>
+                              <span key={interest} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{interest}</span>
                             ))}
                           </div>
                         )}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: '13px', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Connected</span>
+                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Connected</span>
                         ) : sent ? (
                           <span style={{
-                            fontSize: '13px', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center',
+                            fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center',
                             background: sent.includes('!') ? '#E6F2FA' : '#f3f4f6',
                             color: sent.includes('!') ? '#2E7DA6' : '#5a6470',
                           }}>{sent}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
-                            style={{ height: '40px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '15px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                            style={{ height: '40px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                             {connectingTo === elder.userId ? '...' : 'Connect'}
                           </button>
                         )}
