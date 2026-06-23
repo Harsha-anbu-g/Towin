@@ -17,7 +17,7 @@ export default function TrustBadge({ tier, score }) {
         background: c.bg,
         color: c.color,
         border: `1px solid ${c.border}`,
-        fontSize: '11px',
+        fontSize: '12px',
         fontWeight: 600,
         fontFamily: 'var(--font-body)',
         padding: '2px 8px',

@@ -42,7 +42,7 @@ export default function SegmentedTabs({ segments, value, onChange }) {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-                borderRadius: '9999px', fontSize: '12px', fontWeight: 700, lineHeight: 1, flexShrink: 0,
+                borderRadius: '9999px', fontSize: '13px', fontWeight: 700, lineHeight: 1, flexShrink: 0,
                 color: active ? '#ffffff' : '#9aa4af',
                 background: active ? '#4FA3CE' : '#e6e8ec',
               }}>{seg.count}</span>
@@ -61,7 +61,7 @@ export function SegmentEmpty({ icon, children }) {
       <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#EAF5FB', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {icon}
       </div>
-      <p style={{ fontSize: '15px', color: '#5a6470', lineHeight: 1.6, maxWidth: '380px', margin: '0 auto' }}>{children}</p>
+      <p style={{ fontSize: '16px', color: '#5a6470', lineHeight: 1.6, maxWidth: '380px', margin: '0 auto' }}>{children}</p>
     </div>
   );
 }

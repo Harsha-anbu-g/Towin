@@ -13,7 +13,7 @@ const BORDER = '#BFD9EA';
 function Kicker({ children, align = 'center' }) {
   return (
     <p style={{
-      fontFamily: SF, fontSize: '13px', fontWeight: 600, color: BLUE,
+      fontFamily: SF, fontSize: '14px', fontWeight: 600, color: BLUE,
       letterSpacing: '1.5px', textTransform: 'uppercase',
       textAlign: align, margin: '0 0 10px',
     }}>{children}</p>
@@ -65,7 +65,7 @@ function MiniCard({ title, badge, stars, compact, children }) {
         </p>
         {badge && (
           <span style={{
-            fontFamily: SFD, fontSize: '12px', fontWeight: 700, color: BLUE,
+            fontFamily: SFD, fontSize: '13px', fontWeight: 700, color: BLUE,
             background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
             padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
           }}>{badge}</span>
@@ -94,11 +94,11 @@ function ScoreSum() {
       gap: '10px', background: '#ffffff', border: `1px solid ${BORDER}`,
       borderRadius: '14px', padding: '11px 16px',
     }}>
-      <span style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: '#5a6470' }}>
+      <span style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: '#5a6470' }}>
         3 + 7 + 5 =
       </span>
       <span style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 700, color: BLUE }}>15</span>
-      <span style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470' }}>points</span>
+      <span style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470' }}>points</span>
     </div>
   );
 }
@@ -133,7 +133,7 @@ function StageLadder({ stages }) {
                 background: isGoal ? '#ffffff' : WASH,
                 border: isGoal ? 'none' : `2px solid ${BORDER}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: SFD, fontSize: '15px', fontWeight: 700,
+                fontFamily: SFD, fontSize: '16px', fontWeight: 700,
                 color: BLUE, flexShrink: 0,
                 boxShadow: isGoal ? '0 4px 14px rgba(61,138,176,0.35)' : 'none',
               }}>
@@ -288,9 +288,9 @@ export const SLIDES = [
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
             background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '7px 14px',
           }}>
-            <span style={{ fontFamily: SFD, fontSize: '14px', fontWeight: 600, color: '#5a6470' }}>3 + 7 + 5 =</span>
+            <span style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: '#5a6470' }}>3 + 7 + 5 =</span>
             <span style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: BLUE }}>15</span>
-            <span style={{ fontFamily: SF, fontSize: '13px', color: '#5a6470' }}>points</span>
+            <span style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470' }}>points</span>
           </div>
         </div>
       </div>

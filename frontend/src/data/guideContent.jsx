@@ -22,7 +22,7 @@ function StepTitle({ children }) {
 function Lead({ children }) {
   return (
     <p style={{
-      fontFamily: SF, fontSize: '15px', color: '#5a6470',
+      fontFamily: SF, fontSize: '16px', color: '#5a6470',
       lineHeight: 1.6, margin: '0 0 16px',
     }}>{children}</p>
   );
@@ -43,7 +43,7 @@ function Bullets({ items }) {
       {items.map((it, i) => (
         <li key={i} style={{
           display: 'flex', gap: '10px', alignItems: 'flex-start',
-          fontFamily: SF, fontSize: '14px', color: '#1d1d1f', lineHeight: 1.5,
+          fontFamily: SF, fontSize: '15px', color: '#1d1d1f', lineHeight: 1.5,
         }}>
           <span style={{
             flexShrink: 0, width: '22px', height: '22px', borderRadius: '50%',
@@ -67,10 +67,10 @@ function MiniCard({ title, children }) {
       background: WASH, border: `1px solid ${BORDER}`, borderRadius: '14px',
       padding: '16px 18px',
     }}>
-      <p style={{ fontFamily: SFD, fontSize: '14px', fontWeight: 600, color: BLUE, margin: '0 0 5px' }}>
+      <p style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: BLUE, margin: '0 0 5px' }}>
         {title}
       </p>
-      <p style={{ fontFamily: SF, fontSize: '13px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
+      <p style={{ fontFamily: SF, fontSize: '14px', color: '#5a6470', lineHeight: 1.55, margin: 0 }}>
         {children}
       </p>
     </div>
@@ -90,7 +90,7 @@ function NoteBox({ children }) {
     <div style={{
       marginTop: '18px', background: '#fafafc', border: '1px solid #e8e8ed',
       borderRadius: '14px', padding: '14px 16px',
-      fontFamily: SF, fontSize: '13px', color: '#5a6470', lineHeight: 1.6,
+      fontFamily: SF, fontSize: '14px', color: '#5a6470', lineHeight: 1.6,
     }}>{children}</div>
   );
 }
@@ -111,7 +111,7 @@ export const STEPS = [
           so no one feels alone and everyday help is easy to find.
         </Lead>
         <SubHead>Why we built it</SubHead>
-        <p style={{ fontFamily: SF, fontSize: '14px', color: '#1d1d1f', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ fontFamily: SF, fontSize: '15px', color: '#1d1d1f', lineHeight: 1.6, margin: 0 }}>
           Many older people have no safe, trusted way to meet new friends or get a hand with
           daily tasks. ToWin gives them one, built around trust that grows one small step
           at a time, so no one ever has to rush or feel unsafe.
@@ -288,7 +288,7 @@ export const STEPS = [
           onClick={() => navigate(isLoggedIn ? '/dashboard' : '/register')}
           style={{
             width: '100%', background: SKY, color: '#fff', border: 'none',
-            borderRadius: '9999px', padding: '13px 0', fontSize: '15px', fontWeight: 600,
+            borderRadius: '9999px', padding: '13px 0', fontSize: '16px', fontWeight: 600,
             fontFamily: SF, cursor: 'pointer', marginTop: '8px',
             boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
           }}
@@ -299,7 +299,7 @@ export const STEPS = [
           onClick={restart}
           style={{
             width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: SF, fontSize: '14px', color: '#7a7a7a', marginTop: '14px',
+            fontFamily: SF, fontSize: '15px', color: '#7a7a7a', marginTop: '14px',
             textDecoration: 'underline', textUnderlineOffset: '3px',
           }}
         >
