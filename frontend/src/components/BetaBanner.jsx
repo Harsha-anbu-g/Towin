@@ -19,7 +19,7 @@ export default function BetaBanner() {
   return (
     <div style={{
       width: '100%',
-      background: '#4FA3CE',
+      background: 'var(--blue)',
       color: '#fff',
       display: 'flex',
       alignItems: 'center',

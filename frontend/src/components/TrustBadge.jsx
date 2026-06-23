@@ -6,7 +6,7 @@ const TIER_COLORS = {
   'Highly Trusted':     { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
   'Reliable':           { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
   'Getting Started':    { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
-  'New Member':         { bg: '#f5f5f7', color: '#a0a0a5', border: '#e0e0e0' },
+  'New Member':         { bg: '#f5f5f7', color: 'var(--ink-4)', border: '#e0e0e0' },
 };
 
 export default function TrustBadge({ tier, score }) {

@@ -130,7 +130,7 @@ export default function NavBar() {
           {Icon && <Icon size={22} strokeWidth={active ? 2.4 : 2} aria-hidden="true" />}
           {label}
         </span>
-        {active && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4FA3CE' }} />}
+        {active && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--blue)' }} />}
       </Link>
     );
   };
@@ -178,7 +178,7 @@ export default function NavBar() {
                 }}>{unread > 99 ? '99+' : unread}</span>
               )}
             </div>
-            <div style={{ width: '1px', height: '22px', background: '#e0e0e0', margin: '0 8px' }} />
+            <div style={{ width: '1px', height: '22px', background: 'var(--border)', margin: '0 8px' }} />
             <Link to="/trust" style={{
               display: 'flex', alignItems: 'center', gap: '7px',
               fontSize: '16px', fontFamily: SF, fontWeight: 600,
@@ -217,7 +217,7 @@ export default function NavBar() {
                 aria-label="Account menu" aria-haspopup="true" aria-expanded={accountOpen}
                 style={{
                   width: '40px', height: '40px', borderRadius: '50%', border: 'none',
-                  cursor: 'pointer', background: '#4FA3CE', color: '#fff',
+                  cursor: 'pointer', background: 'var(--blue)', color: '#fff',
                   fontSize: '16px', fontWeight: 600, fontFamily: SF,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
@@ -234,17 +234,17 @@ export default function NavBar() {
                   padding: '8px', minWidth: '210px', zIndex: 110,
                 }}>
                   <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #f0f0f0', marginBottom: '6px' }}>
-                    <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', margin: 0, fontFamily: SF }}>
+                    <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: 0, fontFamily: SF }}>
                       {user?.name || 'Your account'}
                     </p>
                     {user?.username && (
-                      <p style={{ fontSize: '14px', color: '#a0a0a5', margin: '2px 0 0' }}>@{user.username}</p>
+                      <p style={{ fontSize: '14px', color: 'var(--ink-4)', margin: '2px 0 0' }}>@{user.username}</p>
                     )}
                   </div>
                   <Link to="/profile" role="menuitem" onClick={() => setAccountOpen(false)} style={{
                     display: 'flex', alignItems: 'center', gap: '10px',
                     padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                    color: '#1d1d1f', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+                    color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
                   }}
                     onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
@@ -255,7 +255,7 @@ export default function NavBar() {
                     <Link to="/emergency-contacts" role="menuitem" onClick={() => setAccountOpen(false)} style={{
                       display: 'flex', alignItems: 'center', gap: '10px',
                       padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                      color: '#1d1d1f', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
                     }}
                       onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
@@ -266,7 +266,7 @@ export default function NavBar() {
                   <button role="menuitem" onClick={() => { setAccountOpen(false); setConfirmSignOut(true); }} style={{
                     display: 'flex', width: '100%', alignItems: 'center', gap: '10px',
                     padding: '10px 12px', borderRadius: '10px', background: 'none', border: 'none',
-                    cursor: 'pointer', color: '#7a7a7a', fontSize: '16px', fontWeight: 500,
+                    cursor: 'pointer', color: 'var(--ink-3)', fontSize: '16px', fontWeight: 500,
                     fontFamily: SF, textAlign: 'left',
                   }}
                     onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
@@ -343,7 +343,7 @@ export default function NavBar() {
               display: 'block', width: '100%', textAlign: 'left',
               padding: '16px 0', marginTop: '4px',
               fontSize: '17px', fontFamily: SF, fontWeight: 500,
-              color: '#7a7a7a', background: 'none', border: 'none',
+              color: 'var(--ink-3)', background: 'none', border: 'none',
               cursor: 'pointer',
             }}>Log out</button>
           </div>

@@ -142,7 +142,7 @@ export default function Messages() {
   return (
     <div style={{
       height: '100svh',
-      background: '#fafafc',
+      background: 'var(--surface-pearl)',
       display: 'flex',
       justifyContent: 'center',
       fontFamily: SFText,
@@ -173,7 +173,7 @@ export default function Messages() {
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          color: '#4FA3CE',
+          color: 'var(--blue)',
           fontSize: '16px',
           fontFamily: SFText,
           fontWeight: 500,
@@ -200,7 +200,7 @@ export default function Messages() {
         )}
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.2px', margin: 0 }}>
+          <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.2px', margin: 0 }}>
             {otherName || 'Conversation'}
           </p>
           {trustLevel && (
@@ -215,7 +215,7 @@ export default function Messages() {
 
         <button
           onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
-          style={{ fontSize: '14px', color: '#7a7a7a', background: 'transparent', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
+          style={{ fontSize: '14px', color: 'var(--ink-3)', background: 'transparent', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
         >
           Report
         </button>
@@ -304,11 +304,11 @@ export default function Messages() {
                 {initials(otherName)}
               </div>
             )}
-            <p style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '6px', fontFamily: SF }}>
+            <p style={{ fontWeight: 600, fontSize: '17px', color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
               {otherName}
             </p>
             {loadError !== 'trust' && (
-              <p style={{ fontSize: '15px', color: '#a0a0a5' }}>No messages yet. Send the first message to {otherName}.</p>
+              <p style={{ fontSize: '15px', color: 'var(--ink-4)' }}>No messages yet. Send the first message to {otherName}.</p>
             )}
           </div>
         )}
@@ -324,7 +324,7 @@ export default function Messages() {
                 <div style={{ textAlign: 'center', margin: '16px 0 8px' }}>
                   <span style={{
                     fontSize: '13px',
-                    color: '#a0a0a5',
+                    color: 'var(--ink-4)',
                     fontFamily: SFText,
                     fontWeight: 500,
                   }}>
@@ -416,12 +416,12 @@ export default function Messages() {
               border: '1.5px solid #e0e0e0',
               fontSize: '16px',
               fontFamily: SFText,
-              color: '#1d1d1f',
+              color: 'var(--ink)',
               outline: 'none',
               resize: 'none',
             }}
           />
-          <span style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', paddingLeft: '4px' }}>
+          <span style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '4px', paddingLeft: '4px' }}>
             Enter to send · Shift+Enter for new line
           </span>
         </div>

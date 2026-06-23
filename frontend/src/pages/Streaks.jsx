@@ -124,7 +124,7 @@ export default function Streaks() {
   }
 
   return (
-    <div style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', background: '#fafafc', fontFamily: SFT }}>
+    <div style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', background: 'var(--surface-pearl)', fontFamily: SFT }}>
       <NavBar />
       <div style={{ flex: 1, display: 'flex' }}>
 
@@ -132,7 +132,7 @@ export default function Streaks() {
       <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#fafafc',
+        background: 'var(--surface-pearl)',
       }}>
         <img src="/journey.jpg" alt="" style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
@@ -161,20 +161,20 @@ export default function Streaks() {
       <div className="streaks-right" style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        background: '#fafafc', padding: '48px 40px',
+        background: 'var(--surface-pearl)', padding: '48px 40px',
       }}>
         <div style={{ width: '100%', maxWidth: '420px' }}>
 
           {/* Greeting */}
           <p style={{
-            fontSize: '18px', color: '#7a7a7a', fontFamily: SFT,
+            fontSize: '18px', color: 'var(--ink-3)', fontFamily: SFT,
             marginBottom: '8px', fontWeight: 500,
           }}>
             {greeting()}
           </p>
           <h1 style={{
             fontFamily: SF, fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 600,
-            color: '#1d1d1f', letterSpacing: '-0.6px',
+            color: 'var(--ink)', letterSpacing: '-0.6px',
             marginBottom: '32px', lineHeight: 1.1,
           }}>
             {alreadyDone ? 'You showed up today.' : 'Ready to check in?'}
@@ -188,19 +188,19 @@ export default function Streaks() {
             boxShadow: '0 4px 24px rgba(0,0,0,0.05)',
           }}>
             {loading ? (
-              <p style={{ fontSize: '16px', color: '#a0a0a5' }}>Loading…</p>
+              <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>Loading…</p>
             ) : (
               <>
                 <FlameIcon size={56} />
                 <p style={{
                   fontFamily: SF, fontSize: '80px', fontWeight: 600,
-                  color: '#1d1d1f', lineHeight: 1, margin: '16px 0 4px',
+                  color: 'var(--ink)', lineHeight: 1, margin: '16px 0 4px',
                   letterSpacing: '-2px',
                 }}>
                   {streak?.currentStreak ?? 0}
                 </p>
                 <p style={{
-                  fontSize: '18px', fontWeight: 600, color: '#7a7a7a',
+                  fontSize: '18px', fontWeight: 600, color: 'var(--ink-3)',
                   fontFamily: SFT, marginBottom: '22px',
                 }}>
                   days in a row
@@ -210,7 +210,7 @@ export default function Streaks() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
                   {week.map((d, i) => (
                     <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#a0a0a5', fontFamily: SFT }}>{d.label}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', fontFamily: SFT }}>{d.label}</span>
                       <div style={{
                         width: '34px', height: '34px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -232,7 +232,7 @@ export default function Streaks() {
                 </div>
 
                 {streak?.longestStreak > 0 && (
-                  <p style={{ fontSize: '15px', color: '#a0a0a5', fontFamily: SFT, margin: '18px 0 0' }}>
+                  <p style={{ fontSize: '15px', color: 'var(--ink-4)', fontFamily: SFT, margin: '18px 0 0' }}>
                     Best streak: {streak.longestStreak} {streak.longestStreak === 1 ? 'day' : 'days'}
                   </p>
                 )}
@@ -260,14 +260,14 @@ export default function Streaks() {
                       {age.totalDays.toLocaleString()}
                     </p>
                     <p style={{
-                      fontSize: '15px', fontWeight: 600, color: '#7a7a7a',
+                      fontSize: '15px', fontWeight: 600, color: 'var(--ink-3)',
                       fontFamily: SFT, margin: 0,
                     }}>
                       days you have lived
                     </p>
                   </div>
                   <span style={{
-                    fontSize: '14px', color: '#a0a0a5', fontFamily: SFT,
+                    fontSize: '14px', color: 'var(--ink-4)', fontFamily: SFT,
                     textAlign: 'right', lineHeight: 1.5, flexShrink: 0,
                   }}>
                     {age.years} {age.years === 1 ? 'year' : 'years'},<br />
@@ -280,11 +280,11 @@ export default function Streaks() {
               <>
                 <p style={{
                   fontFamily: SF, fontSize: '18px', fontWeight: 600,
-                  color: '#1d1d1f', margin: '0 0 6px',
+                  color: 'var(--ink)', margin: '0 0 6px',
                 }}>
                   How many days have you lived?
                 </p>
-                <p style={{ fontSize: '15px', color: '#a0a0a5', fontFamily: SFT, margin: '0 0 14px' }}>
+                <p style={{ fontSize: '15px', color: 'var(--ink-4)', fontFamily: SFT, margin: '0 0 14px' }}>
                   Add your date of birth in your profile to see your life in days.
                 </p>
                 <button
@@ -292,7 +292,7 @@ export default function Streaks() {
                   style={{
                     background: 'none', border: '1.5px solid #e0e0e0',
                     borderRadius: '9999px', padding: '8px 20px',
-                    fontSize: '15px', fontWeight: 600, color: '#4FA3CE',
+                    fontSize: '15px', fontWeight: 600, color: 'var(--blue)',
                     fontFamily: SFT, cursor: 'pointer',
                   }}
                 >
@@ -308,14 +308,14 @@ export default function Streaks() {
               /* Already checked in — show two options */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{
-                  background: '#f5f5f7', border: '1px solid #e0e0e0',
+                  background: 'var(--surface)', border: '1px solid #e0e0e0',
                   borderRadius: '14px', padding: '14px 20px',
                   textAlign: 'center',
                 }}>
                   <p style={{ fontSize: '16px', color: '#5a6470', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
                     You have already checked in today.
                   </p>
-                  <p style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, margin: '4px 0 0' }}>
+                  <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: SFT, margin: '4px 0 0' }}>
                     See you again tomorrow. Keep it going!
                   </p>
                 </div>
@@ -333,7 +333,7 @@ export default function Streaks() {
                 <button
                   onClick={() => navigate('/game')}
                   style={{
-                    width: '100%', background: '#ffffff', color: '#1d1d1f',
+                    width: '100%', background: '#ffffff', color: 'var(--ink)',
                     border: '1.5px solid #e0e0e0', borderRadius: '9999px',
                     padding: '16px 0', fontSize: '16px', fontWeight: 600,
                     fontFamily: SFT, cursor: 'pointer',
@@ -360,7 +360,7 @@ export default function Streaks() {
                 >
                   {checkingIn ? 'Checking in…' : "I'm here today"}
                 </button>
-                <p style={{ textAlign: 'center', fontSize: '15px', color: '#a0a0a5', fontFamily: SFT, lineHeight: 1.5, marginTop: '12px' }}>
+                <p style={{ textAlign: 'center', fontSize: '15px', color: 'var(--ink-4)', fontFamily: SFT, lineHeight: 1.5, marginTop: '12px' }}>
                   Tap to log today and keep your streak alive.
                 </p>
                 <div style={{ textAlign: 'center', marginTop: '8px' }}>
@@ -368,7 +368,7 @@ export default function Streaks() {
                     onClick={() => navigate('/dashboard')}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: '16px', color: '#7a7a7a', fontFamily: SFT,
+                      fontSize: '16px', color: 'var(--ink-3)', fontFamily: SFT,
                       textDecoration: 'underline', padding: '8px',
                     }}
                   >

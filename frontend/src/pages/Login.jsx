@@ -101,7 +101,7 @@ function GoogleButton({ label }) {
         width: '100%', height: '48px',
         background: '#ffffff', border: '1.5px solid #e0e0e0',
         borderRadius: '9999px', textDecoration: 'none',
-        fontSize: '16px', fontWeight: 500, color: '#1d1d1f',
+        fontSize: '16px', fontWeight: 500, color: 'var(--ink)',
         fontFamily: SF, cursor: 'pointer',
         boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
         transition: 'border-color 0.15s, box-shadow 0.15s',
@@ -216,26 +216,26 @@ export default function Login() {
               <button type="button" style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: '15px', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
-                background: '#ffffff', color: '#4FA3CE', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                background: '#ffffff', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}>Log in</button>
               <button type="button" onClick={() => navigate('/register')} style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: '15px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                background: 'transparent', color: '#7a7a7a',
+                background: 'transparent', color: 'var(--ink-3)',
               }}>Create account</button>
             </div>
 
             {/* Headline */}
             <h2 style={{
               fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-              fontSize: '24px', fontWeight: 700, color: '#1d1d1f',
+              fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
               marginBottom: '6px', letterSpacing: '-0.3px',
             }}>
               Welcome back.
             </h2>
             <p style={{
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              fontSize: '16px', color: '#7a7a7a', marginBottom: '20px',
+              fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px',
             }}>
               Log in to your ToWin account.
             </p>
@@ -265,22 +265,22 @@ export default function Login() {
 
             {/* Google log-in — the easiest path, especially for new users */}
             <GoogleButton label="Log in with Google" />
-            <p style={{ textAlign: 'center', fontSize: '14px', color: '#a0a0a5', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+            <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--ink-4)', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
               Fastest way in — no password to remember.
             </p>
 
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
-              <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-              <span style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or log in with username</span>
-              <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+              <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or log in with username</span>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{
                   display: 'block', fontSize: '15px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '8px',
+                  color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Username, Gmail, or phone
@@ -298,7 +298,7 @@ export default function Login() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '15px', fontWeight: 600,
-                  color: '#1d1d1f', marginBottom: '8px',
+                  color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Password
@@ -318,7 +318,7 @@ export default function Login() {
                     style={{
                       position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
                       background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
-                      color: '#7a7a7a', display: 'flex',
+                      color: 'var(--ink-3)', display: 'flex',
                     }}
                   >
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -328,7 +328,7 @@ export default function Login() {
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
                   <Link to="/forgot-password" style={{
-                    fontSize: '15px', color: '#4FA3CE',
+                    fontSize: '15px', color: 'var(--blue)',
                     textDecoration: 'none',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
@@ -359,12 +359,12 @@ export default function Login() {
             </form>
 
             <p style={{
-              textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
+              textAlign: 'center', fontSize: '14px', color: 'var(--ink-3)',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               marginTop: '20px',
             }}>
               New here?{' '}
-              <Link to="/register" style={{ color: '#4FA3CE', fontWeight: 600, textDecoration: 'none' }}>
+              <Link to="/register" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' }}>
                 Create Account
               </Link>
             </p>
@@ -377,7 +377,7 @@ export default function Login() {
             padding: '18px 18px 16px',
           }}>
             <p style={{
-              fontSize: '15px', fontWeight: 600, color: '#1d1d1f', textAlign: 'center',
+              fontSize: '15px', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 4px',
             }}>
@@ -420,11 +420,11 @@ export default function Login() {
                     <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
                       {guestLoading === role ? 'Opening…' : label}
                     </span>
-                    <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>
+                    <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-3)', marginTop: '2px' }}>
                       {sub}
                     </span>
                   </span>
-                  <span aria-hidden="true" style={{ fontSize: '17px', color: '#4FA3CE', fontWeight: 700 }}>→</span>
+                  <span aria-hidden="true" style={{ fontSize: '17px', color: 'var(--blue)', fontWeight: 700 }}>→</span>
                 </button>
               ))}
             </div>
@@ -433,7 +433,7 @@ export default function Login() {
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: '#4FA3CE', color: '#ffffff', textDecoration: 'none',
+              background: 'var(--blue)', color: '#ffffff', textDecoration: 'none',
               borderRadius: '9999px', padding: '11px 24px',
               fontSize: '15px', fontWeight: 400,
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -443,11 +443,11 @@ export default function Login() {
             </Link>
           </div>
           <p style={{
-            textAlign: 'center', fontSize: '13px', color: '#a0a0a5',
+            textAlign: 'center', fontSize: '13px', color: 'var(--ink-4)',
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
             marginTop: '12px',
           }}>
-            <Link to="/feedback" style={{ color: '#7a7a7a', textDecoration: 'none' }}>
+            <Link to="/feedback" style={{ color: 'var(--ink-3)', textDecoration: 'none' }}>
               Share feedback
             </Link>
           </p>

@@ -23,7 +23,7 @@ function Kicker({ children, align = 'center' }) {
 function Title({ children, align = 'center' }) {
   return (
     <h1 className="landing-title" style={{
-      fontFamily: SFD, fontSize: '46px', fontWeight: 600, color: '#1d1d1f',
+      fontFamily: SFD, fontSize: '46px', fontWeight: 600, color: 'var(--ink)',
       letterSpacing: '-0.5px', lineHeight: 1.1, textAlign: align,
       margin: '0 0 16px',
     }}>{children}</h1>
@@ -44,7 +44,7 @@ function Lead({ children, align = 'center' }) {
 function Body({ children }) {
   return (
     <p style={{
-      fontFamily: SF, fontSize: '18px', color: '#1d1d1f', lineHeight: 1.65,
+      fontFamily: SF, fontSize: '18px', color: 'var(--ink)', lineHeight: 1.65,
       textAlign: 'center', maxWidth: '580px', margin: '0 auto 18px',
     }}>{children}</p>
   );
@@ -269,7 +269,7 @@ export const SLIDES = [
             borderRadius: '12px', padding: '11px 16px', fontFamily: SF,
             fontSize: '16px', color: '#5a6470', lineHeight: 1.55, textAlign: 'left',
           }}>
-            Each person helped adds up to <strong style={{ color: '#1d1d1f' }}>15 points</strong> to their score.
+            Each person helped adds up to <strong style={{ color: 'var(--ink)' }}>15 points</strong> to their score.
           </div>
         </div>
 

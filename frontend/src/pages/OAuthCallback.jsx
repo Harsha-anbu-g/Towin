@@ -65,7 +65,7 @@ export default function OAuthCallback() {
             onClick={() => navigate('/login', { replace: true })}
             style={{
               height: '44px', padding: '0 28px',
-              background: '#4FA3CE', color: '#fff',
+              background: 'var(--blue)', color: '#fff',
               border: 'none', borderRadius: '9999px',
               fontSize: '16px', cursor: 'pointer', fontFamily: SF,
             }}

@@ -276,7 +276,7 @@ export default function Trust() {
   const customers = data?.customers ?? [];
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc' }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)' }}>
       <NavBar />
       <div style={{ maxWidth: '780px', margin: '0 auto', padding: '40px 24px 80px' }}>
 

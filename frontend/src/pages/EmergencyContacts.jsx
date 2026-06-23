@@ -98,7 +98,7 @@ export default function EmergencyContacts() {
   }
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
 
       {/* Hero tile — calm sky-blue, matches dashboard theme */}
@@ -128,7 +128,7 @@ export default function EmergencyContacts() {
           <h1 style={{
             fontSize: 'clamp(28px, 8vw, 48px)',
             fontWeight: 600,
-            color: '#1d1d1f',
+            color: 'var(--ink)',
             fontFamily: SF,
             letterSpacing: '-1px',
             marginBottom: '12px',
@@ -194,12 +194,12 @@ export default function EmergencyContacts() {
             <h2 style={{
               fontSize: '28px',
               fontWeight: 600,
-              color: '#1d1d1f',
+              color: 'var(--ink)',
               fontFamily: SF,
               letterSpacing: '-0.3px',
             }}>
               My Contacts
-              <span style={{ fontSize: '16px', fontWeight: 400, color: '#7a7a7a', marginLeft: '8px' }}>
+              <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
                 ({contacts.length}/3)
               </span>
             </h2>
@@ -207,7 +207,7 @@ export default function EmergencyContacts() {
               <button
                 onClick={() => setShowAddForm(v => !v)}
                 style={{
-                  background: '#4FA3CE',
+                  background: 'var(--blue)',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '9999px',
@@ -249,10 +249,10 @@ export default function EmergencyContacts() {
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
               </div>
-              <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', fontFamily: SF }}>
+              <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
                 No contacts yet
               </p>
-              <p style={{ fontSize: '15px', color: '#7a7a7a' }}>Add up to 3 people who care about you.</p>
+              <p style={{ fontSize: '15px', color: 'var(--ink-3)' }}>Add up to 3 people who care about you.</p>
             </div>
           </BlurFade>
         )}
@@ -276,18 +276,18 @@ export default function EmergencyContacts() {
                     {/* Default human-silhouette avatar */}
                     <DefaultAvatar color={accent} size={52} />
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, marginBottom: '4px' }}>
+                      <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, marginBottom: '4px' }}>
                         {c.name}
                       </p>
                       {c.relationship && (
-                        <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '6px' }}>
+                        <p style={{ fontSize: '15px', color: 'var(--ink-3)', marginBottom: '6px' }}>
                           {c.relationship}
                         </p>
                       )}
-                      <p style={{ fontSize: '16px', color: '#1d1d1f', fontWeight: 500, marginBottom: '2px' }}>
+                      <p style={{ fontSize: '16px', color: 'var(--ink)', fontWeight: 500, marginBottom: '2px' }}>
                         {c.phone}
                       </p>
-                      <p style={{ fontSize: '13px', color: '#a0a0a5' }}>
+                      <p style={{ fontSize: '13px', color: 'var(--ink-4)' }}>
                         Alerts after {c.inactivityDays} inactive days
                       </p>
                     </div>
@@ -295,7 +295,7 @@ export default function EmergencyContacts() {
                   <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
                     <a href={`tel:${c.phone}`} style={{
                       flex: 1,
-                      background: '#4FA3CE',
+                      background: 'var(--blue)',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '9999px',
@@ -316,7 +316,7 @@ export default function EmergencyContacts() {
                       style={{
                         flex: 1,
                         background: 'transparent',
-                        color: '#7a7a7a',
+                        color: 'var(--ink-3)',
                         border: '1.5px solid #e0e0e0',
                         borderRadius: '9999px',
                         padding: '10px 0',
@@ -347,7 +347,7 @@ export default function EmergencyContacts() {
               <p style={{
                 fontSize: '22px',
                 fontWeight: 600,
-                color: '#1d1d1f',
+                color: 'var(--ink)',
                 fontFamily: SF,
                 marginBottom: '20px',
                 letterSpacing: '-0.3px',
@@ -357,13 +357,13 @@ export default function EmergencyContacts() {
               <form onSubmit={addContact} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Name
                     </label>
                     <input {...f('name')} className="field" placeholder="Contact name" required />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Phone
                     </label>
                     <input {...f('phone')} className="field" placeholder="+1 555 000 0000" required />
@@ -371,13 +371,13 @@ export default function EmergencyContacts() {
                 </div>
                 <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Relationship
                     </label>
                     <input {...f('relationship')} className="field" placeholder="Daughter, Doctor…" />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Alert after (days)
                     </label>
                     <input {...f('inactivityDays')} type="number" min={1} max={30} className="field" />
@@ -394,7 +394,7 @@ export default function EmergencyContacts() {
                     disabled={adding}
                     style={{
                       flex: 1,
-                      background: '#4FA3CE',
+                      background: 'var(--blue)',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '9999px',
@@ -413,7 +413,7 @@ export default function EmergencyContacts() {
                     style={{
                       flex: 1,
                       background: 'transparent',
-                      color: '#7a7a7a',
+                      color: 'var(--ink-3)',
                       border: '1.5px solid #e0e0e0',
                       borderRadius: '9999px',
                       padding: '12px 0',

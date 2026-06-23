@@ -99,7 +99,7 @@ function Section({ title, children }) {
       background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
       padding: '24px 28px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
     }}>
-      <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 16px', letterSpacing: '-0.2px' }}>
+      <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 16px', letterSpacing: '-0.2px' }}>
         {title}
       </h3>
       {children}
@@ -137,7 +137,7 @@ export default function UserProfile() {
   }, [id]);
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc' }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)' }}>
       <NavBar />
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 20px 80px' }}>
 
@@ -160,7 +160,7 @@ export default function UserProfile() {
         {loading && (
           <div style={{
             background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-            padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '16px', color: '#a0a0a5',
+            padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '16px', color: 'var(--ink-4)',
           }}>
             Loading profile…
           </div>
@@ -187,11 +187,11 @@ export default function UserProfile() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '18px' }}>
                 <Avatar name={profile.name} photoUrl={profile.photoUrl} size={80} />
                 <div style={{ flex: 1 }}>
-                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 2px', letterSpacing: '-0.3px' }}>
+                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 2px', letterSpacing: '-0.3px' }}>
                     {profile.name || 'User'}
                   </h1>
                   {profile.username && (
-                    <p style={{ fontFamily: SF, fontSize: '15px', color: '#7a7a7a', margin: '0 0 8px' }}>
+                    <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-3)', margin: '0 0 8px' }}>
                       @{profile.username}
                     </p>
                   )}
@@ -233,17 +233,17 @@ export default function UserProfile() {
               {/* Meta row */}
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 {profile.city && (
-                  <span style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {profile.city}
                   </span>
                 )}
                 {profile.age && (
-                  <span style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a' }}>
+                  <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
                     Age {profile.age}
                   </span>
                 )}
                 {profile.occupation && (
-                  <span style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a' }}>
+                  <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
                     {profile.occupation}
                   </span>
                 )}
@@ -265,7 +265,7 @@ export default function UserProfile() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   {profile.skillsOffered?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Skills Offered</p>
+                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Skills Offered</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.skillsOffered.map(s => <Pill key={s} label={s} />)}
                       </div>
@@ -273,7 +273,7 @@ export default function UserProfile() {
                   )}
                   {profile.hobbies?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Hobbies</p>
+                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Hobbies</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.hobbies.map(h => <Pill key={h} label={h} />)}
                       </div>
@@ -281,7 +281,7 @@ export default function UserProfile() {
                   )}
                   {profile.languages?.length > 0 && (
                     <div>
-                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: '#a0a0a5', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Languages</p>
+                      <p style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 8px' }}>Languages</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {profile.languages.map(l => <Pill key={l} label={l} />)}
                       </div>
@@ -294,7 +294,7 @@ export default function UserProfile() {
             {/* Reviews */}
             <Section title={`Reviews${reviews.length > 0 ? ` (${reviews.length})` : ''}`}>
               {reviews.length === 0 ? (
-                <p style={{ fontFamily: SF, fontSize: '15px', color: '#a0a0a5', margin: 0 }}>
+                <p style={{ fontFamily: SF, fontSize: '15px', color: 'var(--ink-4)', margin: 0 }}>
                   No reviews yet.
                 </p>
               ) : (
@@ -307,18 +307,18 @@ export default function UserProfile() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Stars rating={rv.rating} />
-                          <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>
+                          <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>
                             {rv.safetyConcern ? 'Anonymous' : (rv.reviewerName || 'Elder')}
                           </span>
                         </div>
-                        <span style={{ fontFamily: SF, fontSize: '13px', color: '#a0a0a5' }}>
+                        <span style={{ fontFamily: SF, fontSize: '13px', color: 'var(--ink-4)' }}>
                           {timeAgo(rv.createdAt)}
                         </span>
                       </div>
                       {rv.tags?.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '6px' }}>
                           {rv.tags.map(t => (
-                            <span key={t} style={{ fontFamily: SF, fontSize: '12px', background: '#f5f5f7', color: '#5a6470', borderRadius: '9999px', padding: '3px 9px' }}>
+                            <span key={t} style={{ fontFamily: SF, fontSize: '12px', background: 'var(--surface)', color: '#5a6470', borderRadius: '9999px', padding: '3px 9px' }}>
                               {t}
                             </span>
                           ))}

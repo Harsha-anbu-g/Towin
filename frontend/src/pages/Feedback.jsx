@@ -81,16 +81,16 @@ export default function Feedback() {
   const inputStyle = {
     width: '100%', padding: '10px 14px', borderRadius: '10px',
     border: '1px solid #e0e0e0', fontSize: '16px', fontFamily: SFText,
-    color: '#1d1d1f', background: '#fafafc', outline: 'none', boxSizing: 'border-box',
+    color: 'var(--ink)', background: 'var(--surface-pearl)', outline: 'none', boxSizing: 'border-box',
   };
 
   const labelStyle = {
     display: 'block', fontSize: '14px', fontWeight: 600,
-    color: '#1d1d1f', marginBottom: '6px', fontFamily: SFText,
+    color: 'var(--ink)', marginBottom: '6px', fontFamily: SFText,
   };
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fafafc' }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)' }}>
       <style>{`
         .fb-shell { display: grid; grid-template-columns: 1fr 360px; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 48px 32px; align-items: start; }
         .fb-left { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
@@ -129,7 +129,7 @@ export default function Feedback() {
             background: '#EAF5FB', border: '1px solid #BFD9EA', borderRadius: '14px',
             padding: '14px 20px', marginBottom: '16px',
           }}>
-            <p style={{ fontFamily: SFText, fontSize: '15px', color: '#1d1d1f', margin: 0, lineHeight: 1.55 }}>
+            <p style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink)', margin: 0, lineHeight: 1.55 }}>
               <strong>ToWin is an early prototype.</strong> You&apos;re trying a work in
               progress. A full mobile app is planned for the future. Your feedback
               here directly shapes what gets built.
@@ -137,19 +137,19 @@ export default function Feedback() {
           </div>
           {submitted ? (
             <div className="fb-card" style={{ textAlign: 'center', padding: '64px 36px' }}>
-              <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 10px' }}>
+              <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>
                 Thank you
               </h2>
-              <p style={{ fontFamily: SFText, fontSize: '16px', color: '#7a7a7a', margin: 0 }}>
+              <p style={{ fontFamily: SFText, fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
                 Your feedback means a lot. It genuinely helps make ToWin better.
               </p>
             </div>
           ) : (
             <div className="fb-card">
-              <h2 style={{ fontFamily: SF, fontSize: '26px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 4px' }}>
+              <h2 style={{ fontFamily: SF, fontSize: '26px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 4px' }}>
                 Share Your Feedback
               </h2>
-              <p style={{ fontFamily: SFText, fontSize: '15px', color: '#7a7a7a', margin: '0 0 24px' }}>
+              <p style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink-3)', margin: '0 0 24px' }}>
                 All fields are optional except your message.
               </p>
               {error && (
@@ -164,26 +164,26 @@ export default function Feedback() {
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="fb-3col">
                   <div>
-                    <label style={labelStyle}>Name <span style={{ color: '#a0a0a5', fontWeight: 400 }}>(optional)</span></label>
+                    <label style={labelStyle}>Name <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
                     <input style={inputStyle} value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name" />
                   </div>
                   <div>
-                    <label style={labelStyle}>Email <span style={{ color: '#a0a0a5', fontWeight: 400 }}>(optional)</span></label>
+                    <label style={labelStyle}>Email <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
                     <input type="email" style={inputStyle} value={form.email}
                       onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="you@example.com" />
                   </div>
                   <div>
-                    <label style={labelStyle}>Phone <span style={{ color: '#a0a0a5', fontWeight: 400 }}>(optional)</span></label>
+                    <label style={labelStyle}>Phone <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
                     <input type="tel" style={inputStyle} value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+1 000-000-0000" />
                   </div>
                 </div>
-                <div style={{ height: '1px', background: '#e0e0e0' }} />
+                <div style={{ height: '1px', background: 'var(--border)' }} />
                 <div>
                   <label style={labelStyle}>Message <span style={{ color: '#dc2626' }}>*</span></label>
-                  <p style={{ fontFamily: SFText, fontSize: '13px', color: '#7a7a7a', margin: '0 0 8px', lineHeight: 1.5 }}>
-                    Be honest! Include <strong style={{ color: '#1d1d1f' }}>at least one thing you didn't like</strong>. That's where the real value is.
+                  <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
+                    Be honest! Include <strong style={{ color: 'var(--ink)' }}>at least one thing you didn't like</strong>. That's where the real value is.
                   </p>
                   <textarea required rows={7} style={{ ...inputStyle, resize: 'vertical' }}
                     value={form.message}
@@ -191,15 +191,15 @@ export default function Feedback() {
                     placeholder={"What did you think? What worked, what didn't?\nBe honest. One thing you didn't like is more valuable than ten compliments."}
                   />
                 </div>
-                <div style={{ height: '1px', background: '#e0e0e0' }} />
+                <div style={{ height: '1px', background: 'var(--border)' }} />
                 <div>
                   <p style={{ ...labelStyle, marginBottom: '14px' }}>
-                    Rate the app <span style={{ color: '#a0a0a5', fontWeight: 400 }}>(optional)</span>
+                    Rate the app <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span>
                   </p>
                   <div className="fb-ratings">
                     {RATINGS.map(({ key, label }) => (
                       <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        <span style={{ fontFamily: SFText, fontSize: '15px', color: '#1d1d1f' }}>{label}</span>
+                        <span style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink)' }}>{label}</span>
                         <StarRating value={ratings[key] || 0} onChange={val => setRating(key, val)} />
                       </div>
                     ))}
@@ -232,26 +232,26 @@ export default function Feedback() {
                 fontSize: '20px', fontWeight: 600, color: '#fff', fontFamily: SF, flexShrink: 0,
               }}>H</div>
               <div>
-                <h2 style={{ fontFamily: SF, fontSize: '17px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>
+                <h2 style={{ fontFamily: SF, fontSize: '17px', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
                   Harshavardhan Anbuchezhian Gowri
                 </h2>
-                <p style={{ fontFamily: SFText, fontSize: '14px', color: '#7a7a7a', margin: 0 }}>Harsha</p>
+                <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)', margin: 0 }}>Harsha</p>
               </div>
             </div>
 
-            <p style={{ fontFamily: SFText, fontSize: '14px', color: '#4FA3CE', fontWeight: 600, margin: '0 0 2px' }}>
+            <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue)', fontWeight: 600, margin: '0 0 2px' }}>
               Full-Stack Engineer · Aspiring Entrepreneur · AI-Driven Developer
             </p>
-            <p style={{ fontFamily: SFText, fontSize: '13px', color: '#7a7a7a', margin: '0 0 16px' }}>
+            <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 16px' }}>
               Master's in Applied Computer Science · Concordia University, Montreal
             </p>
 
-            <div style={{ height: '1px', background: '#e0e0e0', margin: '0 0 16px' }} />
+            <div style={{ height: '1px', background: 'var(--border)', margin: '0 0 16px' }} />
 
-            <p style={{ fontFamily: SFText, fontSize: '15px', color: '#1d1d1f', fontWeight: 600, margin: '0 0 6px', lineHeight: 1.5 }}>
+            <p style={{ fontFamily: SFText, fontSize: '15px', color: 'var(--ink)', fontWeight: 600, margin: '0 0 6px', lineHeight: 1.5 }}>
               This isn't a university project. ToWin is my future startup.
             </p>
-            <p style={{ fontFamily: SFText, fontSize: '14px', color: '#7a7a7a', margin: '0 0 20px', lineHeight: 1.6 }}>
+            <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)', margin: '0 0 20px', lineHeight: 1.6 }}>
               I'm building something real, and your feedback is what shapes it. Love the idea? Want to connect? Let's talk!
             </p>
 
@@ -261,11 +261,11 @@ export default function Feedback() {
                   <Icon size={15} color="#4FA3CE" style={{ flexShrink: 0 }} />
                   {href ? (
                     <a href={href} target="_blank" rel="noopener noreferrer"
-                      style={{ fontFamily: SFText, fontSize: '14px', color: '#4FA3CE', textDecoration: 'none' }}>
+                      style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue)', textDecoration: 'none' }}>
                       {label}
                     </a>
                   ) : (
-                    <span style={{ fontFamily: SFText, fontSize: '14px', color: '#7a7a7a' }}>{label}</span>
+                    <span style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)' }}>{label}</span>
                   )}
                 </div>
               ))}
@@ -275,7 +275,7 @@ export default function Feedback() {
           {/* Portfolio link */}
           <div className="fb-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '18px 24px' }}>
             <div>
-              <p style={{ fontFamily: SFText, fontSize: '13px', color: '#7a7a7a', margin: '0 0 2px' }}>Want to know more?</p>
+              <p style={{ fontFamily: SFText, fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 2px' }}>Want to know more?</p>
               <p style={{ fontFamily: SF, fontSize: '15px', fontWeight: 700, color: '#9C7A3C', margin: 0 }}>Visit my portfolio</p>
             </div>
             <a

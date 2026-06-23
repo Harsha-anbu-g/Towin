@@ -26,7 +26,7 @@ export default function FeedbackWidget() {
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        background: '#4FA3CE',
+        background: 'var(--blue)',
         color: '#fff',
         border: 'none',
         borderRadius: '9999px',

@@ -6,7 +6,7 @@ export default function Terms() {
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px', fontFamily: 'inherit', color: '#2d3748', lineHeight: 1.7 }}>
       <button
         onClick={() => navigate(-1)}
-        style={{ background: 'none', border: 'none', color: '#4FA3CE', cursor: 'pointer', fontSize: 15, marginBottom: 32, padding: 0 }}
+        style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 15, marginBottom: 32, padding: 0 }}
       >
         ← Back
       </button>
@@ -35,7 +35,7 @@ export default function Terms() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Contact</h2>
-        <p>Questions about these terms? Email <a href="mailto:support@towin.app" style={{ color: '#4FA3CE' }}>support@towin.app</a>.</p>
+        <p>Questions about these terms? Email <a href="mailto:support@towin.app" style={{ color: 'var(--blue)' }}>support@towin.app</a>.</p>
       </section>
     </div>
   );

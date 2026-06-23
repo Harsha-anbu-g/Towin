@@ -53,7 +53,7 @@ export default function Landing() {
       }}>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: '9px',
-          fontFamily: SFD, fontSize: '21px', fontWeight: 600, color: '#1d1d1f',
+          fontFamily: SFD, fontSize: '21px', fontWeight: 600, color: 'var(--ink)',
           letterSpacing: '-0.374px',
         }}>
           <img
@@ -94,7 +94,7 @@ export default function Landing() {
       <footer className="landing-footer" style={{ padding: '0 40px 36px' }}>
         <ProgressDots count={total} current={index} onJump={setIndex} />
         <p style={{
-          fontFamily: SF, fontSize: '14px', color: '#a0a0a5',
+          fontFamily: SF, fontSize: '14px', color: 'var(--ink-4)',
           textAlign: 'center', margin: '10px 0 18px',
         }}>
           {index + 1} of {total}
