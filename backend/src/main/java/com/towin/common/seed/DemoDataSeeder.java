@@ -163,15 +163,38 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureConnection(grace, james, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, grace,
                 "Hi James, I'd love a hand learning to video-call my grandchildren.");
 
-        // endedMinutesAgo varies per thread so the inbox "last active" order reads
-        // naturally: James most recent, then Priya, then David.
-        seedMessagesIfEmpty(cTrusted, 95, List.of(
-                msg(james,    "Hi Margaret! Ready for our chess game on Thursday?"),
-                msg(margaret, "Of course! I have been practicing my openings."),
-                msg(james,    "Ha! I will bring the biscuits then. 3pm as usual?"),
-                msg(margaret, "Perfect. And thank you again for setting up my tablet."),
-                msg(james,    "Any time. Video calling your sister works now, right?"),
-                msg(margaret, "It does! We talked for an hour yesterday. Lovely.")));
+        // James + Margaret are TRUSTED — the top of the ladder — so their thread
+        // walks the full trust journey in order, spread across ~3 weeks so the
+        // Messages screen draws natural date separators between stages. The last
+        // message lands 95 min ago, keeping James top of the inbox (Priya ~1 day,
+        // David ~2 days). This replaces generic chatter with the real arc:
+        // introduce → phone → video → social media → meet → trusted friends.
+        seedJourneyIfEmpty(cTrusted, List.of(
+                // Just Connected → Messaging: they introduce themselves
+                tmsg(james,    28800, "Hello Margaret, I'm James. I saw you love chess too. I'd be glad to play, and to help with any tech whenever you need."),
+                tmsg(margaret, 28793, "Hello James! How lovely. Chess is my favourite, though I'm a little rusty. And my new tablet does puzzle me."),
+                tmsg(james,    28786, "We can take both slowly. What would you most like to do on the tablet?"),
+                tmsg(margaret, 28779, "I'd dearly love to video call my sister in Vancouver. I haven't managed it on my own yet."),
+                // Phone Ready: they share phone numbers
+                tmsg(james,    23040, "We'll get you there. Shall we share phone numbers, so it's easier to plan a time?"),
+                tmsg(margaret, 23034, "Good idea. I've just added mine to my profile."),
+                tmsg(james,    23028, "Got it, thank you. I'll give you a quick call after lunch to walk through the first step."),
+                // Video Ready: their first video call
+                tmsg(james,    17280, "Lovely chatting yesterday. Ready to try a video call? I'll show you on screen, then you'll have it for your sister."),
+                tmsg(margaret, 17274, "Yes please. Let me fetch my glasses first!"),
+                tmsg(margaret, 17150, "We did it! I could see your face clear as day. I feel so much braver with it now, thank you."),
+                // Social Media Exchange: they share their profiles
+                tmsg(james,    11520, "You're a natural. If you'd like, we can share our social media too. I post my chess games on mine."),
+                tmsg(margaret, 11514, "Oh I'd enjoy that. I'll add my Facebook — my grandchildren set it up for me."),
+                tmsg(james,    11508, "Followed you, thank you. Wonderful photos of your garden, those roses are something."),
+                // Ready to Meet: they plan a first meet in a public place
+                tmsg(james,     5760, "I think it's time we played a real game of chess. Would the library café suit you? It's nice and busy."),
+                tmsg(margaret,  5754, "Perfect. Thursday at 3pm? A public spot puts my mind at ease."),
+                tmsg(james,     5748, "Thursday at 3 it is. I'll bring the biscuits."),
+                // Fully Trusted: after meeting, true friends
+                tmsg(margaret,   240, "Thank you for a wonderful afternoon, James. You're a true friend now — and you let me win!"),
+                tmsg(james,      150, "Never! You won fair and square. Same time next week for a rematch?"),
+                tmsg(margaret,    95, "Absolutely. I'll be practising my openings all week.")));
         seedMessagesIfEmpty(cAdvance, 1450, List.of(
                 msg(priya,    "Hello Margaret! Thanks for accepting my request."),
                 msg(margaret, "Hello Priya. Your profile says you like baking?"),
@@ -371,6 +394,32 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private record Draft(User sender, String content) {}
     private Draft msg(User sender, String content) { return new Draft(sender, content); }
+
+    private record TimedDraft(User sender, String content, long minutesAgo) {}
+    private TimedDraft tmsg(User sender, long minutesAgo, String content) {
+        return new TimedDraft(sender, content, minutesAgo);
+    }
+
+    /**
+     * Seed a conversation whose drafts each carry their own "minutes ago" offset,
+     * so a single thread can span days or weeks. The Messages screen draws a date
+     * separator whenever consecutive messages fall on different days, so a thread
+     * that walks the trust journey reads as a believable arc rather than one
+     * compressed burst. Idempotent: only seeds when the thread is empty.
+     */
+    private void seedJourneyIfEmpty(Connection conn, List<TimedDraft> drafts) {
+        if (messageRepository.countByConnectionId(conn.getId()) > 0) return;
+        LocalDateTime now = LocalDateTime.now();
+        for (TimedDraft d : drafts) {
+            messageRepository.save(Message.builder()
+                    .connection(conn)
+                    .sender(d.sender())
+                    .content(d.content())
+                    .type(MessageType.TEXT)
+                    .createdAt(now.minusMinutes(d.minutesAgo()))
+                    .build());
+        }
+    }
 
     /**
      * Seed a conversation with realistic, strictly-increasing timestamps so the
