@@ -107,7 +107,7 @@ export default function PeekabooGame() {
             <h1 style={{ fontFamily: SF, fontSize: '38px', fontWeight: 600, color: GREEN, margin: 0, letterSpacing: '-0.8px', lineHeight: 1 }}>
               Peekaboo!
             </h1>
-            <p style={{ fontSize: '14px', color: '#7a7a7a', margin: '5px 0 0' }}>
+            <p style={{ fontSize: '15px', color: '#7a7a7a', margin: '5px 0 0' }}>
               Match all {PAIRS} pairs to win
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function PeekabooGame() {
           <div style={{ flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '9999px', overflow: 'hidden' }}>
             <div style={{ height: '100%', background: SKY, borderRadius: '9999px', width: `${(matchedCount / PAIRS) * 100}%`, transition: 'width 0.4s' }} />
           </div>
-          <span style={{ fontSize: '14px', color: '#7a7a7a', fontWeight: 600, flexShrink: 0 }}>{matchedCount}/{PAIRS}</span>
+          <span style={{ fontSize: '15px', color: '#7a7a7a', fontWeight: 600, flexShrink: 0 }}>{matchedCount}/{PAIRS}</span>
         </div>
 
         {/* Tortoise — single SVG */}
@@ -201,7 +201,7 @@ export default function PeekabooGame() {
 
         {/* Skip */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#a0a0a5', fontFamily: SFT, textDecoration: 'underline', padding: '8px' }}>
+          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '15px', color: '#a0a0a5', fontFamily: SFT, textDecoration: 'underline', padding: '8px' }}>
             Skip to Dashboard
           </button>
         </div>
@@ -215,7 +215,7 @@ export default function PeekabooGame() {
             <h2 style={{ fontFamily: SF, fontSize: '28px', fontWeight: 600, color: '#1d1d1f', margin: '0 0 10px', letterSpacing: '-0.4px' }}>
               {phase === 'won' ? 'You found them all!' : "Time's up!"}
             </h2>
-            <p style={{ fontSize: '15px', color: '#7a7a7a', margin: '0 0 28px', lineHeight: 1.55, fontFamily: SFT }}>
+            <p style={{ fontSize: '16px', color: '#7a7a7a', margin: '0 0 28px', lineHeight: 1.55, fontFamily: SFT }}>
               {phase === 'won'
                 ? `All ${PAIRS} pairs matched. Your streak keeps going!`
                 : `You got ${matchedCount} of ${PAIRS}. Streak still counts!`}

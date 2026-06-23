@@ -174,7 +174,7 @@ export default function Messages() {
           border: 'none',
           cursor: 'pointer',
           color: '#4FA3CE',
-          fontSize: '15px',
+          fontSize: '16px',
           fontFamily: SFText,
           fontWeight: 500,
           padding: '0 4px',
@@ -206,7 +206,7 @@ export default function Messages() {
           {trustLevel && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DA6', flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#2E7DA6' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#2E7DA6' }}>
                 {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ` · Trust ${otherTrustScore}` : ''}
               </span>
             </div>
@@ -215,7 +215,7 @@ export default function Messages() {
 
         <button
           onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
-          style={{ fontSize: '13px', color: '#7a7a7a', background: 'transparent', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
+          style={{ fontSize: '14px', color: '#7a7a7a', background: 'transparent', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
         >
           Report
         </button>
@@ -225,7 +225,7 @@ export default function Messages() {
       {trustLevel && (
         <div style={{ background: '#F4FAFD', borderBottom: '1px solid #E2EEF5', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <p style={{ fontSize: '13px', color: '#5a6470', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
+          <p style={{ fontSize: '14px', color: '#5a6470', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
             {banner ? banner.text : `You're at the ${TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')} stage with ${otherName}.`}
           </p>
         </div>
@@ -238,7 +238,7 @@ export default function Messages() {
           borderBottom: '1px solid #fecaca',
           padding: '16px 20px',
         }}>
-          <p style={{ fontSize: '15px', fontWeight: 600, color: '#cc3333', marginBottom: '12px', fontFamily: SF }}>
+          <p style={{ fontSize: '16px', fontWeight: 600, color: '#cc3333', marginBottom: '12px', fontFamily: SF }}>
             Report {otherName}
           </p>
           <form onSubmit={submitReport} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -262,7 +262,7 @@ export default function Messages() {
               style={{ borderColor: '#fecaca', resize: 'none' }}
             />
             {reportMsg && (
-              <p style={{ fontSize: '13px', color: reportMsg.includes('Thank') ? '#4FA3CE' : '#cc3333' }}>
+              <p style={{ fontSize: '14px', color: reportMsg.includes('Thank') ? '#4FA3CE' : '#cc3333' }}>
                 {reportMsg}
               </p>
             )}
@@ -271,7 +271,7 @@ export default function Messages() {
                 type="submit"
                 disabled={reporting}
                 className="primary-btn"
-                style={{ background: '#cc3333', fontSize: '13px', padding: '7px 16px' }}
+                style={{ background: '#cc3333', fontSize: '14px', padding: '7px 16px' }}
               >
                 {reporting ? 'Submitting...' : 'Submit Report'}
               </button>
@@ -308,7 +308,7 @@ export default function Messages() {
               {otherName}
             </p>
             {loadError !== 'trust' && (
-              <p style={{ fontSize: '14px', color: '#a0a0a5' }}>No messages yet. Send the first message to {otherName}.</p>
+              <p style={{ fontSize: '15px', color: '#a0a0a5' }}>No messages yet. Send the first message to {otherName}.</p>
             )}
           </div>
         )}
@@ -323,7 +323,7 @@ export default function Messages() {
               {showDateSep && (
                 <div style={{ textAlign: 'center', margin: '16px 0 8px' }}>
                   <span style={{
-                    fontSize: '12px',
+                    fontSize: '13px',
                     color: '#a0a0a5',
                     fontFamily: SFText,
                     fontWeight: 500,
@@ -345,7 +345,7 @@ export default function Messages() {
                       <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '11px', fontWeight: 700, color: '#2E7DA6', fontFamily: SF }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#E6F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: '#2E7DA6', fontFamily: SF }}>
                       {initials(otherName)}
                     </div>
                   )
@@ -357,9 +357,9 @@ export default function Messages() {
                   background: isMe ? '#4FA3CE' : '#f0f0f5',
                   color: isMe ? '#ffffff' : '#1d1d1f',
                 }}>
-                  <p style={{ fontSize: '15px', lineHeight: 1.45, fontFamily: SFText }}>{m.content}</p>
+                  <p style={{ fontSize: '16px', lineHeight: 1.45, fontFamily: SFText }}>{m.content}</p>
                   <p style={{
-                    fontSize: '11px',
+                    fontSize: '12px',
                     marginTop: '4px',
                     color: isMe ? 'rgba(255,255,255,0.6)' : '#a0a0a5',
                   }}>
@@ -379,7 +379,7 @@ export default function Messages() {
           background: '#fef3c7', borderTop: '1px solid #fde68a',
           padding: '12px 20px', textAlign: 'center',
         }}>
-          <p style={{ fontSize: '14px', color: '#92400e', fontFamily: SFText, margin: 0 }}>
+          <p style={{ fontSize: '15px', color: '#92400e', fontFamily: SFText, margin: 0 }}>
             Messaging is locked. Both of you need to click <strong>Confirm Trust</strong> on the dashboard to unlock messages.
           </p>
         </div>
@@ -414,14 +414,14 @@ export default function Messages() {
               padding: '10px 18px',
               background: '#ffffff',
               border: '1.5px solid #e0e0e0',
-              fontSize: '15px',
+              fontSize: '16px',
               fontFamily: SFText,
               color: '#1d1d1f',
               outline: 'none',
               resize: 'none',
             }}
           />
-          <span style={{ fontSize: '11px', color: '#a0a0a5', marginTop: '4px', paddingLeft: '4px' }}>
+          <span style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', paddingLeft: '4px' }}>
             Enter to send · Shift+Enter for new line
           </span>
         </div>

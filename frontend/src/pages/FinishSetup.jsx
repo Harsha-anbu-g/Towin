@@ -44,7 +44,7 @@ export default function FinishSetup() {
           height: '44px', lineHeight: '44px', padding: '0 28px',
           background: BLUE, color: '#fff',
           borderRadius: '9999px', textDecoration: 'none',
-          fontSize: '15px', fontFamily: SF,
+          fontSize: '16px', fontFamily: SF,
         }}>
           Go to log in
         </Link>
@@ -104,7 +104,7 @@ export default function FinishSetup() {
           One last step
         </h2>
         <p style={{
-          fontSize: '15px', color: '#7a7a7a', textAlign: 'center',
+          fontSize: '16px', color: '#7a7a7a', textAlign: 'center',
           margin: '0 0 28px', lineHeight: 1.5,
         }}>
           {googleName ? `Welcome, ${googleName.split(' ')[0]}! ` : ''}
@@ -115,7 +115,7 @@ export default function FinishSetup() {
           <div style={{
             background: '#EAF5FB', border: `1px solid ${BORDER}`,
             borderRadius: '10px', padding: '10px 14px',
-            fontSize: '13px', color: '#3D8AB0', marginBottom: '24px',
+            fontSize: '14px', color: '#3D8AB0', marginBottom: '24px',
             textAlign: 'center',
           }}>
             Signing in as <strong>{googleEmail}</strong>
@@ -126,7 +126,7 @@ export default function FinishSetup() {
           <div style={{
             background: '#fef2f2', border: '1px solid #fecaca',
             borderRadius: '11px', padding: '12px 16px',
-            fontSize: '14px', color: '#dc2626', marginBottom: '20px',
+            fontSize: '15px', color: '#dc2626', marginBottom: '20px',
           }}>
             {error}
           </div>
@@ -136,7 +136,7 @@ export default function FinishSetup() {
           {/* Role picker */}
           <div>
             <label style={{
-              display: 'block', fontSize: '13px', fontWeight: 600,
+              display: 'block', fontSize: '14px', fontWeight: 600,
               color: '#1d1d1f', marginBottom: '10px',
             }}>
               I am joining as
@@ -154,12 +154,12 @@ export default function FinishSetup() {
                       transition: 'all 0.15s',
                     }}>
                     <div style={{
-                      fontSize: '14px', fontWeight: 600,
+                      fontSize: '15px', fontWeight: 600,
                       color: active ? BLUE : '#1d1d1f', marginBottom: '4px',
                     }}>
                       {label}
                     </div>
-                    <div style={{ fontSize: '12px', color: active ? '#7BB8D6' : '#a0a0a5', lineHeight: 1.3 }}>
+                    <div style={{ fontSize: '13px', color: active ? '#7BB8D6' : '#a0a0a5', lineHeight: 1.3 }}>
                       {desc}
                     </div>
                   </button>
@@ -170,13 +170,13 @@ export default function FinishSetup() {
 
           {/* Username */}
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
               Username
             </label>
             <div style={{ position: 'relative' }}>
               <span style={{
                 position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
-                fontSize: '15px', color: '#a0a0a5', pointerEvents: 'none',
+                fontSize: '16px', color: '#a0a0a5', pointerEvents: 'none',
               }}>@</span>
               <input
                 type="text" autoComplete="username" required
@@ -187,8 +187,8 @@ export default function FinishSetup() {
                 style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
               />
             </div>
-            {fieldErrors.username && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.username}</p>}
-            <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
+            {fieldErrors.username && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.username}</p>}
+            <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
               3-20 characters. Visible to others on your profile.
             </p>
           </div>
@@ -196,7 +196,7 @@ export default function FinishSetup() {
           {/* Phone */}
           <div>
             <label style={{
-              display: 'block', fontSize: '13px', fontWeight: 600,
+              display: 'block', fontSize: '14px', fontWeight: 600,
               color: '#1d1d1f', marginBottom: '6px',
             }}>
               Phone number
@@ -210,9 +210,9 @@ export default function FinishSetup() {
               style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
             />
             {fieldErrors.phone && (
-              <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.phone}</p>
+              <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px' }}>{fieldErrors.phone}</p>
             )}
-            <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', lineHeight: 1.4 }}>
               Only shared after both people reach the Phone Ready trust stage.
             </p>
           </div>

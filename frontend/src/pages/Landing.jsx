@@ -64,7 +64,7 @@ export default function Landing() {
           ToWin
         </span>
         <Link to="/login" style={{
-          fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
+          fontFamily: SF, fontSize: '16px', fontWeight: 600, color: SKY,
           textDecoration: 'none', padding: '14px 6px',
         }}>
           Already a member? Log in
@@ -94,7 +94,7 @@ export default function Landing() {
       <footer className="landing-footer" style={{ padding: '0 40px 36px' }}>
         <ProgressDots count={total} current={index} onJump={setIndex} />
         <p style={{
-          fontFamily: SF, fontSize: '13px', color: '#a0a0a5',
+          fontFamily: SF, fontSize: '14px', color: '#a0a0a5',
           textAlign: 'center', margin: '10px 0 18px',
         }}>
           {index + 1} of {total}
@@ -118,14 +118,14 @@ export default function Landing() {
                 onClick={() => setIndex(i => Math.max(0, i - 1))}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: SF, fontSize: '15px', fontWeight: 600,
+                  fontFamily: SF, fontSize: '16px', fontWeight: 600,
                   color: '#5a6470', padding: '8px 4px',
                 }}
               >
                 Back
               </button>
               <Link to="/how-it-works" style={{
-                fontFamily: SF, fontSize: '15px', fontWeight: 600,
+                fontFamily: SF, fontSize: '16px', fontWeight: 600,
                 color: SKY, textDecoration: 'none', padding: '8px 4px',
               }}>
                 Read the full guide
