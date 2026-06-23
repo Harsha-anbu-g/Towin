@@ -32,15 +32,16 @@ export default function ResetPassword() {
     fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: '#2d3748',
   };
   const input = {
-    width: '100%', padding: '12px 14px', fontSize: 15, borderRadius: 10,
+    width: '100%', padding: '12px 14px', fontSize: 17, borderRadius: 10,
     border: '1px solid #d8dce2', boxSizing: 'border-box', marginBottom: 14,
   };
   const btn = {
     width: '100%', background: '#4FA3CE', color: '#fff', border: 'none',
-    borderRadius: 10, padding: '12px', fontSize: 15, fontWeight: 600,
+    borderRadius: 10, padding: '12px', fontSize: 17, fontWeight: 600,
     cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1,
   };
-  const linkStyle = { color: '#4FA3CE', fontWeight: 600, textDecoration: 'underline', fontSize: 14 };
+  const linkStyle = { color: '#4FA3CE', fontWeight: 600, textDecoration: 'underline', fontSize: 15 };
+  const labelStyle = { display: 'block', fontSize: 15, fontWeight: 600, color: '#1d1d1f', marginBottom: 8 };
 
   if (!token) {
     return (
@@ -67,22 +68,26 @@ export default function ResetPassword() {
     <div style={wrap}>
       <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Choose a new password</h1>
       <form onSubmit={submit} style={{ marginTop: 16 }}>
+        <label htmlFor="rp-pw" style={labelStyle}>New password (at least 8 characters)</label>
         <input
+          id="rp-pw"
           type="password" required value={pw}
           onChange={e => { setPw(e.target.value); setError(''); }}
-          placeholder="New password (min 8 characters)" style={input}
+          style={input}
         />
+        <label htmlFor="rp-confirm" style={labelStyle}>Re-enter new password</label>
         <input
+          id="rp-confirm"
           type="password" required value={confirm}
           onChange={e => { setConfirm(e.target.value); setError(''); }}
-          placeholder="Re-enter new password" style={input}
+          style={input}
         />
-        {error && <p style={{ color: '#dc2626', fontSize: 13, marginBottom: 12 }}>{error}</p>}
+        {error && <p style={{ color: '#dc2626', fontSize: 14, marginBottom: 12 }}>{error}</p>}
         <button type="submit" disabled={loading} style={btn}>
           {loading ? 'Saving…' : 'Update password'}
         </button>
       </form>
-      <p style={{ marginTop: 18, fontSize: 14 }}>
+      <p style={{ marginTop: 18, fontSize: 15 }}>
         <Link to="/login" style={linkStyle}>Back to log in</Link>
       </p>
     </div>
