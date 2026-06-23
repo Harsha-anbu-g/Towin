@@ -111,7 +111,7 @@ function LegalModal({ title, sections, onClose }) {
                 margin: '0 0 6px',
               }}>{s.h}</h4>
               <p style={{
-                fontSize: '14px', color: '#5a6b75', lineHeight: 1.6, margin: 0,
+                fontSize: '15px', color: '#5a6b75', lineHeight: 1.6, margin: 0,
               }}>{s.p}</p>
             </div>
           ))}
@@ -140,7 +140,7 @@ function LegalModal({ title, sections, onClose }) {
 
 function HeroPanel() {
   return (
-    <div className="auth-hero" style={{
+    <div className="auth-hero auth-hero--wide" style={{
       position: 'relative',
       overflow: 'hidden',
       display: 'flex',
@@ -386,7 +386,7 @@ export default function Register() {
           </h2>
           <p style={{
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            fontSize: '14px', color: '#7a7a7a', margin: '0 0 22px',
+            fontSize: '16px', color: '#7a7a7a', margin: '0 0 22px',
           }}>
             Create your free account in minutes.
           </p>
@@ -397,7 +397,7 @@ export default function Register() {
           {/* Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-            <span style={{ fontSize: '13px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with a username</span>
+            <span style={{ fontSize: '14px', color: '#a0a0a5', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with a username</span>
             <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
           </div>
 
@@ -408,7 +408,7 @@ export default function Register() {
             padding: '18px',
           }}>
             <label style={{
-              display: 'block', fontSize: '14px', fontWeight: 700,
+              display: 'block', fontSize: '15px', fontWeight: 700,
               color: '#1d1d1f', marginBottom: '3px', letterSpacing: '-0.2px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
             }}>
@@ -427,7 +427,7 @@ export default function Register() {
                       transition: 'all 0.15s',
                     }}>
                     <div style={{
-                      fontSize: '14px', fontWeight: 600,
+                      fontSize: '15px', fontWeight: 600,
                       color: active ? '#4FA3CE' : '#1d1d1f',
                       marginBottom: '4px',
                       fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -435,7 +435,7 @@ export default function Register() {
                       {label}
                     </div>
                     <div style={{
-                      fontSize: '12px', lineHeight: 1.3,
+                      fontSize: '13px', lineHeight: 1.3,
                       color: active ? '#7BB8D6' : '#a0a0a5',
                       fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                     }}>
@@ -459,7 +459,7 @@ export default function Register() {
               <div style={{
                 background: '#fef2f2', border: '1px solid #fecaca',
                 borderRadius: '11px', padding: '12px 16px',
-                fontSize: '14px', color: '#dc2626', marginBottom: '20px',
+                fontSize: '15px', color: '#dc2626', marginBottom: '20px',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               }}>
                 {error}
@@ -470,28 +470,21 @@ export default function Register() {
               {/* Username */}
               <div>
                 <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  display: 'block', fontSize: '15px', fontWeight: 600,
                   color: '#1d1d1f', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   Username
                 </label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{
-                    position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
-                    fontSize: '15px', color: '#a0a0a5', fontFamily: 'inherit', pointerEvents: 'none',
-                  }}>@</span>
-                  <input
-                    type="text" autoComplete="username" required
-                    className="field"
-                    value={form.username}
-                    onChange={e => { setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }); setFieldErrors(f => ({ ...f, username: '' })); }}
-                    placeholder="your_username"
-                    style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
-                  />
-                </div>
-                {fieldErrors.username && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
-                <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+                <input
+                  type="text" autoComplete="username" required
+                  className="field"
+                  value={form.username}
+                  onChange={e => { setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }); setFieldErrors(f => ({ ...f, username: '' })); }}
+                  style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined }}
+                />
+                {fieldErrors.username && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
+                <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   3-20 characters. Letters, numbers, underscores. Visible to others.
                 </p>
               </div>
@@ -499,7 +492,7 @@ export default function Register() {
               {/* Email */}
               <div>
                 <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  display: 'block', fontSize: '15px', fontWeight: 600,
                   color: '#1d1d1f', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
@@ -510,11 +503,10 @@ export default function Register() {
                   className="field"
                   value={form.email}
                   onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
-                  placeholder="you@example.com"
                   style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
                 />
-                {fieldErrors.email && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
-                <p style={{ fontSize: '12px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+                {fieldErrors.email && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
+                <p style={{ fontSize: '13px', color: '#a0a0a5', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
                   We'll send a link to confirm it's really you.
                 </p>
               </div>
@@ -522,7 +514,7 @@ export default function Register() {
               {/* Password */}
               <div>
                 <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  display: 'block', fontSize: '15px', fontWeight: 600,
                   color: '#1d1d1f', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
@@ -534,7 +526,6 @@ export default function Register() {
                     className="field"
                     value={form.password}
                     onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
-                    placeholder="Create a password"
                     style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined, paddingRight: '44px' }}
                   />
                   <button type="button" onClick={() => setShowPwd(v => !v)}
@@ -542,7 +533,7 @@ export default function Register() {
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {fieldErrors.password && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
+                {fieldErrors.password && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.password}</p>}
                 {form.password && (
                   <div style={{ marginTop: '6px', display: 'flex', gap: '3px', alignItems: 'center' }}>
                     {[1,2,3,4].map(i => (
@@ -554,7 +545,7 @@ export default function Register() {
                         transition: 'background 0.2s',
                       }} />
                     ))}
-                    <span style={{ fontSize: '11px', color: '#7a7a7a', marginLeft: '6px', fontFamily: 'inherit' }}>
+                    <span style={{ fontSize: '12px', color: '#7a7a7a', marginLeft: '6px', fontFamily: 'inherit' }}>
                       {['','Weak','Fair','Good','Strong'][pwdStrength(form.password)]}
                     </span>
                   </div>
@@ -564,7 +555,7 @@ export default function Register() {
               {/* Confirm Password */}
               <div>
                 <label style={{
-                  display: 'block', fontSize: '13px', fontWeight: 600,
+                  display: 'block', fontSize: '15px', fontWeight: 600,
                   color: '#1d1d1f', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
@@ -576,7 +567,6 @@ export default function Register() {
                     className="field"
                     value={form.confirmPassword}
                     onChange={e => { setForm({ ...form, confirmPassword: e.target.value }); setFieldErrors(f => ({ ...f, confirmPassword: '' })); }}
-                    placeholder="Type the same password again"
                     style={{ borderColor: fieldErrors.confirmPassword ? '#fca5a5' : undefined, paddingRight: '44px' }}
                   />
                   <button type="button" onClick={() => setShowConfirm(v => !v)}
@@ -584,9 +574,9 @@ export default function Register() {
                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {fieldErrors.confirmPassword && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.confirmPassword}</p>}
+                {fieldErrors.confirmPassword && <p style={{ fontSize: '13px', color: '#dc2626', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.confirmPassword}</p>}
                 {form.confirmPassword && form.password && form.confirmPassword === form.password && (
-                  <p style={{ fontSize: '12px', color: '#5FA670', marginTop: '4px', fontFamily: 'inherit' }}>Passwords match</p>
+                  <p style={{ fontSize: '13px', color: '#5FA670', marginTop: '4px', fontFamily: 'inherit' }}>Passwords match</p>
                 )}
               </div>
 
@@ -602,7 +592,7 @@ export default function Register() {
                   style={{ marginTop: '2px', accentColor: '#4FA3CE', flexShrink: 0 }}
                 />
                 <span style={{
-                  fontSize: '13px', color: '#7a7a7a', lineHeight: 1.5,
+                  fontSize: '14px', color: '#7a7a7a', lineHeight: 1.5,
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
                   I agree to the{' '}
@@ -635,7 +625,7 @@ export default function Register() {
 
           {/* Log in link — returning users */}
           <p style={{
-            textAlign: 'center', fontSize: '14px', color: '#7a7a7a',
+            textAlign: 'center', fontSize: '15px', color: '#7a7a7a',
             marginTop: '20px',
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
           }}>
@@ -659,7 +649,7 @@ export default function Register() {
               Just want to see how it works?
             </p>
             <p style={{
-              fontSize: '13px', color: '#5a6470', textAlign: 'center',
+              fontSize: '14px', color: '#5a6470', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
@@ -695,7 +685,7 @@ export default function Register() {
                     <span style={{ display: 'block', fontSize: '15px', fontWeight: 600, color: '#3D8AB0' }}>
                       {guestLoading === role ? 'Opening…' : label}
                     </span>
-                    <span style={{ display: 'block', fontSize: '12px', color: '#7a7a7a', marginTop: '2px' }}>
+                    <span style={{ display: 'block', fontSize: '13px', color: '#7a7a7a', marginTop: '2px' }}>
                       {sub}
                     </span>
                   </span>
