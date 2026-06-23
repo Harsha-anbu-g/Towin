@@ -41,12 +41,12 @@ export default function VerifyPending() {
   };
   const primaryBtn = {
     background: '#4FA3CE', color: '#fff', border: 'none', borderRadius: 10,
-    padding: '12px 22px', fontSize: 15, fontWeight: 600, cursor: sending ? 'default' : 'pointer',
+    padding: '12px 22px', fontSize: 17, fontWeight: 600, cursor: sending ? 'default' : 'pointer',
     opacity: sending ? 0.6 : 1, width: '100%', marginBottom: 12,
   };
   const linkBtn = {
     background: 'none', border: 'none', color: '#4FA3CE', fontWeight: 600,
-    cursor: 'pointer', textDecoration: 'underline', fontSize: 14,
+    cursor: 'pointer', textDecoration: 'underline', fontSize: 15,
   };
 
   return (
@@ -62,7 +62,7 @@ export default function VerifyPending() {
 
       <div style={{
         background: '#FBEED9', color: '#7a5b1e', borderRadius: 10,
-        padding: '12px 16px', marginBottom: 28, fontSize: 14, lineHeight: 1.5, textAlign: 'left',
+        padding: '12px 16px', marginBottom: 28, fontSize: 15, lineHeight: 1.5, textAlign: 'left',
       }}>
         📁 <strong>Can't find it?</strong> Please check your <strong>Spam</strong> or <strong>Junk</strong> folder —
         the ToWin verification email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox.
