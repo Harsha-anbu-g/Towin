@@ -269,7 +269,7 @@ export const SLIDES = [
             borderRadius: '12px', padding: '11px 16px', fontFamily: SF,
             fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.55, textAlign: 'left',
           }}>
-            Each person helped adds up to <strong style={{ color: 'var(--ink)' }}>15 points</strong> to their score.
+            Every connection you complete can earn up to <strong style={{ color: 'var(--ink)' }}>15 points</strong> &mdash; so your score keeps growing with each person you help.
           </div>
         </div>
 
@@ -279,7 +279,7 @@ export const SLIDES = [
             Full profile with ID, phone, and photo, all checked.
           </MiniCard>
           <MiniCard title="Trust Ladder" badge="+7" compact>
-            Points earned as a friendship grows step by step.
+            With each new person you climb the same seven steps &mdash; points earned as that friendship grows.
           </MiniCard>
           <MiniCard title="Review" badge="+5" stars compact>
             Star ratings from the people they have already helped.
