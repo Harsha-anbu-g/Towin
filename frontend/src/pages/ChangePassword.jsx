@@ -9,7 +9,7 @@ const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SKY = '#4FA3CE';
 
 const labelStyle = {
-  display: 'block', fontSize: '13px', fontWeight: 600,
+  display: 'block', fontSize: '14px', fontWeight: 600,
   color: '#7a7a7a', marginBottom: '6px',
 };
 const inputStyle = { width: '100%', boxSizing: 'border-box' };
@@ -47,7 +47,7 @@ export default function ChangePassword() {
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: '6px',
-            fontFamily: SFText, fontSize: '14px', color: SKY, fontWeight: 600,
+            fontFamily: SFText, fontSize: '15px', color: SKY, fontWeight: 600,
             marginBottom: '24px', padding: 0,
           }}
         >
@@ -62,16 +62,16 @@ export default function ChangePassword() {
             <p style={{ fontSize: '22px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
               Change Password
             </p>
-            <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '22px' }}>
+            <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '22px' }}>
               Enter your current password, then choose a new one.
             </p>
 
             {done ? (
               <div>
-                <p style={{ fontSize: '15px', color: '#4FA3CE', fontWeight: 600, marginBottom: '20px' }}>
+                <p style={{ fontSize: '16px', color: '#4FA3CE', fontWeight: 600, marginBottom: '20px' }}>
                   ✓ Password changed. You can use your new password next time you sign in.
                 </p>
-                <button onClick={() => navigate('/profile')} className="primary-btn" style={{ fontSize: '15px' }}>
+                <button onClick={() => navigate('/profile')} className="primary-btn" style={{ fontSize: '16px' }}>
                   Back to profile
                 </button>
               </div>
@@ -96,11 +96,11 @@ export default function ChangePassword() {
                     placeholder="Type it again" className="field" required style={inputStyle} />
                 </div>
                 {msg && (
-                  <p style={{ fontSize: '13px', color: '#5a6470', fontWeight: 500, margin: 0 }}>
+                  <p style={{ fontSize: '14px', color: '#5a6470', fontWeight: 500, margin: 0 }}>
                     {msg}
                   </p>
                 )}
-                <button type="submit" disabled={saving} className="primary-btn" style={{ fontSize: '15px', marginTop: '4px' }}>
+                <button type="submit" disabled={saving} className="primary-btn" style={{ fontSize: '16px', marginTop: '4px' }}>
                   {saving ? 'Saving…' : 'Change password'}
                 </button>
               </form>

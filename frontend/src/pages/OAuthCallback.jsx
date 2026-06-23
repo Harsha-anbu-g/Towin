@@ -57,7 +57,7 @@ export default function OAuthCallback() {
           <div style={{
             background: '#fef2f2', border: '1px solid #fecaca',
             borderRadius: '14px', padding: '20px 24px',
-            fontSize: '15px', color: '#dc2626', marginBottom: '20px',
+            fontSize: '16px', color: '#dc2626', marginBottom: '20px',
           }}>
             {error}
           </div>
@@ -67,7 +67,7 @@ export default function OAuthCallback() {
               height: '44px', padding: '0 28px',
               background: '#4FA3CE', color: '#fff',
               border: 'none', borderRadius: '9999px',
-              fontSize: '15px', cursor: 'pointer', fontFamily: SF,
+              fontSize: '16px', cursor: 'pointer', fontFamily: SF,
             }}
           >
             Back to log in
@@ -81,7 +81,7 @@ export default function OAuthCallback() {
             animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <p style={{ fontSize: '15px', margin: 0 }}>One moment…</p>
+          <p style={{ fontSize: '16px', margin: 0 }}>One moment…</p>
         </div>
       )}
     </div>

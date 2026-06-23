@@ -16,11 +16,11 @@ function ConfirmButton({ label, style, onConfirm }) {
     return (
       <span style={{ display: 'flex', gap: '4px' }}>
         <button onClick={() => { onConfirm(); setConfirming(false); }}
-          style={{ fontSize: '12px', background: '#cc0000', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: '13px', background: '#cc0000', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
           Sure?
         </button>
         <button onClick={() => setConfirming(false)}
-          style={{ fontSize: '12px', background: '#e0e0e0', color: '#1d1d1f', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: '13px', background: '#e0e0e0', color: '#1d1d1f', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
           No
         </button>
       </span>
@@ -32,7 +32,7 @@ function ConfirmButton({ label, style, onConfirm }) {
 }
 
 const actionBtn = (color, bg) => ({
-  fontSize: '12px',
+  fontSize: '13px',
   fontWeight: 600,
   color,
   background: bg,
@@ -52,7 +52,7 @@ const roleBadge = (role) => {
   const colors = { ADMIN: ['#3D8B5A', 'rgba(61,139,90,0.12)'], ELDER: ['#4FA3CE', 'rgba(0,102,204,0.1)'], HELPER: ['#3D8AB0', 'rgba(79,163,206,0.10)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
   const [c, bg] = colors[role] || ['#7a7a7a', 'rgba(160,160,165,0.1)'];
   return (
-    <span style={{ fontSize: '11px', fontWeight: 600, color: c, background: bg, padding: '3px 8px', borderRadius: '9999px' }}>
+    <span style={{ fontSize: '12px', fontWeight: 600, color: c, background: bg, padding: '3px 8px', borderRadius: '9999px' }}>
       {role}
     </span>
   );
@@ -60,7 +60,7 @@ const roleBadge = (role) => {
 
 const statusBadge = (active) => (
   <span style={{
-    fontSize: '11px',
+    fontSize: '12px',
     fontWeight: 600,
     color: active ? '#3D8AB0' : '#cc0000',
     background: active ? 'rgba(79,163,206,0.10)' : 'rgba(204,0,0,0.1)',
@@ -120,14 +120,14 @@ function FeedbackTab() {
               <div style={{ fontSize: '18px', fontWeight: 600, color: '#4FA3CE', fontFamily: SF }}>
                 {a ?? '—'}
               </div>
-              <div style={{ fontSize: '11px', color: '#7a7a7a', fontFamily: SFText }}>{label}</div>
+              <div style={{ fontSize: '12px', color: '#7a7a7a', fontFamily: SFText }}>{label}</div>
             </div>
           );
         })}
       </div>
 
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: SFText, fontSize: '13px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: SFText, fontSize: '14px' }}>
           <thead>
             <tr style={{ background: '#f5f5f7', textAlign: 'left' }}>
               {['Date', 'Name', 'Email', 'Phone', ...RATING_LABELS.map(r => r.label), 'Message'].map(h => (
@@ -222,7 +222,7 @@ export default function Admin() {
   const thStyle = {
     padding: '12px 16px',
     textAlign: 'left',
-    fontSize: '11px',
+    fontSize: '12px',
     fontWeight: 600,
     color: '#a0a0a5',
     textTransform: 'uppercase',
@@ -234,7 +234,7 @@ export default function Admin() {
 
   const tdStyle = {
     padding: '14px 16px',
-    fontSize: '14px',
+    fontSize: '15px',
     color: '#1d1d1f',
     fontFamily: SFText,
     borderBottom: '1px solid #f5f5f7',
@@ -249,7 +249,7 @@ export default function Admin() {
   };
 
   const subTabStyle = (active, accent = '#4FA3CE') => ({
-    fontSize: '14px',
+    fontSize: '15px',
     fontWeight: active ? 700 : 500,
     color: active ? '#ffffff' : '#1d1d1f',
     background: active ? accent : '#ffffff',
@@ -276,7 +276,7 @@ export default function Admin() {
           onClick={() => setConfirmSignOut(true)}
           style={{
             position: 'absolute', top: '20px', right: '24px',
-            fontSize: '13px', color: '#5a6b75',
+            fontSize: '14px', color: '#5a6b75',
             background: '#ffffff', border: '1px solid #DCEBF4',
             borderRadius: '9999px', padding: '6px 16px',
             cursor: 'pointer', fontFamily: SFText, fontWeight: 500,
@@ -322,7 +322,7 @@ export default function Admin() {
               <p style={{ fontSize: '26px', fontWeight: 600, color: '#1d1d1f', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
                 {stat.value}
               </p>
-              <p style={{ fontSize: '12px', color: '#7a7a7a', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
+              <p style={{ fontSize: '13px', color: '#7a7a7a', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
                 {stat.label}
               </p>
             </div>
@@ -366,7 +366,7 @@ export default function Admin() {
                 {t}
                 {hasBadge && (
                   <span style={{
-                    fontSize: '11px', fontWeight: 600,
+                    fontSize: '12px', fontWeight: 600,
                     color: '#ffffff', background: '#cc0000',
                     borderRadius: '9999px', padding: '1px 8px',
                   }}>
@@ -394,7 +394,7 @@ export default function Admin() {
                   padding: '9px 16px',
                   borderRadius: '9999px',
                   border: '1.5px solid #e0e0e0',
-                  fontSize: '14px',
+                  fontSize: '15px',
                   fontFamily: SFText,
                   color: '#1d1d1f',
                   outline: 'none',
@@ -425,33 +425,33 @@ export default function Admin() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '13px',
+                            fontSize: '14px',
                             fontWeight: 600,
                             color: lowTrust ? '#cc0000' : '#4FA3CE',
                             flexShrink: 0,
                           }}>
                             {u.email?.[0]?.toUpperCase() || '?'}
                           </div>
-                          <span style={{ fontSize: '13px', color: '#1d1d1f', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '14px', color: '#1d1d1f', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {u.email}
                           </span>
                         </div>
                       </td>
                       <td style={tdStyle}>{roleBadge(u.role)}</td>
                       <td style={tdStyle}>
-                        <span style={{ fontWeight: 600, color: trustColor(u.trustScore || 0), fontSize: '15px' }}>
+                        <span style={{ fontWeight: 600, color: trustColor(u.trustScore || 0), fontSize: '16px' }}>
                           {u.trustScore ?? '—'}
                         </span>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '12px', color: '#7a7a7a', fontWeight: 500 }}>{u.trustTier || '—'}</span>
+                        <span style={{ fontSize: '13px', color: '#7a7a7a', fontWeight: 500 }}>{u.trustTier || '—'}</span>
                       </td>
                       <td style={tdStyle}>{statusBadge(u.isActive)}</td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '12px', color: '#7a7a7a' }}>{u.verificationStatus}</span>
+                        <span style={{ fontSize: '13px', color: '#7a7a7a' }}>{u.verificationStatus}</span>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: '12px', color: '#a0a0a5' }}>
+                        <span style={{ fontSize: '13px', color: '#a0a0a5' }}>
                           {new Date(u.createdAt).toLocaleDateString()}
                         </span>
                       </td>
@@ -477,7 +477,7 @@ export default function Admin() {
 
             {/* Pagination controls */}
             <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', borderTop: '1px solid #e0e0e0' }}>
-              <span style={{ fontSize: '13px', color: '#7a7a7a', fontFamily: SFText }}>
+              <span style={{ fontSize: '14px', color: '#7a7a7a', fontFamily: SFText }}>
                 Page {clampedPage + 1} of {userPageCount}
               </span>
               <button
@@ -489,7 +489,7 @@ export default function Admin() {
                   border: '1.5px solid #e0e0e0',
                   borderRadius: '9999px',
                   padding: '7px 18px',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: 600,
                   fontFamily: SFText,
                   cursor: clampedPage === 0 ? 'default' : 'pointer',
@@ -503,7 +503,7 @@ export default function Admin() {
                   border: 'none',
                   borderRadius: '9999px',
                   padding: '7px 18px',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: 600,
                   fontFamily: SFText,
                   cursor: clampedPage >= userPageCount - 1 ? 'default' : 'pointer',
@@ -516,7 +516,7 @@ export default function Admin() {
         {tab === 'Verifications' && (
           <div style={card}>
             {verifications.length === 0 && (
-              <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '14px', textAlign: 'center' }}>
+              <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '15px', textAlign: 'center' }}>
                 No pending verifications.
               </p>
             )}
@@ -534,7 +534,7 @@ export default function Admin() {
                     <td style={tdStyle}>{v.email}</td>
                     <td style={tdStyle}>
                       {v.idDocumentUrl
-                        ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: '#4FA3CE', fontSize: '13px', fontWeight: 600 }}>View Document</a>
+                        ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: '#4FA3CE', fontSize: '14px', fontWeight: 600 }}>View Document</a>
                         : <span style={{ color: '#a0a0a5' }}>—</span>}
                     </td>
                     <td style={tdStyle}>{new Date(v.createdAt).toLocaleDateString()}</td>
@@ -558,7 +558,7 @@ export default function Admin() {
         {tab === 'Reports' && (
           <div style={card}>
             {reports.length === 0 && (
-              <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '14px', textAlign: 'center' }}>
+              <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '15px', textAlign: 'center' }}>
                 No reports.
               </p>
             )}
@@ -576,7 +576,7 @@ export default function Admin() {
                     <td style={tdStyle}>{r.reporterEmail}</td>
                     <td style={tdStyle}>{r.reportedEmail}</td>
                     <td style={tdStyle}>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#cc0000', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#cc0000', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
                         {r.reason}
                       </span>
                     </td>
@@ -604,7 +604,7 @@ export default function Admin() {
             </div>
             <div style={card}>
               {reviews.length === 0 && (
-                <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '14px', textAlign: 'center' }}>No reviews.</p>
+                <p style={{ padding: '40px 24px', color: '#a0a0a5', fontSize: '15px', textAlign: 'center' }}>No reviews.</p>
               )}
               <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
                 <thead>
@@ -623,8 +623,8 @@ export default function Admin() {
                       <td style={tdStyle}>{r.tags?.join(', ')}</td>
                       <td style={tdStyle}>
                         {r.safetyConcern
-                          ? <span style={{ fontSize: '12px', color: '#cc0000', fontWeight: 600 }}>Safety Flag</span>
-                          : <span style={{ fontSize: '12px', color: '#a0a0a5' }}>—</span>}
+                          ? <span style={{ fontSize: '13px', color: '#cc0000', fontWeight: 600 }}>Safety Flag</span>
+                          : <span style={{ fontSize: '13px', color: '#a0a0a5' }}>—</span>}
                       </td>
                       <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>
                       <td style={tdStyle}>
@@ -669,7 +669,7 @@ export default function Admin() {
                         <td style={tdStyle}>{c.userAEmail}</td>
                         <td style={tdStyle}>{c.userBEmail}</td>
                         <td style={tdStyle}>
-                          <span style={{ fontSize: '12px', color: '#4FA3CE', fontWeight: 600 }}>{c.trustLevel}</span>
+                          <span style={{ fontSize: '13px', color: '#4FA3CE', fontWeight: 600 }}>{c.trustLevel}</span>
                         </td>
                         <td style={tdStyle}>{c.status}</td>
                         <td style={tdStyle}>{new Date(c.createdAt).toLocaleDateString()}</td>

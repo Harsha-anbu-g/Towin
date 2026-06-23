@@ -53,7 +53,7 @@ const Divider = () => (
 function FieldRow({ label, children }) {
   return (
     <div style={{ padding: '14px 0' }}>
-      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+      <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#7a7a7a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
         {label}
       </label>
       {children}
@@ -245,7 +245,7 @@ export default function ProfileEdit() {
   }
 
   const verBadge = (ok, pts) => ok
-    ? <span style={{ fontSize: '11px', background: 'rgba(79,163,206,0.10)', color: '#4FA3CE', border: '1px solid rgba(79,163,206,0.20)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
+    ? <span style={{ fontSize: '12px', background: 'rgba(79,163,206,0.10)', color: '#4FA3CE', border: '1px solid rgba(79,163,206,0.20)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
     : null;
 
   const card = {
@@ -302,7 +302,7 @@ export default function ProfileEdit() {
             <input type="file" accept="image/*" id="photo-upload" onChange={e => setPhotoFile(e.target.files[0])}
               style={{ display: 'none' }} />
             <label htmlFor="photo-upload" style={{
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
               color: '#4FA3CE',
               cursor: 'pointer',
@@ -322,7 +322,7 @@ export default function ProfileEdit() {
                 border: 'none',
                 borderRadius: '9999px',
                 padding: '6px 16px',
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: SFText,
@@ -330,7 +330,7 @@ export default function ProfileEdit() {
                 {uploadingPhoto ? 'Uploading…' : 'Upload'}
               </button>
             )}
-            {photoMsg && <p style={{ fontSize: '13px', color: '#4FA3CE', marginTop: '6px' }}>{photoMsg}</p>}
+            {photoMsg && <p style={{ fontSize: '14px', color: '#4FA3CE', marginTop: '6px' }}>{photoMsg}</p>}
           </div>
 
           <h1 style={{
@@ -347,7 +347,7 @@ export default function ProfileEdit() {
             {isElder ? 'Elder' : 'Helper'}
           </p>
           {profileData?.username && (
-            <p style={{ fontSize: '14px', color: '#a0a0a5', marginBottom: '12px', marginTop: '0' }}>
+            <p style={{ fontSize: '15px', color: '#a0a0a5', marginBottom: '12px', marginTop: '0' }}>
               @{profileData.username}
             </p>
           )}
@@ -380,14 +380,14 @@ export default function ProfileEdit() {
                         <div style={{
                           padding: '10px 14px', borderRadius: '12px',
                           background: '#f5f5f7', border: '1.5px solid #e0e0e0',
-                          fontSize: '14px', color: '#1d1d1f', lineHeight: 1.6,
+                          fontSize: '15px', color: '#1d1d1f', lineHeight: 1.6,
                         }}>
                           <span style={{ fontWeight: 600, fontSize: '20px', color: '#1a5c2e' }}>
                             {age.years}
                           </span>
                           <span style={{ color: '#7a7a7a' }}> years old</span>
                           <br />
-                          <span style={{ fontSize: '12px', color: '#a0a0a5' }}>
+                          <span style={{ fontSize: '13px', color: '#a0a0a5' }}>
                             {age.totalDays.toLocaleString()} days · {age.months} mo {age.days} d
                           </span>
                         </div>
@@ -407,7 +407,7 @@ export default function ProfileEdit() {
                         border: '1.5px solid #e0e0e0',
                         borderRadius: '12px',
                         padding: '12px 16px',
-                        fontSize: '15px',
+                        fontSize: '16px',
                         fontFamily: SFText,
                         color: '#1d1d1f',
                         background: '#ffffff',
@@ -487,7 +487,7 @@ export default function ProfileEdit() {
                   </FieldRow>
 
                   {msg && (
-                    <p style={{ fontSize: '14px', color: msg.includes('saved') ? '#4FA3CE' : '#5a6470', fontWeight: 500, marginTop: '8px' }}>
+                    <p style={{ fontSize: '15px', color: msg.includes('saved') ? '#4FA3CE' : '#5a6470', fontWeight: 500, marginTop: '8px' }}>
                       {msg}
                     </p>
                   )}
@@ -532,43 +532,43 @@ export default function ProfileEdit() {
                         <Phone size={18} color={SKY} strokeWidth={2} />
                       </div>
                       <div>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>Phone Number</p>
-                        <p style={{ fontSize: '13px', color: '#7a7a7a' }}>{profileData?.phone || 'No number on file'}</p>
+                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f' }}>Phone Number</p>
+                        <p style={{ fontSize: '14px', color: '#7a7a7a' }}>{profileData?.phone || 'No number on file'}</p>
                       </div>
                     </div>
                     {profileData?.phoneVerified
                       ? verBadge(true, 10)
-                      : <span style={{ fontSize: '11px', background: 'rgba(160,160,165,0.1)', color: '#a0a0a5', border: '1px solid #e0e0e0', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not verified</span>
+                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: '#a0a0a5', border: '1px solid #e0e0e0', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not verified</span>
                     }
                   </div>
 
                   {!editingPhone ? (
                     <button onClick={() => { setEditingPhone(true); setNewPhone(profileData?.phone || ''); }}
-                      className="ghost-btn" style={{ alignSelf: 'flex-start', fontSize: '12px', padding: '5px 14px' }}>
+                      className="ghost-btn" style={{ alignSelf: 'flex-start', fontSize: '13px', padding: '5px 14px' }}>
                       Change number
                     </button>
                   ) : (
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="416 555 0123" className="field" style={{ flex: 1 }} />
-                      <button onClick={savePhone} className="primary-btn" style={{ fontSize: '13px' }}>Save</button>
-                      <button onClick={() => setEditingPhone(false)} className="ghost-btn" style={{ fontSize: '13px' }}>Cancel</button>
+                      <button onClick={savePhone} className="primary-btn" style={{ fontSize: '14px' }}>Save</button>
+                      <button onClick={() => setEditingPhone(false)} className="ghost-btn" style={{ fontSize: '14px' }}>Cancel</button>
                     </div>
                   )}
 
                   {!profileData?.phoneVerified && !editingPhone && (
                     !phoneOtpSent ? (
-                      <button onClick={requestOtp} disabled={verifyingPhone} className="primary-btn" style={{ alignSelf: 'flex-start', fontSize: '13px' }}>
+                      <button onClick={requestOtp} disabled={verifyingPhone} className="primary-btn" style={{ alignSelf: 'flex-start', fontSize: '14px' }}>
                         {verifyingPhone ? 'Sending…' : 'Send verification code'}
                       </button>
                     ) : (
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <input value={otp} onChange={e => setOtp(e.target.value)} placeholder="6-digit code" className="field" style={{ flex: 1 }} />
                         <button onClick={confirmOtp} disabled={verifyingPhone || otp.length < 6}
-                          className="primary-btn" style={{ background: '#4FA3CE', fontSize: '13px' }}>Confirm</button>
+                          className="primary-btn" style={{ background: '#4FA3CE', fontSize: '14px' }}>Confirm</button>
                       </div>
                     )
                   )}
-                  {otpMsg && <p style={{ fontSize: '13px', color: otpMsg.includes('verified') || otpMsg.includes('updated') ? '#4FA3CE' : '#5a6470', fontWeight: 500 }}>{otpMsg}</p>}
+                  {otpMsg && <p style={{ fontSize: '14px', color: otpMsg.includes('verified') || otpMsg.includes('updated') ? '#4FA3CE' : '#5a6470', fontWeight: 500 }}>{otpMsg}</p>}
                 </div>
 
                 {/* ID */}
@@ -579,29 +579,29 @@ export default function ProfileEdit() {
                         <ShieldCheck size={18} color={SKY} strokeWidth={2} />
                       </div>
                       <div>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>ID Document</p>
-                        <p style={{ fontSize: '13px', color: '#7a7a7a' }}>Driver's licence or passport</p>
+                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f' }}>ID Document</p>
+                        <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Driver's licence or passport</p>
                       </div>
                     </div>
                     {profileData?.verificationStatus === 'VERIFIED'
                       ? verBadge(true, 20)
                       : profileData?.verificationStatus === 'PENDING'
-                      ? <span style={{ fontSize: '11px', background: SKY_TINT, color: SKY, border: `1px solid ${SKY_BORDER}`, padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Under review</span>
-                      : <span style={{ fontSize: '11px', background: 'rgba(160,160,165,0.1)', color: '#a0a0a5', border: '1px solid #e0e0e0', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not submitted</span>
+                      ? <span style={{ fontSize: '12px', background: SKY_TINT, color: SKY, border: `1px solid ${SKY_BORDER}`, padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Under review</span>
+                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: '#a0a0a5', border: '1px solid #e0e0e0', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not submitted</span>
                     }
                   </div>
                   {(profileData?.verificationStatus === 'NONE' || !profileData?.verificationStatus) && (
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <input type="file" accept="image/*,.pdf" onChange={e => setIdFile(e.target.files[0])}
-                        style={{ fontSize: '13px', color: '#7a7a7a', flex: 1 }} />
+                        style={{ fontSize: '14px', color: '#7a7a7a', flex: 1 }} />
                       {idFile && (
-                        <button onClick={uploadId} disabled={uploadingId} className="primary-btn" style={{ fontSize: '13px' }}>
+                        <button onClick={uploadId} disabled={uploadingId} className="primary-btn" style={{ fontSize: '14px' }}>
                           {uploadingId ? 'Uploading…' : 'Upload'}
                         </button>
                       )}
                     </div>
                   )}
-                  {idMsg && <p style={{ fontSize: '13px', color: idMsg.includes('pending') ? SKY : MUTED, fontWeight: 500 }}>{idMsg}</p>}
+                  {idMsg && <p style={{ fontSize: '14px', color: idMsg.includes('pending') ? SKY : MUTED, fontWeight: 500 }}>{idMsg}</p>}
                 </div>
               </div>
             </BlurFade>
@@ -616,13 +616,13 @@ export default function ProfileEdit() {
                       ({emContacts.length}/3)
                     </span>
                   </p>
-                  <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '16px', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '16px', lineHeight: 1.5 }}>
                     People we'll alert if you don't check in for several days, or when you press SOS.
                   </p>
 
                   {emContacts.length === 0 ? (
                     <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '14px', color: MUTED, margin: 0 }}>
+                      <p style={{ fontSize: '15px', color: MUTED, margin: 0 }}>
                         No emergency contacts yet. Add up to 3 people who care about you.
                       </p>
                     </div>
@@ -634,15 +634,15 @@ export default function ProfileEdit() {
                             <Siren size={18} color={SKY} strokeWidth={2} />
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>{c.name}</p>
-                            <p style={{ fontSize: '13px', color: '#7a7a7a', margin: '1px 0 0' }}>
+                            <p style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f', margin: 0 }}>{c.name}</p>
+                            <p style={{ fontSize: '14px', color: '#7a7a7a', margin: '1px 0 0' }}>
                               {c.relationship ? `${c.relationship} · ` : ''}{c.phone}
                             </p>
                           </div>
                           <button type="button" onClick={() => setEmPendingRemove(c)} style={{
                             flexShrink: 0, background: 'transparent', color: '#9b3535',
                             border: '1.5px solid #e0e0e0', borderRadius: '9999px',
-                            padding: '6px 14px', fontSize: '13px', fontWeight: 600,
+                            padding: '6px 14px', fontSize: '14px', fontWeight: 600,
                             fontFamily: SFText, cursor: 'pointer',
                           }}>
                             Remove
@@ -653,7 +653,7 @@ export default function ProfileEdit() {
                   )}
 
                   {emMsg && (
-                    <p style={{ fontSize: '13px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? '#3D8AB0' : '#9b3535' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? '#3D8AB0' : '#9b3535' }}>
                       {emMsg}
                     </p>
                   )}
@@ -664,28 +664,28 @@ export default function ProfileEdit() {
                       <form onSubmit={addEmContact} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px', borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Name</label>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Name</label>
                             <input {...emF('name')} className="field" placeholder="Contact name" required />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Phone</label>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Phone</label>
                             <input {...emF('phone')} className="field" placeholder="+1 555 000 0000" required />
                           </div>
                         </div>
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Relationship</label>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Relationship</label>
                             <input {...emF('relationship')} className="field" placeholder="Daughter, Doctor…" />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Alert after (days)</label>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>Alert after (days)</label>
                             <input {...emF('inactivityDays')} type="number" min={1} max={30} className="field" />
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button type="submit" disabled={emAdding} style={{
                             flex: 1, background: SKY, color: '#fff', border: 'none',
-                            borderRadius: '9999px', padding: '10px 0', fontSize: '14px',
+                            borderRadius: '9999px', padding: '10px 0', fontSize: '15px',
                             fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                           }}>
                             {emAdding ? 'Adding…' : 'Add Contact'}
@@ -693,7 +693,7 @@ export default function ProfileEdit() {
                           <button type="button" onClick={() => { setEmShowAdd(false); setEmMsg(''); }} style={{
                             flex: 1, background: 'transparent', color: '#7a7a7a',
                             border: '1.5px solid #e0e0e0', borderRadius: '9999px', padding: '10px 0',
-                            fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                            fontSize: '15px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                           }}>
                             Cancel
                           </button>
@@ -703,7 +703,7 @@ export default function ProfileEdit() {
                       <button type="button" onClick={() => { setEmShowAdd(true); setEmMsg(''); }} style={{
                         width: '100%', marginTop: '16px', background: '#ffffff', color: SKY,
                         border: `1.5px solid ${SKY}`, borderRadius: '9999px', padding: '10px 0',
-                        fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                        fontSize: '15px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                       }}>
                         + Add Contact
                       </button>
@@ -726,25 +726,25 @@ export default function ProfileEdit() {
                     <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: LEAF_TINT, border: `1px solid ${LEAF_BORDER}`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <StarIcon size={20} color={STAR_GOLD} strokeWidth={2} fill={STAR_GOLD} />
                     </div>
-                    <p style={{ fontSize: '14px', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
+                    <p style={{ fontSize: '15px', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {reviews.map(r => (
                     <div key={r.id} style={{ border: '1px solid #e0e0e0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f' }}>{r.reviewerName}</p>
+                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f' }}>{r.reviewerName}</p>
                         <Stars rating={r.rating} />
                       </div>
                       {r.tags?.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {r.tags.map(t => (
-                            <span key={t} style={{ fontSize: '11px', background: 'rgba(0,102,204,0.08)', color: '#4FA3CE', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
+                            <span key={t} style={{ fontSize: '12px', background: 'rgba(0,102,204,0.08)', color: '#4FA3CE', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
                           ))}
                         </div>
                       )}
-                      {r.comment && <p style={{ fontSize: '14px', color: '#7a7a7a', lineHeight: 1.6 }}>{r.comment}</p>}
-                      <p style={{ fontSize: '12px', color: '#a0a0a5' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
+                      {r.comment && <p style={{ fontSize: '15px', color: '#7a7a7a', lineHeight: 1.6 }}>{r.comment}</p>}
+                      <p style={{ fontSize: '13px', color: '#a0a0a5' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
                     </div>
                   ))}
                 </div>
@@ -759,15 +759,15 @@ export default function ProfileEdit() {
                 padding: '20px 24px',
                 border: `1px solid ${BORDER}`,
               }}>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '14px' }}>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '14px' }}>
                   Account
                 </p>
 
                 {/* Username */}
                 {profileData?.username && (
                   <div style={{ marginBottom: '10px', padding: '10px 14px', background: '#f5f5f7', borderRadius: '10px' }}>
-                    <p style={{ fontSize: '11px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 2px' }}>Username</p>
-                    <p style={{ fontSize: '14px', color: '#1d1d1f', margin: 0 }}>@{profileData.username}</p>
+                    <p style={{ fontSize: '12px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 2px' }}>Username</p>
+                    <p style={{ fontSize: '15px', color: '#1d1d1f', margin: 0 }}>@{profileData.username}</p>
                   </div>
                 )}
 
@@ -781,8 +781,8 @@ export default function ProfileEdit() {
                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                     </svg>
                     <div>
-                      <p style={{ fontSize: '11px', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 1px' }}>Linked Google Account</p>
-                      <p style={{ fontSize: '14px', color: '#1d1d1f', margin: 0 }}>{profileData.email}</p>
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 1px' }}>Linked Google Account</p>
+                      <p style={{ fontSize: '15px', color: '#1d1d1f', margin: 0 }}>{profileData.email}</p>
                     </div>
                   </div>
                 )}
@@ -799,7 +799,7 @@ export default function ProfileEdit() {
                       border: `1.5px solid ${SKY}`,
                       borderRadius: '9999px',
                       padding: '10px 0',
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',
@@ -821,7 +821,7 @@ export default function ProfileEdit() {
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '10px 0',
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',

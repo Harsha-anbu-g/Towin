@@ -170,7 +170,7 @@ export default function EmergencyContacts() {
             <p style={{
               textAlign: 'center',
               marginTop: '12px',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 500,
               color: sosSent ? '#3D8AB0' : '#cc0000',
             }}>
@@ -212,7 +212,7 @@ export default function EmergencyContacts() {
                   border: 'none',
                   borderRadius: '9999px',
                   padding: '8px 20px',
-                  fontSize: '14px',
+                  fontSize: '15px',
                   fontWeight: 600,
                   fontFamily: SFText,
                   cursor: 'pointer',
@@ -252,7 +252,7 @@ export default function EmergencyContacts() {
               <p style={{ fontSize: '16px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', fontFamily: SF }}>
                 No contacts yet
               </p>
-              <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Add up to 3 people who care about you.</p>
+              <p style={{ fontSize: '15px', color: '#7a7a7a' }}>Add up to 3 people who care about you.</p>
             </div>
           </BlurFade>
         )}
@@ -280,14 +280,14 @@ export default function EmergencyContacts() {
                         {c.name}
                       </p>
                       {c.relationship && (
-                        <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '6px' }}>
+                        <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '6px' }}>
                           {c.relationship}
                         </p>
                       )}
-                      <p style={{ fontSize: '15px', color: '#1d1d1f', fontWeight: 500, marginBottom: '2px' }}>
+                      <p style={{ fontSize: '16px', color: '#1d1d1f', fontWeight: 500, marginBottom: '2px' }}>
                         {c.phone}
                       </p>
-                      <p style={{ fontSize: '12px', color: '#a0a0a5' }}>
+                      <p style={{ fontSize: '13px', color: '#a0a0a5' }}>
                         Alerts after {c.inactivityDays} inactive days
                       </p>
                     </div>
@@ -300,7 +300,7 @@ export default function EmergencyContacts() {
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '10px 0',
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',
@@ -320,7 +320,7 @@ export default function EmergencyContacts() {
                         border: '1.5px solid #e0e0e0',
                         borderRadius: '9999px',
                         padding: '10px 0',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         fontWeight: 600,
                         fontFamily: SFText,
                         cursor: 'pointer',
@@ -357,13 +357,13 @@ export default function EmergencyContacts() {
               <form onSubmit={addContact} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                       Name
                     </label>
                     <input {...f('name')} className="field" placeholder="Contact name" required />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                       Phone
                     </label>
                     <input {...f('phone')} className="field" placeholder="+1 555 000 0000" required />
@@ -371,20 +371,20 @@ export default function EmergencyContacts() {
                 </div>
                 <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                       Relationship
                     </label>
                     <input {...f('relationship')} className="field" placeholder="Daughter, Doctor…" />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px' }}>
                       Alert after (days)
                     </label>
                     <input {...f('inactivityDays')} type="number" min={1} max={30} className="field" />
                   </div>
                 </div>
                 {msg && (
-                  <p style={{ fontSize: '14px', color: msg.includes('added') ? '#3D8AB0' : '#cc0000', fontWeight: 500 }}>
+                  <p style={{ fontSize: '15px', color: msg.includes('added') ? '#3D8AB0' : '#cc0000', fontWeight: 500 }}>
                     {msg}
                   </p>
                 )}
@@ -399,7 +399,7 @@ export default function EmergencyContacts() {
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '12px 0',
-                      fontSize: '15px',
+                      fontSize: '16px',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',
@@ -417,7 +417,7 @@ export default function EmergencyContacts() {
                       border: '1.5px solid #e0e0e0',
                       borderRadius: '9999px',
                       padding: '12px 0',
-                      fontSize: '15px',
+                      fontSize: '16px',
                       fontWeight: 600,
                       fontFamily: SFText,
                       cursor: 'pointer',

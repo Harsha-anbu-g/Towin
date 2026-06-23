@@ -25,11 +25,11 @@ function PublicHeader() {
         ToWin
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-        <Link to="/login" style={{ fontFamily: SF, fontSize: '15px', color: '#5a6470', textDecoration: 'none' }}>
+        <Link to="/login" style={{ fontFamily: SF, fontSize: '16px', color: '#5a6470', textDecoration: 'none' }}>
           Log in
         </Link>
         <Link to="/register" style={{
-          fontFamily: SF, fontSize: '15px', fontWeight: 600, color: '#fff', background: SKY,
+          fontFamily: SF, fontSize: '16px', fontWeight: 600, color: '#fff', background: SKY,
           padding: '9px 20px', borderRadius: '9999px', textDecoration: 'none',
         }}>
           Get started
@@ -46,7 +46,7 @@ function RoleTab({ role, setRole }) {
       <button
         onClick={() => setRole(value)}
         style={{
-          flex: 1, padding: '11px 0', fontFamily: SF, fontSize: '15px',
+          flex: 1, padding: '11px 0', fontFamily: SF, fontSize: '16px',
           fontWeight: active ? 700 : 500,
           color: active ? '#fff' : '#5a6470',
           background: active ? SKY : '#fff',
@@ -118,7 +118,7 @@ export default function Guide() {
           }}>
             How It Works
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '14px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: SF, fontSize: '15px', color: '#7a7a7a', margin: 0, lineHeight: 1.5 }}>
             A short, step-by-step tour of the platform. Use Back and Next, or tap a dot to jump.
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function Guide() {
         {/* Progress */}
         <ProgressDots count={total} current={step} onJump={setStep} />
         <p style={{
-          fontFamily: SF, fontSize: '13px', color: '#a0a0a5', textAlign: 'center',
+          fontFamily: SF, fontSize: '14px', color: '#a0a0a5', textAlign: 'center',
           margin: '0 0 20px',
         }}>
           Step {step + 1} of {total} · {current.navLabel}
@@ -150,7 +150,7 @@ export default function Guide() {
             onClick={() => setStep(s => Math.max(0, s - 1))}
             disabled={step === 0}
             style={{
-              padding: '11px 24px', fontFamily: SF, fontSize: '15px', fontWeight: 600,
+              padding: '11px 24px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
               borderRadius: '9999px', cursor: step === 0 ? 'default' : 'pointer',
               background: '#fff', color: step === 0 ? '#c8c8cd' : '#1d1d1f',
               border: '1px solid #e0e0e0',
@@ -162,7 +162,7 @@ export default function Guide() {
             <button
               onClick={() => setStep(s => Math.min(total - 1, s + 1))}
               style={{
-                padding: '11px 28px', fontFamily: SF, fontSize: '15px', fontWeight: 600,
+                padding: '11px 28px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
                 borderRadius: '9999px', cursor: 'pointer', background: SKY, color: '#fff',
                 border: 'none', boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
               }}

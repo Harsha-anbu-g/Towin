@@ -140,7 +140,7 @@ export default function MessagesInbox() {
               <p style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', fontFamily: SF }}>
                 No conversations yet
               </p>
-              <p style={{ fontSize: '14px', color: '#7a7a7a', marginBottom: '20px' }}>
+              <p style={{ fontSize: '15px', color: '#7a7a7a', marginBottom: '20px' }}>
                 Connect with someone on your dashboard to start chatting.
               </p>
               <button
@@ -148,7 +148,7 @@ export default function MessagesInbox() {
                 style={{
                   background: '#4FA3CE', color: '#fff', border: 'none',
                   borderRadius: '9999px', padding: '10px 22px',
-                  fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+                  fontSize: '15px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                 }}
               >
                 Go to Dashboard
@@ -175,7 +175,7 @@ export default function MessagesInbox() {
                   style={{
                     width: '100%', boxSizing: 'border-box', height: '48px',
                     border: '1.5px solid #e0e0e0', borderRadius: '9999px',
-                    padding: '0 18px 0 44px', fontSize: '15px', fontFamily: SFText,
+                    padding: '0 18px 0 44px', fontSize: '16px', fontFamily: SFText,
                     color: '#1d1d1f', background: '#fff', outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
@@ -190,7 +190,7 @@ export default function MessagesInbox() {
                 background: '#ffffff', border: '1px solid #ececef',
                 borderRadius: '18px', padding: '40px 24px', textAlign: 'center',
               }}>
-                <p style={{ fontSize: '15px', color: '#7a7a7a', margin: 0 }}>
+                <p style={{ fontSize: '16px', color: '#7a7a7a', margin: 0 }}>
                   No conversations match “{query.trim()}”.
                 </p>
               </div>
@@ -237,7 +237,7 @@ export default function MessagesInbox() {
                             </span>
                             {trustLabel && (
                               <span style={{
-                                fontSize: '11px', fontWeight: 600, fontFamily: SFText,
+                                fontSize: '12px', fontWeight: 600, fontFamily: SFText,
                                 color: '#4FA3CE', background: '#f5f5f7',
                                 border: '1px solid #e0e0e0', borderRadius: '9999px',
                                 padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
@@ -247,13 +247,13 @@ export default function MessagesInbox() {
                               </span>
                             )}
                           </span>
-                          <span style={{ fontSize: '12px', color: '#a0a0a5', flexShrink: 0, fontFamily: SFText }}>
+                          <span style={{ fontSize: '13px', color: '#a0a0a5', flexShrink: 0, fontFamily: SFText }}>
                             {timeAgo(c.lastMessageAt)}
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                           <p style={{
-                            fontSize: '13px', margin: 0,
+                            fontSize: '14px', margin: 0,
                             color: c.unreadCount > 0 ? '#1d1d1f' : '#7a7a7a',
                             fontWeight: c.unreadCount > 0 ? 500 : 400,
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -263,7 +263,7 @@ export default function MessagesInbox() {
                           {c.unreadCount > 0 && (
                             <span style={{
                               background: '#4FA3CE', color: '#fff',
-                              fontSize: '11px', fontWeight: 600, fontFamily: SFText,
+                              fontSize: '12px', fontWeight: 600, fontFamily: SFText,
                               borderRadius: '9999px', padding: '2px 7px',
                               flexShrink: 0, minWidth: '20px', textAlign: 'center',
                             }}>

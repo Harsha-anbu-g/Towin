@@ -47,7 +47,7 @@ function ScoreRing({ score }) {
       <span style={{ fontFamily: SFD, fontSize: '44px', fontWeight: 700, color: INK, lineHeight: 1, letterSpacing: '-0.8px' }}>
         {score}
       </span>
-      <span style={{ fontFamily: SF, fontSize: '12px', color: FAINT, marginTop: '4px' }}>
+      <span style={{ fontFamily: SF, fontSize: '13px', color: FAINT, marginTop: '4px' }}>
         points
       </span>
     </div>
@@ -61,7 +61,7 @@ function Meter({ label, earned, max, shape, hint }) {
     const on = i < earned;
     if (shape === 'star') {
       marks.push(
-        <span key={i} style={{ fontSize: '15px', lineHeight: 1, color: on ? SKY : EMPTY }}>★</span>
+        <span key={i} style={{ fontSize: '16px', lineHeight: 1, color: on ? SKY : EMPTY }}>★</span>
       );
     } else {
       marks.push(
@@ -74,13 +74,13 @@ function Meter({ label, earned, max, shape, hint }) {
   }
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '7px 0' }}>
-      <span style={{ fontFamily: SF, fontSize: '13px', color: GREY, width: '92px', flexShrink: 0 }}>
+      <span style={{ fontFamily: SF, fontSize: '14px', color: GREY, width: '92px', flexShrink: 0 }}>
         {label}
       </span>
       <span style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: 1, flexWrap: 'wrap' }}>
         {marks}
       </span>
-      <span style={{ fontFamily: SF, fontSize: '13px', fontWeight: 600, color: earned > 0 ? INK : FAINT, flexShrink: 0 }}>
+      <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: earned > 0 ? INK : FAINT, flexShrink: 0 }}>
         {earned}<span style={{ color: FAINT, fontWeight: 400 }}>/{max}</span>
       </span>
     </div>
@@ -104,14 +104,14 @@ function ScoreSummary({ data }) {
             background: tierStyle.bg, color: tierStyle.color,
             border: `1px solid ${tierStyle.border}`,
             borderRadius: '9999px', padding: '4px 13px',
-            fontSize: '12px', fontWeight: 600, fontFamily: SF, marginBottom: '10px',
+            fontSize: '13px', fontWeight: 600, fontFamily: SF, marginBottom: '10px',
           }}>
             {data.tier}
           </div>
           <h2 style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: INK, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
             {score} points
           </h2>
-          <p style={{ fontFamily: SF, fontSize: '13px', color: GREY, margin: 0, lineHeight: 1.55 }}>
+          <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.55 }}>
             {next
               ? <>You're <strong style={{ color: INK }}>{toNext}</strong> {toNext === 1 ? 'point' : 'points'} away from <strong style={{ color: INK }}>{next.name}</strong>. Every person you help fully adds up to <strong style={{ color: INK }}>15</strong> points.</>
               : <>You've reached the top tier. Keep helping — every person still adds up to 15 points.</>}
@@ -132,11 +132,11 @@ function ProfileGroup({ group }) {
       border: `1px solid ${completed ? '#dbe7ef' : '#f0f0f0'}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
-        <p style={{ fontFamily: SFD, fontSize: '14px', fontWeight: 600, color: INK, margin: 0 }}>
+        <p style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: INK, margin: 0 }}>
           {label}
         </p>
         <span style={{
-          fontFamily: SF, fontSize: '12px', fontWeight: 600,
+          fontFamily: SF, fontSize: '13px', fontWeight: 600,
           color: completed ? '#fff' : FAINT,
           background: completed ? SKY : '#ededf0',
           borderRadius: '9999px', padding: '3px 10px', whiteSpace: 'nowrap', flexShrink: 0,
@@ -148,15 +148,15 @@ function ProfileGroup({ group }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
         {items.map(it => (
           <div key={it.key} style={{ display: 'flex', alignItems: 'flex-start', gap: '9px' }}>
-            <span style={{ fontSize: '14px', lineHeight: '18px', color: it.completed ? BLUE : '#c0c0c8' }}>
+            <span style={{ fontSize: '15px', lineHeight: '18px', color: it.completed ? BLUE : '#c0c0c8' }}>
               {it.completed ? '✓' : '○'}
             </span>
             <div style={{ flex: 1 }}>
-              <span style={{ fontFamily: SF, fontSize: '13px', fontWeight: it.completed ? 600 : 500, color: it.completed ? BLUE : INK }}>
+              <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: it.completed ? 600 : 500, color: it.completed ? BLUE : INK }}>
                 {it.label}
               </span>
               {!it.completed && it.tip && (
-                <p style={{ fontFamily: SF, fontSize: '11px', color: FAINT, margin: '1px 0 0', lineHeight: 1.4 }}>
+                <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: '1px 0 0', lineHeight: 1.4 }}>
                   {it.tip}
                 </p>
               )}
@@ -178,13 +178,13 @@ function ProfileCard({ profile, onGoToProfile }) {
           <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: '0 0 4px' }}>
             Your profile
           </h3>
-          <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: 0 }}>
+          <p style={{ fontFamily: SF, fontSize: '13px', color: FAINT, margin: 0 }}>
             Fill a whole set to earn its point — and it counts for <em>every</em> customer you help
           </p>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <span style={{ fontFamily: SFD, fontSize: '22px', fontWeight: 700, color: INK }}>{profile.earned}</span>
-          <span style={{ fontFamily: SF, fontSize: '13px', color: FAINT }}> / {profile.max}</span>
+          <span style={{ fontFamily: SF, fontSize: '14px', color: FAINT }}> / {profile.max}</span>
         </div>
       </div>
 
@@ -196,7 +196,7 @@ function ProfileCard({ profile, onGoToProfile }) {
         <div style={{ marginTop: '18px', textAlign: 'center' }}>
           <button onClick={onGoToProfile} style={{
             background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',
-            padding: '12px 28px', fontSize: '14px', fontWeight: 600, fontFamily: SF,
+            padding: '12px 28px', fontSize: '15px', fontWeight: 600, fontFamily: SF,
             cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
           }}>
             Finish your profile →
@@ -230,18 +230,18 @@ function CustomerCard({ c }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
         <Avatar name={c.customerName} photoUrl={c.customerPhotoUrl} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: SFD, fontSize: '15px', fontWeight: 600, color: INK, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {c.customerName}
           </p>
-          <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: '2px 0 0' }}>
+          <p style={{ fontFamily: SF, fontSize: '13px', color: FAINT, margin: '2px 0 0' }}>
             {c.currentStageLabel}
           </p>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontFamily: SFD, fontSize: '18px', fontWeight: 700, color: INK, lineHeight: 1 }}>
-            {c.total}<span style={{ fontFamily: SF, fontSize: '12px', color: FAINT, fontWeight: 400 }}> / {c.totalMax}</span>
+            {c.total}<span style={{ fontFamily: SF, fontSize: '13px', color: FAINT, fontWeight: 400 }}> / {c.totalMax}</span>
           </div>
-          <div style={{ fontFamily: SF, fontSize: '11px', color: FAINT, marginTop: '2px' }}>points</div>
+          <div style={{ fontFamily: SF, fontSize: '12px', color: FAINT, marginTop: '2px' }}>points</div>
         </div>
       </div>
 
@@ -284,7 +284,7 @@ export default function Trust() {
           <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: INK, margin: '0 0 6px', letterSpacing: '-0.4px' }}>
             Your <span style={{ color: TRUST }}>Trust</span> Score
           </h1>
-          <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: SF, fontSize: '15px', color: GREY, margin: 0, lineHeight: 1.5 }}>
             Each person you help can earn you up to <strong style={{ color: INK }}>15</strong> points:
             {' '}<strong style={{ color: INK }}>7</strong> for growing trust together,
             {' '}<strong style={{ color: INK }}>5</strong> from their review, and
@@ -293,13 +293,13 @@ export default function Trust() {
         </div>
 
         {loading && (
-          <div style={{ ...card, padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '15px', color: FAINT }}>
+          <div style={{ ...card, padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '16px', color: FAINT }}>
             Loading your score…
           </div>
         )}
 
         {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '14px', padding: '16px 20px', fontFamily: SF, fontSize: '14px', color: '#dc2626' }}>
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '14px', padding: '16px 20px', fontFamily: SF, fontSize: '15px', color: '#dc2626' }}>
             {error}
           </div>
         )}
@@ -313,7 +313,7 @@ export default function Trust() {
                 {isHelper ? 'People you help' : 'Your helpers'}
               </h3>
               {customers.length > 0 && (
-                <span style={{ fontFamily: SF, fontSize: '13px', color: FAINT }}>
+                <span style={{ fontFamily: SF, fontSize: '14px', color: FAINT }}>
                   {customers.length} {customers.length === 1 ? 'person' : 'people'}
                 </span>
               )}
@@ -324,14 +324,14 @@ export default function Trust() {
                 <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: '0 0 6px' }}>
                   No one here yet
                 </p>
-                <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: '0 0 18px', lineHeight: 1.5 }}>
+                <p style={{ fontFamily: SF, fontSize: '15px', color: GREY, margin: '0 0 18px', lineHeight: 1.5 }}>
                   {isHelper
                     ? 'Connect with your first elder. As your trust grows step by step, you earn points here.'
                     : 'Connect with your first helper. As your trust grows step by step, you earn points here.'}
                 </p>
                 <button onClick={() => navigate('/dashboard')} style={{
                   background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',
-                  padding: '12px 28px', fontSize: '14px', fontWeight: 600, fontFamily: SF,
+                  padding: '12px 28px', fontSize: '15px', fontWeight: 600, fontFamily: SF,
                   cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
                 }}>
                   Find {isHelper ? 'an elder' : 'a helper'} →
