@@ -332,40 +332,6 @@ export default function HelperDashboard() {
     ['browse', 'Browse Needs', browseBadge],
   ];
 
-  // One warm greeting, shown once at the top of the landing tab.
-  const greeting = (() => {
-    if (!profile?.name) return null;
-    const now = new Date();
-    const h = now.getHours();
-    const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-    const firstName = profile.name.split(' ')[0];
-    const dateStr = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-    return (
-      <div style={{
-        background: 'linear-gradient(135deg, #EAF5FB 0%, #F6FBFE 60%, #EDF4F8 100%)',
-        border: '1px solid #D8EAF4', borderRadius: '18px',
-        padding: '24px 28px',
-      }}>
-        <p style={{
-          fontSize: '14px', fontWeight: 600, color: 'var(--blue-teal)',
-          letterSpacing: '1px', textTransform: 'uppercase', margin: '0 0 6px',
-        }}>
-          {dateStr}
-        </p>
-        <p style={{
-          fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif",
-          fontSize: 'var(--text-xl)', fontWeight: 700, color: 'var(--ink)',
-          letterSpacing: '-0.5px', margin: 0, lineHeight: 1.2,
-        }}>
-          {greet}, {firstName}
-        </p>
-        <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: '6px 0 0' }}>
-          Welcome back. Here&apos;s what&apos;s happening with the people you help.
-        </p>
-      </div>
-    );
-  })();
-
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
   const pendingApplications = needs.filter(n => applyMsg[n.id]);
 
@@ -388,15 +354,15 @@ export default function HelperDashboard() {
   );
 
   // ── My Elders — classify connections by trust state (mirrors the elder view) ──
-  const incomingPending = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const elderCounts = {
     active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
     building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
     requests: connections.filter(c => c.status === 'PENDING').length,
   };
-  const eldersDefault = incomingPending.length > 0 ? 'requests'
-    : elderCounts.active > 0 ? 'active'
-    : elderCounts.building > 0 ? 'building' : 'requests';
+  // Always open on Active — a helper's home base is their established elders,
+  // not the incoming-requests queue. The Requests segment still shows its
+  // notify badge when a new request needs attention.
+  const eldersDefault = 'active';
   const activeEldersSeg = eldersSeg ?? eldersDefault;
   const elderSegments = [
     { id: 'active',   label: 'Active',         count: elderCounts.active },
@@ -468,7 +434,6 @@ export default function HelperDashboard() {
           {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
-              {greeting}
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
                 My Elders
               </h2>
@@ -543,13 +508,15 @@ export default function HelperDashboard() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                            {conn.status === 'ACTIVE' ? (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: conn.currentTrustLevel === 'TRUSTED' ? '#EBF6EE' : '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: conn.currentTrustLevel === 'TRUSTED' ? '#1a5c2e' : '#2E7DA6' }} />
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: conn.currentTrustLevel === 'TRUSTED' ? '#1a5c2e' : '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
-                              </div>
-                            ) : (
+                            {conn.status !== 'ACTIVE' ? (
                               <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
+                            ) : conn.currentTrustLevel !== 'TRUSTED' && (
+                              // In-progress stages show a blue pill; "Fully Trusted" is omitted
+                              // here since it's already shown in the trust-ladder card below.
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2E7DA6' }} />
+                                <span style={{ fontSize: '14px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
+                              </div>
                             )}
                           </div>
                           {conn.status === 'ACTIVE' && conn.otherUserPhone && (
