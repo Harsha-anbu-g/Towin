@@ -611,13 +611,15 @@ export default function ElderDashboard() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
-                            {conn.status === 'ACTIVE' ? (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: conn.currentTrustLevel === 'TRUSTED' ? '#EBF6EE' : '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: conn.currentTrustLevel === 'TRUSTED' ? '#1a5c2e' : '#2E7DA6' }} />
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: conn.currentTrustLevel === 'TRUSTED' ? '#1a5c2e' : '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
-                              </div>
-                            ) : (
+                            {conn.status !== 'ACTIVE' ? (
                               <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
+                            ) : conn.currentTrustLevel !== 'TRUSTED' && (
+                              // In-progress stages show a blue pill; "Fully Trusted" is omitted
+                              // here since it's already shown in the trust-ladder card below.
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2E7DA6' }} />
+                                <span style={{ fontSize: '14px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
+                              </div>
                             )}
                           </div>
                           {conn.status === 'ACTIVE' && conn.otherUserPhone && (
