@@ -165,7 +165,7 @@ function StageLadder({ stages }) {
                 fontFamily: SFD, fontSize: 'var(--text-xs)', fontWeight: 700, color: BLUE,
                 background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
                 padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
-              }}>+1 <span style={{ color: 'var(--trust-gold)' }}>trust</span> score</span>
+              }}><span style={{ color: 'var(--trust-gold)' }}>+1</span> trust score</span>
             </div>
           </div>
         );
