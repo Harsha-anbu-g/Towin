@@ -86,6 +86,10 @@ app:
     # On each boot, wipe data visitors left on the public demo accounts and
     # re-seed the clean minimal set (one of each type). Set false to keep it.
     reset-enabled: ${APP_DEMO_RESET_ENABLED:true}
+    # How often (milliseconds) to auto-revert the public demo accounts back to
+    # the seeded baseline, so visitor changes don't pile up between deploys.
+    # Default 900000 = 15 minutes. Only runs when reset-enabled is true.
+    reset-interval-ms: ${APP_DEMO_RESET_INTERVAL_MS:900000}
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}

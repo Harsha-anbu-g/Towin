@@ -31,6 +31,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -48,6 +49,26 @@ import java.util.UUID;
  * alive: connections at several trust stages, open/assigned needs, messages,
  * reviews, streaks, and an emergency contact. Never deletes or overwrites
  * non-demo data; existing rows are left untouched. Safe to run on every boot.
+ *
+ * <h3>Self-healing demo</h3>
+ * This class is the single source of truth for what the public demo looks like.
+ * It runs at boot AND on a timer ({@link #scheduledReset}, default every 15 min,
+ * APP_DEMO_RESET_INTERVAL_MS). On each run, when reset is enabled, it wipes
+ * whatever visitors changed on the demo accounts and re-applies this baseline —
+ * profiles, account settings, messages, needs, connections — so visitor edits
+ * revert on their own and the demo always looks the way it does here.
+ *
+ * <h3>Adding your own demo content (e.g. from VS Code)</h3>
+ * Anything you change by clicking around inside the live app on a demo account
+ * is temporary — the next reset reverts it. To make something a PERMANENT part
+ * of the demo, add it here and push (Railway redeploys and re-seeds):
+ * <ul>
+ *   <li>a new request → add an {@code ensureNeed(...)} line in {@link #seed()}</li>
+ *   <li>a new connection/chat → {@code ensureConnection(...)} + {@code seedMessagesIfEmpty(...)}</li>
+ *   <li>a new persona → {@code ensureUser(...)} + {@code ensureElder/HelperProfile(...)}</li>
+ *   <li>change a persona's name/bio/interests → edit the values in {@link #seed()}</li>
+ * </ul>
+ * The {@code ensure*} helpers are idempotent, so re-running is always safe.
  */
 @Slf4j
 @Component
@@ -96,6 +117,28 @@ public class DemoDataSeeder implements ApplicationRunner {
             new TransactionTemplate(transactionManager).executeWithoutResult(status -> seed());
         } catch (Exception e) {
             log.error("Demo data seeding failed (app continues normally)", e);
+        }
+    }
+
+    /**
+     * Re-apply the demo baseline on a timer so anything visitors change on the
+     * public demo accounts reverts on its own. The whole point of the public
+     * demo is to let strangers click freely; this keeps it from drifting. Runs
+     * every {@code app.demo.reset-interval-ms} (default 15 min), first firing one
+     * interval after startup (boot already seeds via {@link #run}). Only does work
+     * when reset is enabled — with APP_DEMO_RESET_ENABLED=false visitor data is
+     * intentionally kept and this is a no-op. Errors are swallowed so a failed
+     * reset never disrupts a running app; the next tick simply tries again.
+     */
+    @Scheduled(fixedDelayString = "${app.demo.reset-interval-ms:900000}",
+               initialDelayString = "${app.demo.reset-interval-ms:900000}")
+    public void scheduledReset() {
+        if (!resetEnabled) return;
+        try {
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> seed());
+            log.info("Scheduled demo reset complete");
+        } catch (Exception e) {
+            log.error("Scheduled demo reset failed (app continues normally)", e);
         }
     }
 
@@ -304,6 +347,25 @@ public class DemoDataSeeder implements ApplicationRunner {
                 u.setVerificationStatus(VerificationStatus.VERIFIED); dirty = true;
             }
             if (!u.isPhoneVerified()) { u.setPhoneVerified(true); dirty = true; }
+            // Full reset: snap account settings a visitor may have changed (their
+            // location, date of birth, city, phone, verification) back to baseline.
+            if (resetEnabled) {
+                u.setLocationLat(LAT.add(jitter(email)));
+                u.setLocationLng(LNG.add(jitter(email + "lng")));
+                u.setCity("Toronto");
+                u.setDateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(1998, 9, 2));
+                u.setVerificationStatus(VerificationStatus.VERIFIED);
+                u.setPhoneVerified(true);
+                u.setIsActive(true);
+                restorePhone(u, phone);
+                // Restore the demo password so a visitor can't lock everyone out of
+                // the shared public account by changing it. Rewrite only when it has
+                // actually drifted, to avoid a needless bcrypt hash on every reset.
+                if (u.getPasswordHash() == null || !passwordEncoder.matches(rawPassword, u.getPasswordHash())) {
+                    u.setPasswordHash(passwordEncoder.encode(rawPassword));
+                }
+                dirty = true;
+            }
             return dirty ? userRepository.save(u) : u;
         }
         String username = email.split("@")[0].toLowerCase().replaceAll("[^a-z0-9]", "_");
@@ -336,35 +398,71 @@ public class DemoDataSeeder implements ApplicationRunner {
                 : preferred;
     }
 
+    /**
+     * Restore a demo account's phone to its baseline number after a visitor
+     * changed it. Skips the write when another account already holds the number,
+     * so reverting never trips the unique-phone constraint and fails the reset.
+     */
+    private void restorePhone(User u, String preferred) {
+        if (preferred.equals(u.getPhone())) return;
+        if (!userRepository.existsByPhone(preferred)) u.setPhone(preferred);
+    }
+
     /** Small deterministic offset (≤ ~0.6 km) so personas aren't stacked on one point. */
     private BigDecimal jitter(String key) {
         return new BigDecimal(Math.abs(key.hashCode()) % 60).movePointLeft(4);
     }
 
+    /**
+     * Create the elder profile, or — when reset is enabled — overwrite every
+     * field back to this baseline so a visitor's edits (name, bio, interests,
+     * uploaded photo, social links, gender) all revert. Without reset, an
+     * existing profile is left untouched (additive mode).
+     */
     private void ensureElderProfile(User user, String name, int age, String bio,
                                     String[] interests, String occupation) {
-        if (elderProfileRepository.existsByUserId(user.getId())) return;
-        elderProfileRepository.save(ElderProfile.builder()
-                .user(user).name(name).age(age).bio(bio)
-                .interests(interests)
-                .languages(new String[]{"English"})
-                .occupation(occupation)
-                .lookingFor(LookingForType.BOTH)
-                .build());
+        ElderProfile p = elderProfileRepository.findByUserId(user.getId()).orElse(null);
+        if (p != null && !resetEnabled) return;
+        if (p == null) p = ElderProfile.builder().user(user).build();
+        p.setName(name);
+        p.setAge(age);
+        p.setBio(bio);
+        p.setInterests(interests);
+        p.setLanguages(new String[]{"English"});
+        p.setOccupation(occupation);
+        p.setLookingFor(LookingForType.BOTH);
+        // Fields the baseline doesn't set → force empty so visitor edits revert
+        p.setPhotoUrl(null);
+        p.setFacebookUrl(null);
+        p.setInstagramUrl(null);
+        p.setGender(null);
+        elderProfileRepository.save(p);
     }
 
+    /** Helper counterpart of {@link #ensureElderProfile}: create, or overwrite
+     *  back to baseline on reset so visitor edits to the helper profile revert. */
     private void ensureHelperProfile(User user, String name, int age, String bio,
                                      String[] skills, String[] hobbies) {
-        if (helperProfileRepository.existsByUserId(user.getId())) return;
-        helperProfileRepository.save(HelperProfile.builder()
-                .user(user).name(name).age(age).bio(bio)
-                .skillsOffered(skills)
-                .languages(new String[]{"English"})
-                .availabilityDays(new String[]{"Saturday", "Sunday", "Wednesday"})
-                .availabilityTimes(new String[]{"Afternoon", "Evening"})
-                .hobbies(hobbies)
-                .backgroundCheckStatus(BackgroundCheckStatus.VERIFIED)
-                .build());
+        HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
+        if (p != null && !resetEnabled) return;
+        if (p == null) p = HelperProfile.builder().user(user).build();
+        p.setName(name);
+        p.setAge(age);
+        p.setBio(bio);
+        p.setSkillsOffered(skills);
+        p.setLanguages(new String[]{"English"});
+        p.setAvailabilityDays(new String[]{"Saturday", "Sunday", "Wednesday"});
+        p.setAvailabilityTimes(new String[]{"Afternoon", "Evening"});
+        p.setHobbies(hobbies);
+        p.setBackgroundCheckStatus(BackgroundCheckStatus.VERIFIED);
+        // Fields the baseline doesn't set → force empty so visitor edits revert
+        p.setPhotoUrl(null);
+        p.setOccupation(null);
+        p.setGender(null);
+        p.setFacebookUrl(null);
+        p.setInstagramUrl(null);
+        p.setDateOfBirth(null);
+        helperProfileRepository.save(p);
     }
 
     private Connection ensureConnection(User a, User b, ConnectionStatus status,
