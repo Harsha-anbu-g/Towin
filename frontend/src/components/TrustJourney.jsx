@@ -32,6 +32,10 @@ export default function TrustJourney({
   const accentBg     = '#E6F2FA';
   const accentBorder = '#BFD9EA';
   const barGradient  = 'linear-gradient(90deg,#7FC0E0,#4FA3CE)';
+  // Brand rule: any UI text containing the word "trust" reads in this
+  // golden-brown. Applied to the heading + the "Trusted" stage below.
+  const trustGold    = '#9C7A3C';
+  const isTrustWord  = (s) => s.toLowerCase().includes('trust');
 
   // The contextual prompt + action under the ladder (non-trusted only).
   const advanceBtn = (label) => (
@@ -71,8 +75,8 @@ export default function TrustJourney({
       {/* Header: current level + stage pill */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: accent }} />
-          <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)', fontFamily: SF }}>{current.label}</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: isTrustWord(current.label) ? trustGold : accent }} />
+          <span style={{ fontSize: '16px', fontWeight: 700, color: isTrustWord(current.label) ? trustGold : 'var(--ink)', fontFamily: SF }}>{current.label}</span>
         </div>
         <span style={{ fontSize: '14px', fontWeight: 700, color: accent, background: accentBg, padding: '3px 10px', borderRadius: '9999px' }}>
           Stage {idx + 1} of {LEVELS.length} · {pct}%
@@ -92,7 +96,7 @@ export default function TrustJourney({
       {/* Ladder stage labels */}
       <div className="trust-ladder-stages" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', gap: '4px' }}>
         {LEVELS.map((level, i) => (
-          <span key={level.key} style={{ fontWeight: i === idx ? 700 : 400, color: i === idx ? accent : '#7a8490', whiteSpace: 'nowrap', fontFamily: SFT }}>
+          <span key={level.key} style={{ fontWeight: i === idx ? 700 : 400, color: isTrustWord(level.short) ? trustGold : (i === idx ? accent : '#7a8490'), whiteSpace: 'nowrap', fontFamily: SFT }}>
             {level.short}
           </span>
         ))}
