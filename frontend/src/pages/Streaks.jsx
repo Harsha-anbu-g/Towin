@@ -166,13 +166,13 @@ export default function Streaks() {
         <div style={{ width: '100%', maxWidth: '420px' }}>
 
           {/* Greeting */}
-          <p style={{
+          <p className="streaks-greeting" style={{
             fontSize: 'var(--text-base)', color: 'var(--ink-3)', fontFamily: SFT,
             marginBottom: '8px', fontWeight: 500,
           }}>
             {greeting()}
           </p>
-          <h1 style={{
+          <h1 className="streaks-heading" style={{
             fontFamily: SF, fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 600,
             color: 'var(--ink)', letterSpacing: '-0.6px',
             marginBottom: '32px', lineHeight: 1.1,
@@ -181,7 +181,7 @@ export default function Streaks() {
           </h1>
 
           {/* Streak card */}
-          <div style={{
+          <div className="streak-card" style={{
             background: '#ffffff', borderRadius: '18px',
             border: '1px solid #e0e0e0', padding: '36px',
             textAlign: 'center', marginBottom: '28px',
@@ -191,27 +191,42 @@ export default function Streaks() {
               <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>Loading…</p>
             ) : (
               <>
-                <FlameIcon size={56} />
-                <p style={{
-                  fontFamily: SF, fontSize: '80px', fontWeight: 600,
-                  color: 'var(--ink)', lineHeight: 1, margin: '16px 0 4px',
-                  letterSpacing: '-2px',
-                }}>
+                <div style={{ position: 'relative', display: 'inline-flex' }}>
+                  {justCheckedIn && <span className="checkin-ring" aria-hidden="true" />}
+                  <FlameIcon size={56} />
+                </div>
+                <p
+                  key={justCheckedIn ? 'checked' : 'idle'}
+                  className={`streak-number${justCheckedIn ? ' checkin-pop' : ''}`}
+                  style={{
+                    fontFamily: SF, fontSize: '80px', fontWeight: 600,
+                    color: 'var(--ink)', lineHeight: 1, margin: '16px 0 4px',
+                    letterSpacing: '-2px',
+                  }}
+                >
                   {streak?.currentStreak ?? 0}
                 </p>
                 <p style={{
                   fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink-3)',
-                  fontFamily: SFT, marginBottom: '22px',
+                  fontFamily: SFT, marginBottom: justCheckedIn ? '10px' : '22px',
                 }}>
                   days in a row
                 </p>
+                {justCheckedIn && (
+                  <p style={{
+                    fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)',
+                    fontFamily: SFT, margin: '0 0 18px',
+                  }}>
+                    Your streak is alive — see you tomorrow!
+                  </p>
+                )}
 
                 {/* Week tracker */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
                   {week.map((d, i) => (
                     <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
                       <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--ink-4)', fontFamily: SFT }}>{d.label}</span>
-                      <div style={{
+                      <div className="streak-dot" style={{
                         width: '34px', height: '34px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: d.done ? SKY : '#fff',
@@ -241,7 +256,7 @@ export default function Streaks() {
           </div>
 
           {/* Age display */}
-          <div style={{
+          <div className="age-card" style={{
             background: '#ffffff', borderRadius: '18px',
             border: '1px solid #e0e0e0', padding: '24px 28px',
             marginBottom: '28px',

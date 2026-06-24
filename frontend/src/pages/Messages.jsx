@@ -158,7 +158,7 @@ export default function Messages() {
       borderRight: '1px solid #e0e0e0',
      }}>
       {/* Chat header — iMessage style */}
-      <header style={{
+      <header className="chat-header" style={{
         background: '#ffffff',
         borderBottom: '1px solid #ececef',
         padding: '12px 20px',
@@ -185,16 +185,16 @@ export default function Messages() {
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
             <path d="M8.5 1L1.5 8L8.5 15" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Back
+          <span className="chat-back-label">Back</span>
         </button>
 
         {/* Avatar — real photo or initials */}
         {otherPhotoUrl ? (
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid #e0e0e0' }}>
+          <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid #e0e0e0' }}>
             <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ) : (
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '16px', fontWeight: 700, color: 'var(--blue-deep)', fontFamily: SF }}>
+          <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '16px', fontWeight: 700, color: 'var(--blue-deep)', fontFamily: SF }}>
             {initials(otherName)}
           </div>
         )}
@@ -204,7 +204,7 @@ export default function Messages() {
             {otherName || 'Conversation'}
           </p>
           {trustLevel && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
+            <div className="chat-trust-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--blue-deep)', flexShrink: 0 }} />
               <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)' }}>
                 {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ` · Trust ${otherTrustScore}` : ''}
@@ -214,6 +214,7 @@ export default function Messages() {
         </div>
 
         <button
+          className="chat-report"
           onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
           style={{ fontSize: '14px', color: 'var(--ink-3)', background: 'transparent', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
         >
