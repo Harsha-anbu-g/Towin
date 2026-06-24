@@ -46,6 +46,7 @@ public class AdminService {
         return userRepository.findAll().stream()
                 .map(u -> AdminUserResponse.builder()
                         .id(u.getId())
+                        .username(u.getUsername())
                         .email(u.getEmail())
                         .role(u.getRole().name())
                         .trustScore(u.getTrustScore() != null ? (int) Math.round(u.getTrustScore()) : 0)
