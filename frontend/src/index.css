@@ -96,6 +96,13 @@
 /* ─── Base ─── */
 * { box-sizing: border-box; }
 
+html {
+  /* Keep mobile browsers from inflating our type in landscape (they "boost"
+     font sizes by default, which throws off the carefully tuned scale). */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   font-family: var(--font-body);
@@ -105,12 +112,23 @@ body {
   color: var(--ink);
   background: var(--surface);
   -webkit-font-smoothing: antialiased;
+  /* Stop the whole page from rubber-band / pull-to-refresh scrolling behind
+     our fixed app shell on mobile. */
+  overscroll-behavior-y: none;
 }
 
 #root { width: 100%; min-height: 100svh; }
 h1, h2, h3 { margin: 0; color: var(--ink); }
 p { margin: 0; }
-input, textarea, select { font-family: var(--font-body); font-size: 15px; }
+/* 16px floor on form controls: anything smaller makes iOS Safari/Chrome zoom
+   in on focus, which leaves the page stuck zoomed and "broken-looking". */
+input, textarea, select { font-family: var(--font-body); font-size: 16px; }
+
+/* Remove the 300ms tap delay and double-tap-zoom on controls (snappier taps,
+   no accidental zoom on buttons). Text stays pinch-zoomable for accessibility. */
+button, a, [role="button"], input, textarea, select, label, summary {
+  touch-action: manipulation;
+}
 
 /* ─── Keyframes ─── */
 
@@ -331,7 +349,36 @@ input, textarea, select { font-family: var(--font-body); font-size: 15px; }
 /* ─── Streaks split layout — hide image panel on mobile ─── */
 @media (max-width: 640px) {
   .streaks-left  { display: none !important; }
-  .streaks-right { padding: 28px 20px !important; justify-content: flex-start !important; min-height: calc(100svh - 60px); }
+  .streaks-right { padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)) !important; justify-content: flex-start !important; min-height: calc(100svh - 60px); }
+
+  /* Compact the cards so greeting + streak + age + the check-in CTA all land
+     in one thumb-reachable screen (no scrolling to the primary action). */
+  .streaks-greeting { margin-bottom: 4px !important; }
+  .streaks-heading  { margin-bottom: 18px !important; }
+  .streak-card      { padding: 24px 20px !important; margin-bottom: 14px !important; }
+  .streak-number    { font-size: 64px !important; margin: 10px 0 2px !important; }
+  .streak-dot       { width: 30px !important; height: 30px !important; }
+  .age-card         { padding: 16px 18px !important; margin-bottom: 16px !important; }
+}
+
+/* Check-in celebration — the daily "peak". A gentle pop on the streak number
+   plus a soft expanding ring behind the flame. Motion only; palette untouched. */
+@keyframes checkin-pop {
+  0%   { transform: scale(0.55); opacity: 0; }
+  55%  { transform: scale(1.14); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.checkin-pop { animation: checkin-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.checkin-ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--blue);
+  animation: pulse-ring 1.1s ease-out 2;
+  pointer-events: none;
 }
 
 /* ─── Two-column responsive grid (Trust fields, Emergency form) ─── */
@@ -462,6 +509,63 @@ img {
   .landing-split-text { text-align: center !important; }
   .landing-split-text .landing-title,
   .landing-split-text .landing-lead { text-align: center !important; }
+}
+
+/* ── Floating "Give Feedback" button ──────────────────────────────────────
+   Desktop: a labelled pill. Mobile: collapse to a compact circular icon FAB so
+   it stops overlapping cards in the bottom-right, and lift it above the iOS
+   home-indicator / gesture bar via the safe-area inset. */
+.feedback-fab {
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  right: calc(28px + env(safe-area-inset-right, 0px));
+}
+@media (max-width: 640px) {
+  .feedback-fab {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    right: calc(16px + env(safe-area-inset-right, 0px)) !important;
+    padding: 0 !important;
+    width: 52px;
+    height: 52px;
+    gap: 0 !important;
+  }
+  .feedback-fab-label { display: none; }
+}
+
+/* ── Floating "Play Peekaboo" button (mirrors the feedback FAB, bottom-left) ──
+   Same story: full pill on desktop, compact circular icon on mobile so it stops
+   overlapping form fields / cards, lifted above the gesture bar. */
+.peekaboo-fab {
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  left: calc(28px + env(safe-area-inset-left, 0px));
+}
+@media (max-width: 640px) {
+  .peekaboo-fab {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    left: calc(16px + env(safe-area-inset-left, 0px)) !important;
+    padding: 0 !important;
+    width: 52px;
+    height: 52px;
+    gap: 0 !important;
+  }
+  .peekaboo-fab-label { display: none; }
+}
+
+/* ── Fixed cookie notice — lift above the gesture bar on mobile ── */
+.cookie-notice {
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Chat header (Messages) — compact on small screens ─────────────────────
+   At phone widths the Back text + 44px avatar + name + trust pill + Report
+   button are too much for one row, so the trust pill wraps to 2–3 lines. Trim
+   padding/gap, shrink the avatar, drop the "Back" word (keep the chevron) and
+   keep the pill on one line so the header reads cleanly. */
+@media (max-width: 640px) {
+  .chat-header { padding: 10px 12px !important; gap: 10px !important; }
+  .chat-header .chat-back-label { display: none; }
+  .chat-header .chat-avatar { width: 38px !important; height: 38px !important; }
+  .chat-header .chat-trust-pill { white-space: nowrap; }
+  .chat-header .chat-report { padding: 6px 12px !important; }
 }
 
 /* ─── Reduced motion ──────────────────────────────────────────────────────

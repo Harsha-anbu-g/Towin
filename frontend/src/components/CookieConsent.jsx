@@ -30,9 +30,10 @@ export default function CookieConsent() {
     <div
       role="region"
       aria-label="Cookie notice"
+      className="cookie-notice"
       style={{
         position: 'fixed',
-        bottom: 12,
+        /* bottom set via .cookie-notice so it can add the safe-area inset */
         left: 12,
         right: 12,
         maxWidth: 720,

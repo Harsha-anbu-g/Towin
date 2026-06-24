@@ -18,13 +18,13 @@ export default function FeedbackWidget() {
     <button
       onClick={() => navigate('/feedback')}
       aria-label="Give feedback"
+      className="feedback-fab"
       style={{
         position: 'fixed',
-        bottom: '28px',
-        right: '28px',
         zIndex: 999,
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: '8px',
         background: 'var(--blue)',
         color: '#fff',
@@ -48,7 +48,7 @@ export default function FeedbackWidget() {
       }}
     >
       <Pencil size={15} />
-      Give Feedback
+      <span className="feedback-fab-label">Give Feedback</span>
     </button>
   );
 }

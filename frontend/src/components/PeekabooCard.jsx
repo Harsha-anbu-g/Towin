@@ -11,13 +11,13 @@ export default function PeekabooCard() {
     <Link
       to="/game"
       aria-label="Play Peekaboo"
+      className="peekaboo-fab"
       style={{
         position: 'fixed',
-        bottom: '28px',
-        left: '28px',
         zIndex: 999,
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: '8px',
         background: 'var(--green-tint)',
         color: '#3D8B5A',
@@ -41,7 +41,7 @@ export default function PeekabooCard() {
       }}
     >
       <Gamepad2 size={15} />
-      Play Peekaboo
+      <span className="peekaboo-fab-label">Play Peekaboo</span>
     </Link>
   );
 }
