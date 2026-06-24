@@ -200,9 +200,11 @@ export default function Admin() {
     if (dt === 'Messages') { const r = await api.get('/admin/messages'); setMessages(r.data); }
   }
 
-  const filteredUsers = users.filter(u =>
-    !search || u.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter(u => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return u.email?.toLowerCase().includes(q) || u.id?.toLowerCase().includes(q);
+  });
 
   // /admin/users returns the full list, so paging is client-side
   const USERS_PER_PAGE = 20;
@@ -388,7 +390,7 @@ export default function Admin() {
               <input
                 value={search}
                 onChange={e => { setSearch(e.target.value); setUserPage(0); }}
-                placeholder="Search users by email…"
+                placeholder="Search users by email or ID…"
                 style={{
                   width: '320px',
                   padding: '9px 16px',
@@ -432,9 +434,17 @@ export default function Admin() {
                           }}>
                             {u.email?.[0]?.toUpperCase() || '?'}
                           </div>
-                          <span style={{ fontSize: '14px', color: 'var(--ink)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {u.email}
-                          </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                            <span style={{ fontSize: '14px', color: 'var(--ink)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {u.email}
+                            </span>
+                            <span
+                              title={u.id}
+                              onClick={() => navigator.clipboard?.writeText(u.id)}
+                              style={{ fontSize: '11px', color: 'var(--ink-4)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                              {u.id}
+                            </span>
+                          </div>
                         </div>
                       </td>
                       <td style={tdStyle}>{roleBadge(u.role)}</td>
