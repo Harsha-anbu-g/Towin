@@ -31,7 +31,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -50,13 +49,15 @@ import java.util.UUID;
  * reviews, streaks, and an emergency contact. Never deletes or overwrites
  * non-demo data; existing rows are left untouched. Safe to run on every boot.
  *
- * <h3>Self-healing demo</h3>
+ * <h3>Self-healing demo (event-driven)</h3>
  * This class is the single source of truth for what the public demo looks like.
- * It runs at boot AND on a timer ({@link #scheduledReset}, default every 15 min,
- * APP_DEMO_RESET_INTERVAL_MS). On each run, when reset is enabled, it wipes
- * whatever visitors changed on the demo accounts and re-applies this baseline —
- * profiles, account settings, messages, needs, connections — so visitor edits
- * revert on their own and the demo always looks the way it does here.
+ * It seeds at boot, and {@link #resetDemo()} re-applies this exact baseline on
+ * demand — wiping whatever visitors changed (profiles, account settings,
+ * password, messages, needs, connections) and restoring it. The reset is NOT on
+ * a timer: {@link DemoResetCoordinator} fires it a short, debounced delay after
+ * someone actually changes a demo account, so with few visitors nothing runs
+ * until a change happens, and an active visitor keeps their changes until they
+ * go quiet.
  *
  * <h3>Adding your own demo content (e.g. from VS Code)</h3>
  * Anything you change by clicking around inside the live app on a demo account
@@ -78,6 +79,13 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     public static final String ELDER_DEMO_EMAIL  = "elder@gmail.com";
     public static final String HELPER_DEMO_EMAIL = "helper@gmail.com";
+
+    // Every demo account, so DemoResetCoordinator can tell when a write targets
+    // one. Keep in sync with the ensureUser(...) calls in seed().
+    public static final List<String> DEMO_EMAILS = List.of(
+            ELDER_DEMO_EMAIL, HELPER_DEMO_EMAIL,
+            "demo.priya@towin.app", "demo.tom@towin.app", "demo.david@towin.app",
+            "demo.grace@towin.app", "demo.nina@towin.app");
 
     // Demo personas live in a downtown-Toronto cluster so discovery works
     private static final BigDecimal LAT = new BigDecimal("43.6510");
@@ -121,25 +129,16 @@ public class DemoDataSeeder implements ApplicationRunner {
     }
 
     /**
-     * Re-apply the demo baseline on a timer so anything visitors change on the
-     * public demo accounts reverts on its own. The whole point of the public
-     * demo is to let strangers click freely; this keeps it from drifting. Runs
-     * every {@code app.demo.reset-interval-ms} (default 15 min), first firing one
-     * interval after startup (boot already seeds via {@link #run}). Only does work
-     * when reset is enabled — with APP_DEMO_RESET_ENABLED=false visitor data is
-     * intentionally kept and this is a no-op. Errors are swallowed so a failed
-     * reset never disrupts a running app; the next tick simply tries again.
+     * Re-apply the demo baseline, wiping whatever visitors changed on the demo
+     * accounts. Triggered by {@link DemoResetCoordinator} a short, debounced
+     * delay after a demo account is changed — never on a fixed timer. No-op when
+     * reset is disabled (APP_DEMO_RESET_ENABLED=false keeps visitor data). Runs
+     * in its own transaction; exceptions propagate to the caller, which logs and
+     * swallows them so a failed reset never disrupts the running app.
      */
-    @Scheduled(fixedDelayString = "${app.demo.reset-interval-ms:900000}",
-               initialDelayString = "${app.demo.reset-interval-ms:900000}")
-    public void scheduledReset() {
+    public void resetDemo() {
         if (!resetEnabled) return;
-        try {
-            new TransactionTemplate(transactionManager).executeWithoutResult(status -> seed());
-            log.info("Scheduled demo reset complete");
-        } catch (Exception e) {
-            log.error("Scheduled demo reset failed (app continues normally)", e);
-        }
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> seed());
     }
 
     private void seed() {
