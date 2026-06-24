@@ -269,7 +269,7 @@ export const SLIDES = [
           </Title>
           <Lead align="left">
             Letting someone new into your life is a big step. So every member
-            has a Trust Score, visible to elders before they ever say yes.
+            has a <span style={{ color: 'var(--trust-gold)', fontWeight: 600 }}>Trust Score</span>, visible to elders before they ever say yes.
           </Lead>
           <div style={{
             background: '#ffffff', border: '1px solid #e8e8ed',
