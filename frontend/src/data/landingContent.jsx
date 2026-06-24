@@ -65,7 +65,7 @@ function MiniCard({ title, badge, stars, compact, children }) {
         </p>
         {badge && (
           <span style={{
-            fontFamily: SFD, fontSize: 'var(--text-xs)', fontWeight: 700, color: BLUE,
+            fontFamily: SFD, fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--trust-gold)',
             background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
             padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
           }}>{badge}</span>
