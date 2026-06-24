@@ -269,7 +269,7 @@ export const SLIDES = [
             borderRadius: '12px', padding: '11px 16px', fontFamily: SF,
             fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.55, textAlign: 'left',
           }}>
-            Each person you help adds a <strong style={{ color: 'var(--ink)' }}>maximum of 15 points</strong> to your score &mdash; and it keeps growing with every new connection.
+            Each person you help can earn you a <strong style={{ color: 'var(--ink)' }}>maximum of 15 points</strong> &mdash; so your score grows with every new connection.
           </div>
         </div>
 
