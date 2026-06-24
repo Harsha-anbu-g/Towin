@@ -203,7 +203,7 @@ export default function Admin() {
   const filteredUsers = users.filter(u => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return u.email?.toLowerCase().includes(q) || u.id?.toLowerCase().includes(q);
+    return u.email?.toLowerCase().includes(q) || u.username?.toLowerCase().includes(q);
   });
 
   // /admin/users returns the full list, so paging is client-side
@@ -390,7 +390,7 @@ export default function Admin() {
               <input
                 value={search}
                 onChange={e => { setSearch(e.target.value); setUserPage(0); }}
-                placeholder="Search users by email or ID…"
+                placeholder="Search users by email or username…"
                 style={{
                   width: '320px',
                   padding: '9px 16px',
@@ -438,12 +438,14 @@ export default function Admin() {
                             <span style={{ fontSize: '14px', color: 'var(--ink)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {u.email}
                             </span>
-                            <span
-                              title={u.id}
-                              onClick={() => navigator.clipboard?.writeText(u.id)}
-                              style={{ fontSize: '11px', color: 'var(--ink-4)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>
-                              {u.id}
-                            </span>
+                            {u.username && (
+                              <span
+                                title="Click to copy username"
+                                onClick={() => navigator.clipboard?.writeText(u.username)}
+                                style={{ fontSize: '12px', color: 'var(--ink-4)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                                @{u.username}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>

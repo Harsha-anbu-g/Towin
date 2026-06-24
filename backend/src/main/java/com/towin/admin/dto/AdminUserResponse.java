@@ -7,6 +7,7 @@ import java.util.UUID;
 @Data @Builder
 public class AdminUserResponse {
     private UUID id;
+    private String username;
     private String email;
     private String role;
     private Integer trustScore;
