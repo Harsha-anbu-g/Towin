@@ -297,7 +297,7 @@ export const SLIDES = [
           }}>
             <span style={{ fontFamily: SFD, fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink-slate)' }}>3 + 7 + 5 =</span>
             <span style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: BLUE }}>15</span>
-            <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)' }}>points</span>
+            <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)' }}>points per connection</span>
           </div>
         </div>
       </div>
