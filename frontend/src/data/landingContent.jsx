@@ -112,15 +112,16 @@ function CardGrid({ children }) {
   );
 }
 
-// Vertical trust journey — the tortoise waits at the top as the goal, with the
-// first step at the bottom, so the eye climbs the ladder up to "Fully Trusted".
+// Vertical trust journey — read top to bottom: the first step sits at the top
+// and the eye walks down the ladder to the goal, "Fully Trusted", at the bottom.
+// Each step is worth +1 (seven steps → +7, matching the Trust Ladder card).
 function StageLadder({ stages }) {
-  // Given in journey order (first step → goal); render goal-first so it sits on top.
-  const ordered = [...stages].reverse();
+  // Given in journey order (first step → goal); render in order so the goal lands last.
+  const ordered = stages;
   return (
     <div style={{ width: 'fit-content', maxWidth: '360px', margin: '0 auto' }}>
       {ordered.map((s, i) => {
-        const isGoal = i === 0;
+        const isGoal = i === ordered.length - 1;
         const isBottom = i === ordered.length - 1;
         const size = isGoal ? 44 : 34;
         return (
@@ -140,7 +141,7 @@ function StageLadder({ stages }) {
                 {isGoal
                   ? <img src="/logo.png" alt="ToWin" draggable="false"
                       style={{ width: 26, height: 26, objectFit: 'contain', transform: 'rotate(90deg)' }} />
-                  : ordered.length - i}
+                  : i + 1}
               </div>
               {!isBottom && (
                 <div style={{ flex: 1, width: '2px', minHeight: '10px', background: BORDER }} />
@@ -159,6 +160,12 @@ function StageLadder({ stages }) {
                 fontWeight: isGoal ? 700 : 500,
                 color: isGoal ? BLUE : '#1d1d1f',
               }}>{s}</span>
+              {/* Every step is worth one trust point */}
+              <span style={{
+                fontFamily: SFD, fontSize: 'var(--text-xs)', fontWeight: 700, color: BLUE,
+                background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
+                padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
+              }}>+1</span>
             </div>
           </div>
         );
