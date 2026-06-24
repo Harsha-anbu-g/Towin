@@ -2,23 +2,26 @@
 // into status-based segments so people see only what's relevant, with a count
 // on each segment. Pure presentation — the parent owns the active value.
 //
-// Visual spec — matches the login / create-account switcher so these sub-tabs
-// read as a segmented control, clearly distinct from the heading tabs above:
-//   container: #eef1f4 fully-rounded pill, padding 5, flex with 6px gap
-//   segment:   flex:1, height 46, fully rounded. active = white + soft shadow +
-//              bold #4FA3CE; inactive = transparent + #7a7a7a
+// Visual spec — a light underline tab strip, deliberately a level quieter than
+// the solid filled section tabs above it. This makes the navigation read as a
+// clear hierarchy (global nav → solid section tabs → these flat sub-filters)
+// instead of three stacked rows competing for the same weight:
+//   strip:     flex row on a hairline rail (#ececef bottom border), 4px gap
+//   segment:   flex:1, height 44. active = bold accent text + 3px accent
+//              underline; inactive = #7a7a7a, no underline
 //   badge:     shown ONLY when a segment opts in with notify:true and has
 //              count > 0 — so status tabs (Active, Building Trust, In
 //              Progress, Completed) stay quiet, and only actionable ones
 //              (New Invites, Pending Request) draw the eye.
-// A segment may pass its own `color` to tint the label.
+// A segment may pass its own `color` to tint the active label + underline.
 
 export default function SegmentedTabs({ segments, value, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px' }}>
+    <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid #ececef' }}>
       {segments.map(seg => {
         const active = value === seg.id;
-        const textColor = seg.color || (active ? '#4FA3CE' : '#7a7a7a');
+        const accent = seg.color || '#4FA3CE';
+        const textColor = active ? accent : '#7a7a7a';
         return (
           <button
             key={seg.id}
@@ -28,13 +31,13 @@ export default function SegmentedTabs({ segments, value, onChange }) {
             style={{
               flex: 1, minWidth: 0,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              height: '46px', padding: '0 10px',
-              border: 'none', borderRadius: '9999px', cursor: 'pointer', fontFamily: 'inherit',
+              height: '44px', padding: '0 10px',
+              border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit',
               fontWeight: active ? 700 : 600,
               color: textColor,
-              background: active ? '#ffffff' : 'transparent',
-              boxShadow: active ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
-              transition: 'background 0.15s, color 0.15s',
+              borderBottom: active ? `3px solid ${accent}` : '3px solid transparent',
+              marginBottom: '-1px',
+              transition: 'color 0.15s, border-color 0.15s',
             }}
           >
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{seg.label}</span>
