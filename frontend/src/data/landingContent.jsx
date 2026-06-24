@@ -97,7 +97,7 @@ function ScoreSum() {
       <span style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: 'var(--ink-slate)' }}>
         3 + 7 + 5 =
       </span>
-      <span style={{ fontFamily: SFD, fontSize: 'var(--text-lg)', fontWeight: 700, color: BLUE }}>15</span>
+      <span style={{ fontFamily: SFD, fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--trust-gold)' }}>15</span>
       <span style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>points</span>
     </div>
   );
