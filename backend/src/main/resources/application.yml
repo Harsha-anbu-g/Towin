@@ -101,6 +101,10 @@ posthog:
   api-key: ${POSTHOG_API_KEY:}
   host: ${POSTHOG_HOST:https://us.i.posthog.com}
 
+nominatim:
+  base-url: ${NOMINATIM_BASE_URL:https://nominatim.openstreetmap.org}
+  user-agent: ${NOMINATIM_USER_AGENT:ToWin/1.0 (agharsha.anbu@gmail.com)}
+
 server:
   port: ${PORT:8080}
   forward-headers-strategy: framework
