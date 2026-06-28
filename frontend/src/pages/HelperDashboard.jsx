@@ -7,6 +7,7 @@ import TrustJourney from '../components/TrustJourney';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
+import LocationPrompt from '../components/LocationPrompt';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -214,7 +215,9 @@ export default function HelperDashboard() {
     navigator.geolocation.getCurrentPosition(
       pos => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setLocation(loc); setLocationStatus('granted'); loadNeeds(loc);
+        setLocation(loc); setLocationStatus('granted');
+        api.put('/profile/location', { locationLat: loc.lat, locationLng: loc.lng }).catch(() => {});
+        loadNeeds(loc);
       },
       () => { setLocationStatus('denied'); loadNeeds(); },
       // Don't hang on an unanswered permission prompt — fall back to showing everything
@@ -352,6 +355,16 @@ export default function HelperDashboard() {
       )}
     </div>
   );
+
+  // When GPS is denied, a typed address resolves a location; reload both lists so
+  // whichever tab the helper is on fills in immediately.
+  function onLocationResolved(loc) {
+    const coords = { lat: loc.lat, lng: loc.lng };
+    setLocation(coords);
+    setLocationStatus('granted');
+    loadNeeds(coords);
+    loadElders(coords);
+  }
 
   // ── My Elders — classify connections by trust state (mirrors the elder view) ──
   const elderCounts = {
@@ -627,6 +640,7 @@ export default function HelperDashboard() {
                 </p>
               </div>
               <RadiusBar noun="requests" />
+              {locationStatus === 'denied' && <LocationPrompt onResolved={onLocationResolved} />}
               {needs.length === 0 && locationStatus !== 'asking' && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--surface)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -709,6 +723,7 @@ export default function HelperDashboard() {
                 </p>
               </div>
               <RadiusBar noun="elders" />
+              {locationStatus === 'denied' && <LocationPrompt onResolved={onLocationResolved} />}
               {/* Searching state — never flash a blank "nobody here" while loading (H1) */}
               {discovering && elders.length === 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
