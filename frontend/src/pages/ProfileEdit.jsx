@@ -85,10 +85,6 @@ export default function ProfileEdit() {
   const [emPendingRemove, setEmPendingRemove] = useState(null);
   const [emRemoving, setEmRemoving] = useState(false);
 
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpMsg, setOtpMsg] = useState('');
-  const [verifyingPhone, setVerifyingPhone] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [newPhone, setNewPhone] = useState('');
   const [idFile, setIdFile] = useState(null);
@@ -139,27 +135,7 @@ export default function ProfileEdit() {
       const r = await api.get('/profile/me');
       setProfileData(r.data);
       setEditingPhone(false);
-      setPhoneOtpSent(false);
-      await requestOtp();
-    } catch (err) { setOtpMsg(err?.response?.data?.message || 'Could not update number.'); }
-  }
-
-  async function requestOtp() {
-    setVerifyingPhone(true);
-    try { await api.post('/auth/verify-phone/request'); setPhoneOtpSent(true); setOtpMsg('Code sent to your phone.'); }
-    catch (err) { setOtpMsg(err?.response?.data?.message || 'Could not send code.'); }
-    finally { setVerifyingPhone(false); }
-  }
-
-  async function confirmOtp() {
-    setVerifyingPhone(true);
-    try {
-      await api.post('/auth/verify-phone/confirm', { otp });
-      setOtpMsg('Phone verified! Trust score updated.');
-      setPhoneOtpSent(false); setOtp('');
-      const r = await api.get('/profile/me'); setProfileData(r.data);
-    } catch (err) { setOtpMsg(err?.response?.data?.message || 'Invalid code.'); }
-    finally { setVerifyingPhone(false); }
+    } catch (err) { console.error('Could not update number.', err); }
   }
 
   async function uploadId() {
@@ -555,20 +531,6 @@ export default function ProfileEdit() {
                     </div>
                   )}
 
-                  {!profileData?.phoneVerified && !editingPhone && (
-                    !phoneOtpSent ? (
-                      <button onClick={requestOtp} disabled={verifyingPhone} className="primary-btn" style={{ alignSelf: 'flex-start', fontSize: '14px' }}>
-                        {verifyingPhone ? 'Sending…' : 'Send verification code'}
-                      </button>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <input value={otp} onChange={e => setOtp(e.target.value)} placeholder="6-digit code" className="field" style={{ flex: 1 }} />
-                        <button onClick={confirmOtp} disabled={verifyingPhone || otp.length < 6}
-                          className="primary-btn" style={{ background: 'var(--blue)', fontSize: '14px' }}>Confirm</button>
-                      </div>
-                    )
-                  )}
-                  {otpMsg && <p style={{ fontSize: '14px', color: otpMsg.includes('verified') || otpMsg.includes('updated') ? '#4FA3CE' : '#5a6470', fontWeight: 500 }}>{otpMsg}</p>}
                 </div>
 
                 {/* ID */}
