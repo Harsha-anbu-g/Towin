@@ -66,4 +66,40 @@ class GeocodingServiceTest {
 
         assertThat(svc.reverseGeocode(43.65, -79.38)).isNull();
     }
+
+    @Test
+    void forwardGeocodeReturnsTopHit() {
+        List<Map<String, Object>> body = List.of(Map.of(
+                "lat", "43.7731", "lon", "-79.2578",
+                "display_name", "Scarborough, Toronto, Canada"));
+        GeocodingService svc = serviceReturning(body);
+
+        Optional<GeoResult> result = svc.forwardGeocode("Scarborough");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getLat()).isEqualTo(43.7731);
+        assertThat(result.get().getLng()).isEqualTo(-79.2578);
+        assertThat(result.get().getCity()).isEqualTo("Scarborough");
+    }
+
+    @Test
+    void forwardGeocodeEmptyWhenNoMatch() {
+        GeocodingService svc = serviceReturning(List.of());
+
+        assertThat(svc.forwardGeocode("asdfghjkl")).isEmpty();
+    }
+
+    @Test
+    void forwardGeocodeEmptyOnError() {
+        GeocodingService svc = serviceReturning(null);
+
+        assertThat(svc.forwardGeocode("Scarborough")).isEmpty();
+    }
+
+    @Test
+    void forwardGeocodeBlankQueryReturnsEmpty() {
+        GeocodingService svc = serviceReturning(List.of());
+
+        assertThat(svc.forwardGeocode("   ")).isEmpty();
+    }
 }

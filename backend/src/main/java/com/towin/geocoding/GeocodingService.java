@@ -62,6 +62,29 @@ public class GeocodingService {
         }
     }
 
+    @Cacheable(value = "geocode-forward", key = "#query == null ? '' : #query.trim().toLowerCase()")
+    public Optional<GeoResult> forwardGeocode(String query) {
+        if (query == null || query.isBlank()) return Optional.empty();
+        try {
+            List<Map<String, Object>> hits = client.get()
+                    .uri("/search?format=jsonv2&limit=1&q={q}", query.trim())
+                    .header("User-Agent", userAgent)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {});
+            if (hits == null || hits.isEmpty()) return Optional.empty();
+            Map<String, Object> top = hits.get(0);
+            double lat = Double.parseDouble(top.get("lat").toString());
+            double lng = Double.parseDouble(top.get("lon").toString());
+            String city = null;
+            Object display = top.get("display_name");
+            if (display != null) city = display.toString().split(",")[0].trim();
+            return Optional.of(new GeoResult(lat, lng, city));
+        } catch (Exception e) {
+            log.warn("Forward geocode failed for '{}': {}", query, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private String cityFrom(Map<String, Object> body) {
         if (body == null) return null;
