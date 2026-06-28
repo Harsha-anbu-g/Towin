@@ -7,6 +7,7 @@ import TrustJourney from '../components/TrustJourney';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
+import LocationPrompt from '../components/LocationPrompt';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -744,6 +745,15 @@ export default function ElderDashboard() {
                   </select>
                 )}
               </div>
+
+              {locationStatus === 'denied' && (
+                <LocationPrompt onResolved={(loc) => {
+                  const coords = { lat: loc.lat, lng: loc.lng };
+                  setLocation(coords);
+                  setLocationStatus('granted');
+                  loadHelpers(coords);
+                }} />
+              )}
 
               {/* Searching — let people know we're looking, never a blank flash (H1) */}
               {discovering && helpers.length === 0 && (
