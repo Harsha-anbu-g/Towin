@@ -35,7 +35,8 @@ public class RedisConfig {
     public CacheManager inMemoryCacheManager() {
         // Same 5-minute TTL as the Redis path — without expiry, discovery
         // results stay frozen per user until the process restarts.
-        CaffeineCacheManager manager = new CaffeineCacheManager("discovery-elders", "discovery-helpers");
+        CaffeineCacheManager manager = new CaffeineCacheManager(
+                "discovery-elders", "discovery-helpers", "geocode-reverse", "geocode-forward");
         manager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(5))
                 .maximumSize(5000));
