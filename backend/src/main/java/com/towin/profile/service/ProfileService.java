@@ -20,6 +20,7 @@ public class ProfileService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final TrustScoreService trustScoreService;
+    private final com.towin.geocoding.GeocodingService geocodingService;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -86,6 +87,12 @@ public class ProfileService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setLocationLat(lat != null ? BigDecimal.valueOf(lat) : null);
         user.setLocationLng(lng != null ? BigDecimal.valueOf(lng) : null);
+        if (lat != null && lng != null) {
+            // Reverse-geocode to a readable place name. Returns null on failure,
+            // in which case we keep whatever city the user already had.
+            String city = geocodingService.reverseGeocode(lat, lng);
+            if (city != null) user.setCity(city);
+        }
         userRepository.save(user);
     }
 

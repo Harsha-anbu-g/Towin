@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +26,7 @@ class ProfileServiceTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock com.towin.common.service.TrustScoreService trustScoreService;
+    @Mock com.towin.geocoding.GeocodingService geocodingService;
     @InjectMocks ProfileService profileService;
 
     @Test
@@ -53,6 +55,34 @@ class ProfileServiceTest {
                 () -> profileService.createOrUpdateElderProfile(userId, request));
 
         verify(elderProfileRepository).save(any(ElderProfile.class));
+    }
+
+    @Test
+    void updateLocationSetsCityFromGeocoder() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).isActive(true).build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(geocodingService.reverseGeocode(43.65, -79.38)).thenReturn("Toronto");
+
+        profileService.updateLocation(userId, 43.65, -79.38);
+
+        assertThat(user.getCity()).isEqualTo("Toronto");
+        assertThat(user.getLocationLat().doubleValue()).isEqualTo(43.65);
+    }
+
+    @Test
+    void updateLocationStillSavesCoordsWhenGeocodeFails() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).city("OldCity").isActive(true).build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(geocodingService.reverseGeocode(anyDouble(), anyDouble())).thenReturn(null);
+
+        profileService.updateLocation(userId, 1.0, 2.0);
+
+        assertThat(user.getLocationLat().doubleValue()).isEqualTo(1.0);
+        assertThat(user.getCity()).isEqualTo("OldCity"); // unchanged on null
     }
 
     @Test
