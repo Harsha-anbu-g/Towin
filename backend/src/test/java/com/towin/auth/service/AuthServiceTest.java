@@ -4,8 +4,10 @@ import com.towin.auth.dto.LoginRequest;
 import com.towin.auth.dto.RegisterRequest;
 import com.towin.auth.security.JwtUtil;
 import com.towin.auth.security.LoginRateLimiter;
+import com.towin.common.entity.PendingRegistration;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
+import com.towin.common.repository.PendingRegistrationRepository;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.EmailService;
 import com.towin.common.service.PostHogService;
@@ -18,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +32,7 @@ class AuthServiceTest {
     @Mock LoginRateLimiter loginRateLimiter;
     @Mock PostHogService postHogService;
     @Mock EmailService emailService;
+    @Mock PendingRegistrationRepository pendingRepository;
     @InjectMocks AuthService authService;
 
     @Test
@@ -44,23 +48,14 @@ class AuthServiceTest {
     @Test
     void shouldRegisterSuccessfully() {
         RegisterRequest req = registerRequest();
-        UUID userId = UUID.randomUUID();
 
-        when(userRepository.existsByUsername(any())).thenReturn(false);
-        when(passwordEncoder.encode(any())).thenReturn("hashed");
-        when(userRepository.save(any())).thenAnswer(inv -> {
-            User u = inv.getArgument(0);
-            u.setId(userId);
-            return u;
-        });
-        // RegisterRequest carries no email, so the token is minted with a null email claim.
-        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0, false)).thenReturn("mock-token");
+        // Registration no longer creates an account or returns a token — it holds the
+        // signup in pending_registrations and emails a verification link. The account
+        // is only created when the user clicks that link.
+        authService.register(req);
 
-        var response = authService.register(req);
-
-        assertThat(response.getToken()).isEqualTo("mock-token");
-        assertThat(response.getRole()).isEqualTo("ELDER");
-        assertThat(response.getUserId()).isEqualTo(userId.toString());
+        verify(pendingRepository).save(any(PendingRegistration.class));
+        verify(emailService).sendVerificationEmail(any(), anyString());
     }
 
     @Test
@@ -109,7 +104,7 @@ class AuthServiceTest {
 
         when(userRepository.findByPhone("+14165550123")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
-        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0, false)).thenReturn("mock-token");
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0)).thenReturn("mock-token");
 
         var response = authService.login(req);
 
@@ -130,7 +125,7 @@ class AuthServiceTest {
 
         when(userRepository.findByPhone("+14165550123")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
-        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0, false)).thenReturn("mock-token");
+        when(jwtUtil.generateToken(userId.toString(), null, "ELDER", 0)).thenReturn("mock-token");
 
         var response = authService.login(req);
 
