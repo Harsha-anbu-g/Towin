@@ -203,6 +203,74 @@ export default function Login() {
       <div className="auth-form" style={{ flexDirection: 'column', paddingBottom: 0 }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 0 }}>
         <div style={{ width: '100%', maxWidth: '380px' }}>
+          {/* Demo accounts — shown first so users don't miss it */}
+          <div style={{
+            marginBottom: '20px', background: 'var(--blue-wash)',
+            border: '1.5px solid #4FA3CE', borderRadius: '16px',
+            padding: '18px 18px 16px',
+            position: 'relative',
+          }}>
+            <span style={{
+              position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
+              background: '#4FA3CE', color: '#fff',
+              fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px',
+              padding: '3px 12px', borderRadius: '9999px',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              textTransform: 'uppercase',
+            }}>
+              DEMO
+            </span>
+            <p style={{
+              fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 4px',
+            }}>
+              Just want to see how it works?
+            </p>
+            <p style={{
+              fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 14px', lineHeight: 1.5,
+            }}>
+              Look around with a sample account, no account needed.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[
+                { role: 'ELDER', label: 'Try as an Elder', sub: 'Margaret, 72' },
+                { role: 'HELPER', label: 'Try as a Helper', sub: 'James, 28' },
+              ].map(({ role, label, sub }) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => handleGuest(role)}
+                  disabled={!!guestLoading}
+                  style={{
+                    flex: 1,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    background: '#ffffff',
+                    border: '1.5px solid #BFD9EA',
+                    borderRadius: '11px',
+                    padding: '12px 10px',
+                    cursor: guestLoading ? 'not-allowed' : 'pointer',
+                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
+                    textAlign: 'center',
+                    transition: 'border-color 0.15s, background 0.15s',
+                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  }}
+                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
+                >
+                  <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
+                    {guestLoading === role ? 'Opening…' : label}
+                  </span>
+                  <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-3)', marginTop: '2px' }}>
+                    {sub}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Form card */}
           <div className="auth-card" style={{
             background: '#ffffff',
@@ -368,66 +436,6 @@ export default function Login() {
                 Create Account
               </Link>
             </p>
-          </div>
-
-          {/* Demo accounts — standalone below the card */}
-          <div style={{
-            marginTop: '24px', background: 'var(--blue-wash)',
-            border: '1px solid #BFD9EA', borderRadius: '16px',
-            padding: '18px 18px 16px',
-          }}>
-            <p style={{
-              fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 4px',
-            }}>
-              Just want to see how it works?
-            </p>
-            <p style={{
-              fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', textAlign: 'center',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 14px', lineHeight: 1.5,
-            }}>
-              Look around with a sample account, no account needed.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[
-                { role: 'ELDER', label: 'Try as an Elder', sub: 'See ToWin as Margaret, 72' },
-                { role: 'HELPER', label: 'Try as a Helper', sub: 'See ToWin as James, 28' },
-              ].map(({ role, label, sub }) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => handleGuest(role)}
-                  disabled={!!guestLoading}
-                  style={{
-                    width: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    background: '#ffffff',
-                    border: '1.5px solid #BFD9EA',
-                    borderRadius: '11px',
-                    padding: '13px 16px',
-                    cursor: guestLoading ? 'not-allowed' : 'pointer',
-                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
-                    textAlign: 'left',
-                    transition: 'border-color 0.15s, background 0.15s',
-                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                  }}
-                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
-                >
-                  <span>
-                    <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
-                      {guestLoading === role ? 'Opening…' : label}
-                    </span>
-                    <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-3)', marginTop: '2px' }}>
-                      {sub}
-                    </span>
-                  </span>
-                  <span aria-hidden="true" style={{ fontSize: '17px', color: 'var(--blue)', fontWeight: 700 }}>→</span>
-                </button>
-              ))}
-            </div>
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
