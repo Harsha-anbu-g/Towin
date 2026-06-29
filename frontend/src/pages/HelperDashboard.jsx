@@ -345,8 +345,8 @@ export default function HelperDashboard() {
 
   const tabs = [
     ['connections', 'My Elders', connBadge],
-    ['discover', 'Find New Elder', 0],
     ['browse', 'Browse Needs', browseBadge],
+    ['discover', 'Find New Elder', 0],
   ];
 
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
