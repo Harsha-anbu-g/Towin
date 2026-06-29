@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, ShieldCheck, HelpCircle, LogOut, Siren } from 'lucide-react';
+import { Home, MessageCircle, User, ShieldCheck, HelpCircle, LogOut, Siren, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -191,6 +191,22 @@ export default function NavBar() {
               <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
               Trust Score
             </Link>
+            {/* Asking for help is the elder's main action, so it sits right by the
+                Trust Score pill as the primary blue CTA — not buried in a tab bar. */}
+            {isElder && (
+              <Link to="/dashboard?tab=needs&post=1" style={{
+                display: 'flex', alignItems: 'center', gap: '7px',
+                fontSize: '16px', fontFamily: SF, fontWeight: 700,
+                color: '#fff', background: '#4FA3CE',
+                border: '1.5px solid #4FA3CE',
+                borderRadius: '9999px', padding: '6px 16px',
+                textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
+                marginLeft: '8px',
+              }}>
+                <Plus size={17} strokeWidth={2.6} aria-hidden="true" />
+                Post New Help
+              </Link>
+            )}
           </div>
         )}
 
@@ -333,6 +349,18 @@ export default function NavBar() {
             borderBottom: '1px solid #e0e0e0',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
           }}>
+            {isElder && (
+              <Link to="/dashboard?tab=needs&post=1" onClick={() => setMenuOpen(false)} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
+                margin: '16px 0 8px', padding: '15px',
+                background: '#4FA3CE', color: '#fff',
+                borderRadius: '12px', fontSize: '17px', fontFamily: SF, fontWeight: 700,
+                textDecoration: 'none',
+              }}>
+                <Plus size={20} strokeWidth={2.6} aria-hidden="true" />
+                Post New Help
+              </Link>
+            )}
             <MenuLink to="/dashboard" label="Dashboard" icon={Home} />
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
