@@ -1,4 +1,4 @@
-const TRUST = '#4FA3CE';
+const TRUST = 'var(--ink-slate)';
 
 const TIER_COLORS = {
   // Top tier earns the leaf-green achievement color (matches "Fully Trusted").
