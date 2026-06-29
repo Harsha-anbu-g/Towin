@@ -94,6 +94,10 @@ export default function ProfileEdit() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoMsg, setPhotoMsg] = useState('');
 
+  const [locationQuery, setLocationQuery] = useState('');
+  const [savingLocation, setSavingLocation] = useState(false);
+  const [locationMsg, setLocationMsg] = useState('');
+
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
     if (isElder) api.get('/emergency/contacts').then(r => setEmContacts(r.data)).catch(() => {});
@@ -136,6 +140,27 @@ export default function ProfileEdit() {
       setProfileData(r.data);
       setEditingPhone(false);
     } catch (err) { console.error('Could not update number.', err); }
+  }
+
+  // Turn a typed town/postcode into coordinates (backend Nominatim) and save them,
+  // so the user appears in "near me" results without needing GPS.
+  async function saveLocation() {
+    const q = locationQuery.trim();
+    if (!q) return;
+    setSavingLocation(true); setLocationMsg('');
+    try {
+      const { data } = await api.get(`/geocode/search?q=${encodeURIComponent(q)}`);
+      await api.put('/profile/location', { locationLat: data.lat, locationLng: data.lng });
+      setProfileData(p => ({ ...(p || {}), city: data.city }));
+      setLocationQuery('');
+      setLocationMsg(`Location set to ${data.city || q}.`);
+    } catch (err) {
+      setLocationMsg(err?.response?.status === 404
+        ? "We couldn't find that place — try a postcode."
+        : 'Could not save location. Please try again.');
+    } finally {
+      setSavingLocation(false);
+    }
   }
 
   async function uploadId() {
@@ -460,6 +485,30 @@ export default function ProfileEdit() {
                   <Divider />
                   <FieldRow label="Instagram URL">
                     <input {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </FieldRow>
+                  <Divider />
+                  <FieldRow label="Location">
+                    <p style={{ fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 8px' }}>
+                      {profileData?.city ? `Current: ${profileData.city}` : 'No location set yet. Add your town so people nearby can find you.'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        value={locationQuery}
+                        onChange={e => setLocationQuery(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveLocation(); } }}
+                        placeholder="Town or postcode, e.g. Scarborough or M1B 1A1"
+                        className="field"
+                        style={{ flex: 1 }}
+                      />
+                      <button type="button" onClick={saveLocation} disabled={savingLocation} className="primary-btn" style={{ fontSize: '14px', whiteSpace: 'nowrap' }}>
+                        {savingLocation ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                    {locationMsg && (
+                      <p style={{ fontSize: '13px', color: locationMsg.startsWith('Location set') ? '#4FA3CE' : '#CF6A66', margin: '8px 0 0' }}>
+                        {locationMsg}
+                      </p>
+                    )}
                   </FieldRow>
 
                   {msg && (
