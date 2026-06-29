@@ -87,6 +87,55 @@ function Meter({ label, earned, max, shape, hint }) {
   );
 }
 
+/* ── A small overlapping circle (photo or initial) for the helper stack ────── */
+function MiniAvatar({ name, photoUrl }) {
+  const ring = { width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #fff', flexShrink: 0 };
+  if (photoUrl) {
+    return <img src={photoUrl} alt="" style={{ ...ring, objectFit: 'cover' }} />;
+  }
+  const initial = (name || '?').trim().charAt(0).toUpperCase();
+  return (
+    <div style={{
+      ...ring, background: 'var(--blue-tint)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: SFD, fontSize: '12px', fontWeight: 700, color: 'var(--blue-deep)',
+    }}>{initial}</div>
+  );
+}
+
+/* ── The people who got you here: their faces + a count, so each one shows ─── */
+function HelperStack({ people }) {
+  if (!people || people.length === 0) return null;
+  const n = people.length;
+  const shown = people.slice(0, 5);
+  const extra = n - shown.length;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '10px',
+      marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #f0f0f2',
+    }}>
+      <div style={{ display: 'flex' }}>
+        {shown.map((p, i) => (
+          <div key={p.connectionId} style={{ marginLeft: i === 0 ? 0 : '-8px', zIndex: shown.length - i }}>
+            <MiniAvatar name={p.customerName} photoUrl={p.customerPhotoUrl} />
+          </div>
+        ))}
+        {extra > 0 && (
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #fff',
+            background: '#ededf0', marginLeft: '-8px', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: SF, fontSize: '11px', fontWeight: 600, color: GREY,
+          }}>+{extra}</div>
+        )}
+      </div>
+      <span style={{ fontFamily: SF, fontSize: '13px', color: GREY, lineHeight: 1.4 }}>
+        <strong style={{ color: INK }}>{n}</strong> {n === 1 ? 'person' : 'people'} helped you reach this
+      </span>
+    </div>
+  );
+}
+
 /* ── Header: total score + tier + next-tier hint ─────────────────────────── */
 function ScoreSummary({ data }) {
   const score = Math.round(data.totalScore);
@@ -94,6 +143,7 @@ function ScoreSummary({ data }) {
   const idx = TIERS.findIndex(t => t.name === data.tier);
   const next = TIERS[idx + 1];
   const toNext = next ? next.min - score : 0;
+  const people = data.customers ?? [];
   return (
     <div style={{ ...card, padding: '20px', marginBottom: '16px' }}>
       <div className="score-card-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -116,6 +166,7 @@ function ScoreSummary({ data }) {
               ? <>You're <strong style={{ color: INK }}>{toNext}</strong> {toNext === 1 ? 'point' : 'points'} away from <strong style={{ color: INK }}>{next.name}</strong>. Every person you help fully adds up to <strong style={{ color: INK }}>15</strong> points.</>
               : <>You've reached the top tier. Keep helping — every person still adds up to 15 points.</>}
           </p>
+          <HelperStack people={people} />
         </div>
       </div>
     </div>
