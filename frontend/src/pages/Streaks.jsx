@@ -134,23 +134,32 @@ export default function Streaks() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'var(--surface-pearl)',
       }}>
-        <img src="/journey.jpg" alt="" style={{
+        {/* contain (not cover) shows the whole illustration uncropped — both
+            scenes and the figures' feet stay in frame. The art's own white
+            background blends into the pearl panel, so the letterbox is invisible. */}
+        <img src="/journey.jpg" alt="The master and his turtles, growing up together" style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', zIndex: 0,
+          objectFit: 'contain', zIndex: 0,
         }} />
-        {/* Edges melt into the page; the art's white middle band keeps the
-            centered tagline clear of any figures. */}
+        {/* Edges melt into the page so the art has no hard top/bottom border. */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1,
           background:
-            'linear-gradient(to bottom, #fafafc 0%, rgba(250,250,252,0) 15%),' +
-            'linear-gradient(to top, #fafafc 0%, rgba(250,250,252,0) 15%)',
+            'linear-gradient(to bottom, #fafafc 0%, rgba(250,250,252,0) 12%),' +
+            'linear-gradient(to top, #fafafc 0%, rgba(250,250,252,0) 12%)',
         }} />
-        {/* Tagline centered in the art's clear middle band */}
-        <div style={{ position: 'relative', zIndex: 2, padding: '24px', textAlign: 'center', transform: 'translateY(-30px)' }}>
+        {/* Tagline sits in the artwork's clear white middle band, between the
+            two scenes, on a soft pearl pill so it reads cleanly at any height. */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: '50%', zIndex: 2,
+          transform: 'translateY(-50%)', padding: '0 24px', textAlign: 'center',
+        }}>
           <h2 style={{
-            fontFamily: SF, fontSize: 'var(--text-lg)', fontWeight: 600, color: '#9a9da4',
+            display: 'inline-block',
+            fontFamily: SF, fontSize: 'var(--text-lg)', fontWeight: 600, color: '#8a8d94',
             letterSpacing: '-0.3px', margin: 0, lineHeight: 1.3, whiteSpace: 'nowrap',
+            padding: '10px 22px', borderRadius: '9999px',
+            background: 'rgba(250,250,252,0.82)', backdropFilter: 'blur(3px)',
           }}>
             Slow is smooth and Smooth is fast and constant
           </h2>
