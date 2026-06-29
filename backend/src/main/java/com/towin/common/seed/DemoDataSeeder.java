@@ -87,9 +87,18 @@ public class DemoDataSeeder implements ApplicationRunner {
             "demo.priya@towin.app", "demo.tom@towin.app", "demo.david@towin.app",
             "demo.grace@towin.app", "demo.nina@towin.app");
 
-    // Demo personas live in a downtown-Toronto cluster so discovery works
-    private static final BigDecimal LAT = new BigDecimal("43.6510");
-    private static final BigDecimal LNG = new BigDecimal("-79.3470");
+    // Demo elders are pinned to Montreal, Canada; demo helpers to Attur, Tamil Nadu.
+    // Each role clusters around its own point so the location shown is consistent.
+    private static final BigDecimal ELDER_LAT  = new BigDecimal("45.5019");
+    private static final BigDecimal ELDER_LNG  = new BigDecimal("-73.5674");
+    private static final String     ELDER_CITY = "Montreal";
+    private static final BigDecimal HELPER_LAT  = new BigDecimal("11.5942");
+    private static final BigDecimal HELPER_LNG  = new BigDecimal("78.5996");
+    private static final String     HELPER_CITY = "Attur";
+
+    private BigDecimal baseLat(UserRole role)  { return role == UserRole.ELDER ? ELDER_LAT  : HELPER_LAT;  }
+    private BigDecimal baseLng(UserRole role)  { return role == UserRole.ELDER ? ELDER_LNG  : HELPER_LNG;  }
+    private String     baseCity(UserRole role) { return role == UserRole.ELDER ? ELDER_CITY : HELPER_CITY; }
 
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
@@ -340,7 +349,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             boolean dirty = false;
             // Demo accounts must be discoverable: pin them to the demo cluster if unset
             if (u.getLocationLat() == null || u.getLocationLng() == null) {
-                u.setLocationLat(LAT); u.setLocationLng(LNG); dirty = true;
+                u.setLocationLat(baseLat(role)); u.setLocationLng(baseLng(role)); dirty = true;
             }
             if (u.getVerificationStatus() != VerificationStatus.VERIFIED) {
                 u.setVerificationStatus(VerificationStatus.VERIFIED); dirty = true;
@@ -349,9 +358,9 @@ public class DemoDataSeeder implements ApplicationRunner {
             // Full reset: snap account settings a visitor may have changed (their
             // location, date of birth, city, phone, verification) back to baseline.
             if (resetEnabled) {
-                u.setLocationLat(LAT.add(jitter(email)));
-                u.setLocationLng(LNG.add(jitter(email + "lng")));
-                u.setCity("Toronto");
+                u.setLocationLat(baseLat(role).add(jitter(email)));
+                u.setLocationLng(baseLng(role).add(jitter(email + "lng")));
+                u.setCity(baseCity(role));
                 u.setDateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(1998, 9, 2));
                 u.setVerificationStatus(VerificationStatus.VERIFIED);
                 u.setPhoneVerified(true);
@@ -380,9 +389,9 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .role(role)
                 .verificationStatus(VerificationStatus.VERIFIED)
                 .emailVerified(true)
-                .locationLat(LAT.add(jitter(email)))
-                .locationLng(LNG.add(jitter(email + "lng")))
-                .city("Toronto")
+                .locationLat(baseLat(role).add(jitter(email)))
+                .locationLng(baseLng(role).add(jitter(email + "lng")))
+                .city(baseCity(role))
                 .isActive(true)
                 .dateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(1998, 9, 2))
                 .build();
@@ -434,7 +443,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setPhotoUrl(null);
         p.setFacebookUrl(null);
         p.setInstagramUrl(null);
-        p.setGender(null);
+        p.setGender(Gender.MALE);
         elderProfileRepository.save(p);
     }
 
@@ -457,7 +466,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Fields the baseline doesn't set → force empty so visitor edits revert
         p.setPhotoUrl(null);
         p.setOccupation(null);
-        p.setGender(null);
+        p.setGender(Gender.MALE);
         p.setFacebookUrl(null);
         p.setInstagramUrl(null);
         p.setDateOfBirth(null);
