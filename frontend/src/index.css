@@ -101,7 +101,17 @@ html {
      font sizes by default, which throws off the carefully tuned scale). */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Kill the translucent blue/grey box mobile browsers flash over a button on
+     tap — our own hover/active states already give the press feedback. */
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* ─── Text-selection highlight ───────────────────────────────────────────
+   The browser default is a loud, saturated blue that clashes with the calm
+   sky-blue brand and shows up whenever text gets selected on a click or drag.
+   Swap it for a soft neutral grey so selecting text stays quiet. */
+::selection      { background: #d8dde3; color: var(--ink); }
+::-moz-selection { background: #d8dde3; color: var(--ink); }
 
 body {
   margin: 0;
