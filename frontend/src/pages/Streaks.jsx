@@ -191,8 +191,7 @@ export default function Streaks() {
               <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>Loading…</p>
             ) : (
               <>
-                <div style={{ position: 'relative', display: 'inline-flex' }}>
-                  {justCheckedIn && <span className="checkin-ring" aria-hidden="true" />}
+                <div style={{ display: 'inline-flex' }}>
                   <FlameIcon size={56} />
                 </div>
                 <p
