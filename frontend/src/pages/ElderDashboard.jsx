@@ -238,6 +238,16 @@ export default function ElderDashboard() {
     if (tab === 'discover') loadHelpers();
   }, [tab, radiusKm]);
 
+  // The "Post Request" button in the top nav lands here with ?post=1 — open the
+  // form, then strip the flag so a refresh doesn't force it back open.
+  useEffect(() => {
+    if (searchParams.get('post') === '1') {
+      setShowPostForm(true);
+      setParam('post', null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   async function loadHelpers(loc) {
     const coords = loc ?? location;
     setDiscovering(true);
@@ -489,7 +499,7 @@ export default function ElderDashboard() {
         <div className="dash-tab-wrap">
           <div className="dash-tab-scroll">
             {tabs.map(([id, label, badge]) => {
-              const active = tab === id && !showPostForm;
+              const active = tab === id;
               return (
                 <button key={id} onClick={() => { setShowPostForm(false); setTab(id); }} style={{
                   flex: '1 1 auto',
@@ -517,28 +527,6 @@ export default function ElderDashboard() {
               );
             })}
 
-            {/* Divider keeps the three tabs grouped on the left, Post Request apart on the right */}
-            <div aria-hidden="true" style={{ flex: '0 0 auto', width: '1px', height: '26px', background: '#e3e3e8', margin: '0 4px' }} />
-
-            {/* Always one click from posting, no matter which tab you're on */}
-            <button onClick={() => { setTab('needs'); setShowPostForm(true); }} style={{
-              flex: '0 0 auto',
-              display: 'inline-flex', alignItems: 'center', gap: '7px',
-              height: '44px', padding: '0 16px',
-              fontSize: '16px', letterSpacing: '-0.1px',
-              fontWeight: showPostForm ? 700 : 600,
-              color: showPostForm ? '#ffffff' : '#4FA3CE',
-              background: showPostForm ? '#4FA3CE' : 'transparent',
-              border: '1.5px solid #4FA3CE', borderRadius: '10px',
-              cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit',
-              transition: 'background 0.15s, color 0.15s',
-            }}
-              onMouseEnter={e => { if (!showPostForm) e.currentTarget.style.background = 'rgba(79,163,206,0.08)'; }}
-              onMouseLeave={e => { if (!showPostForm) e.currentTarget.style.background = 'transparent'; }}
-            >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Post Request
-            </button>
           </div>
         </div>
       </div>
