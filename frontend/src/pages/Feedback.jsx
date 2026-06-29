@@ -95,6 +95,8 @@ export default function Feedback() {
         .fb-shell { display: grid; grid-template-columns: 1fr 360px; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 48px 32px; align-items: start; }
         .fb-left { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
         .fb-card { background: #fff; border-radius: 18px; border: 1px solid #e0e0e0; padding: 28px 28px; }
+        .fb-portfolio { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+        .fb-portfolio:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(156,122,60,0.18); border-color: var(--trust-gold); }
         .fb-brand { display: flex; align-items: center; gap: 10px; padding: 24px 20px 0; }
         .fb-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
         .fb-ratings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
@@ -273,25 +275,31 @@ export default function Feedback() {
           </div>
 
           {/* Portfolio link */}
-          <div className="fb-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '18px 24px' }}>
+          <a
+            className="fb-card fb-portfolio"
+            href="https://portfolioharsha.vercel.app/"
+            target="_blank" rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+              padding: '18px 24px', textDecoration: 'none', cursor: 'pointer',
+            }}
+          >
             <div>
               <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 2px' }}>Want to know more?</p>
-              <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--trust-gold)', margin: 0 }}>Visit my portfolio</p>
+              <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--trust-gold)', margin: 0, textDecoration: 'underline', textUnderlineOffset: '3px' }}>Visit my portfolio</p>
             </div>
-            <a
-              href="https://portfolioharsha.vercel.app/"
-              target="_blank" rel="noopener noreferrer"
+            <span
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 background: 'var(--trust-gold)', color: '#fff', padding: '9px 16px',
                 borderRadius: '9999px', fontSize: '14px', fontWeight: 600,
-                fontFamily: SFText, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
+                fontFamily: SFText, whiteSpace: 'nowrap', flexShrink: 0,
               }}
             >
               <Globe size={13} />
               My Portfolio
-            </a>
-          </div>
+            </span>
+          </a>
         </div>
 
       </div>
