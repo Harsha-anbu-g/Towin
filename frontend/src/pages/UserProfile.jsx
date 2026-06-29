@@ -30,8 +30,8 @@ function Avatar({ name, photoUrl, size = 96 }) {
   return (
     <div style={{
       width: `${size}px`, height: `${size}px`, borderRadius: '50%',
-      background: BG, border: `3px solid #BFD9EA`,
-      color: SKY, flexShrink: 0,
+      background: 'var(--slate-tint)', border: `3px solid var(--slate-soft)`,
+      color: 'var(--ink-slate)', flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: `${Math.round(size * 0.38)}px`, fontWeight: 600, fontFamily: SFD,
     }}>
@@ -64,8 +64,8 @@ function Stars({ rating }) {
 
 const TIER_COLORS = {
   'Community Champion': { bg: '#FFF7E6', color: '#92400e', border: '#FDE68A' },
-  'Highly Trusted':     { bg: BG, color: BLUE, border: '#A8D4EC' },
-  'Reliable':           { bg: BG, color: BLUE, border: '#A8D4EC' },
+  'Highly Trusted':     { bg: 'var(--slate-tint)', color: 'var(--ink-slate)', border: 'var(--slate-soft)' },
+  'Reliable':           { bg: 'var(--slate-tint)', color: 'var(--ink-slate)', border: 'var(--slate-soft)' },
   'Getting Started':    { bg: '#F3F4F6', color: 'var(--ink-slate)', border: '#D1D5DB' },
   'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
 };

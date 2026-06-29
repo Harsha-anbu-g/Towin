@@ -5,6 +5,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
+import GlassTab from '../components/GlassTab';
 import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
@@ -504,39 +505,11 @@ export default function ElderDashboard() {
             {tabs.map(([id, label, badge]) => {
               const active = tab === id && !showPostForm;
               return (
-                <button key={id} onClick={() => { setShowPostForm(false); setTab(id); }} style={{
-                  flex: '1 1 auto',
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  height: '44px', padding: '0 16px',
-                  fontSize: '16px', letterSpacing: '-0.1px',
-                  fontWeight: active ? 700 : 600,
-                  color: active ? '#ffffff' : '#5a6470',
-                  // Active tab = Apple-style "liquid glass" lens: a glossy
-                  // translucent brand-blue pill with a top specular sheen, an
-                  // inner-curvature shadow and a soft coloured lift.
-                  background: active
-                    ? 'radial-gradient(125% 85% at 50% -10%, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%), linear-gradient(180deg, #5FB2D8 0%, #3E8AB0 100%)'
-                    : 'transparent',
-                  border: active ? '1px solid rgba(255,255,255,0.45)' : '1px solid transparent',
-                  borderRadius: '12px',
-                  boxShadow: active
-                    ? 'inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -3px 7px rgba(0,0,0,0.13), 0 6px 16px -5px rgba(46,125,166,0.5)'
-                    : 'none',
-                  backdropFilter: active ? 'blur(6px) saturate(150%)' : 'none',
-                  WebkitBackdropFilter: active ? 'blur(6px) saturate(150%)' : 'none',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s, color 0.15s, box-shadow 0.2s',
-                  whiteSpace: 'nowrap',
-                  fontFamily: 'inherit',
-                  position: 'relative',
-                }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f0f0f3'; }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
-                >
+                <GlassTab key={id} active={active} onClick={() => { setShowPostForm(false); setTab(id); }}>
                   <TabIcon id={id} active={active} />
                   {label}
                   <TabBadge count={badge} />
-                </button>
+                </GlassTab>
               );
             })}
 
@@ -585,9 +558,9 @@ export default function ElderDashboard() {
                 const avatar = (
                   <div style={{
                     width: '48px', height: '48px', borderRadius: '50%',
-                    background: 'var(--blue-tint)',
+                    background: 'var(--slate-tint)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '17px', fontWeight: 700, color: 'var(--blue-deep)', flexShrink: 0,
+                    fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0,
                   }}>
                     {initials(conn.otherUserName)}
                   </div>
@@ -825,9 +798,9 @@ export default function ElderDashboard() {
                     <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                       <div style={{
                         width: '50px', height: '50px', borderRadius: '50%',
-                        background: 'var(--blue-tint)',
+                        background: 'var(--slate-tint)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '17px', fontWeight: 700, color: 'var(--blue-deep)', flexShrink: 0,
+                        fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0,
                       }}>
                         {initials(helper.name)}
                       </div>
@@ -835,7 +808,7 @@ export default function ElderDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{helper.name || 'Helper'}</p>
                           {(helper.trustScore != null || helper.trustTier) && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
                               ★ {helper.trustScore ?? '—'}{helper.trustTier ? ` · ${helper.trustTier}` : ''}
                             </span>
                           )}
@@ -951,7 +924,7 @@ export default function ElderDashboard() {
                         {need.applications.map(app => (
                           <div key={app.helperId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'var(--surface-pearl)', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', flexShrink: 0 }}>{initials(app.helperName)}</div>
+                              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>{initials(app.helperName)}</div>
                               <div style={{ minWidth: 0 }}>
                                 <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>{app.helperName}</p>
                                 {app.message && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', margin: '2px 0 0' }}>{app.message}</p>}
@@ -988,7 +961,7 @@ export default function ElderDashboard() {
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                       {acceptedApp && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '180px' }}>
-                          <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)' }}>{initials(acceptedApp.helperName)}</div>
+                          <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>{initials(acceptedApp.helperName)}</div>
                           <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}><strong style={{ color: 'var(--ink)' }}>{acceptedApp.helperName}</strong> is helping you</span>
                         </div>
                       )}

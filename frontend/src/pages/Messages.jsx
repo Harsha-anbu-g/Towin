@@ -194,7 +194,7 @@ export default function Messages() {
             <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ) : (
-          <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '16px', fontWeight: 700, color: 'var(--blue-deep)', fontFamily: SF }}>
+          <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '16px', fontWeight: 700, color: 'var(--ink-slate)', fontFamily: SF }}>
             {initials(otherName)}
           </div>
         )}
@@ -204,9 +204,9 @@ export default function Messages() {
             {otherName || 'Conversation'}
           </p>
           {trustLevel && (
-            <div className="chat-trust-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--blue-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--blue-deep)', flexShrink: 0 }} />
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)' }}>
+            <div className="chat-trust-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--ink-slate)', flexShrink: 0 }} />
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
                 {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ` · Trust ${otherTrustScore}` : ''}
               </span>
             </div>
@@ -346,7 +346,7 @@ export default function Messages() {
                       <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--blue-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: 'var(--blue-deep)', fontFamily: SF }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: 'var(--ink-slate)', fontFamily: SF }}>
                       {initials(otherName)}
                     </div>
                   )
