@@ -155,11 +155,11 @@ export default function Streaks() {
           transform: 'translateY(-50%)', padding: '0 24px', textAlign: 'center',
         }}>
           <h2 style={{
-            display: 'inline-block',
-            fontFamily: SF, fontSize: 'var(--text-lg)', fontWeight: 600, color: '#8a8d94',
-            letterSpacing: '-0.3px', margin: 0, lineHeight: 1.3, whiteSpace: 'nowrap',
-            padding: '10px 22px', borderRadius: '9999px',
-            background: 'rgba(250,250,252,0.82)', backdropFilter: 'blur(3px)',
+            display: 'inline-block', maxWidth: '88%',
+            fontFamily: SF, fontSize: 'var(--text-base)', fontWeight: 600, color: '#8a8d94',
+            letterSpacing: '-0.3px', margin: 0, lineHeight: 1.35,
+            padding: '10px 20px', borderRadius: '18px',
+            background: 'rgba(250,250,252,0.85)', backdropFilter: 'blur(3px)',
           }}>
             Slow is smooth and Smooth is fast and constant
           </h2>
