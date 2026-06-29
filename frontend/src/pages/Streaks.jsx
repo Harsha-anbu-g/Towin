@@ -128,42 +128,35 @@ export default function Streaks() {
       <NavBar />
       <div style={{ flex: 1, display: 'flex' }}>
 
-      {/* Left — art panel (hidden on mobile) */}
+      {/* Left — art panel (hidden on mobile). Column layout: the illustration
+          fills the upper area, the tagline is a caption below it — never over it. */}
       <div className="streaks-left" style={{
         flex: '0 0 42%', position: 'relative', overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', flexDirection: 'column',
         background: 'var(--surface-pearl)',
       }}>
-        {/* contain (not cover) shows the whole illustration uncropped — both
-            scenes and the figures' feet stay in frame. The art's own white
-            background blends into the pearl panel, so the letterbox is invisible. */}
-        <img src="/journey.jpg" alt="The master and his turtles, growing up together" style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'contain', zIndex: 0,
-        }} />
-        {/* Edges melt into the page so the art has no hard top/bottom border. */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 1,
-          background:
-            'linear-gradient(to bottom, #fafafc 0%, rgba(250,250,252,0) 12%),' +
-            'linear-gradient(to top, #fafafc 0%, rgba(250,250,252,0) 12%)',
-        }} />
-        {/* Tagline sits in the artwork's clear white middle band, between the
-            two scenes, on a soft pearl pill so it reads cleanly at any height. */}
-        <div style={{
-          position: 'absolute', left: 0, right: 0, top: '50%', zIndex: 2,
-          transform: 'translateY(-50%)', padding: '0 24px', textAlign: 'center',
-        }}>
-          <h2 style={{
-            display: 'inline-block', maxWidth: '88%',
-            fontFamily: SF, fontSize: 'var(--text-base)', fontWeight: 600, color: '#8a8d94',
-            letterSpacing: '-0.3px', margin: 0, lineHeight: 1.35,
-            padding: '10px 20px', borderRadius: '18px',
-            background: 'rgba(250,250,252,0.85)', backdropFilter: 'blur(3px)',
-          }}>
-            Slow is smooth and Smooth is fast and constant
-          </h2>
+        {/* Artwork area — contain (not cover) shows the whole illustration
+            uncropped; the art's own white background blends into the pearl panel. */}
+        <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+          <img src="/journey.jpg" alt="The master and his turtles, growing up together" style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'contain', objectPosition: 'center bottom', zIndex: 0,
+          }} />
+          {/* Top edge melts into the page so the art has no hard border. */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            background: 'linear-gradient(to bottom, #fafafc 0%, rgba(250,250,252,0) 12%)',
+          }} />
         </div>
+        {/* Tagline — a caption beneath the artwork, on its own pearl band. */}
+        <p style={{
+          margin: 0, padding: '20px 32px 40px', textAlign: 'center',
+          fontFamily: SF, fontSize: 'var(--text-base)', fontWeight: 600,
+          color: '#8a8d94', letterSpacing: '-0.3px', lineHeight: 1.35,
+          background: 'var(--surface-pearl)',
+        }}>
+          Slow is smooth and Smooth is fast and constant
+        </p>
       </div>
 
       {/* Right — streak content */}
