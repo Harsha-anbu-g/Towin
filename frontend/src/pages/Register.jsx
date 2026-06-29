@@ -140,7 +140,7 @@ function LegalModal({ title, sections, onClose }) {
 
 function HeroPanel() {
   return (
-    <div className="auth-hero" style={{
+    <div className="auth-hero auth-hero--wide" style={{
       position: 'relative',
       overflow: 'hidden',
       display: 'flex',
