@@ -93,13 +93,25 @@ export default function TrustJourney({
         </div>
       </div>
 
-      {/* Ladder stage labels */}
-      <div className="trust-ladder-stages" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', gap: '4px' }}>
-        {LEVELS.map((level, i) => (
-          <span key={level.key} style={{ fontWeight: i === idx ? 700 : 400, color: isTrustWord(level.short) ? trustGold : (i === idx ? accent : '#7a8490'), whiteSpace: 'nowrap', fontFamily: SFT }}>
-            {level.short}
-          </span>
-        ))}
+      {/* Ladder stage labels — each anchored to its node's x-position so the
+          active label sits exactly under the tortoise. The node track is inset
+          17px on each side, so node center = (100% - 34px) * pct + 17px. */}
+      <div className="trust-ladder-stages" style={{ position: 'relative', height: '15px', marginTop: '8px' }}>
+        {LEVELS.map((level, i) => {
+          const stagePct = Math.round((i / (LEVELS.length - 1)) * 100) / 100;
+          return (
+            <span key={level.key} style={{
+              position: 'absolute', top: 0,
+              left: `calc((100% - 34px) * ${stagePct} + 17px)`,
+              transform: 'translateX(-50%)',
+              fontWeight: i === idx ? 700 : 400,
+              color: isTrustWord(level.short) ? trustGold : (i === idx ? accent : '#7a8490'),
+              whiteSpace: 'nowrap', fontFamily: SFT,
+            }}>
+              {level.short}
+            </span>
+          );
+        })}
       </div>
 
       {footer}
