@@ -694,7 +694,13 @@ export default function HelperDashboard() {
                           </span>
                         )}
                         <span style={{ fontSize: '14px', color: '#8a929c' }}>
-                          {need.distanceKm != null ? `${Math.round(need.distanceKm * 10) / 10} km · ` : ''}Posted by {need.elderName}
+                          {need.distanceKm != null ? `${Math.round(need.distanceKm * 10) / 10} km · ` : ''}Posted by{' '}
+                          {need.elderId ? (
+                            <button onClick={() => navigate(`/user/${need.elderId}`)}
+                              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--blue)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                              {need.elderName}
+                            </button>
+                          ) : need.elderName}
                         </span>
                       </div>
                     </div>
