@@ -152,7 +152,9 @@ function HeroPanel() {
         'radial-gradient(ellipse at 80% 85%, #BFD9EA 0%, transparent 60%),' +
         'linear-gradient(160deg, #EAF5FB 0%, #BFD9EA 45%, #4FA3CE 100%)',
     }}>
-      {/* Hero photo — elder and younger person walking hand in hand */}
+      {/* Hero photo — elder and younger person walking hand in hand.
+          contain shows the whole frame (both people, head to foot); the photo's
+          own sky melts into the sky-blue panel, so it reads as one calm scene. */}
       <img
         src="/walking.jpg"
         alt="An elder and younger person walking together hand in hand"
@@ -160,16 +162,17 @@ function HeroPanel() {
         onDragStart={e => e.preventDefault()}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', objectPosition: 'center', zIndex: 0,
+          objectFit: 'contain', objectPosition: 'center bottom', zIndex: 0,
           userSelect: 'none', WebkitUserDrag: 'none',
         }}
       />
 
-      {/* Soft readability wash — keeps the calm, never harsh black */}
+      {/* Light top wash — just enough to seat the headline, then clears fast so
+          the photo stays bright and the look stays minimal. */}
       <div style={{
-        position: 'absolute', inset: 0, zIndex: 1,
+        position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
         background:
-          'linear-gradient(to top, rgba(20,55,80,0.62) 0%, rgba(20,55,80,0.30) 45%, rgba(20,55,80,0.05) 100%)',
+          'linear-gradient(to bottom, rgba(20,55,80,0.45) 0%, rgba(20,55,80,0.18) 30%, transparent 52%)',
       }} />
 
       {/* Turtle logo + wordmark top-left — back to the landing story */}
