@@ -85,6 +85,25 @@ function MiniCard({ title, badge, stars, compact, children }) {
   );
 }
 
+// Marks a group of cards as illustration, not the live app — so people stop
+// tapping the mockups expecting them to open. Muted + dashed on purpose, so it
+// reads as a label, not as one of the gold trust badges.
+function ExampleTag({ align = 'center' }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: align === 'left' ? 'flex-start' : 'center', marginBottom: '10px' }}>
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        fontFamily: SF, fontSize: '12px', fontWeight: 600, color: 'var(--ink-4)',
+        background: 'rgba(0,0,0,0.03)', border: '1px dashed #cdd6dd',
+        borderRadius: '9999px', padding: '4px 11px', letterSpacing: '0.4px',
+        textTransform: 'uppercase',
+      }}>
+        Just an example
+      </span>
+    </div>
+  );
+}
+
 // Shows the worked example — the three card badges add up to one clear total,
 // so "Trust Score" stops being abstract: 3 + 7 + 5 = 15 points per person helped.
 function ScoreSum() {
@@ -228,6 +247,7 @@ export const SLIDES = [
           Everyone on ToWin is one of these two. You pick yours when you
           create your account.
         </Lead>
+        <ExampleTag />
         <CardGrid>
           <MiniCard title="Elder">
             An older person looking for friendship, company, or help with daily tasks.
@@ -282,6 +302,7 @@ export const SLIDES = [
 
         {/* Right: three score cards + total */}
         <div style={{ flexShrink: 0, width: '280px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <ExampleTag />
           <MiniCard title="Profile" badge="+3" compact>
             Full profile with ID, phone, and photo, all checked.
           </MiniCard>
@@ -332,6 +353,7 @@ export const SLIDES = [
 
         {/* Right: the ladder */}
         <div style={{ flexShrink: 0 }}>
+          <ExampleTag />
           <StageLadder stages={[
             'Just Connected', 'Messaging', 'Phone Ready', 'Video Ready',
             'Social Media', 'Ready to Meet', 'Fully Trusted',

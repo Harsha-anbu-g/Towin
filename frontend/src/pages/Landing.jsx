@@ -71,6 +71,19 @@ export default function Landing() {
         </Link>
       </header>
 
+      {/* Framing pill: makes it unmistakable that this is a tour, not the live app.
+          Shown on every slide so a tapping user always sees what they're looking at. */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 40px 4px' }}>
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: '7px',
+          fontFamily: SF, fontSize: '13px', fontWeight: 600, color: SKY,
+          background: 'rgba(79,163,206,0.10)', border: `1px solid ${BORDER}`,
+          borderRadius: '9999px', padding: '6px 14px', letterSpacing: '0.2px',
+        }}>
+          A quick look at how ToWin works
+        </span>
+      </div>
+
       {/* Slide content — key remounts the wrapper so .bf re-animates per slide.
           The middle scrolls on its own only when a slide is taller than the
           viewport, so the header and the Back/Next footer stay visible on every
@@ -133,31 +146,44 @@ export default function Landing() {
             </div>
           </div>
         ) : (
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', gap: '12px',
-            maxWidth: '480px', margin: '0 auto',
-          }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', gap: '12px',
+              maxWidth: '480px', width: '100%', margin: '0 auto',
+            }}>
+              <button
+                onClick={() => setIndex(i => Math.max(0, i - 1))}
+                disabled={index === 0}
+                style={{
+                  padding: '13px 28px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
+                  borderRadius: '9999px', cursor: index === 0 ? 'default' : 'pointer',
+                  background: '#fff', color: index === 0 ? '#c8c8cd' : '#1d1d1f',
+                  border: '1px solid #e0e0e0',
+                }}
+              >
+                Back
+              </button>
+              <button
+                onClick={() => setIndex(i => Math.min(total - 1, i + 1))}
+                style={{
+                  padding: '13px 32px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
+                  borderRadius: '9999px', cursor: 'pointer', background: SKY, color: '#fff',
+                  border: 'none', boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
+                }}
+              >
+                {slide.nextLabel || 'Next'}
+              </button>
+            </div>
+            {/* Always-visible real exit, so a confused tapper can reach the app immediately. */}
             <button
-              onClick={() => setIndex(i => Math.max(0, i - 1))}
-              disabled={index === 0}
+              onClick={() => navigate('/login')}
               style={{
-                padding: '13px 28px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
-                borderRadius: '9999px', cursor: index === 0 ? 'default' : 'pointer',
-                background: '#fff', color: index === 0 ? '#c8c8cd' : '#1d1d1f',
-                border: '1px solid #e0e0e0',
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: SF, fontSize: '15px', fontWeight: 600,
+                color: 'var(--ink-4)', padding: '6px 4px',
               }}
             >
-              Back
-            </button>
-            <button
-              onClick={() => setIndex(i => Math.min(total - 1, i + 1))}
-              style={{
-                padding: '13px 32px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
-                borderRadius: '9999px', cursor: 'pointer', background: SKY, color: '#fff',
-                border: 'none', boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
-              }}
-            >
-              {slide.nextLabel || 'Next'}
+              Skip the tour →
             </button>
           </div>
         )}
