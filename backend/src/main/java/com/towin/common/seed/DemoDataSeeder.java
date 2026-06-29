@@ -87,14 +87,14 @@ public class DemoDataSeeder implements ApplicationRunner {
             "demo.priya@towin.app", "demo.tom@towin.app", "demo.david@towin.app",
             "demo.grace@towin.app", "demo.nina@towin.app");
 
-    // Demo elders are pinned to Montreal, Canada; demo helpers to Attur, Tamil Nadu.
-    // Each role clusters around its own point so the location shown is consistent.
+    // All demo personas (elders and helpers) are pinned to Montreal, Canada so
+    // they cluster together and "near me" discovery matches across both roles.
     private static final BigDecimal ELDER_LAT  = new BigDecimal("45.5019");
     private static final BigDecimal ELDER_LNG  = new BigDecimal("-73.5674");
     private static final String     ELDER_CITY = "Montreal";
-    private static final BigDecimal HELPER_LAT  = new BigDecimal("11.5942");
-    private static final BigDecimal HELPER_LNG  = new BigDecimal("78.5996");
-    private static final String     HELPER_CITY = "Attur";
+    private static final BigDecimal HELPER_LAT  = ELDER_LAT;
+    private static final BigDecimal HELPER_LNG  = ELDER_LNG;
+    private static final String     HELPER_CITY = ELDER_CITY;
 
     private BigDecimal baseLat(UserRole role)  { return role == UserRole.ELDER ? ELDER_LAT  : HELPER_LAT;  }
     private BigDecimal baseLng(UserRole role)  { return role == UserRole.ELDER ? ELDER_LNG  : HELPER_LNG;  }
