@@ -77,8 +77,7 @@ export default function Landing() {
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: '7px',
           fontFamily: SF, fontSize: '13px', fontWeight: 600, color: SKY,
-          background: 'rgba(79,163,206,0.10)', border: `1px solid ${BORDER}`,
-          borderRadius: '9999px', padding: '6px 14px', letterSpacing: '0.2px',
+          padding: '6px 14px', letterSpacing: '0.2px',
         }}>
           A quick look at how ToWin works
         </span>
