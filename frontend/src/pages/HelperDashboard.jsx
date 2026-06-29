@@ -411,10 +411,13 @@ export default function HelperDashboard() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
-      {/* ── Sticky tab bar ── */}
+      {/* ── Sticky tab bar — frosted "liquid glass" so page content blurs
+            softly beneath it as you scroll (Apple-style translucent chrome) ── */}
       <div style={{
         position: 'sticky', top: '60px', zIndex: 50,
-        background: '#ffffff',
+        background: 'rgba(255,255,255,0.72)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         borderBottom: '1px solid #ececef',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       }}>
@@ -430,11 +433,21 @@ export default function HelperDashboard() {
                   fontSize: '16px', letterSpacing: '-0.1px',
                   fontWeight: active ? 700 : 600,
                   color: active ? '#ffffff' : '#5a6470',
-                  background: active ? '#4FA3CE' : 'transparent',
-                  border: active ? '1px solid #4FA3CE' : '1px solid transparent',
-                  borderRadius: '10px',
+                  // Active tab = Apple-style "liquid glass" lens: a glossy
+                  // translucent brand-blue pill with a top specular sheen, an
+                  // inner-curvature shadow and a soft coloured lift.
+                  background: active
+                    ? 'radial-gradient(125% 85% at 50% -10%, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%), linear-gradient(180deg, #5FB2D8 0%, #3E8AB0 100%)'
+                    : 'transparent',
+                  border: active ? '1px solid rgba(255,255,255,0.45)' : '1px solid transparent',
+                  borderRadius: '12px',
+                  boxShadow: active
+                    ? 'inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -3px 7px rgba(0,0,0,0.13), 0 6px 16px -5px rgba(46,125,166,0.5)'
+                    : 'none',
+                  backdropFilter: active ? 'blur(6px) saturate(150%)' : 'none',
+                  WebkitBackdropFilter: active ? 'blur(6px) saturate(150%)' : 'none',
                   cursor: 'pointer',
-                  transition: 'background 0.15s, color 0.15s',
+                  transition: 'background 0.15s, color 0.15s, box-shadow 0.2s',
                   whiteSpace: 'nowrap',
                   fontFamily: 'inherit',
                   position: 'relative',
