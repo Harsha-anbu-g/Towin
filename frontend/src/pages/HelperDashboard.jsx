@@ -8,6 +8,7 @@ import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
+import LocationPrimer from '../components/LocationPrimer';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -209,6 +210,19 @@ export default function HelperDashboard() {
     }
   }
 
+  // Bumble-style: don't fire the OS popup cold. If permission was already
+  // granted, get location silently. If not yet decided, show our primer first.
+  // If blocked, fall back to the type-your-town box.
+  function initLocation() {
+    if (!navigator.geolocation) { setLocationStatus('denied'); loadNeeds(); return; }
+    if (!navigator.permissions?.query) { setLocationStatus('primer'); return; }
+    navigator.permissions.query({ name: 'geolocation' }).then(p => {
+      if (p.state === 'granted') requestLocation();
+      else if (p.state === 'denied') { setLocationStatus('denied'); loadNeeds(); }
+      else setLocationStatus('primer');
+    }).catch(() => setLocationStatus('primer'));
+  }
+
   function requestLocation() {
     if (!navigator.geolocation) { setLocationStatus('denied'); loadNeeds(); return; }
     setLocationStatus('asking');
@@ -228,7 +242,7 @@ export default function HelperDashboard() {
   useEffect(() => {
     api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
     loadConnections();
-    requestLocation();
+    initLocation();
   }, []);
 
   useEffect(() => {
@@ -640,6 +654,9 @@ export default function HelperDashboard() {
                 </p>
               </div>
               <RadiusBar noun="requests" />
+              {locationStatus === 'primer' && (
+                <LocationPrimer onEnable={requestLocation} onManual={() => { setLocationStatus('denied'); loadNeeds(); loadElders(); }} />
+              )}
               {locationStatus === 'denied' && <LocationPrompt onResolved={onLocationResolved} />}
               {needs.length === 0 && locationStatus !== 'asking' && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
@@ -723,6 +740,9 @@ export default function HelperDashboard() {
                 </p>
               </div>
               <RadiusBar noun="elders" />
+              {locationStatus === 'primer' && (
+                <LocationPrimer onEnable={requestLocation} onManual={() => { setLocationStatus('denied'); loadNeeds(); loadElders(); }} />
+              )}
               {locationStatus === 'denied' && <LocationPrompt onResolved={onLocationResolved} />}
               {/* Searching state — never flash a blank "nobody here" while loading (H1) */}
               {discovering && elders.length === 0 && (
