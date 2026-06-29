@@ -2,6 +2,7 @@ package com.towin.geocoding;
 
 import com.towin.geocoding.dto.GeoResult;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
@@ -30,7 +31,9 @@ public class GeocodingService {
     private final String userAgent;
 
     // Spring constructor: builds a RestClient with short timeouts so a slow
-    // Nominatim never holds up a user's location save.
+    // Nominatim never holds up a user's location save. @Autowired disambiguates
+    // it from the package-private test constructor below.
+    @Autowired
     public GeocodingService(
             @Value("${nominatim.base-url:https://nominatim.openstreetmap.org}") String baseUrl,
             @Value("${nominatim.user-agent:ToWin/1.0 (agharsha.anbu@gmail.com)}") String userAgent) {
