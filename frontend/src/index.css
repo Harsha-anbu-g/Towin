@@ -441,10 +441,8 @@ button, a, [role="button"], input, textarea, select, label, summary {
 }
 
 /* ─── Auth pages (Login / Register) responsive shell ─── */
-.auth-shell { min-height: 100svh; display: flex; align-items: flex-start; }
-/* Pin the hero to the viewport so the photo fills a known height instead of
-   being stretched to the (tall, scrolling) form column. */
-.auth-hero  { flex: 0 0 42%; height: 100svh; position: sticky; top: 0; align-self: flex-start; }
+.auth-shell { min-height: 100svh; display: flex; }
+.auth-hero  { flex: 0 0 42%; min-height: 100svh; }
 .auth-form  {
   flex: 1; display: flex; align-items: center; justify-content: center;
   padding: 48px 64px;
