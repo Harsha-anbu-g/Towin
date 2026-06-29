@@ -194,16 +194,16 @@ export default function NavBar() {
             {/* Asking for help is the elder's main action, so it sits right by the
                 Trust Score pill as the primary blue CTA — not buried in a tab bar. */}
             {isElder && (
-              <Link to="/dashboard?tab=needs&post=1" style={{
+              <Link to="/dashboard?post=1" style={{
                 display: 'flex', alignItems: 'center', gap: '7px',
-                fontSize: '16px', fontFamily: SF, fontWeight: 700,
-                color: '#fff', background: '#4FA3CE',
-                border: '1.5px solid #4FA3CE',
+                fontSize: '16px', fontFamily: SF, fontWeight: 600,
+                color: '#4FA3CE', background: 'rgba(79,163,206,0.1)',
+                border: '1.5px solid rgba(79,163,206,0.35)',
                 borderRadius: '9999px', padding: '6px 16px',
                 textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
                 marginLeft: '8px',
               }}>
-                <Plus size={17} strokeWidth={2.6} aria-hidden="true" />
+                <Plus size={17} strokeWidth={2.4} aria-hidden="true" />
                 Post New Help
               </Link>
             )}
@@ -349,22 +349,11 @@ export default function NavBar() {
             borderBottom: '1px solid #e0e0e0',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
           }}>
-            {isElder && (
-              <Link to="/dashboard?tab=needs&post=1" onClick={() => setMenuOpen(false)} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
-                margin: '16px 0 8px', padding: '15px',
-                background: '#4FA3CE', color: '#fff',
-                borderRadius: '12px', fontSize: '17px', fontFamily: SF, fontWeight: 700,
-                textDecoration: 'none',
-              }}>
-                <Plus size={20} strokeWidth={2.6} aria-hidden="true" />
-                Post New Help
-              </Link>
-            )}
             <MenuLink to="/dashboard" label="Dashboard" icon={Home} />
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
+            {isElder && <MenuLink to="/dashboard?post=1" label="Post New Help" icon={Plus} />}
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{

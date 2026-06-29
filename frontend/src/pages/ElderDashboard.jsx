@@ -499,7 +499,7 @@ export default function ElderDashboard() {
         <div className="dash-tab-wrap">
           <div className="dash-tab-scroll">
             {tabs.map(([id, label, badge]) => {
-              const active = tab === id;
+              const active = tab === id && !showPostForm;
               return (
                 <button key={id} onClick={() => { setShowPostForm(false); setTab(id); }} style={{
                   flex: '1 1 auto',
@@ -537,7 +537,7 @@ export default function ElderDashboard() {
           <PeekabooCard />
 
           {/* My Helpers tab (landing) */}
-          {tab === 'connections' && (
+          {!showPostForm && tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100% { opacity:0.6 } 50% { opacity:1 } }`}</style>
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
@@ -721,7 +721,7 @@ export default function ElderDashboard() {
           )}
 
           {/* Find Helpers tab */}
-          {tab === 'discover' && (
+          {!showPostForm && tab === 'discover' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
@@ -870,7 +870,7 @@ export default function ElderDashboard() {
           )}
 
           {/* My Requests tab */}
-          {tab === 'needs' && !showPostForm && (
+          {!showPostForm && tab === 'needs' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: 0 }}>
@@ -1040,11 +1040,11 @@ export default function ElderDashboard() {
           )}
 
           {/* Post Request form — lives inside My Requests */}
-          {tab === 'needs' && showPostForm && (
+          {showPostForm && (
             <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid #e0e0e0' }}>
               <button type="button" onClick={() => setShowPostForm(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--blue)', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                Back to my requests
+                Back
               </button>
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: '24px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.4px', margin: '0 0 6px' }}>
                 Ask for Help
