@@ -140,13 +140,13 @@ function LegalModal({ title, sections, onClose }) {
 
 function HeroPanel() {
   return (
-    <div className="auth-hero auth-hero--wide" style={{
+    <div className="auth-hero" style={{
       position: 'relative',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-start',
-      padding: '52px 44px',
+      padding: '52px 48px',
       background:
         'radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.55) 0%, transparent 55%),' +
         'radial-gradient(ellipse at 80% 85%, #BFD9EA 0%, transparent 60%),' +
@@ -165,9 +165,16 @@ function HeroPanel() {
         }}
       />
 
-      {/* Turtle logo + wordmark — back to the landing story */}
+      {/* Soft readability wash — keeps the calm, never harsh black */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 1,
+        background:
+          'linear-gradient(to top, rgba(20,55,80,0.62) 0%, rgba(20,55,80,0.30) 45%, rgba(20,55,80,0.05) 100%)',
+      }} />
+
+      {/* Turtle logo + wordmark top-left — back to the landing story */}
       <Link to="/" style={{
-        position: 'absolute', top: '32px', left: '44px', zIndex: 2,
+        position: 'absolute', top: '32px', left: '48px', zIndex: 2,
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
@@ -179,39 +186,53 @@ function HeroPanel() {
         }}>ToWin</p>
       </Link>
 
-      {/* Hero text — sits at the top of the photo, clear of the logo */}
-      <div style={{ position: 'relative', zIndex: 2, marginTop: '64px' }}>
+      {/* Content — pushed below logo, matches the Login hero treatment */}
+      <div style={{ position: 'relative', zIndex: 2, marginTop: '44px' }}>
+        <span style={{
+          display: 'inline-block', marginBottom: '14px',
+          background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.35)', borderRadius: '9999px',
+          padding: '7px 18px', fontSize: 'var(--text-xs)', fontWeight: 600,
+          letterSpacing: '0.4px', color: '#fff',
+          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+        }}>
+          It takes two To Win.
+        </span>
         <h1 style={{
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-          fontSize: 'var(--text-3xl)', lineHeight: 1.15, color: '#0d1a0f',
-          marginBottom: '14px', fontWeight: 600,
+          fontSize: 'var(--text-3xl)', lineHeight: 1.15, color: '#fff',
+          marginBottom: '16px', letterSpacing: '-0.3px', fontWeight: 600,
+          textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Your community<br />is waiting<br />for you.
+          Your community<br />is waiting <span style={{ color: 'var(--trust-gold)' }}>for you</span>.
         </h1>
-
         <p style={{
-          fontSize: '14px', color: '#0d1a0f', lineHeight: 1.7,
-          marginBottom: '28px', maxWidth: '260px',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+          fontSize: '17px', color: 'rgba(255,255,255,0.94)', maxWidth: '420px',
+          lineHeight: 1.55, margin: '0 0 26px',
+          textShadow: '0 1px 12px rgba(20,55,80,0.5)',
         }}>
           Join thousands of elders and helpers building real, trusted connections every day.
         </p>
 
-        {/* Feature bullets */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* Feature bullets — restyled light to read on the wash */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {['Free to join, no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
-                width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
-                background: '#0d1a0f',
+                width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
+                background: 'rgba(255,255,255,0.22)',
+                border: '1px solid rgba(255,255,255,0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="9" height="7" viewBox="0 0 7 5" fill="none">
+                <svg width="10" height="8" viewBox="0 0 7 5" fill="none">
                   <path d="M1 2.5L2.8 4L6 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <span style={{
-                fontSize: 'var(--text-xs)', color: '#0d1a0f',
+                fontSize: 'var(--text-sm)', color: 'rgba(255,255,255,0.94)',
+                textShadow: '0 1px 10px rgba(20,55,80,0.5)',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               }}>{text}</span>
             </div>
@@ -248,7 +269,7 @@ function GoogleButton() {
         <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.7-3.3-11.3-8H6.5C9.9 35.7 16.4 44 24 44z"/>
         <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C41 36.2 44 30.5 44 24c0-1.3-.1-2.7-.4-3.9z"/>
       </svg>
-      Sign in with Google
+      Sign up with Google
     </a>
   );
 }
@@ -350,110 +371,173 @@ export default function Register() {
       <HeroPanel />
 
       {/* Right panel */}
-      <div className="auth-form" style={{
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        overflowY: 'auto',
-        padding: 0,
-      }}>
-        {/* Form area */}
-        <div style={{
-          width: '100%', maxWidth: '440px',
-          padding: '40px 24px 48px',
-        }}>
-          {/* Log in / Create account switcher */}
-          <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
-            <button type="button" onClick={() => navigate('/login')} style={{
-              flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
-              fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              background: 'transparent', color: 'var(--ink-3)',
-            }}>Log in</button>
-            <button type="button" style={{
-              flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
-              fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
-              background: '#ffffff', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-            }}>Create account</button>
-          </div>
-
-          {/* Headline */}
-          <h2 style={{
-            fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-            fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
-            margin: '0 0 6px', letterSpacing: '-0.3px',
-          }}>
-            Join ToWin.
-          </h2>
-          <p style={{
-            fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-            fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 22px',
-          }}>
-            Create your free account in minutes.
-          </p>
-
-          {/* Google sign-in */}
-          <GoogleButton />
-
-          {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-            <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with a username</span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-          </div>
-
-          {/* Role selector — standalone at the top */}
+      <div className="auth-form" style={{ flexDirection: 'column', paddingBottom: 0 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 0, overflowY: 'auto', padding: '32px 0' }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          {/* Demo accounts — shown first so users don't miss it (matches Login) */}
           <div style={{
-            marginBottom: '22px', background: '#F4FAFD',
-            border: '1.5px solid #D8EAF4', borderRadius: '16px',
-            padding: '18px',
+            marginBottom: '20px', background: 'var(--blue-wash)',
+            border: '1.5px solid #4FA3CE', borderRadius: '16px',
+            padding: '18px 18px 16px',
+            position: 'relative',
           }}>
-            <label style={{
-              display: 'block', fontSize: 'var(--text-sm)', fontWeight: 700,
-              color: 'var(--ink)', marginBottom: '3px', letterSpacing: '-0.2px',
+            <span style={{
+              position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
+              background: '#4FA3CE', color: '#fff',
+              fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px',
+              padding: '3px 12px', borderRadius: '9999px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              textTransform: 'uppercase',
             }}>
-              First, who are you joining as?
-            </label>
-            <div className="role-grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: '12px' }}>
-              {ROLES.map(({ value, label, desc }) => {
-                const active = form.role === value;
-                return (
-                  <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
-                    style={{
-                      padding: '14px 12px', borderRadius: '11px',
-                      border: active ? '2px solid #4FA3CE' : '1.5px solid #e0e0e0',
-                      background: active ? '#EAF5FB' : '#ffffff',
-                      cursor: 'pointer', textAlign: 'left',
-                      transition: 'all 0.15s',
-                    }}>
-                    <div style={{
-                      fontSize: 'var(--text-sm)', fontWeight: 600,
-                      color: active ? '#4FA3CE' : '#1d1d1f',
-                      marginBottom: '4px',
-                      fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                    }}>
-                      {label}
-                    </div>
-                    <div style={{
-                      fontSize: 'var(--text-xs)', lineHeight: 1.3,
-                      color: active ? '#7BB8D6' : '#a0a0a5',
-                      fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                    }}>
-                      {desc}
-                    </div>
-                  </button>
-                );
-              })}
+              DEMO
+            </span>
+            <p style={{
+              fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 4px',
+            }}>
+              Just want to see how it works?
+            </p>
+            <p style={{
+              fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', textAlign: 'center',
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              margin: '0 0 14px', lineHeight: 1.5,
+            }}>
+              Look around with a sample account, no account needed.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[
+                { role: 'ELDER', label: 'Try as an Elder', sub: 'Margaret, 72' },
+                { role: 'HELPER', label: 'Try as a Helper', sub: 'James, 28' },
+              ].map(({ role, label, sub }) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => handleGuest(role)}
+                  disabled={!!guestLoading}
+                  style={{
+                    flex: 1,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    background: '#ffffff',
+                    border: '1.5px solid #BFD9EA',
+                    borderRadius: '11px',
+                    padding: '12px 10px',
+                    cursor: guestLoading ? 'not-allowed' : 'pointer',
+                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
+                    textAlign: 'center',
+                    transition: 'border-color 0.15s, background 0.15s',
+                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                  }}
+                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
+                >
+                  <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
+                    {guestLoading === role ? 'Opening…' : label}
+                  </span>
+                  <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-3)', marginTop: '2px' }}>
+                    {sub}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Form card */}
-          <div className="register-form-card" style={{
+          {/* Form card — same shell as Login */}
+          <div className="auth-card" style={{
             background: '#ffffff',
             borderRadius: '18px',
+            padding: '40px 36px',
             border: '1px solid rgba(191,217,234,0.6)',
             boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
           }}>
+            {/* Log in / Create account switcher */}
+            <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
+              <button type="button" onClick={() => navigate('/login')} style={{
+                flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+                fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                background: 'transparent', color: 'var(--ink-3)',
+              }}>Log in</button>
+              <button type="button" style={{
+                flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+                fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
+                background: '#ffffff', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+              }}>Create account</button>
+            </div>
+
+            {/* Headline */}
+            <h2 style={{
+              fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
+              fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
+              marginBottom: '6px', letterSpacing: '-0.3px',
+            }}>
+              Join ToWin.
+            </h2>
+            <p style={{
+              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px',
+            }}>
+              Create your free account in minutes.
+            </p>
+
+            {/* Google sign-up — the easiest path, especially for new users */}
+            <GoogleButton />
+            <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--ink-4)', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
+              Fastest way in — no password to remember.
+            </p>
+
+            {/* Divider */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+              <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with username</span>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+            </div>
+
+            {/* Role selector */}
+            <div style={{
+              marginBottom: '20px', background: '#F4FAFD',
+              border: '1.5px solid #D8EAF4', borderRadius: '16px',
+              padding: '18px',
+            }}>
+              <label style={{
+                display: 'block', fontSize: 'var(--text-sm)', fontWeight: 700,
+                color: 'var(--ink)', marginBottom: '3px', letterSpacing: '-0.2px',
+                fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+              }}>
+                First, who are you joining as?
+              </label>
+              <div className="role-grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: '12px' }}>
+                {ROLES.map(({ value, label, desc }) => {
+                  const active = form.role === value;
+                  return (
+                    <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
+                      style={{
+                        padding: '14px 12px', borderRadius: '11px',
+                        border: active ? '2px solid #4FA3CE' : '1.5px solid #e0e0e0',
+                        background: active ? '#EAF5FB' : '#ffffff',
+                        cursor: 'pointer', textAlign: 'left',
+                        transition: 'all 0.15s',
+                      }}>
+                      <div style={{
+                        fontSize: 'var(--text-sm)', fontWeight: 600,
+                        color: active ? '#4FA3CE' : '#1d1d1f',
+                        marginBottom: '4px',
+                        fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                      }}>
+                        {label}
+                      </div>
+                      <div style={{
+                        fontSize: 'var(--text-xs)', lineHeight: 1.3,
+                        color: active ? '#7BB8D6' : '#a0a0a5',
+                        fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+                      }}>
+                        {desc}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Error state */}
             {error && (
               <div style={{
@@ -635,66 +719,6 @@ export default function Register() {
             </Link>
           </p>
 
-          {/* Demo accounts — at the bottom, same as login page */}
-          <div style={{
-            marginTop: '24px', background: 'var(--blue-wash)',
-            border: '1px solid #BFD9EA', borderRadius: '16px',
-            padding: '18px 18px 16px',
-          }}>
-            <p style={{
-              fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 4px',
-            }}>
-              Just want to see how it works?
-            </p>
-            <p style={{
-              fontSize: '14px', color: 'var(--ink-slate)', textAlign: 'center',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 14px', lineHeight: 1.5,
-            }}>
-              Look around with a sample account, no account needed.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[
-                { role: 'ELDER', label: 'Try as an Elder', sub: 'See ToWin as Margaret, 72' },
-                { role: 'HELPER', label: 'Try as a Helper', sub: 'See ToWin as James, 28' },
-              ].map(({ role, label, sub }) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => handleGuest(role)}
-                  disabled={!!guestLoading}
-                  style={{
-                    width: '100%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    background: '#ffffff',
-                    border: '1.5px solid #BFD9EA',
-                    borderRadius: '11px',
-                    padding: '13px 16px',
-                    cursor: guestLoading ? 'not-allowed' : 'pointer',
-                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
-                    textAlign: 'left',
-                    transition: 'border-color 0.15s, background 0.15s',
-                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                  }}
-                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
-                >
-                  <span>
-                    <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
-                      {guestLoading === role ? 'Opening…' : label}
-                    </span>
-                    <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--ink-3)', marginTop: '2px' }}>
-                      {sub}
-                    </span>
-                  </span>
-                  <span aria-hidden="true" style={{ fontSize: '17px', color: 'var(--blue)', fontWeight: 700 }}>→</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -707,6 +731,7 @@ export default function Register() {
               How It Works
             </Link>
           </div>
+        </div>
         </div>
         <SiteFooter style={{ marginTop: 'auto' }} />
       </div>
