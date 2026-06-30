@@ -467,7 +467,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
    fixed viewport height). Both columns are flex siblings, so they stay the
    same height automatically: no white gap below either one. */
 .auth-shell { min-height: 100%; display: flex; }
-.auth-hero  { flex: 0 0 42%; }
+.auth-hero  { flex: 0 0 50%; }
 .auth-form  {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
