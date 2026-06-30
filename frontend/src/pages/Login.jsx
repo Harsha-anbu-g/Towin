@@ -202,7 +202,7 @@ export default function Login() {
       {/* Right panel */}
       <div className="auth-form" style={{ flexDirection: 'column', paddingBottom: 0 }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 0 }}>
-        <div style={{ width: '100%', maxWidth: '380px' }}>
+        <div style={{ width: '100%', maxWidth: '420px' }}>
           {/* Demo accounts — shown first so users don't miss it */}
           <div style={{
             marginBottom: '20px', background: 'var(--blue-wash)',
