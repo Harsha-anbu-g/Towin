@@ -77,7 +77,7 @@ function ScoreRing({ score }) {
   return (
     <svg width="88" height="88" viewBox="0 0 88 88" style={{ flexShrink: 0 }}>
       <circle cx="44" cy="44" r={r} fill="none" stroke="#ececef" strokeWidth="7" />
-      <circle cx="44" cy="44" r={r} fill="none" stroke={SKY} strokeWidth="7"
+      <circle cx="44" cy="44" r={r} fill="none" stroke="#5a6470" strokeWidth="7"
         strokeDasharray={`${pct * circ} ${circ}`} strokeLinecap="round"
         transform="rotate(-90 44 44)"
         style={{ transition: 'stroke-dasharray 0.7s ease' }} />
