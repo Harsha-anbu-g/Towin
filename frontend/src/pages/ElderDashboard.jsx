@@ -5,7 +5,6 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
-import DashTab from '../components/DashTab';
 import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
@@ -118,7 +117,7 @@ const NEED_STATUS = {
 
 // Tab icons match the design's leading glyphs.
 function TabIcon({ id, active }) {
-  const color = active ? '#1f2937' : '#5a6470';
+  const color = active ? '#fff' : '#5a6470';
   const svgProps = {
     width: 16, height: 16,
     viewBox: '0 0 24 24',
@@ -491,13 +490,10 @@ export default function ElderDashboard() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
       <NavBar />
 
-      {/* ── Sticky tab bar — frosted "liquid glass" so page content blurs
-            softly beneath it as you scroll (Apple-style translucent chrome) ── */}
+      {/* ── Sticky tab bar — always visible when scrolling ── */}
       <div style={{
         position: 'sticky', top: '60px', zIndex: 50,
-        background: 'rgba(255,255,255,0.72)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        background: '#ffffff',
         borderBottom: '1px solid #ececef',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       }}>
@@ -506,11 +502,29 @@ export default function ElderDashboard() {
             {tabs.map(([id, label, badge]) => {
               const active = tab === id && !showPostForm;
               return (
-                <DashTab key={id} active={active} onClick={() => { setShowPostForm(false); setTab(id); }}>
+                <button key={id} onClick={() => { setShowPostForm(false); setTab(id); }} style={{
+                  flex: '1 1 auto',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  height: '44px', padding: '0 16px',
+                  fontSize: '16px', letterSpacing: '-0.1px',
+                  fontWeight: active ? 700 : 600,
+                  color: active ? '#ffffff' : '#5a6470',
+                  background: active ? '#4FA3CE' : 'transparent',
+                  border: active ? '1px solid #4FA3CE' : '1px solid transparent',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s, color 0.15s',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'inherit',
+                  position: 'relative',
+                }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f0f0f3'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                >
                   <TabIcon id={id} active={active} />
                   {label}
                   <TabBadge count={badge} />
-                </DashTab>
+                </button>
               );
             })}
 
