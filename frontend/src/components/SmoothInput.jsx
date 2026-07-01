@@ -51,6 +51,7 @@ const SmoothInput = forwardRef(function SmoothInput(
   const containerRef = useRef(null);
   const inputRef = useRef(null);
   const measureRef = useRef(null);
+  const prevValueRef = useRef('');
 
   const isControlled = value !== undefined;
   const inputValue = isControlled ? value : internalValue;
@@ -118,7 +119,13 @@ const SmoothInput = forwardRef(function SmoothInput(
     const maxX = target.clientWidth - paddingRight;
     const isVisible = caretPosition >= minX && caretPosition <= maxX + 1;
 
-    caretX.set(Math.min(caretPosition, maxX));
+    const nextX = Math.min(caretPosition, maxX);
+    caretX.set(nextX);
+    // While typing (the value changed) snap the caret to the text so it never
+    // trails behind the last letter. Only glide the spring when the caret moves
+    // without the text changing — arrow keys, or clicking to reposition.
+    if (target.value !== prevValueRef.current) springCaretX.jump(nextX);
+    prevValueRef.current = target.value;
     caretOpacity.set(!isVisible || hasSelection ? 0 : 1);
   };
 
