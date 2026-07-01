@@ -172,36 +172,44 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureElderProfile(margaret, "Margaret", 72,
                 "Retired teacher. I love chess, gardening, and a good cup of tea.",
                 new String[]{"Chess", "Gardening", "Reading"}, "Retired teacher", Gender.FEMALE,
-                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/margaret.jpg");
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/margaret.jpg",
+                "https://facebook.com/margaret.tw");
         ensureElderProfile(david, "David Chen", 76,
                 "Former engineer, enjoys cooking and music.",
-                new String[]{"Cooking", "Music", "Technology"}, "Retired engineer", Gender.MALE, null);
+                new String[]{"Cooking", "Music", "Technology"}, "Retired engineer", Gender.MALE, null,
+                "https://facebook.com/davidchen.tw");
         ensureElderProfile(grace, "Grace Liu", 70,
                 "I paint watercolours and like quiet walks in the park.",
-                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist", Gender.FEMALE, null);
+                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist", Gender.FEMALE, null,
+                "https://facebook.com/graceliu.tw");
         ensureElderProfile(rose, "Rose Martin", 74,
                 "Retired librarian. I love crosswords, reading, and a quiet afternoon with good company.",
                 new String[]{"Reading", "Crosswords", "Gardening"}, "Retired librarian", Gender.FEMALE,
-                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/rose.jpg");
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/rose.jpg",
+                "https://facebook.com/rosemartin.tw");
 
         ensureHelperProfile(james, "Harsha", 23,
                 "I love to play chess and helping with anything tech.",
                 new String[]{"Chess", "Technology", "Errands"}, new String[]{"Chess", "Cycling"},
                 Gender.MALE, "Tech Support Volunteer",
-                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/james.jpg");
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/james.jpg",
+                "https://facebook.com/james.helper.tw");
         ensureHelperProfile(priya, "Priya Sharma", 24,
                 "Nursing student. Happy to help with errands, cooking, or just company.",
                 new String[]{"Errands", "Cooking", "Companionship"}, new String[]{"Baking", "Yoga"},
-                Gender.FEMALE, "Nursing Student", null);
+                Gender.FEMALE, "Nursing Student", null,
+                "https://facebook.com/priya.helper.tw");
         ensureHelperProfile(tom, "Tom Walker", 31,
                 "Software dev who fixes phones, tablets and wifi. Patient explainer.",
                 new String[]{"Technology", "Transportation"}, new String[]{"Hiking", "Photography"},
                 Gender.MALE, "Software Developer",
-                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/tom.jpg");
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/tom.jpg",
+                "https://facebook.com/tom.helper.tw");
         ensureHelperProfile(nina, "Nina Okafor", 26,
                 "Friendly driver and errand-runner who loves a good chat.",
                 new String[]{"Transportation", "Errands", "Companionship"}, new String[]{"Driving", "Cooking"},
-                Gender.FEMALE, "Driver", null);
+                Gender.FEMALE, "Driver", null,
+                "https://facebook.com/nina.helper.tw");
 
         // Connections cover every state a viewer can act on:
         //  • TRUSTED   — top of the ladder, fully progressed
@@ -219,15 +227,14 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hi David, fellow engineer here. Happy to help with anything.");
         ensureConnection(grace, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
                 "Hi Grace, I'd love to keep you company on your walks.");
-        // Incoming pending request to Margaret (elder accept/decline)
-        ensureConnection(margaret, tom, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, tom,
+        Connection cMargaretTom = ensureConnection(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED, tom,
                 "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
-        // Incoming pending request to James (helper accept/decline)
-        ensureConnection(grace, james, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, grace,
+        Connection cGraceJames = ensureConnection(grace, james, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, grace,
                 "Hi Harsha, I'd love a hand learning to video-call my grandchildren.");
-        // Outgoing pending request James sent to Rose — shows in the helper's "Requested" tab
-        ensureConnection(james, rose, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, james,
+        Connection cJamesRose = ensureConnection(james, rose, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED, james,
                 "Hello Rose! I saw you love reading too. I'd be happy to help with anything you need.");
+        Connection cDavidNina = ensureConnection(david, nina, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, nina,
+                "Hi David! I can help with transportation and errands whenever you need.");
 
         // James + Margaret are TRUSTED — the top of the ladder — so their thread
         // walks the full trust journey in order, spread across ~3 weeks so the
@@ -268,6 +275,21 @@ public class DemoDataSeeder implements ApplicationRunner {
         seedMessagesIfEmpty(cVideo, 2900, List.of(
                 msg(james, "David, our video call was great! Same time next week?"),
                 msg(david, "Yes! And bring that pasta recipe you mentioned.")));
+        seedMessagesIfEmpty(cGraceJames, 720, List.of(
+                msg(grace, "Hello Harsha! I hope you can help me learn to video-call my grandchildren."),
+                msg(james, "Absolutely Grace, it's easier than it looks! When would suit you?"),
+                msg(grace, "Perhaps Thursday afternoon? I'll make a lemon cake too."),
+                msg(james, "Thursday it is — and I never say no to cake.")));
+        seedMessagesIfEmpty(cMargaretTom, 350, List.of(
+                msg(tom, "Hello Margaret! Happy to help with any tech or wifi troubles."),
+                msg(margaret, "Thank you Tom, that's very kind. My wifi has been a bit slow lately.")));
+        seedMessagesIfEmpty(cJamesRose, 900, List.of(
+                msg(james, "Hello Rose! I'd be glad to help with anything you need."),
+                msg(rose, "Hello Harsha! So kind of you. I could use a hand with a few things.")));
+        seedMessagesIfEmpty(cDavidNina, 1800, List.of(
+                msg(nina, "Hi David! I can drive you to appointments or help with errands."),
+                msg(david, "Wonderful, Nina. I have a medical appointment next week."),
+                msg(nina, "I'll drive you — just send me the details.")));
 
         // Requests cover every status AND every category, so each action shows:
         //  • OPEN (no offers)         — Company for my morning walk      [COMPANIONSHIP]
@@ -311,6 +333,45 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureReview(james, margaret, null, 5,
                 "Margaret is delightful, and a much better chess player than she admits.",
                 List.of("Friendly", "Welcoming"));
+        ensureReview(priya, margaret, null, 5,
+                "Margaret is warm and full of wonderful stories. A joy to visit.",
+                List.of("Friendly", "Welcoming"));
+        ensureReview(tom, margaret, null, 4,
+                "Margaret was patient and made me feel very welcome.",
+                List.of("Patient", "Welcoming"));
+        ensureReview(nina, margaret, null, 4,
+                "Margaret made everything feel easy and comfortable.",
+                List.of("Welcoming", "Friendly"));
+        ensureReview(margaret, priya, null, 5,
+                "Priya is efficient, warm, and so cheerful. A joy to have around.",
+                List.of("Reliable", "Friendly"));
+        ensureReview(grace, priya, null, 5,
+                "Priya is always on time and treats me with such genuine care.",
+                List.of("Reliable", "Punctual"));
+        ensureReview(priya, grace, null, 5,
+                "Grace is a delight — full of stories and so easy to spend time with.",
+                List.of("Friendly", "Welcoming"));
+        ensureReview(james, david, null, 5,
+                "David is sharp, engaging, and great company every visit.",
+                List.of("Friendly", "Reliable"));
+        ensureReview(nina, david, null, 4,
+                "David is gracious and always prepared — a lovely person to help.",
+                List.of("Friendly", "Punctual"));
+        ensureReview(grace, james, null, 5,
+                "Harsha is patient, knowledgeable, and genuinely kind.",
+                List.of("Patient", "Reliable"));
+        ensureReview(james, grace, null, 5,
+                "Grace has a wonderful spirit and such a warm home.",
+                List.of("Friendly", "Welcoming"));
+        ensureReview(rose, james, null, 4,
+                "Harsha is warm and never makes me feel rushed. Very helpful.",
+                List.of("Patient", "Friendly"));
+        ensureReview(margaret, tom, null, 4,
+                "Tom solved everything quickly and explained it all so clearly.",
+                List.of("Reliable", "Patient"));
+        ensureReview(david, nina, null, 4,
+                "Nina is cheerful, punctual, and makes every trip a pleasure.",
+                List.of("Punctual", "Friendly"));
 
         ensureStreak(margaret, 6, 14);
         ensureStreak(david, 3, 9);
@@ -443,7 +504,8 @@ public class DemoDataSeeder implements ApplicationRunner {
      * existing profile is left untouched (additive mode).
      */
     private void ensureElderProfile(User user, String name, int age, String bio,
-                                    String[] interests, String occupation, Gender gender, String photoUrl) {
+                                    String[] interests, String occupation, Gender gender, String photoUrl,
+                                    String facebookUrl) {
         ElderProfile p = elderProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = ElderProfile.builder().user(user).build();
@@ -456,7 +518,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setLookingFor(LookingForType.BOTH);
         p.setGender(gender);
         p.setPhotoUrl(photoUrl);
-        p.setFacebookUrl(null);
+        p.setFacebookUrl(facebookUrl);
         p.setInstagramUrl(null);
         elderProfileRepository.save(p);
     }
@@ -465,7 +527,8 @@ public class DemoDataSeeder implements ApplicationRunner {
      *  back to baseline on reset so visitor edits to the helper profile revert. */
     private void ensureHelperProfile(User user, String name, int age, String bio,
                                      String[] skills, String[] hobbies,
-                                     Gender gender, String occupation, String photoUrl) {
+                                     Gender gender, String occupation, String photoUrl,
+                                     String facebookUrl) {
         HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = HelperProfile.builder().user(user).build();
@@ -481,9 +544,9 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setGender(gender);
         p.setOccupation(occupation);
         p.setPhotoUrl(photoUrl);
-        p.setFacebookUrl(null);
+        p.setFacebookUrl(facebookUrl);
         p.setInstagramUrl(null);
-        p.setDateOfBirth(null);
+        p.setDateOfBirth(user.getDateOfBirth());
         helperProfileRepository.save(p);
     }
 
