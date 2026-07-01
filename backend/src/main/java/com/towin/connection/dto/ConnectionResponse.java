@@ -22,6 +22,7 @@ public class ConnectionResponse {
     private boolean confirmedByOther;
     private boolean initiatedByMe;
     private String otherUserPhone;
+    private Integer otherUserAge;
     private String requestMessage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
