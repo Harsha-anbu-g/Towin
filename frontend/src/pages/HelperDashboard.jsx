@@ -104,6 +104,86 @@ const CATEGORY = {
 };
 const catLabel = (c) => CATEGORY[c] || c;
 
+// Plain, everyday relative time — "just now", "2 days ago", "3 weeks ago" —
+// so a helper can see how fresh (or stale) a request is at a glance.
+function postedAgo(iso) {
+  if (!iso) return '';
+  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (secs < 60) return 'just now';
+  const m = Math.floor(secs / 60);
+  if (m < 60) return `${m} minute${m === 1 ? '' : 's'} ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hour${h === 1 ? '' : 's'} ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d} day${d === 1 ? '' : 's'} ago`;
+  const w = Math.floor(d / 7);
+  if (w < 5) return `${w} week${w === 1 ? '' : 's'} ago`;
+  const mo = Math.floor(d / 30);
+  return `${mo} month${mo === 1 ? '' : 's'} ago`;
+}
+
+// One request card, shared by all three Browse Needs sub-tabs. The action area
+// on the right derives entirely from the request's own status + the helper's
+// application status, so the same card works in Available / Applied / Completed.
+function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile }) {
+  const mine = need.myApplicationStatus;                 // null | PENDING | ACCEPTED | REJECTED
+  const isCompleted = need.status === 'COMPLETED';
+  const greenPill = { height: '40px', display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '0 18px', background: 'var(--green-tint)', color: 'var(--green-deep)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 };
+  const check = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a5c2e" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+  return (
+    <div style={{
+      background: '#ffffff', borderRadius: '18px', padding: '20px',
+      border: '1px solid #e0e0e0',
+      animation: `fadeSlideUp 0.4s ease ${index * 0.05}s both`,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
+          {need.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '10px 0 0', lineHeight: 1.5 }}>{need.description}</p>}
+          <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
+            {need.urgency === 'URGENT' && (
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: '#EEF1F4', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />Urgent
+              </span>
+            )}
+            <span style={{ fontSize: '14px', color: '#8a929c' }}>
+              {need.distanceKm != null ? `${Math.round(need.distanceKm * 10) / 10} km · ` : ''}Posted by{' '}
+              {need.elderId ? (
+                <button onClick={() => onOpenProfile(need.elderId)}
+                  style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--blue)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                  {need.elderName}
+                </button>
+              ) : need.elderName}
+              {need.createdAt ? ` · ${postedAgo(need.createdAt)}` : ''}
+            </span>
+          </div>
+        </div>
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+          {isCompleted ? (
+            <span style={greenPill}>{check}Completed</span>
+          ) : mine === 'ACCEPTED' ? (
+            <span style={greenPill}>{check}You're helping</span>
+          ) : mine === 'PENDING' ? (
+            <>
+              <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', padding: '0 18px', background: '#f3f4f6', color: 'var(--ink-slate)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>Waiting to hear back</span>
+              <button onClick={() => onWithdraw(need.id)}
+                style={{ fontSize: '14px', color: 'var(--ink-slate)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
+                Withdraw
+              </button>
+            </>
+          ) : (
+            <button onClick={() => onApply(need.id)} disabled={applying === need.id}
+              style={{ height: '40px', padding: '0 24px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+              {applying === need.id ? '...' : 'Offer to Help'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TabIcon({ id, active }) {
   const color = active ? '#fff' : '#5a6470';
   const svgProps = {
@@ -148,6 +228,7 @@ export default function HelperDashboard() {
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
+  const [myApplications, setMyApplications] = useState([]);
   const [elders, setElders] = useState([]);
   const [discovering, setDiscovering] = useState(false);
   const [discoverError, setDiscoverError] = useState(false);
@@ -165,8 +246,10 @@ export default function HelperDashboard() {
   // Sub-filter for My Elders. Param absent (null) = follow the smart default.
   const eldersSeg = searchParams.get('eseg');
   const setEldersSeg = (next) => setParam('eseg', next);
+  // Sub-filter for Browse Needs: available | applied | completed.
+  const browseSeg = searchParams.get('bseg') || 'available';
+  const setBrowseSeg = (next) => setParam('bseg', next);
   const [applying, setApplying] = useState(null);
-  const [applyMsg, setApplyMsg] = useState({});
   const [connectingTo, setConnectingTo] = useState(null);
   const [endingConn, setEndingConn] = useState(null);
   const [connectMsg, setConnectMsg] = useState({});
@@ -189,6 +272,9 @@ export default function HelperDashboard() {
         : await api.get('/needs/open');
       setNeeds(res.data);
     } catch {}
+  }
+  async function loadMyApplications() {
+    try { const r = await api.get('/needs/applications'); setMyApplications(r.data); } catch {}
   }
   async function loadConnections() {
     setLoading(true);
@@ -247,7 +333,7 @@ export default function HelperDashboard() {
   }, []);
 
   useEffect(() => {
-    if (tab === 'browse') loadNeeds();
+    if (tab === 'browse') { loadNeeds(); loadMyApplications(); }
     if (tab === 'connections') loadConnections();
     if (tab === 'discover') loadElders();
   }, [tab, radiusKm]);
@@ -255,7 +341,7 @@ export default function HelperDashboard() {
   async function withdrawApplication(needId) {
     try {
       await api.delete(`/needs/${needId}/apply`);
-      setApplyMsg(prev => { const next = {...prev}; delete next[needId]; return next; });
+      await Promise.all([loadNeeds(), loadMyApplications()]);
       toast.info('Application withdrawn.');
     } catch { toast.error('Could not withdraw. Try again.'); }
   }
@@ -264,11 +350,10 @@ export default function HelperDashboard() {
     setApplying(needId);
     try {
       await api.post(`/needs/${needId}/apply`);
-      setApplyMsg(prev => ({...prev, [needId]: 'Applied!'}));
       toast.success('Application sent!');
-      await loadNeeds();
+      await Promise.all([loadNeeds(), loadMyApplications()]);
     } catch (err) {
-      setApplyMsg(prev => ({...prev, [needId]: err?.response?.data?.message || 'Could not apply.'}));
+      toast.error(err?.response?.data?.message || 'Could not apply.');
     } finally { setApplying(null); }
   }
 
@@ -351,7 +436,6 @@ export default function HelperDashboard() {
   ];
 
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
-  const pendingApplications = needs.filter(n => applyMsg[n.id]);
 
   const RadiusBar = ({ noun = 'people' }) => (
     <div style={{ background: '#ffffff', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
@@ -407,6 +491,23 @@ export default function HelperDashboard() {
     building: <>No connections in progress. Reach out to an elder to start building trust together.</>,
     requests: <>No pending requests. New connection requests will show up here.</>,
   }[activeEldersSeg];
+
+  // ── Browse Needs — split into Available / Applied / Completed ──
+  // Available = open requests nearby I haven't applied to yet.
+  // Applied    = requests I've offered to help with that are still live.
+  // Completed  = requests I helped with that the elder has marked done.
+  const availableNeeds = [...needs].filter(n => !n.myApplicationStatus).sort(sortNeeds);
+  const appliedNeeds = myApplications.filter(n =>
+    (n.status === 'OPEN' || n.status === 'ASSIGNED') &&
+    (n.myApplicationStatus === 'PENDING' || n.myApplicationStatus === 'ACCEPTED'));
+  const completedNeeds = myApplications.filter(n =>
+    n.status === 'COMPLETED' && n.myApplicationStatus === 'ACCEPTED');
+  const browseSegments = [
+    { id: 'available', label: 'Available', count: availableNeeds.length },
+    { id: 'applied',   label: 'Applied',   count: appliedNeeds.length },
+    { id: 'completed', label: 'Completed', count: completedNeeds.length },
+  ];
+  const browseList = { available: availableNeeds, applied: appliedNeeds, completed: completedNeeds }[browseSeg];
 
   return (
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
@@ -639,12 +740,18 @@ export default function HelperDashboard() {
                   Elders nearby who could use a hand. Offer to help with one tap.
                 </p>
               </div>
-              <RadiusBar noun="requests" />
-              {locationStatus === 'primer' && (
+
+              <SegmentedTabs segments={browseSegments} value={browseSeg} onChange={setBrowseSeg} />
+
+              {/* Distance + location controls only matter for the Available list */}
+              {browseSeg === 'available' && <RadiusBar noun="requests" />}
+              {browseSeg === 'available' && locationStatus === 'primer' && (
                 <LocationPrimer onEnable={requestLocation} onManual={() => { setLocationStatus('denied'); loadNeeds(); loadElders(); }} />
               )}
-              {locationStatus === 'denied' && <LocationPrompt onResolved={onLocationResolved} />}
-              {needs.length === 0 && locationStatus !== 'asking' && (
+              {browseSeg === 'available' && locationStatus === 'denied' && <LocationPrompt onResolved={onLocationResolved} />}
+
+              {/* Available — location-aware empty state */}
+              {browseSeg === 'available' && availableNeeds.length === 0 && locationStatus !== 'asking' && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--surface)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -659,63 +766,25 @@ export default function HelperDashboard() {
                   </p>
                 </div>
               )}
+
+              {/* Applied / Completed — friendly segment empty states */}
+              {browseSeg === 'applied' && appliedNeeds.length === 0 && (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}>
+                  You haven't offered to help with anything yet. Find a request under Available and tap "Offer to Help."
+                </SegmentEmpty>
+              )}
+              {browseSeg === 'completed' && completedNeeds.length === 0 && (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>}>
+                  No completed requests yet. Requests you helped with show up here once the elder marks them done.
+                </SegmentEmpty>
+              )}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {[...needs].sort(sortNeeds).map((need, i) => {
-                const applied = applyMsg[need.id]?.includes('!');
-                return (
-                <div key={need.id} style={{
-                  background: '#ffffff', borderRadius: '18px', padding: '20px',
-                  border: '1px solid #e0e0e0',
-                  animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
-                      {need.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '10px 0 0', lineHeight: 1.5 }}>{need.description}</p>}
-                      <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
-                        {need.urgency === 'URGENT' && (
-                          <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: '#EEF1F4', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />Urgent
-                          </span>
-                        )}
-                        <span style={{ fontSize: '14px', color: '#8a929c' }}>
-                          {need.distanceKm != null ? `${Math.round(need.distanceKm * 10) / 10} km · ` : ''}Posted by{' '}
-                          {need.elderId ? (
-                            <button onClick={() => navigate(`/user/${need.elderId}`)}
-                              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--blue)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
-                              {need.elderName}
-                            </button>
-                          ) : need.elderName}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                      {applied ? (
-                        <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '0 18px', background: 'var(--green-tint)', color: 'var(--green-deep)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a5c2e" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          Applied
-                        </span>
-                      ) : (
-                        <button onClick={() => apply(need.id)} disabled={applying === need.id}
-                          style={{ height: '40px', padding: '0 24px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
-                          {applying === need.id ? '...' : 'Offer to Help'}
-                        </button>
-                      )}
-                      {applied && (
-                        <button onClick={() => withdrawApplication(need.id)}
-                          style={{ fontSize: '14px', color: 'var(--ink-slate)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
-                          Withdraw
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {applyMsg[need.id] && !applied && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginTop: '10px' }}>{applyMsg[need.id]}</p>
-                  )}
-                </div>
-                );
-              })}
+                {browseList.map((need, i) => (
+                  <NeedCard key={need.id} need={need} index={i} applying={applying}
+                    onApply={apply} onWithdraw={withdrawApplication}
+                    onOpenProfile={(id) => navigate(`/user/${id}`)} />
+                ))}
               </div>
             </div>
           )}
