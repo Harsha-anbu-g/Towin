@@ -182,72 +182,73 @@ export default function UserProfile() {
             {/* Hero card */}
             <div style={{
               background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-              padding: '28px 28px 24px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+              padding: '32px 28px 28px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '18px' }}>
-                <Avatar name={profile.name} photoUrl={profile.photoUrl} size={80} />
-                <div style={{ flex: 1 }}>
-                  <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 2px', letterSpacing: '-0.3px' }}>
-                    {profile.name || 'User'}
-                  </h1>
-                  {profile.username && (
-                    <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '0 0 8px' }}>
-                      @{profile.username}
-                    </p>
-                  )}
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {profile.verificationStatus === 'VERIFIED' && (
-                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
-                        ✓ ID Verified
-                      </span>
-                    )}
-                    {profile.phoneVerified && (
-                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
-                        ✓ Phone Verified
-                      </span>
-                    )}
-                  </div>
-                </div>
+              <Avatar name={profile.name} photoUrl={profile.photoUrl} size={88} />
 
-                {/* Trust score — prominent right-side block */}
-                <div style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flexShrink: 0,
-                }}>
-                  <ScoreRing score={profile.trustScore} />
-                  {(() => {
-                    const tier = profile.trustTier ?? 'New Member';
-                    const tc = TIER_COLORS[tier] ?? TIER_COLORS['New Member'];
-                    return (
-                      <span style={{
-                        fontFamily: SF, fontSize: '12px', fontWeight: 600,
-                        background: tc.bg, color: tc.color, border: `1px solid ${tc.border}`,
-                        borderRadius: '9999px', padding: '3px 10px',
-                      }}>
-                        {tier}
-                      </span>
-                    );
-                  })()}
-                </div>
+              <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: 'var(--ink)', margin: '14px 0 2px', letterSpacing: '-0.3px' }}>
+                {profile.name || 'User'}
+              </h1>
+
+              {profile.username && (
+                <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '0 0 10px' }}>
+                  @{profile.username}
+                </p>
+              )}
+
+              {/* Badges */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '16px' }}>
+                {profile.verificationStatus === 'VERIFIED' && (
+                  <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
+                    ✓ ID Verified
+                  </span>
+                )}
+                {profile.phoneVerified && (
+                  <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
+                    ✓ Phone Verified
+                  </span>
+                )}
+              </div>
+
+              {/* Trust score */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', marginBottom: '20px' }}>
+                <ScoreRing score={profile.trustScore} />
+                {(() => {
+                  const tier = profile.trustTier ?? 'New Member';
+                  const tc = TIER_COLORS[tier] ?? TIER_COLORS['New Member'];
+                  return (
+                    <span style={{
+                      fontFamily: SF, fontSize: '12px', fontWeight: 600,
+                      background: tc.bg, color: tc.color, border: `1px solid ${tc.border}`,
+                      borderRadius: '9999px', padding: '3px 10px',
+                    }}>
+                      {tier}
+                    </span>
+                  );
+                })()}
               </div>
 
               {/* Meta row */}
-              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                {profile.city && (
-                  <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {profile.city}
-                  </span>
-                )}
-                {profile.age && (
-                  <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
-                    Age {profile.age}
-                  </span>
-                )}
-                {profile.occupation && (
-                  <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
-                    {profile.occupation}
-                  </span>
-                )}
-              </div>
+              {(profile.city || profile.age || profile.occupation) && (
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', paddingTop: '16px', borderTop: '1px solid #f0f0f0', width: '100%' }}>
+                  {profile.city && (
+                    <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
+                      📍 {profile.city}
+                    </span>
+                  )}
+                  {profile.age && (
+                    <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
+                      Age {profile.age}
+                    </span>
+                  )}
+                  {profile.occupation && (
+                    <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
+                      {profile.occupation}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Bio */}
