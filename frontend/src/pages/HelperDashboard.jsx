@@ -249,7 +249,13 @@ export default function HelperDashboard() {
     return next;
   }, { replace: true });
   const tab = searchParams.get('tab') || 'connections';
-  const setTab = (next) => setParam('tab', next);
+  const setTab = (next) => setSearchParams(prev => {
+    const p = new URLSearchParams(prev);
+    p.set('tab', next);
+    p.delete('eseg');
+    p.delete('fseg');
+    return p;
+  }, { replace: true });
   // Sub-filter for My Elders. Param absent (null) = follow the smart default.
   const eldersSeg = searchParams.get('eseg');
   const setEldersSeg = (next) => setParam('eseg', next);
