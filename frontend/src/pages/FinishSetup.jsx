@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import SmoothInput from '../components/SmoothInput';
 
 const SF = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const SFD = '-apple-system, "SF Pro Display", system-ui, sans-serif';
@@ -178,7 +179,7 @@ export default function FinishSetup() {
                 position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
                 fontSize: '16px', color: 'var(--ink-4)', pointerEvents: 'none',
               }}>@</span>
-              <input
+              <SmoothInput
                 type="text" autoComplete="username" required
                 value={username}
                 onChange={e => { setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')); setFieldErrors(f => ({ ...f, username: '' })); }}
@@ -201,7 +202,7 @@ export default function FinishSetup() {
             }}>
               Phone number
             </label>
-            <input
+            <SmoothInput
               type="tel" autoComplete="tel" required
               value={phone}
               onChange={e => { setPhone(e.target.value); setFieldErrors(f => ({ ...f, phone: '' })); }}
