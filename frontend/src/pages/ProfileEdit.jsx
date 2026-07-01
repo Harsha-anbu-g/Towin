@@ -71,7 +71,7 @@ export default function ProfileEdit() {
   const [form, setForm] = useState({
     name: '', age: '', bio: '',
     interests: [], languages: [], lookingFor: 'BOTH',
-    skillsOffered: [], availabilityDays: [], availabilityTimes: [],
+    skillsOffered: [],
     hobbies: [], occupation: '', gender: '', facebookUrl: '', instagramUrl: '', dateOfBirth: '',
   });
   const [saving, setSaving] = useState(false);
@@ -114,8 +114,6 @@ export default function ProfileEdit() {
         languages: p.languages || [],
         lookingFor: p.lookingFor || 'BOTH',
         skillsOffered: p.skillsOffered || [],
-        availabilityDays: p.availabilityDays || [],
-        availabilityTimes: p.availabilityTimes || [],
         hobbies: p.hobbies || [],
         occupation: p.occupation || '',
         gender: p.gender || '',
@@ -233,7 +231,6 @@ export default function ProfileEdit() {
         await api.put('/profile/helper', {
           name: form.name, age: computedAge, bio: form.bio,
           skillsOffered: form.skillsOffered, languages: form.languages,
-          availabilityDays: form.availabilityDays, availabilityTimes: form.availabilityTimes,
           hobbies: form.hobbies,
           occupation: form.occupation,
           gender: form.gender || null,
@@ -454,38 +451,20 @@ export default function ProfileEdit() {
                   {!isElder && (
                     <>
                       <Divider />
-                      <FieldRow label="Skills Offered">
-                        <TagInput
-                          value={form.skillsOffered}
-                          onChange={tags => setForm(p => ({ ...p, skillsOffered: tags }))}
-                          placeholder="Type a skill, press Enter…"
-                          style={{ width: '100%', boxSizing: 'border-box' }}
-                        />
-                      </FieldRow>
-                      <Divider />
-                      <FieldRow label="Availability Days">
-                        <TagInput
-                          value={form.availabilityDays}
-                          onChange={tags => setForm(p => ({ ...p, availabilityDays: tags }))}
-                          placeholder="e.g. Monday, press Enter…"
-                          style={{ width: '100%', boxSizing: 'border-box' }}
-                        />
-                      </FieldRow>
-                      <Divider />
-                      <FieldRow label="Availability Times">
-                        <TagInput
-                          value={form.availabilityTimes}
-                          onChange={tags => setForm(p => ({ ...p, availabilityTimes: tags }))}
-                          placeholder="e.g. Morning, press Enter…"
-                          style={{ width: '100%', boxSizing: 'border-box' }}
-                        />
-                      </FieldRow>
-                      <Divider />
                       <FieldRow label="Hobbies">
                         <TagInput
                           value={form.hobbies}
                           onChange={tags => setForm(p => ({ ...p, hobbies: tags }))}
                           placeholder="Type a hobby, press Enter…"
+                          style={{ width: '100%', boxSizing: 'border-box' }}
+                        />
+                      </FieldRow>
+                      <Divider />
+                      <FieldRow label="Skills Offered">
+                        <TagInput
+                          value={form.skillsOffered}
+                          onChange={tags => setForm(p => ({ ...p, skillsOffered: tags }))}
+                          placeholder="Type a skill, press Enter…"
                           style={{ width: '100%', boxSizing: 'border-box' }}
                         />
                       </FieldRow>
