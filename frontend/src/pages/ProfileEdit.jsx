@@ -95,11 +95,17 @@ export default function ProfileEdit() {
   const [photoFile, setPhotoFile] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoMsg, setPhotoMsg] = useState('');
+  const [localPhotoPreview, setLocalPhotoPreview] = useState(null);
 
   const [locationQuery, setLocationQuery] = useState('');
   const [savingLocation, setSavingLocation] = useState(false);
   const [locationMsg, setLocationMsg] = useState('');
   const [locationSaved, setLocationSaved] = useState(false);
+
+  useEffect(() => {
+    return () => { if (localPhotoPreview) URL.revokeObjectURL(localPhotoPreview); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
@@ -176,6 +182,15 @@ export default function ProfileEdit() {
     finally { setUploadingId(false); }
   }
 
+  function handlePhotoSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (localPhotoPreview) URL.revokeObjectURL(localPhotoPreview);
+    setLocalPhotoPreview(URL.createObjectURL(file));
+    setPhotoFile(file);
+    setPhotoMsg('');
+  }
+
   async function uploadPhoto() {
     if (!photoFile) return;
     setUploadingPhoto(true);
@@ -183,8 +198,13 @@ export default function ProfileEdit() {
     try {
       const r = await api.put('/profile/photo', data, { headers: { 'Content-Type': 'multipart/form-data' } });
       setProfileData(p => ({ ...p, photoUrl: r.data.photoUrl }));
+      // Keep localPhotoPreview showing — it's the same bytes as the S3 file,
+      // so the avatar stays instant without waiting for the S3 round-trip.
       setPhotoMsg('Photo updated.'); setPhotoFile(null);
-    } catch (err) { setPhotoMsg(err?.response?.data?.message || 'Upload failed.'); }
+    } catch (err) {
+      if (localPhotoPreview) { URL.revokeObjectURL(localPhotoPreview); setLocalPhotoPreview(null); }
+      setPhotoMsg(err?.response?.data?.message || 'Upload failed.');
+    }
     finally { setUploadingPhoto(false); }
   }
 
@@ -286,7 +306,7 @@ export default function ProfileEdit() {
             boxShadow: '0 4px 16px rgba(90,100,112,0.20)',
             overflow: 'hidden',
             margin: '0 auto 16px',
-            background: profileData?.photoUrl ? 'transparent' : `linear-gradient(135deg, #8b939d, #5a6470)`,
+            background: (localPhotoPreview || profileData?.photoUrl) ? 'transparent' : `linear-gradient(135deg, #8b939d, #5a6470)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -295,15 +315,15 @@ export default function ProfileEdit() {
             color: '#fff',
             position: 'relative',
           }}>
-            {profileData?.photoUrl
-              ? <img src={profileData.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {(localPhotoPreview || profileData?.photoUrl)
+              ? <img src={localPhotoPreview || profileData.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : initials(form.name)
             }
           </div>
 
           {/* Photo upload */}
           <div style={{ marginBottom: '16px' }}>
-            <input type="file" accept="image/*" id="photo-upload" onChange={e => setPhotoFile(e.target.files[0])}
+            <input type="file" accept="image/*" id="photo-upload" onChange={handlePhotoSelect}
               style={{ display: 'none' }} />
             <label htmlFor="photo-upload" style={{
               fontSize: 'var(--text-sm)',
