@@ -106,6 +106,7 @@ export default function ProfileEdit() {
     api.get('/profile/me').then(r => {
       const p = r.data;
       setProfileData(p);
+      if (p.city) setLocationQuery(p.city);
       setForm({
         name: p.name || '',
         age: p.age || '',
@@ -152,7 +153,7 @@ export default function ProfileEdit() {
       const { data } = await api.get(`/geocode/search?q=${encodeURIComponent(q)}`);
       await api.put('/profile/location', { locationLat: data.lat, locationLng: data.lng });
       setProfileData(p => ({ ...(p || {}), city: data.city }));
-      setLocationQuery('');
+      setLocationQuery(data.city || q);
       setLocationMsg(`Location set to ${data.city || q}.`);
     } catch (err) {
       setLocationMsg(err?.response?.status === 404
@@ -499,15 +500,12 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Location">
-                    <p style={{ fontSize: '13px', color: 'var(--ink-3)', margin: '0 0 8px' }}>
-                      {profileData?.city ? `Current: ${profileData.city}` : 'No location set yet. Add your town so people nearby can find you.'}
-                    </p>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <SmoothInput
                         value={locationQuery}
                         onChange={e => setLocationQuery(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveLocation(); } }}
-                        placeholder="Town or postcode, e.g. Scarborough or M1B 1A1"
+                        placeholder="Town or postcode…"
                         className="field"
                         wrapperStyle={{ flex: 1 }}
                       />
