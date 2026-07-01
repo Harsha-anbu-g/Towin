@@ -216,6 +216,7 @@ export const SLIDES = [
   {
     id: 'welcome',
     nextLabel: 'See why →',
+    readMs: 3000,
     render: () => (
       <>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
@@ -260,6 +261,7 @@ export const SLIDES = [
   },
   {
     id: 'people',
+    readMs: 2600,
     render: () => (
       <>
         <Kicker>Who it&apos;s for</Kicker>
@@ -282,10 +284,11 @@ export const SLIDES = [
   },
   {
     id: 'solves',
+    readMs: 2900,
     render: () => (
       <>
         <Kicker>The problem we solve</Kicker>
-        <Title>Help is hard to find alone</Title>
+        <Title>Help is hard to find alone for older people</Title>
         <Lead>
           Small daily things, like shopping, a ride, or someone to talk to, take
           energy that elders don&apos;t always have.
@@ -300,6 +303,7 @@ export const SLIDES = [
   {
     id: 'trust',
     wide: true,
+    readMs: 3800,
     render: () => (
       <div className="landing-split" style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
         {/* Left: story */}
@@ -348,6 +352,7 @@ export const SLIDES = [
   {
     id: 'rooting',
     wide: true,
+    readMs: 3600,
     render: () => (
       <div className="landing-split" style={{
         display: 'flex', alignItems: 'center', gap: '48px',
