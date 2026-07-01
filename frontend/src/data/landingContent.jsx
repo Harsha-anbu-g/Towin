@@ -3,7 +3,6 @@
 // Helpers here are hero-scale (bigger type than guideContent's card-scale).
 
 import { FlipFadeText } from '../components/ui/flip-fade-text';
-import { RotateInText } from '../components/ui/rotate-in-text';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -226,10 +225,7 @@ export const SLIDES = [
             style={{ width: 96, height: 96, objectFit: 'contain' }}
           />
         </div>
-        <Title>
-          {/* Letters swivel in on the Y axis to face you, left → right — the wordmark. */}
-          <RotateInText text="ToWin" />
-        </Title>
+        <Title>ToWin</Title>
         <Lead>It takes two To Win.</Lead>
         {/* Cycling verb — simple words already in the copy below (meet, talk, help, grow). */}
         <div style={{
