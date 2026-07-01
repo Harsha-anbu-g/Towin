@@ -118,7 +118,7 @@ const NEED_STATUS = {
 
 // Tab icons match the design's leading glyphs.
 function TabIcon({ id, active }) {
-  const color = active ? '#fff' : '#5a6470';
+  const color = active ? '#1f2937' : '#5a6470';
   const svgProps = {
     width: 16, height: 16,
     viewBox: '0 0 24 24',
