@@ -171,33 +171,37 @@ public class DemoDataSeeder implements ApplicationRunner {
 
         ensureElderProfile(margaret, "Margaret", 72,
                 "Retired teacher. I love chess, gardening, and a good cup of tea.",
-                new String[]{"Chess", "Gardening", "Reading"}, "Retired teacher", Gender.FEMALE);
+                new String[]{"Chess", "Gardening", "Reading"}, "Retired teacher", Gender.FEMALE,
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/margaret.jpg");
         ensureElderProfile(david, "David Chen", 76,
                 "Former engineer, enjoys cooking and music.",
-                new String[]{"Cooking", "Music", "Technology"}, "Retired engineer", Gender.MALE);
+                new String[]{"Cooking", "Music", "Technology"}, "Retired engineer", Gender.MALE, null);
         ensureElderProfile(grace, "Grace Liu", 70,
                 "I paint watercolours and like quiet walks in the park.",
-                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist", Gender.FEMALE);
+                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist", Gender.FEMALE, null);
         ensureElderProfile(rose, "Rose Martin", 74,
                 "Retired librarian. I love crosswords, reading, and a quiet afternoon with good company.",
-                new String[]{"Reading", "Crosswords", "Gardening"}, "Retired librarian", Gender.FEMALE);
+                new String[]{"Reading", "Crosswords", "Gardening"}, "Retired librarian", Gender.FEMALE,
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/rose.jpg");
 
         ensureHelperProfile(james, "James", 28,
                 "I love to play chess and helping with anything tech.",
                 new String[]{"Chess", "Technology", "Errands"}, new String[]{"Chess", "Cycling"},
-                Gender.MALE, "Tech Support Volunteer");
+                Gender.MALE, "Tech Support Volunteer",
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/james.jpg");
         ensureHelperProfile(priya, "Priya Sharma", 24,
                 "Nursing student. Happy to help with errands, cooking, or just company.",
                 new String[]{"Errands", "Cooking", "Companionship"}, new String[]{"Baking", "Yoga"},
-                Gender.FEMALE, "Nursing Student");
+                Gender.FEMALE, "Nursing Student", null);
         ensureHelperProfile(tom, "Tom Walker", 31,
                 "Software dev who fixes phones, tablets and wifi. Patient explainer.",
                 new String[]{"Technology", "Transportation"}, new String[]{"Hiking", "Photography"},
-                Gender.MALE, "Software Developer");
+                Gender.MALE, "Software Developer",
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/tom.jpg");
         ensureHelperProfile(nina, "Nina Okafor", 26,
                 "Friendly driver and errand-runner who loves a good chat.",
                 new String[]{"Transportation", "Errands", "Companionship"}, new String[]{"Driving", "Cooking"},
-                Gender.FEMALE, "Driver");
+                Gender.FEMALE, "Driver", null);
 
         // Connections cover every state a viewer can act on:
         //  • TRUSTED   — top of the ladder, fully progressed
@@ -439,7 +443,7 @@ public class DemoDataSeeder implements ApplicationRunner {
      * existing profile is left untouched (additive mode).
      */
     private void ensureElderProfile(User user, String name, int age, String bio,
-                                    String[] interests, String occupation, Gender gender) {
+                                    String[] interests, String occupation, Gender gender, String photoUrl) {
         ElderProfile p = elderProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = ElderProfile.builder().user(user).build();
@@ -451,8 +455,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setOccupation(occupation);
         p.setLookingFor(LookingForType.BOTH);
         p.setGender(gender);
-        // Photo and social links reset to null so visitor edits revert cleanly
-        p.setPhotoUrl(null);
+        p.setPhotoUrl(photoUrl);
         p.setFacebookUrl(null);
         p.setInstagramUrl(null);
         elderProfileRepository.save(p);
@@ -462,7 +465,7 @@ public class DemoDataSeeder implements ApplicationRunner {
      *  back to baseline on reset so visitor edits to the helper profile revert. */
     private void ensureHelperProfile(User user, String name, int age, String bio,
                                      String[] skills, String[] hobbies,
-                                     Gender gender, String occupation) {
+                                     Gender gender, String occupation, String photoUrl) {
         HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = HelperProfile.builder().user(user).build();
@@ -477,8 +480,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setBackgroundCheckStatus(BackgroundCheckStatus.VERIFIED);
         p.setGender(gender);
         p.setOccupation(occupation);
-        // Photo, social links, and DOB reset to null so visitor edits revert cleanly
-        p.setPhotoUrl(null);
+        p.setPhotoUrl(photoUrl);
         p.setFacebookUrl(null);
         p.setInstagramUrl(null);
         p.setDateOfBirth(null);
