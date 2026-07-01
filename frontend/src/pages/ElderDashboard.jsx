@@ -885,7 +885,10 @@ export default function ElderDashboard() {
                     </div>
                   )}
 
-                  {helpers.map((helper, i) => {
+                  {[...helpers].sort((a, b) => {
+                    const rank = u => connectedHelperIds.has(u.userId) ? 2 : (requestedHelperIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
+                    return rank(a) - rank(b);
+                  }).map((helper, i) => {
                     const alreadyConnected = connectedHelperIds.has(helper.userId);
                     const alreadyRequested = requestedHelperIds.has(helper.userId);
                     const sent = connectMsg[helper.userId];
