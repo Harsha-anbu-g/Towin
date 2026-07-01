@@ -49,6 +49,7 @@ public class TrustScoreService {
     private final ElderProfileRepository elderProfileRepository;
     private final ReviewRepository reviewRepository;
     private final ConnectionRepository connectionRepository;
+    private final S3Service s3Service;
 
     @Transactional
     public void recalculate(UUID userId) {
@@ -224,6 +225,7 @@ public class TrustScoreService {
         return elderProfileRepository.findByUserId(user.getId()).map(ElderProfile::getPhotoUrl)
                 .or(() -> helperProfileRepository.findByUserId(user.getId()).map(HelperProfile::getPhotoUrl))
                 .filter(this::notBlank)
+                .map(s3Service::presignedUrl)
                 .orElse(null);
     }
 

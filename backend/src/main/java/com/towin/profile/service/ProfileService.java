@@ -2,6 +2,7 @@ package com.towin.profile.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.profile.dto.*;
 import com.towin.profile.entity.*;
@@ -21,6 +22,7 @@ public class ProfileService {
     private final HelperProfileRepository helperProfileRepository;
     private final TrustScoreService trustScoreService;
     private final com.towin.geocoding.GeocodingService geocodingService;
+    private final S3Service s3Service;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -165,7 +167,7 @@ public class ProfileService {
         if (elder != null) {
             builder.name(elder.getName())
                     .age(elder.getAge())
-                    .photoUrl(elder.getPhotoUrl())
+                    .photoUrl(s3Service.presignedUrl(elder.getPhotoUrl()))
                     .bio(elder.getBio())
                     .interests(elder.getInterests())
                     .languages(elder.getLanguages())
@@ -179,7 +181,7 @@ public class ProfileService {
         if (helper != null) {
             builder.name(helper.getName())
                     .age(helper.getAge())
-                    .photoUrl(helper.getPhotoUrl())
+                    .photoUrl(s3Service.presignedUrl(helper.getPhotoUrl()))
                     .bio(helper.getBio())
                     .languages(helper.getLanguages())
                     .skillsOffered(helper.getSkillsOffered())

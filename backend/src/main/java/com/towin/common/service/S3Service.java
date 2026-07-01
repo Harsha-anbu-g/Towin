@@ -7,8 +7,11 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -17,6 +20,7 @@ import java.util.UUID;
 public class S3Service {
 
     private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
     @Value("${aws.s3.bucket:towin-photos}")
     private String bucket;
@@ -74,6 +78,20 @@ public class S3Service {
             throw new IllegalStateException("Failed to upload photo", e);
         }
         return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+    }
+
+    public String presignedUrl(String rawUrl) {
+        if (rawUrl == null || rawUrl.isBlank()) return null;
+        try {
+            String key = rawUrl.substring(rawUrl.indexOf(".amazonaws.com/") + ".amazonaws.com/".length());
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofDays(7))
+                    .getObjectRequest(r -> r.bucket(bucket).key(key))
+                    .build();
+            return s3Presigner.presignGetObject(presignRequest).url().toString();
+        } catch (Exception e) {
+            return rawUrl;
+        }
     }
 
     public void deleteFile(String url) {
