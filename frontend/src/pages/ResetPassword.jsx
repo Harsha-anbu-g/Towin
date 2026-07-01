@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../api/axios';
+import SmoothInput from '../components/SmoothInput';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -69,14 +70,14 @@ export default function ResetPassword() {
       <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 8 }}>Choose a new password</h1>
       <form onSubmit={submit} style={{ marginTop: 16 }}>
         <label htmlFor="rp-pw" style={labelStyle}>New password (at least 8 characters)</label>
-        <input
+        <SmoothInput
           id="rp-pw"
           type="password" required value={pw}
           onChange={e => { setPw(e.target.value); setError(''); }}
           style={input}
         />
         <label htmlFor="rp-confirm" style={labelStyle}>Re-enter new password</label>
-        <input
+        <SmoothInput
           id="rp-confirm"
           type="password" required value={confirm}
           onChange={e => { setConfirm(e.target.value); setError(''); }}

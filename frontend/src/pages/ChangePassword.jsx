@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -79,19 +80,19 @@ export default function ChangePassword() {
               <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={labelStyle}>Current password</label>
-                  <input type="password" autoComplete="current-password" value={pw.current}
+                  <SmoothInput type="password" autoComplete="current-password" value={pw.current}
                     onChange={e => setPw(p => ({ ...p, current: e.target.value }))}
                     placeholder="Your current password" className="field" required style={inputStyle} />
                 </div>
                 <div>
                   <label style={labelStyle}>New password</label>
-                  <input type="password" autoComplete="new-password" value={pw.next}
+                  <SmoothInput type="password" autoComplete="new-password" value={pw.next}
                     onChange={e => setPw(p => ({ ...p, next: e.target.value }))}
                     placeholder="At least 8 characters" className="field" required style={inputStyle} />
                 </div>
                 <div>
                   <label style={labelStyle}>Confirm new password</label>
-                  <input type="password" autoComplete="new-password" value={pw.confirm}
+                  <SmoothInput type="password" autoComplete="new-password" value={pw.confirm}
                     onChange={e => setPw(p => ({ ...p, confirm: e.target.value }))}
                     placeholder="Type it again" className="field" required style={inputStyle} />
                 </div>

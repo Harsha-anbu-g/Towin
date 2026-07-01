@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import SmoothInput from '../components/SmoothInput';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -59,7 +60,7 @@ export default function ForgotPassword() {
         <label htmlFor="fp-email" style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
           Email
         </label>
-        <input
+        <SmoothInput
           id="fp-email"
           type="email" required value={email}
           onChange={e => setEmail(e.target.value)}
