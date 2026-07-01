@@ -64,45 +64,6 @@ const SmoothInput = forwardRef(function SmoothInput(
     [forwardedRef],
   );
 
-  // Mirror the input's font onto the hidden measuring span.
-  const syncMeasureSpan = () => {
-    const input = inputRef.current;
-    const span = measureRef.current;
-    if (!input || !span) return;
-    const s = window.getComputedStyle(input);
-    span.style.font = `${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
-    span.style.letterSpacing = s.letterSpacing;
-    span.style.fontFeatureSettings = s.fontFeatureSettings;
-    span.style.fontVariationSettings = s.fontVariationSettings;
-  };
-
-  // Absolute x (within the input box) of the caret for the given prefix text.
-  const measurePrefixWidth = (text) => {
-    const input = inputRef.current;
-    const span = measureRef.current;
-    if (!input || !span) return null;
-    syncMeasureSpan();
-    span.textContent = text;
-    const paddingLeft = parseFloat(window.getComputedStyle(input).paddingLeft) || 0;
-    return text.length > 0 ? span.offsetWidth + paddingLeft : paddingLeft - 1;
-  };
-
-  const scrollCaretIntoView = (target, absoluteWidth) => {
-    const s = window.getComputedStyle(target);
-    const paddingLeft = parseFloat(s.paddingLeft) || 0;
-    const paddingRight = parseFloat(s.paddingRight) || 0;
-    const maxScroll = Math.max(0, target.scrollWidth - target.clientWidth);
-    const visibleRight = target.scrollLeft + target.clientWidth - paddingRight;
-    const visibleLeft = target.scrollLeft + paddingLeft;
-    if (absoluteWidth > visibleRight) {
-      target.scrollLeft = Math.min(absoluteWidth - target.clientWidth + paddingRight, maxScroll);
-      return;
-    }
-    if (absoluteWidth < visibleLeft) {
-      target.scrollLeft = Math.max(0, absoluteWidth - paddingLeft);
-    }
-  };
-
   const getCaretIndex = (target) => {
     const start = target.selectionStart ?? 0;
     const end = target.selectionEnd ?? 0;
@@ -110,7 +71,14 @@ const SmoothInput = forwardRef(function SmoothInput(
     return target.selectionDirection === 'backward' ? start : end;
   };
 
+  // Position the caret. Reads getComputedStyle ONCE and reuses it, and inlines
+  // what used to be three helpers — this avoids the layout thrashing (~4
+  // getComputedStyle calls) that made fast typing lag.
   const updateCaretFromInput = (target) => {
+    const span = measureRef.current;
+    if (!target || !span) return;
+    const cs = window.getComputedStyle(target);
+
     const start = target.selectionStart ?? 0;
     const end = target.selectionEnd ?? 0;
     const hasSelection = start !== end;
@@ -120,15 +88,29 @@ const SmoothInput = forwardRef(function SmoothInput(
       ? PASSWORD_CHAR.repeat(caretIndex)
       : target.value.slice(0, caretIndex);
 
-    const absoluteWidth = measurePrefixWidth(textBeforeCaret);
-    if (absoluteWidth === null) return;
+    // Mirror the input's font onto the hidden span and measure the prefix width.
+    span.style.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    span.style.letterSpacing = cs.letterSpacing;
+    span.style.fontFeatureSettings = cs.fontFeatureSettings;
+    span.style.fontVariationSettings = cs.fontVariationSettings;
+    span.textContent = textBeforeCaret;
 
-    scrollCaretIntoView(target, absoluteWidth);
+    const paddingLeft = parseFloat(cs.paddingLeft) || 0;
+    const paddingRight = parseFloat(cs.paddingRight) || 0;
+    const absoluteWidth =
+      textBeforeCaret.length > 0 ? span.offsetWidth + paddingLeft : paddingLeft - 1;
 
-    const s = window.getComputedStyle(target);
-    const paddingLeft = parseFloat(s.paddingLeft) || 0;
-    const paddingRight = parseFloat(s.paddingRight) || 0;
-    const fontSize = parseFloat(s.fontSize) || 16;
+    // Keep the caret in view when the text overflows.
+    const maxScroll = Math.max(0, target.scrollWidth - target.clientWidth);
+    const visibleRight = target.scrollLeft + target.clientWidth - paddingRight;
+    const visibleLeft = target.scrollLeft + paddingLeft;
+    if (absoluteWidth > visibleRight) {
+      target.scrollLeft = Math.min(absoluteWidth - target.clientWidth + paddingRight, maxScroll);
+    } else if (absoluteWidth < visibleLeft) {
+      target.scrollLeft = Math.max(0, absoluteWidth - paddingLeft);
+    }
+
+    const fontSize = parseFloat(cs.fontSize) || 16;
     setCaretHeight(Math.round(fontSize * 1.1)); // sibling span doesn't inherit input font-size
 
     const caretPosition = absoluteWidth - target.scrollLeft;
@@ -148,12 +130,23 @@ const SmoothInput = forwardRef(function SmoothInput(
     updateCaretRef.current = updateCaretFromInput;
   });
 
+  // Coalesce every trigger (typing, selection, scroll, resize) into at most one
+  // caret update per animation frame. Without this the caret was recomputed
+  // ~3x per keystroke, forcing repeated synchronous layout and lagging typing.
+  const rafRef = useRef(0);
+  const scheduleCaretUpdate = useCallback(() => {
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = 0;
+      const input = inputRef.current;
+      if (input && document.activeElement === input) updateCaretRef.current(input);
+    });
+  }, []);
+
   // Re-measure when the value / type changes while focused.
   useEffect(() => {
-    if (!smooth) return;
-    const input = inputRef.current;
-    if (input && document.activeElement === input) updateCaretRef.current(input);
-  }, [inputValue, type, smooth]);
+    if (smooth) scheduleCaretUpdate();
+  }, [inputValue, type, smooth, scheduleCaretUpdate]);
 
   // Listeners: selection, scroll, font-load, resize.
   useEffect(() => {
@@ -162,37 +155,36 @@ const SmoothInput = forwardRef(function SmoothInput(
     const container = containerRef.current;
     if (!input || !container) return;
 
-    const updateIfFocused = () => {
-      if (document.activeElement === input) updateCaretRef.current(input);
+    const onSelection = () => {
+      if (document.activeElement === input) scheduleCaretUpdate();
     };
-    const handleSelectionChange = () => {
-      if (document.activeElement !== input) return;
-      requestAnimationFrame(() => {
-        if (document.activeElement === input) updateCaretRef.current(input);
-      });
-    };
+    const onLocal = () => scheduleCaretUpdate();
 
-    document.addEventListener('selectionchange', handleSelectionChange);
-    document.fonts?.addEventListener('loadingdone', updateIfFocused);
-    void document.fonts?.ready.then(updateIfFocused);
-    input.addEventListener('scroll', updateIfFocused);
+    document.addEventListener('selectionchange', onSelection);
+    document.fonts?.addEventListener('loadingdone', onLocal);
+    void document.fonts?.ready.then(onLocal);
+    input.addEventListener('scroll', onLocal);
 
-    const resizeObserver = new ResizeObserver(updateIfFocused);
+    const resizeObserver = new ResizeObserver(onLocal);
     resizeObserver.observe(container);
-    updateIfFocused();
+    scheduleCaretUpdate();
 
     return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
-      document.fonts?.removeEventListener('loadingdone', updateIfFocused);
-      input.removeEventListener('scroll', updateIfFocused);
+      document.removeEventListener('selectionchange', onSelection);
+      document.fonts?.removeEventListener('loadingdone', onLocal);
+      input.removeEventListener('scroll', onLocal);
       resizeObserver.disconnect();
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
     };
-  }, [smooth]);
+  }, [smooth, scheduleCaretUpdate]);
 
   const handleChange = (e) => {
     if (!isControlled) setInternalValue(e.target.value);
     onChange?.(e);
-    if (smooth) requestAnimationFrame(() => updateCaretRef.current(e.target));
+    if (smooth) scheduleCaretUpdate();
   };
 
   // Native passthrough — identical markup to a plain <input>.
