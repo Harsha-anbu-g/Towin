@@ -62,13 +62,19 @@ Optional prop: `caretColor` (default `var(--blue)`) for future overrides.
 ### Two render branches
 
 1. **Smooth branch** — when `type` ∈
-   `{ text, password, email, tel, url, search }` **and** motion is allowed
+   `{ text, password, tel, url, search }` **and** motion is allowed
    (`useReducedMotion()` is false): renders the native input plus a springy
    caret overlay.
-2. **Native passthrough** — for any other `type` (number, date, file,
+2. **Native passthrough** — for any other `type` (email, number, date, file,
    checkbox, range…) **or** when `prefers-reduced-motion` is set: renders a
    plain `<input {...props} ref={ref} />` with no wrapper and no overlay. This
    is identical to today's markup, which is what makes app-wide swapping safe.
+
+> **Implementation note — `email` excluded.** `email`, `number`, and `date`
+> inputs return `null` for `selectionStart`/`selectionEnd` (no text-selection
+> API per the HTML spec), so the caret index can't be tracked and the overlay
+> would stick at position 0. `email` therefore falls into the native branch.
+> `text`, `password`, `tel`, `url`, and `search` all support selection.
 
 The password show/hide toggle flips `type` between `password` and `text` — both
 smooth-eligible — so the branch never changes mid-session and the input never
