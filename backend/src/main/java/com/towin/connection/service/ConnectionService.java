@@ -34,9 +34,9 @@ public class ConnectionService {
 
     private int activeLimit(User user) {
         return switch (user.getRole()) {
-            case HELPER -> 1;
-            case ELDER  -> 2;
-            case BOTH   -> 1; // stricter — can act as helper
+            case HELPER -> 20;
+            case ELDER  -> 10;
+            case BOTH   -> 10;
             default     -> Integer.MAX_VALUE;
         };
     }
