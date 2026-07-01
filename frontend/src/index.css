@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/* liquid-glass-react renders with Tailwind utility classes (relative, text-white,
-   bg-black, opacity-0, transition-all …). Tailwind v4 skips node_modules by
-   default, so point it at the package to generate those classes. */
-@source "../node_modules/liquid-glass-react/dist/index.esm.js";
-
 /* ─── shadcn/Radix token bridge — maps Tailwind utility classes to our design system ─── */
 @theme inline {
   --color-primary:            var(--blue);
