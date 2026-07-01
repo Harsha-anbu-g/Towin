@@ -193,23 +193,24 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new String[]{"Chess", "Technology", "Errands"}, new String[]{"Chess", "Cycling"},
                 Gender.MALE, "Tech Support Volunteer",
                 "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/james.jpg",
-                "https://facebook.com/james.helper.tw");
+                "https://facebook.com/james.helper.tw",
+                "https://www.instagram.com/harsha._.ag/");
         ensureHelperProfile(priya, "Priya Sharma", 24,
                 "Nursing student. Happy to help with errands, cooking, or just company.",
                 new String[]{"Errands", "Cooking", "Companionship"}, new String[]{"Baking", "Yoga"},
                 Gender.FEMALE, "Nursing Student", null,
-                "https://facebook.com/priya.helper.tw");
+                "https://facebook.com/priya.helper.tw", null);
         ensureHelperProfile(tom, "Tom Walker", 31,
                 "Software dev who fixes phones, tablets and wifi. Patient explainer.",
                 new String[]{"Technology", "Transportation"}, new String[]{"Hiking", "Photography"},
                 Gender.MALE, "Software Developer",
                 "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/tom.jpg",
-                "https://facebook.com/tom.helper.tw");
+                "https://facebook.com/tom.helper.tw", null);
         ensureHelperProfile(nina, "Nina Okafor", 26,
                 "Friendly driver and errand-runner who loves a good chat.",
                 new String[]{"Transportation", "Errands", "Companionship"}, new String[]{"Driving", "Cooking"},
                 Gender.FEMALE, "Driver", null,
-                "https://facebook.com/nina.helper.tw");
+                "https://facebook.com/nina.helper.tw", null);
 
         // Connections cover every state a viewer can act on:
         //  • TRUSTED   — top of the ladder, fully progressed
@@ -528,7 +529,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     private void ensureHelperProfile(User user, String name, int age, String bio,
                                      String[] skills, String[] hobbies,
                                      Gender gender, String occupation, String photoUrl,
-                                     String facebookUrl) {
+                                     String facebookUrl, String instagramUrl) {
         HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = HelperProfile.builder().user(user).build();
@@ -545,7 +546,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setOccupation(occupation);
         p.setPhotoUrl(photoUrl);
         p.setFacebookUrl(facebookUrl);
-        p.setInstagramUrl(null);
+        p.setInstagramUrl(instagramUrl);
         p.setDateOfBirth(user.getDateOfBirth());
         helperProfileRepository.save(p);
     }
