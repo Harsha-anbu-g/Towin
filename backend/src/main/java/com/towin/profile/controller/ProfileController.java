@@ -61,9 +61,12 @@ public class ProfileController {
     @PutMapping("/location")
     public ResponseEntity<Void> updateLocation(
             Authentication auth,
-            @RequestBody Map<String, Double> body) {
+            @RequestBody Map<String, Object> body) {
         UUID userId = UUID.fromString(auth.getName());
-        profileService.updateLocation(userId, body.get("locationLat"), body.get("locationLng"));
+        Double lat = body.get("locationLat") != null ? ((Number) body.get("locationLat")).doubleValue() : null;
+        Double lng = body.get("locationLng") != null ? ((Number) body.get("locationLng")).doubleValue() : null;
+        String city = body.get("city") instanceof String s ? s : null;
+        profileService.updateLocation(userId, lat, lng, city);
         return ResponseEntity.ok().build();
     }
 

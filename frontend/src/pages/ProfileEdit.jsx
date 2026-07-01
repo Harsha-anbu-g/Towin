@@ -99,6 +99,7 @@ export default function ProfileEdit() {
   const [locationQuery, setLocationQuery] = useState('');
   const [savingLocation, setSavingLocation] = useState(false);
   const [locationMsg, setLocationMsg] = useState('');
+  const [locationSaved, setLocationSaved] = useState(false);
 
   useEffect(() => {
     api.get('/reviews/mine').then(r => setReviews(r.data)).catch(() => {});
@@ -148,13 +149,15 @@ export default function ProfileEdit() {
   async function saveLocation() {
     const q = locationQuery.trim();
     if (!q) return;
-    setSavingLocation(true); setLocationMsg('');
+    setSavingLocation(true); setLocationMsg(''); setLocationSaved(false);
     try {
       const { data } = await api.get(`/geocode/search?q=${encodeURIComponent(q)}`);
-      await api.put('/profile/location', { locationLat: data.lat, locationLng: data.lng });
-      setProfileData(p => ({ ...(p || {}), city: data.city }));
-      setLocationQuery(data.city || q);
-      setLocationMsg(`Location set to ${data.city || q}.`);
+      await api.put('/profile/location', { locationLat: data.lat, locationLng: data.lng, city: data.city });
+      const resolved = data.city || q;
+      setProfileData(p => ({ ...(p || {}), city: resolved }));
+      setLocationQuery(resolved);
+      setLocationSaved(true);
+      setTimeout(() => setLocationSaved(false), 2000);
     } catch (err) {
       setLocationMsg(err?.response?.status === 404
         ? "We couldn't find that place — try a postcode."
@@ -503,18 +506,19 @@ export default function ProfileEdit() {
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <SmoothInput
                         value={locationQuery}
-                        onChange={e => setLocationQuery(e.target.value)}
+                        onChange={e => { setLocationQuery(e.target.value); setLocationSaved(false); }}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveLocation(); } }}
                         placeholder="Town or postcode…"
                         className="field"
                         wrapperStyle={{ flex: 1 }}
                       />
-                      <button type="button" onClick={saveLocation} disabled={savingLocation} className="primary-btn" style={{ fontSize: '14px', whiteSpace: 'nowrap' }}>
-                        {savingLocation ? 'Saving…' : 'Save'}
+                      <button type="button" onClick={saveLocation} disabled={savingLocation || locationSaved} className="primary-btn"
+                        style={{ fontSize: '14px', whiteSpace: 'nowrap', background: locationSaved ? '#4CAF50' : undefined, transition: 'background 0.2s' }}>
+                        {savingLocation ? 'Saving…' : locationSaved ? 'Saved ✓' : 'Save'}
                       </button>
                     </div>
                     {locationMsg && (
-                      <p style={{ fontSize: '13px', color: locationMsg.startsWith('Location set') ? '#4FA3CE' : '#CF6A66', margin: '8px 0 0' }}>
+                      <p style={{ fontSize: '13px', color: '#CF6A66', margin: '8px 0 0' }}>
                         {locationMsg}
                       </p>
                     )}
