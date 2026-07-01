@@ -450,7 +450,7 @@ export default function ElderDashboard() {
   const tabs = [
     ['connections', 'My Helpers', connBadge],
     ['post', 'Post Help', 0],
-    ['needs', 'My Help', requestsBadge],
+    ['needs', 'Posted Help', requestsBadge],
     ['friends', 'Add Friends', friendsBadge],
   ];
 
@@ -909,7 +909,7 @@ export default function ElderDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: 0 }}>
-                  My Help
+                  Posted Help
                 </h2>
               </div>
               {loading && (
