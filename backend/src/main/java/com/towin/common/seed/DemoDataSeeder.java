@@ -85,7 +85,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     public static final List<String> DEMO_EMAILS = List.of(
             ELDER_DEMO_EMAIL, HELPER_DEMO_EMAIL,
             "demo.priya@towin.app", "demo.tom@towin.app", "demo.david@towin.app",
-            "demo.grace@towin.app", "demo.nina@towin.app");
+            "demo.grace@towin.app", "demo.nina@towin.app", "demo.rose@towin.app");
 
     // All demo personas (elders and helpers) are pinned to Montreal, Canada so
     // they cluster together and "near me" discovery matches across both roles.
@@ -158,8 +158,9 @@ public class DemoDataSeeder implements ApplicationRunner {
         User david    = ensureUser("demo.david@towin.app", "+14165550105", UserRole.ELDER,  "DemoDavid!2026");
         User grace    = ensureUser("demo.grace@towin.app", "+14165550106", UserRole.ELDER,  "DemoGrace!2026");
         User nina     = ensureUser("demo.nina@towin.app",  "+14165550107", UserRole.HELPER, "DemoNina!2026");
+        User rose     = ensureUser("demo.rose@towin.app",  "+14165550108", UserRole.ELDER,  "DemoRose!2026");
 
-        List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina);
+        List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose);
 
         // Clear anything visitors left on the public demo accounts so the rest of
         // this method re-seeds a clean, minimal showcase (one of each type).
@@ -170,26 +171,33 @@ public class DemoDataSeeder implements ApplicationRunner {
 
         ensureElderProfile(margaret, "Margaret", 72,
                 "Retired teacher. I love chess, gardening, and a good cup of tea.",
-                new String[]{"Chess", "Gardening", "Reading"}, "Retired teacher");
+                new String[]{"Chess", "Gardening", "Reading"}, "Retired teacher", Gender.FEMALE);
         ensureElderProfile(david, "David Chen", 76,
                 "Former engineer, enjoys cooking and music.",
-                new String[]{"Cooking", "Music", "Technology"}, "Retired engineer");
+                new String[]{"Cooking", "Music", "Technology"}, "Retired engineer", Gender.MALE);
         ensureElderProfile(grace, "Grace Liu", 70,
                 "I paint watercolours and like quiet walks in the park.",
-                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist");
+                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist", Gender.FEMALE);
+        ensureElderProfile(rose, "Rose Martin", 74,
+                "Retired librarian. I love crosswords, reading, and a quiet afternoon with good company.",
+                new String[]{"Reading", "Crosswords", "Gardening"}, "Retired librarian", Gender.FEMALE);
 
         ensureHelperProfile(james, "James", 28,
                 "I love to play chess and helping with anything tech.",
-                new String[]{"Chess", "Technology", "Errands"}, new String[]{"Chess", "Cycling"});
+                new String[]{"Chess", "Technology", "Errands"}, new String[]{"Chess", "Cycling"},
+                Gender.MALE, "Tech Support Volunteer");
         ensureHelperProfile(priya, "Priya Sharma", 24,
                 "Nursing student. Happy to help with errands, cooking, or just company.",
-                new String[]{"Errands", "Cooking", "Companionship"}, new String[]{"Baking", "Yoga"});
+                new String[]{"Errands", "Cooking", "Companionship"}, new String[]{"Baking", "Yoga"},
+                Gender.FEMALE, "Nursing Student");
         ensureHelperProfile(tom, "Tom Walker", 31,
                 "Software dev who fixes phones, tablets and wifi. Patient explainer.",
-                new String[]{"Technology", "Transportation"}, new String[]{"Hiking", "Photography"});
+                new String[]{"Technology", "Transportation"}, new String[]{"Hiking", "Photography"},
+                Gender.MALE, "Software Developer");
         ensureHelperProfile(nina, "Nina Okafor", 26,
                 "Friendly driver and errand-runner who loves a good chat.",
-                new String[]{"Transportation", "Errands", "Companionship"}, new String[]{"Driving", "Cooking"});
+                new String[]{"Transportation", "Errands", "Companionship"}, new String[]{"Driving", "Cooking"},
+                Gender.FEMALE, "Driver");
 
         // Connections cover every state a viewer can act on:
         //  • TRUSTED   — top of the ladder, fully progressed
@@ -213,6 +221,9 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Incoming pending request to James (helper accept/decline)
         ensureConnection(grace, james, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, grace,
                 "Hi James, I'd love a hand learning to video-call my grandchildren.");
+        // Outgoing pending request James sent to Rose — shows in the helper's "Requested" tab
+        ensureConnection(james, rose, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, james,
+                "Hello Rose! I saw you love reading too. I'd be happy to help with anything you need.");
 
         // James + Margaret are TRUSTED — the top of the ladder — so their thread
         // walks the full trust journey in order, spread across ~3 weeks so the
@@ -428,7 +439,7 @@ public class DemoDataSeeder implements ApplicationRunner {
      * existing profile is left untouched (additive mode).
      */
     private void ensureElderProfile(User user, String name, int age, String bio,
-                                    String[] interests, String occupation) {
+                                    String[] interests, String occupation, Gender gender) {
         ElderProfile p = elderProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = ElderProfile.builder().user(user).build();
@@ -439,18 +450,19 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setLanguages(new String[]{"English"});
         p.setOccupation(occupation);
         p.setLookingFor(LookingForType.BOTH);
-        // Fields the baseline doesn't set → force empty so visitor edits revert
+        p.setGender(gender);
+        // Photo and social links reset to null so visitor edits revert cleanly
         p.setPhotoUrl(null);
         p.setFacebookUrl(null);
         p.setInstagramUrl(null);
-        p.setGender(Gender.MALE);
         elderProfileRepository.save(p);
     }
 
     /** Helper counterpart of {@link #ensureElderProfile}: create, or overwrite
      *  back to baseline on reset so visitor edits to the helper profile revert. */
     private void ensureHelperProfile(User user, String name, int age, String bio,
-                                     String[] skills, String[] hobbies) {
+                                     String[] skills, String[] hobbies,
+                                     Gender gender, String occupation) {
         HelperProfile p = helperProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = HelperProfile.builder().user(user).build();
@@ -463,10 +475,10 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setAvailabilityTimes(new String[]{"Afternoon", "Evening"});
         p.setHobbies(hobbies);
         p.setBackgroundCheckStatus(BackgroundCheckStatus.VERIFIED);
-        // Fields the baseline doesn't set → force empty so visitor edits revert
+        p.setGender(gender);
+        p.setOccupation(occupation);
+        // Photo, social links, and DOB reset to null so visitor edits revert cleanly
         p.setPhotoUrl(null);
-        p.setOccupation(null);
-        p.setGender(Gender.MALE);
         p.setFacebookUrl(null);
         p.setInstagramUrl(null);
         p.setDateOfBirth(null);
