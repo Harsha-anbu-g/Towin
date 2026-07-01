@@ -3,13 +3,13 @@ const SFT   = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 /* H2: Real-world language — no technical enum names visible to user */
 const LEVELS = [
-  { key: 'DISCOVERED', label: 'Just Connected', short: 'Connected', nextAction: 'Both tap "Advance" to start messaging' },
-  { key: 'MESSAGING',  label: 'Messaging',      short: 'Messaging', nextAction: 'Both agree you\'re comfortable sharing phone numbers' },
-  { key: 'PHONE_CALL', label: 'Phone Ready',    short: 'Phone',     nextAction: 'Both agree you\'re comfortable with a video call' },
-  { key: 'VIDEO_CALL', label: 'Video Ready',    short: 'Video',     nextAction: 'Both agree to exchange your social media profiles' },
-  { key: 'VERIFIED',   label: 'Social Media',   short: 'Socials',   nextAction: 'Both agree to plan your first in-person meeting' },
-  { key: 'FIRST_MEET', label: 'Ready to Meet',  short: 'Met',       nextAction: 'Both confirm a fully trusted friendship' },
-  { key: 'TRUSTED',    label: 'Fully Trusted',  short: 'Trusted',   nextAction: null },
+  { key: 'DISCOVERED', label: 'Just Connected', short: 'Connected', nextAction: 'Tap "Advance" to invite your friend to start messaging', helperNextAction: 'start messaging together' },
+  { key: 'MESSAGING',  label: 'Messaging',      short: 'Messaging', nextAction: 'Tap "Advance" when you\'re ready to share phone numbers', helperNextAction: 'share phone numbers' },
+  { key: 'PHONE_CALL', label: 'Phone Ready',    short: 'Phone',     nextAction: 'Tap "Advance" when you\'re ready for a video call', helperNextAction: 'try a video call' },
+  { key: 'VIDEO_CALL', label: 'Video Ready',    short: 'Video',     nextAction: 'Tap "Advance" when you\'re ready to exchange social media', helperNextAction: 'exchange social media' },
+  { key: 'VERIFIED',   label: 'Social Media',   short: 'Socials',   nextAction: 'Tap "Advance" when you\'re ready to plan a first meeting', helperNextAction: 'plan a first meeting' },
+  { key: 'FIRST_MEET', label: 'Ready to Meet',  short: 'Met',       nextAction: 'Tap "Advance" to confirm a fully trusted friendship', helperNextAction: 'confirm full trust' },
+  { key: 'TRUSTED',    label: 'Fully Trusted',  short: 'Trusted',   nextAction: null, helperNextAction: null },
 ];
 
 const LEVEL_IDX = Object.fromEntries(LEVELS.map((l, i) => [l.key, i]));
@@ -58,9 +58,9 @@ export default function TrustJourney({
   } else {
     let message, button = null;
     if (isElder && !confirmedByMe)            { message = current.nextAction;                                                  button = advanceBtn('Advance →'); }
-    else if (isElder && confirmedByMe)        { message = `Trust request sent — waiting for ${otherUserName} to accept.`; }
-    else if (!isElder && !confirmedByOther)   { message = `Waiting for ${otherUserName} to start the next trust step.`; }
-    else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} wants to advance your trust.`; button = advanceBtn('Accept →'); }
+    else if (isElder && confirmedByMe)        { message = `Request sent — waiting for ${otherUserName} to accept.`; }
+    else if (!isElder && !confirmedByOther)   { message = `${otherUserName} decides when to move forward${current.helperNextAction ? ` (next: ${current.helperNextAction})` : ''}. You'll get a tap to confirm when they're ready.`; }
+    else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} is ready to ${current.helperNextAction || 'advance'}. Confirm to move forward together.`; button = advanceBtn('Accept →'); }
     else                                      { message = `You accepted — trust is advancing.`; }
     footer = (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #D8EAF4' }}>
