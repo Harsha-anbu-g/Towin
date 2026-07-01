@@ -48,6 +48,17 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Current password is incorrect.",               "Current password is incorrect.");
         SAFE_MESSAGES.put("New password must be different",               "New password must be different from your current password.");
         SAFE_MESSAGES.put("This account uses Google sign-in",             "This account uses Google sign-in, so it has no password to change.");
+        // Connection flow
+        SAFE_MESSAGES.put("A connection already exists",                  "You already have a pending or active connection with this person.");
+        SAFE_MESSAGES.put("Cannot send a connection request to yourself", "You can't send a friend request to yourself.");
+        SAFE_MESSAGES.put("Daily connection request limit reached",       "You've sent too many friend requests today. Try again tomorrow.");
+        SAFE_MESSAGES.put("HELPER connection limit reached",              "This helper has reached their connection limit.");
+        SAFE_MESSAGES.put("ELDER connection limit reached",               "You've reached your connection limit. End an existing connection first.");
+        SAFE_MESSAGES.put("BOTH connection limit reached",                "You've reached your connection limit. End an existing connection first.");
+        SAFE_MESSAGES.put("You are not part of this connection",          "You are not part of this connection.");
+        SAFE_MESSAGES.put("Initiator cannot respond",                     "You can't respond to your own request.");
+        SAFE_MESSAGES.put("Connection is not pending",                    "This request is no longer pending.");
+        SAFE_MESSAGES.put("Only active connections can be ended",         "Only active connections can be ended.");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
