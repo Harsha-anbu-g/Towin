@@ -59,7 +59,8 @@ public class TrustScoreService {
         int profilePoints = calculateProfilePoints(user);
         Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
-        int total = 0;
+        // Profile completeness always counts once so new users get immediate feedback.
+        int total = profilePoints;
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
             UUID customerId = c.getOtherUser(userId).getId();
             int rooting = rootingPoints(c.getCurrentTrustLevel());
@@ -80,7 +81,7 @@ public class TrustScoreService {
         Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
         List<CustomerCard> cards = new ArrayList<>();
-        int total = 0;
+        int total = profilePoints;
 
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
             User customer = c.getOtherUser(userId);
