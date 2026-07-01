@@ -68,7 +68,9 @@ public class ConnectionService {
         User target = getUser(request.getTargetUserId());
 
         connectionRepository.findBetweenUsers(senderId, target.getId()).ifPresent(c -> {
-            throw new IllegalArgumentException("A connection already exists between these users");
+            if (c.getStatus() == ConnectionStatus.PENDING || c.getStatus() == ConnectionStatus.ACTIVE) {
+                throw new IllegalArgumentException("A connection already exists between these users");
+            }
         });
 
         enforceActiveLimit(sender);
