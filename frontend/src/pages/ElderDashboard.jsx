@@ -136,10 +136,12 @@ function TabIcon({ id, active }) {
       <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
     </svg>
   );
-  if (id === 'discover') return (
+  if (id === 'friends') return (
     <svg {...svgProps}>
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3z"/>
+      <path d="M8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3z"/>
+      <path d="M8 13c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      <path d="M16 13c-.29 0-.62.02-.97.05C16.19 13.89 17 15.02 17 17v2h7v-2c0-2.66-5.33-4-8-4z"/>
     </svg>
   );
   if (id === 'needs' || id === 'browse') return (
@@ -182,6 +184,7 @@ export default function ElderDashboard() {
     p.set('tab', next);
     p.delete('hseg');
     p.delete('nseg');
+    p.delete('fseg');
     return p;
   }, { replace: true });
   // Sub-filter segment per tab. Param absent (null) = follow the smart default
@@ -190,6 +193,8 @@ export default function ElderDashboard() {
   const setNeedsSeg = (next) => setParam('nseg', next);
   const helpersSeg = searchParams.get('hseg');
   const setHelpersSeg = (next) => setParam('hseg', next);
+  const friendsSeg = searchParams.get('fseg');
+  const setFriendsSeg = (next) => setParam('fseg', next);
   const [needForm, setNeedForm] = useState({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
@@ -236,7 +241,7 @@ export default function ElderDashboard() {
   useEffect(() => {
     if (tab === 'needs') loadNeeds();
     if (tab === 'connections') loadConnections();
-    if (tab === 'discover') loadHelpers();
+    if (tab === 'friends') { loadConnections(); loadHelpers(); }
   }, [tab, radiusKm]);
 
   // The "Post Request" button in the top nav lands here with ?post=1 — open the
@@ -269,7 +274,7 @@ export default function ElderDashboard() {
     setConnectingTo(helperId);
     try {
       await api.post('/connections/request', { targetUserId: helperId });
-      setConnectMsg(prev => ({ ...prev, [helperId]: 'Request sent!' }));
+      setConnectMsg(prev => ({ ...prev, [helperId]: 'Requested' }));
       await loadConnections();
     } catch (err) {
       setConnectMsg(prev => ({ ...prev, [helperId]: err?.response?.data?.message || 'Could not connect.' }));
@@ -349,7 +354,7 @@ export default function ElderDashboard() {
       if (location) { body.locationLat = location.lat; body.locationLng = location.lng; }
       await api.post('/needs', body);
       setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
-      setPostMsg('Request posted!'); await loadNeeds(); setShowPostForm(false); setTab('needs');
+      setPostMsg('Help posted!'); await loadNeeds(); setShowPostForm(false); setTab('needs');
     } catch (err) { setPostMsg(err?.response?.data?.message || 'Failed to post.'); }
     finally { setPosting(false); }
   }
@@ -418,13 +423,17 @@ export default function ElderDashboard() {
   const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
   const trustLabel = (l) => TRUST_LABELS[l] || l;
   // Only ACTIVE connections count as "Connected" — a pending request must not
-  // show the Connected badge in Discover.
+  // show the Connected badge in Find New Helpers.
   const connectedHelperIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
+  const incomingRequests = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+  const sentRequests = connections.filter(c => c.status === 'PENDING' && c.initiatedByMe);
+  const requestedHelperIds = new Set(sentRequests.map(c => c.otherUserId));
 
-  const connTokens = connections.map(c => `${c.id}:${c.status}`);
+  const connTokens = connections.filter(c => c.status === 'ACTIVE').map(c => `${c.id}:${c.status}`);
   const applicantTokens = myNeeds.flatMap(n => (n.applications || []).map(a => `${n.id}:${a.helperId}`));
   const connBadge = seenConn.unseenCount(connTokens);
   const requestsBadge = seenApplicants.unseenCount(applicantTokens);
+  const friendsBadge = incomingRequests.length;
 
   useEffect(() => {
     if (tab === 'connections') seenConn.markSeen(connTokens);
@@ -434,39 +443,82 @@ export default function ElderDashboard() {
 
   const tabs = [
     ['connections', 'My Helpers', connBadge],
-    ['needs', 'My Requests', requestsBadge],
-    ['discover', 'Find New Helper', 0],
+    ['friends', 'Add Friends', friendsBadge],
+    ['needs', 'My Help', requestsBadge],
   ];
 
   // ── My Helpers — classify connections by trust state ──
   const helperCounts = {
     active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
     building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
-    requests: connections.filter(c => c.status === 'PENDING').length,
   };
-  // Always open on the Active section. Pending requests still appear in the
-  // New Invites tab with their own count, so nothing is hidden — Active is simply
-  // what the dashboard lands on. A section the user explicitly picks wins via
-  // the URL (?hseg=…) and survives a refresh.
   const helpersDefault = 'active';
   const activeHelpersSeg = helpersSeg ?? helpersDefault;
   const helperSegments = [
     { id: 'active',   label: 'Active',         count: helperCounts.active },
     { id: 'building', label: 'Building Trust', count: helperCounts.building },
-    { id: 'requests', label: 'New Invites',     count: helperCounts.requests, notify: true },
   ];
-  const visibleConnections = [...connections].filter(c => {
-    if (activeHelpersSeg === 'active')   return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
-    if (activeHelpersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
-    return c.status === 'PENDING';
+  const activeConnections = connections.filter(c => c.status === 'ACTIVE');
+  const visibleConnections = [...activeConnections].filter(c => {
+    if (activeHelpersSeg === 'active')   return c.currentTrustLevel === 'TRUSTED';
+    return c.currentTrustLevel !== 'TRUSTED';
   }).sort(sortConnections);
   const helpersEmptyText = {
     active:   <>No fully trusted helpers yet. As your trust grows with a helper, they'll appear here.</>,
     building: <>No connections in progress. Connect with a helper to start building trust together.</>,
-    requests: <>No new invites right now. New connection invites will show up here.</>,
   }[activeHelpersSeg];
 
-  // ── My Requests — classify needs by status ──
+  // ── Add Friends hub ──
+  const friendsDefault = 'invites';
+  const activeFriendsSeg = friendsSeg ?? friendsDefault;
+  const friendsSegments = [
+    { id: 'invites',   label: 'New Invites',       count: incomingRequests.length, notify: true },
+    { id: 'requested', label: 'Requested',          count: sentRequests.length },
+    { id: 'find',      label: 'Find New Helpers' },
+  ];
+
+  function renderPendingCard(conn, i) {
+    const isIncoming = !conn.initiatedByMe;
+    const avatar = (
+      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>
+        {initials(conn.otherUserName)}
+      </div>
+    );
+    return (
+      <div key={conn.id} style={{ background: '#ffffff', borderRadius: '18px', padding: '22px', border: isIncoming ? '1px solid #BFD9EA' : '1px solid #e0e0e0', animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both` }}>
+        {isIncoming ? (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+                {avatar}
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>sent you a friend request</p>
+                  {conn.requestMessage && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>}
+                </div>
+              </div>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>NEW INVITE</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id} style={{ flex: 1, height: '44px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>Accept</button>
+              <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id} style={{ flex: 1, height: '44px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>Decline</button>
+            </div>
+          </>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            {avatar}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>Friend request sent</p>
+            </div>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: '#8a929c', background: '#f3f4f6', padding: '6px 14px', borderRadius: '9999px' }}>Requested</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── My Help (was My Requests) — classify needs by status ──
   const needCounts = {
     OPEN:      myNeeds.filter(n => n.status === 'OPEN').length,
     ASSIGNED:  myNeeds.filter(n => n.status === 'ASSIGNED').length,
@@ -475,15 +527,15 @@ export default function ElderDashboard() {
   const needsDefault = needCounts.OPEN > 0 ? 'OPEN' : needCounts.ASSIGNED > 0 ? 'ASSIGNED' : 'COMPLETED';
   const activeNeedsSeg = needsSeg ?? needsDefault;
   const needsSegments = [
-    { id: 'OPEN',      label: 'Pending Request',  count: needCounts.OPEN, notify: true },
-    { id: 'ASSIGNED',  label: 'In Progress',     count: needCounts.ASSIGNED },
-    { id: 'COMPLETED', label: 'Completed',       count: needCounts.COMPLETED },
+    { id: 'OPEN',      label: 'Looking for Help', count: needCounts.OPEN, notify: true },
+    { id: 'ASSIGNED',  label: 'In Progress',      count: needCounts.ASSIGNED },
+    { id: 'COMPLETED', label: 'Completed',        count: needCounts.COMPLETED },
   ];
   const visibleNeeds = [...myNeeds].filter(n => n.status === activeNeedsSeg).sort(sortNeeds);
   const needsEmptyText = {
-    OPEN:      'No open requests right now. Post a new request and helpers nearby will offer to help.',
-    ASSIGNED:  'Nothing in progress yet. Once you choose a helper, the request shows here to mark complete.',
-    COMPLETED: 'No finished requests yet. Completed help shows here so you can leave a review.',
+    OPEN:      'No open help right now. Post help and helpers nearby will offer to assist.',
+    ASSIGNED:  'Nothing in progress yet. Once you choose a helper, the help shows here to mark complete.',
+    COMPLETED: 'No finished help yet. Completed help shows here so you can leave a review.',
   }[activeNeedsSeg];
 
   return (
@@ -551,25 +603,27 @@ export default function ElderDashboard() {
                   ))}
                 </div>
               )}
-              {!loading && connections.length === 0 && (
+              {!loading && activeConnections.length === 0 && (
                 <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No helpers yet</p>
                   <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px' }}>Helpers in your area will send you connection requests. You'll see them here.</p>
+                  <button onClick={() => setTab('friends')} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
+                    Add Friends
+                  </button>
                 </div>
               )}
-              {!loading && connections.length > 0 && (
+              {!loading && activeConnections.length > 0 && (
                 <SegmentedTabs segments={helperSegments} value={activeHelpersSeg} onChange={setHelpersSeg} />
               )}
-              {!loading && connections.length > 0 && visibleConnections.length === 0 && (
+              {!loading && activeConnections.length > 0 && visibleConnections.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
                   {helpersEmptyText}
                 </SegmentEmpty>
               )}
               {!loading && visibleConnections.map((conn, i) => {
-                const isIncoming = conn.status === 'PENDING' && !conn.initiatedByMe;
                 const avatar = (
                   <div style={{
                     width: '48px', height: '48px', borderRadius: '50%',
@@ -583,64 +637,34 @@ export default function ElderDashboard() {
                 return (
                 <div key={conn.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '22px',
-                  border: isIncoming ? '1px solid #BFD9EA' : '1px solid #e0e0e0',
+                  border: '1px solid #e0e0e0',
                   animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
                 }}>
-                  {isIncoming ? (
-                    <>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-                          {avatar}
-                          <div style={{ minWidth: 0 }}>
-                            <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
-                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>wants to connect with you</p>
-                            {conn.requestMessage && (
-                              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
-                            )}
-                          </div>
-                        </div>
-                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Request</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                        <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                          style={{ flex: 1, height: '44px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>Accept</button>
-                        <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                          style={{ flex: 1, height: '44px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>Decline</button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Identity row */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        {avatar}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
-                            {conn.status !== 'ACTIVE' ? (
-                              <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
-                            ) : conn.currentTrustLevel !== 'TRUSTED' && (
-                              // In-progress stages show a blue pill; "Fully Trusted" is omitted
-                              // here since it's already shown in the trust-ladder card below.
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2E7DA6' }} />
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
-                              </div>
-                            )}
-                          </div>
-                          {conn.status === 'ACTIVE' && conn.otherUserPhone && (
-                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '7px' }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a6470" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                              {conn.otherUserPhone}
-                            </p>
-                          )}
-                          {conn.requestMessage && conn.status !== 'ACTIVE' && (
-                            <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
+                  <>
+                    {/* Identity row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      {avatar}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
+                          {conn.currentTrustLevel !== 'TRUSTED' && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2E7DA6' }} />
+                              <span style={{ fontSize: '14px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
+                            </div>
                           )}
                         </div>
+                        {conn.otherUserPhone && (
+                          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a6470" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            {conn.otherUserPhone}
+                          </p>
+                        )}
                       </div>
+                    </div>
 
-                      {/* Action bar */}
-                      {conn.status === 'ACTIVE' && (
+                    {/* Action bar */}
+                    {(
                         endingConn === conn.id ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this helper'}?</span>
@@ -671,10 +695,9 @@ export default function ElderDashboard() {
                         )
                       )}
                     </>
-                  )}
 
-                  {/* Trust Journey — only on active connections */}
-                  {conn.status === 'ACTIVE' && (
+                  {/* Trust Journey */}
+                  {(
                     <TrustJourney
                       currentTrustLevel={conn.currentTrustLevel}
                       confirmedByMe={conn.confirmedByMe}
@@ -721,161 +744,165 @@ export default function ElderDashboard() {
             </div>
           )}
 
-          {/* Find Helpers tab */}
-          {!showPostForm && tab === 'discover' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div>
-                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
-                  Find a New Helper
-                </h2>
-                <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
-                  Browse helpers near you and reach out to connect.
-                </p>
-              </div>
+          {/* Add Friends tab */}
+          {!showPostForm && tab === 'friends' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
+                Add Friends
+              </h2>
+              <SegmentedTabs segments={friendsSegments} value={activeFriendsSeg} onChange={setFriendsSeg} />
 
-              {/* Radius bar */}
-              <div style={{ background: '#ffffff', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {locationStatus === 'asking' && 'Getting your location…'}
-                  {locationStatus === 'granted' && `Showing helpers within ${radiusKm} km of you`}
-                  {locationStatus === 'denied' && 'Location unavailable, showing all helpers'}
-                  {locationStatus === 'idle' && 'Detecting location…'}
-                </span>
-                {locationStatus === 'granted' && (
-                  <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
-                    style={{ fontSize: '14px', fontWeight: 600, color: 'var(--blue)', background: 'var(--blue-wash)', border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
-                    {[5, 10, 25, 50, 100].map(v => <option key={v} value={v}>{v} km</option>)}
-                  </select>
-                )}
-              </div>
-
-              {locationStatus === 'primer' && (
-                <LocationPrimer
-                  onEnable={requestLocation}
-                  onManual={() => { setLocationStatus('denied'); loadHelpers(); }}
-                />
+              {/* New Invites */}
+              {activeFriendsSeg === 'invites' && (
+                <>
+                  {incomingRequests.length === 0 && (
+                    <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
+                      No new invites right now. When a helper sends you a friend request, it'll show up here.
+                    </SegmentEmpty>
+                  )}
+                  {incomingRequests.map((conn, i) => renderPendingCard(conn, i))}
+                </>
               )}
 
-              {locationStatus === 'denied' && (
-                <LocationPrompt onResolved={(loc) => {
-                  const coords = { lat: loc.lat, lng: loc.lng };
-                  setLocation(coords);
-                  setLocationStatus('granted');
-                  loadHelpers(coords);
-                }} />
+              {/* Requested */}
+              {activeFriendsSeg === 'requested' && (
+                <>
+                  {sentRequests.length === 0 && (
+                    <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
+                      No pending requests. Go to Find New Helpers to send friend requests.
+                    </SegmentEmpty>
+                  )}
+                  {sentRequests.map((conn, i) => renderPendingCard(conn, i))}
+                </>
               )}
 
-              {/* Searching — let people know we're looking, never a blank flash (H1) */}
-              {discovering && helpers.length === 0 && (
+              {/* Find New Helpers */}
+              {activeFriendsSeg === 'find' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {[1,2].map(i => (
-                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '110px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
-                  ))}
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', textAlign: 'center', margin: 0 }}>Looking for helpers near you…</p>
-                </div>
-              )}
-
-              {/* Fetch failed — tell the truth and offer a way out (H9) */}
-              {!discovering && discoverError && (
-                <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #fecaca', padding: '40px 24px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Couldn't load helpers</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
-                  <button onClick={() => loadHelpers()} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
-                    Try Again
-                  </button>
-                </div>
-              )}
-
-              {!discovering && !discoverError && helpers.length === 0 && locationStatus !== 'primer' && (
-                <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0', padding: '48px 24px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                    {locationStatus === 'granted' ? 'No helpers found nearby' : 'No helpers available right now'}
-                  </p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>
-                    {locationStatus === 'granted'
-                      ? 'Try a larger radius above, or check back later.'
-                      : 'New helpers join often. Please check back soon.'}
-                  </p>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {helpers.map((helper, i) => {
-                const alreadyConnected = connectedHelperIds.has(helper.userId);
-                const sent = connectMsg[helper.userId];
-                return (
-                  <div key={helper.userId} style={{
-                    background: '#ffffff', borderRadius: '18px', padding: '20px',
-                    border: '1px solid #e0e0e0',
-                    animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
-                  }}>
-                    <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                      <div style={{
-                        width: '50px', height: '50px', borderRadius: '50%',
-                        background: 'var(--slate-tint)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0,
-                      }}>
-                        {initials(helper.name)}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{helper.name || 'Helper'}</p>
-                          {(helper.trustScore != null || helper.trustTier) && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
-                              ★ {helper.trustScore ?? '—'}{helper.trustTier ? ` · ${helper.trustTier}` : ''}
-                            </span>
-                          )}
-                        </div>
-                        {(helper.city || helper.distanceKm > 0) && (
-                          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>
-                            {helper.city}{helper.city && helper.distanceKm > 0 ? ' · ' : ''}{helper.distanceKm > 0 ? `${Math.round(helper.distanceKm * 10) / 10} km away` : ''}
-                          </p>
-                        )}
-                        {helper.bio && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '8px 0 0', lineHeight: 1.5 }}>{helper.bio}</p>}
-                        {helper.skillsOffered?.length > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
-                            {helper.skillsOffered.map(s => (
-                              <span key={s} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{s}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
-                        {alreadyConnected ? (
-                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Connected</span>
-                        ) : sent ? (
-                          <span style={{
-                            fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center',
-                            background: sent.includes('!') ? '#E6F2FA' : '#f3f4f6',
-                            color: sent.includes('!') ? '#2E7DA6' : '#5a6470',
-                          }}>{sent}</span>
-                        ) : (
-                          <button onClick={() => connectToHelper(helper.userId)} disabled={connectingTo === helper.userId}
-                            style={{ height: '40px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-                            {connectingTo === helper.userId ? '…' : 'Connect'}
-                          </button>
-                        )}
-                        <button onClick={() => navigate(`/user/${helper.userId}`)}
-                          style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--blue)', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-                          View Profile
-                        </button>
-                      </div>
-                    </div>
+                  {/* Radius bar */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {locationStatus === 'asking' && 'Getting your location…'}
+                      {locationStatus === 'granted' && `Showing helpers within ${radiusKm} km of you`}
+                      {locationStatus === 'denied' && 'Location unavailable, showing all helpers'}
+                      {locationStatus === 'idle' && 'Detecting location…'}
+                    </span>
+                    {locationStatus === 'granted' && (
+                      <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
+                        style={{ fontSize: '14px', fontWeight: 600, color: 'var(--blue)', background: 'var(--blue-wash)', border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
+                        {[5, 10, 25, 50, 100].map(v => <option key={v} value={v}>{v} km</option>)}
+                      </select>
+                    )}
                   </div>
-                );
-              })}
-              </div>
+
+                  {locationStatus === 'primer' && (
+                    <LocationPrimer
+                      onEnable={requestLocation}
+                      onManual={() => { setLocationStatus('denied'); loadHelpers(); }}
+                    />
+                  )}
+                  {locationStatus === 'denied' && (
+                    <LocationPrompt onResolved={(loc) => {
+                      const coords = { lat: loc.lat, lng: loc.lng };
+                      setLocation(coords);
+                      setLocationStatus('granted');
+                      loadHelpers(coords);
+                    }} />
+                  )}
+
+                  {discovering && helpers.length === 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {[1,2].map(i => (
+                        <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '110px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                      ))}
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', textAlign: 'center', margin: 0 }}>Looking for helpers near you…</p>
+                    </div>
+                  )}
+                  {!discovering && discoverError && (
+                    <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #fecaca', padding: '40px 24px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Couldn't load helpers</p>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
+                      <button onClick={() => loadHelpers()} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>Try Again</button>
+                    </div>
+                  )}
+                  {!discovering && !discoverError && helpers.length === 0 && locationStatus !== 'primer' && (
+                    <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0', padding: '48px 24px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
+                        {locationStatus === 'granted' ? 'No helpers found nearby' : 'No helpers available right now'}
+                      </p>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>
+                        {locationStatus === 'granted' ? 'Try a larger radius above, or check back later.' : 'New helpers join often. Please check back soon.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {helpers.map((helper, i) => {
+                    const alreadyConnected = connectedHelperIds.has(helper.userId);
+                    const alreadyRequested = requestedHelperIds.has(helper.userId);
+                    const sent = connectMsg[helper.userId];
+                    return (
+                      <div key={helper.userId} style={{ background: '#ffffff', borderRadius: '18px', padding: '20px', border: '1px solid #e0e0e0', animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both` }}>
+                        <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                          <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>
+                            {initials(helper.name)}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{helper.name || 'Helper'}</p>
+                              {(helper.trustScore != null || helper.trustTier) && (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
+                                  ★ {helper.trustScore ?? '—'}{helper.trustTier ? ` · ${helper.trustTier}` : ''}
+                                </span>
+                              )}
+                            </div>
+                            {(helper.city || helper.distanceKm > 0) && (
+                              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>
+                                {helper.city}{helper.city && helper.distanceKm > 0 ? ' · ' : ''}{helper.distanceKm > 0 ? `${Math.round(helper.distanceKm * 10) / 10} km away` : ''}
+                              </p>
+                            )}
+                            {helper.bio && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '8px 0 0', lineHeight: 1.5 }}>{helper.bio}</p>}
+                            {helper.skillsOffered?.length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                                {helper.skillsOffered.map(s => (
+                                  <span key={s} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{s}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
+                            {alreadyConnected ? (
+                              <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
+                            ) : (alreadyRequested || sent === 'Requested') ? (
+                              <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: '#f3f4f6', color: '#8a929c' }}>Requested</span>
+                            ) : sent ? (
+                              <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: '#f3f4f6', color: '#5a6470' }}>{sent}</span>
+                            ) : (
+                              <button onClick={() => connectToHelper(helper.userId)} disabled={connectingTo === helper.userId}
+                                style={{ height: '40px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                                {connectingTo === helper.userId ? '…' : 'Add Friend'}
+                              </button>
+                            )}
+                            <button onClick={() => navigate(`/user/${helper.userId}`)}
+                              style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--blue)', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                              View Profile
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
-          {/* My Requests tab */}
+          {/* My Help tab */}
           {!showPostForm && tab === 'needs' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: 0 }}>
-                  My Help Requests
+                  My Help
                 </h2>
               </div>
               {loading && (
@@ -890,10 +917,10 @@ export default function ElderDashboard() {
                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
                   </div>
-                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No requests yet</p>
-                  <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px' }}>Post a request and helpers near you will offer to assist. It only takes a minute.</p>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No help posted yet</p>
+                  <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px' }}>Post help and helpers near you will offer to assist. It only takes a minute.</p>
                   <button onClick={() => setShowPostForm(true)} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
-                    Post a Request
+                    Post Help
                   </button>
                 </div>
               )}
@@ -1115,7 +1142,7 @@ export default function ElderDashboard() {
                 </div>
                 {postMsg && <p style={{ fontSize: 'var(--text-sm)', color: postMsg.includes('!') ? '#2E7DA6' : '#5a6470', fontWeight: 500 }}>{postMsg}</p>}
                 <button type="submit" disabled={posting} style={{ height: '50px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', boxShadow: '0 3px 12px rgba(79,163,206,0.35)' }}>
-                  {posting ? 'Posting...' : 'Post My Request'}
+                  {posting ? 'Posting...' : 'Post Help'}
                 </button>
               </form>
             </div>
