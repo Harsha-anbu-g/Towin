@@ -4,6 +4,7 @@ import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
+import { parseServerDate } from '../lib/utils';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -19,8 +20,9 @@ const TRUST_LABELS = {
 };
 
 function timeAgo(iso) {
-  if (!iso) return '';
-  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
+  const date = parseServerDate(iso);
+  if (!date) return '';
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
   if (secs < 60)   return 'now';
   if (secs < 3600) return `${Math.floor(secs / 60)}m`;
   if (secs < 86400) return `${Math.floor(secs / 3600)}h`;
