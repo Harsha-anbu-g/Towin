@@ -238,7 +238,7 @@ export default function Login() {
             <div style={{ display: 'flex', gap: '8px' }}>
               {[
                 { role: 'ELDER', label: 'Try as an Elder', sub: 'Margaret, 72' },
-                { role: 'HELPER', label: 'Try as a Helper', sub: 'James, 28' },
+                { role: 'HELPER', label: 'Try as a Helper', sub: 'Harsha, 23' },
               ].map(({ role, label, sub }) => (
                 <button
                   key={role}
