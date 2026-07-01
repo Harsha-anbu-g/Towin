@@ -535,53 +535,108 @@ export default function HelperDashboard() {
   // Accept / Decline; requests this helper sent show a quiet "Requested" pill.
   function renderPendingCard(conn, i) {
     const isIncoming = !conn.initiatedByMe;
-    const avatar = (
-      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>
-        {initials(conn.otherUserName)}
-      </div>
-    );
-    return (
-      <div key={conn.id} style={{
-        background: '#ffffff', borderRadius: '18px', padding: '22px',
-        border: isIncoming ? '1px solid #BFD9EA' : '1px solid #e0e0e0',
-        animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
-      }}>
-        {isIncoming ? (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-                {avatar}
-                <div style={{ minWidth: 0 }}>
-                  <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>sent you a friend request</p>
-                  {conn.requestMessage && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
-                  )}
-                </div>
+    const name = conn.otherUserName || 'Elder';
+
+    if (isIncoming) {
+      return (
+        <div key={conn.id} style={{
+          background: '#ffffff', borderRadius: '20px', overflow: 'hidden',
+          border: '1px solid #BFD9EA',
+          boxShadow: '0 4px 20px rgba(79,163,206,0.10)',
+          animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+        }}>
+          {/* Blue accent stripe */}
+          <div style={{ height: '4px', background: 'linear-gradient(90deg, #4FA3CE 0%, #7BC4E0 100%)' }} />
+          <div style={{ padding: '20px' }}>
+            {/* Header row: avatar + name + badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{
+                width: '60px', height: '60px', borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg, #EAF5FB, #C8E6F5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '20px', fontWeight: 700, color: '#2E7DA6',
+                border: '2.5px solid #4FA3CE',
+              }}>
+                {initials(name)}
               </div>
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Invite</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 700, fontSize: '18px', color: 'var(--ink)', margin: 0, lineHeight: 1.2 }}>{name}</p>
+                <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '4px 0 0' }}>sent you a friend request</p>
+              </div>
+              <span style={{
+                fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
+                color: '#2E7DA6', background: '#E6F2FA', border: '1px solid #BFD9EA',
+                padding: '4px 11px', borderRadius: '9999px', flexShrink: 0,
+              }}>New</span>
             </div>
-            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+            {/* Message quote block */}
+            {conn.requestMessage && (
+              <div style={{
+                marginTop: '14px', padding: '10px 14px',
+                background: '#F0F8FD', borderLeft: '3px solid #4FA3CE',
+                borderRadius: '0 10px 10px 0',
+              }}>
+                <p style={{ fontSize: '14px', color: '#3a4a58', margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
+                  "{conn.requestMessage}"
+                </p>
+              </div>
+            )}
+            {/* Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
               <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                style={{ flex: 1, height: '44px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>Accept</button>
+                style={{
+                  width: '100%', height: '50px', background: 'var(--blue)', color: '#fff',
+                  border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 700,
+                  fontFamily: 'inherit', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                {respondingConn === conn.id ? 'Accepting…' : 'Accept'}
+              </button>
               <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                style={{ flex: 1, height: '44px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>Decline</button>
-            </div>
-          </>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            {avatar}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Requested</span>
-              </div>
-              {conn.requestMessage && (
-                <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
-              )}
+                style={{
+                  width: '100%', height: '44px', background: 'transparent',
+                  color: 'var(--ink-slate)', border: '1px solid #e0e0e0',
+                  borderRadius: '12px', fontSize: '15px', fontWeight: 600,
+                  fontFamily: 'inherit', cursor: 'pointer',
+                }}>
+                Decline
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      );
+    }
+
+    // Outgoing / Requested
+    return (
+      <div key={conn.id} style={{
+        background: '#ffffff', borderRadius: '18px', padding: '18px 20px',
+        border: '1px solid #e8e8ed',
+        animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+        display: 'flex', alignItems: 'center', gap: '14px',
+      }}>
+        <div style={{
+          width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0,
+          background: '#f4f4f6',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '18px', fontWeight: 700, color: '#9aa0a8',
+          border: '2px dashed #d2d2d7',
+        }}>
+          {initials(name)}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0 }}>{name}</p>
+          <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Waiting for response…
+          </p>
+        </div>
+        <span style={{
+          fontSize: '12px', fontWeight: 600, color: '#8a929c',
+          background: '#f3f4f6', border: '1px solid #e8e8ed',
+          padding: '6px 14px', borderRadius: '9999px', flexShrink: 0,
+        }}>Requested</span>
       </div>
     );
   }
