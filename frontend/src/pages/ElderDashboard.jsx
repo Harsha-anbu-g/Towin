@@ -443,8 +443,8 @@ export default function ElderDashboard() {
 
   const tabs = [
     ['connections', 'My Helpers', connBadge],
-    ['friends', 'Add Friends', friendsBadge],
     ['needs', 'My Help', requestsBadge],
+    ['friends', 'Add Friends', friendsBadge],
   ];
 
   // ── My Helpers — classify connections by trust state ──
@@ -469,12 +469,12 @@ export default function ElderDashboard() {
   }[activeHelpersSeg];
 
   // ── Add Friends hub ──
-  const friendsDefault = 'invites';
+  const friendsDefault = 'find';
   const activeFriendsSeg = friendsSeg ?? friendsDefault;
   const friendsSegments = [
+    { id: 'find',      label: 'Find New Helpers' },
     { id: 'invites',   label: 'New Invites',       count: incomingRequests.length, notify: true },
     { id: 'requested', label: 'Requested',          count: sentRequests.length },
-    { id: 'find',      label: 'Find New Helpers' },
   ];
 
   function renderPendingCard(conn, i) {
