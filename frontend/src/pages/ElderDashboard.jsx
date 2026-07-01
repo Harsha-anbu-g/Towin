@@ -5,7 +5,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
-import GlassTab from '../components/GlassTab';
+import DashTab from '../components/DashTab';
 import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
@@ -505,11 +505,11 @@ export default function ElderDashboard() {
             {tabs.map(([id, label, badge]) => {
               const active = tab === id && !showPostForm;
               return (
-                <GlassTab key={id} active={active} onClick={() => { setShowPostForm(false); setTab(id); }}>
+                <DashTab key={id} active={active} onClick={() => { setShowPostForm(false); setTab(id); }}>
                   <TabIcon id={id} active={active} />
                   {label}
                   <TabBadge count={badge} />
-                </GlassTab>
+                </DashTab>
               );
             })}
 
