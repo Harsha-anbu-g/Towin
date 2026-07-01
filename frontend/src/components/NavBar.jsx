@@ -191,22 +191,6 @@ export default function NavBar() {
               <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
               Trust Score
             </Link>
-            {/* Asking for help is the elder's main action, so it sits right by the
-                Trust Score pill as the primary blue CTA — not buried in a tab bar. */}
-            {isElder && (
-              <Link to="/dashboard?post=1" style={{
-                display: 'flex', alignItems: 'center', gap: '7px',
-                fontSize: '16px', fontFamily: SF, fontWeight: 600,
-                color: '#4FA3CE', background: 'rgba(79,163,206,0.1)',
-                border: '1.5px solid rgba(79,163,206,0.35)',
-                borderRadius: '9999px', padding: '6px 16px',
-                textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
-                marginLeft: '8px',
-              }}>
-                <Plus size={17} strokeWidth={2.4} aria-hidden="true" />
-                Post New Help
-              </Link>
-            )}
           </div>
         )}
 
@@ -353,7 +337,6 @@ export default function NavBar() {
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
-            {isElder && <MenuLink to="/dashboard?post=1" label="Post New Help" icon={Plus} />}
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
