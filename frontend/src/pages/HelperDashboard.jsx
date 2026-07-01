@@ -257,7 +257,7 @@ export default function HelperDashboard() {
   const browseSeg = searchParams.get('bseg') || 'available';
   const setBrowseSeg = (next) => setParam('bseg', next);
   // Sub-filter for Add Friends: invites | requested | find.
-  const friendsSeg = searchParams.get('fseg') || 'invites';
+  const friendsSeg = searchParams.get('fseg') || 'find';
   const setFriendsSeg = (next) => setParam('fseg', next);
   const [applying, setApplying] = useState(null);
   const [connectingTo, setConnectingTo] = useState(null);
@@ -438,9 +438,9 @@ export default function HelperDashboard() {
   // (grey) on their Find New Elders card even after a page reload.
   const requestedElderIds = new Set(sentRequests.map(c => c.otherUserId));
   const friendsSegments = [
+    { id: 'find',      label: 'Find New Elders' },
     { id: 'invites',   label: 'New Invites',      count: incomingRequests.length, notify: true },
     { id: 'requested', label: 'Requested',        count: sentRequests.length },
-    { id: 'find',      label: 'Find New Elders' },
   ];
 
   // My Elders badge now tracks only established (ACTIVE) connections — pending
@@ -458,8 +458,8 @@ export default function HelperDashboard() {
 
   const tabs = [
     ['connections', 'My Elders', connBadge],
-    ['requests', 'Add Friends', requestsBadge],
     ['browse', 'Help Nearby', browseBadge],
+    ['requests', 'Add Friends', requestsBadge],
   ];
 
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
