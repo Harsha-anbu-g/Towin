@@ -205,6 +205,7 @@ public class ConnectionService {
                 .initiatedByMe(connection.getInitiatedBy().getId().equals(viewerUserId))
                 .requestMessage(connection.getRequestMessage())
                 .otherUserPhone(phoneUnlocked ? other.getPhone() : null)
+                .otherUserAge(resolveAge(other))
                 .createdAt(connection.getCreatedAt())
                 .updatedAt(connection.getUpdatedAt())
                 .lastMessagePreview(preview)
@@ -221,6 +222,16 @@ public class ConnectionService {
         if (helper.isPresent()) return helper.get().getName();
 
         return user.getEmail();
+    }
+
+    private Integer resolveAge(User user) {
+        Optional<ElderProfile> elder = elderProfileRepository.findByUserId(user.getId());
+        if (elder.isPresent()) return elder.get().getAge();
+
+        Optional<HelperProfile> helper = helperProfileRepository.findByUserId(user.getId());
+        if (helper.isPresent()) return helper.get().getAge();
+
+        return null;
     }
 
     private User getUser(UUID userId) {
