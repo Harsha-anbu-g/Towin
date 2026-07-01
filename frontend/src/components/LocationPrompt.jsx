@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from '../api/axios';
+import SmoothInput from './SmoothInput';
 
 /**
  * Shown when GPS is denied/unavailable. Lets the user type a town or postcode;
@@ -38,12 +39,13 @@ export default function LocationPrompt({ onResolved }) {
         Enter your town or postcode to see people near you
       </p>
       <form onSubmit={submit} style={{ display: 'flex', gap: '8px' }}>
-        <input
+        <SmoothInput
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="e.g. Scarborough or M1B 1A1"
-          style={{ flex: 1, height: '40px', padding: '0 14px', fontSize: '15px', color: 'var(--ink-slate)', border: '1px solid #d8d8d8', borderRadius: '9999px', outline: 'none', fontFamily: 'inherit' }}
+          wrapperStyle={{ flex: 1 }}
+          style={{ width: '100%', boxSizing: 'border-box', height: '40px', padding: '0 14px', fontSize: '15px', color: 'var(--ink-slate)', border: '1px solid #d8d8d8', borderRadius: '9999px', outline: 'none', fontFamily: 'inherit' }}
         />
         <button type="submit" disabled={status === 'loading'} className="btn-primary" style={{ padding: '0 22px', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
           {status === 'loading' ? 'Finding…' : 'Find'}

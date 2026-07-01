@@ -7,6 +7,7 @@ import TrustBadge from '../components/TrustBadge';
 import BlurFade from '../components/magic/BlurFade';
 import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
+import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -371,7 +372,7 @@ export default function ProfileEdit() {
                 <Divider />
                 <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column' }}>
                   <FieldRow label="Full Name">
-                    <input {...f('name')} placeholder="Your name" required style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('name')} placeholder="Your name" required style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Age">
@@ -394,7 +395,7 @@ export default function ProfileEdit() {
                         </div>
                       ) : null;
                     })() : (
-                      <input {...f('age')} type="number"
+                      <SmoothInput {...f('age')} type="number"
                         placeholder="Your age"
                         min={1} max={150}
                         style={{ width: '100%', boxSizing: 'border-box' }} />
@@ -420,14 +421,14 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Languages">
-                    <input {...f('languages')} placeholder="English, French" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('languages')} placeholder="English, French" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
 
                   {isElder && (
                     <>
                       <Divider />
                       <FieldRow label="Interests">
-                        <input {...f('interests')} placeholder="Gardening, Reading, Chess" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <SmoothInput {...f('interests')} placeholder="Gardening, Reading, Chess" style={{ width: '100%', boxSizing: 'border-box' }} />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Looking For">
@@ -443,19 +444,19 @@ export default function ProfileEdit() {
                     <>
                       <Divider />
                       <FieldRow label="Skills Offered">
-                        <input {...f('skillsOffered')} placeholder="Driving, Cooking, Tech help" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <SmoothInput {...f('skillsOffered')} placeholder="Driving, Cooking, Tech help" style={{ width: '100%', boxSizing: 'border-box' }} />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Availability Days">
-                        <input {...f('availabilityDays')} placeholder="Monday, Wednesday" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <SmoothInput {...f('availabilityDays')} placeholder="Monday, Wednesday" style={{ width: '100%', boxSizing: 'border-box' }} />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Availability Times">
-                        <input {...f('availabilityTimes')} placeholder="Morning, Afternoon" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <SmoothInput {...f('availabilityTimes')} placeholder="Morning, Afternoon" style={{ width: '100%', boxSizing: 'border-box' }} />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Hobbies">
-                        <input {...f('hobbies')} placeholder="Reading, Hiking, Cooking" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <SmoothInput {...f('hobbies')} placeholder="Reading, Hiking, Cooking" style={{ width: '100%', boxSizing: 'border-box' }} />
                       </FieldRow>
                     </>
                   )}
@@ -463,11 +464,11 @@ export default function ProfileEdit() {
                   {/* Shared fields — all roles */}
                   <Divider />
                   <FieldRow label="Date of Birth">
-                    <input {...f('dateOfBirth')} type="date" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('dateOfBirth')} type="date" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Occupation">
-                    <input {...f('occupation')} placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('occupation')} placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Sex">
@@ -480,11 +481,11 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Facebook URL">
-                    <input {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Instagram URL">
-                    <input {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Location">
@@ -492,13 +493,13 @@ export default function ProfileEdit() {
                       {profileData?.city ? `Current: ${profileData.city}` : 'No location set yet. Add your town so people nearby can find you.'}
                     </p>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <input
+                      <SmoothInput
                         value={locationQuery}
                         onChange={e => setLocationQuery(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveLocation(); } }}
                         placeholder="Town or postcode, e.g. Scarborough or M1B 1A1"
                         className="field"
-                        style={{ flex: 1 }}
+                        wrapperStyle={{ flex: 1 }}
                       />
                       <button type="button" onClick={saveLocation} disabled={savingLocation} className="primary-btn" style={{ fontSize: '14px', whiteSpace: 'nowrap' }}>
                         {savingLocation ? 'Saving…' : 'Save'}
@@ -574,7 +575,7 @@ export default function ProfileEdit() {
                     </button>
                   ) : (
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="416 555 0123" className="field" style={{ flex: 1 }} />
+                      <SmoothInput value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="416 555 0123" className="field" wrapperStyle={{ flex: 1 }} />
                       <button onClick={savePhone} className="primary-btn" style={{ fontSize: '14px' }}>Save</button>
                       <button onClick={() => setEditingPhone(false)} className="ghost-btn" style={{ fontSize: '14px' }}>Cancel</button>
                     </div>
@@ -676,21 +677,21 @@ export default function ProfileEdit() {
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Name</label>
-                            <input {...emF('name')} className="field" placeholder="Contact name" required />
+                            <SmoothInput {...emF('name')} className="field" placeholder="Contact name" required />
                           </div>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Phone</label>
-                            <input {...emF('phone')} className="field" placeholder="+1 555 000 0000" required />
+                            <SmoothInput {...emF('phone')} className="field" placeholder="+1 555 000 0000" required />
                           </div>
                         </div>
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Relationship</label>
-                            <input {...emF('relationship')} className="field" placeholder="Daughter, Doctor…" />
+                            <SmoothInput {...emF('relationship')} className="field" placeholder="Daughter, Doctor…" />
                           </div>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Alert after (days)</label>
-                            <input {...emF('inactivityDays')} type="number" min={1} max={30} className="field" />
+                            <SmoothInput {...emF('inactivityDays')} type="number" min={1} max={30} className="field" />
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>

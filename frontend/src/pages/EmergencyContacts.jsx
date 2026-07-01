@@ -6,6 +6,7 @@ import BlurFade from '../components/magic/BlurFade';
 import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import SmoothInput from '../components/SmoothInput';
 
 const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
@@ -360,13 +361,13 @@ export default function EmergencyContacts() {
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Name
                     </label>
-                    <input {...f('name')} className="field" placeholder="Contact name" required />
+                    <SmoothInput {...f('name')} className="field" placeholder="Contact name" required />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Phone
                     </label>
-                    <input {...f('phone')} className="field" placeholder="+1 555 000 0000" required />
+                    <SmoothInput {...f('phone')} className="field" placeholder="+1 555 000 0000" required />
                   </div>
                 </div>
                 <div className="two-col-grid" style={{ gap: '12px' }}>
@@ -374,13 +375,13 @@ export default function EmergencyContacts() {
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Relationship
                     </label>
-                    <input {...f('relationship')} className="field" placeholder="Daughter, Doctor…" />
+                    <SmoothInput {...f('relationship')} className="field" placeholder="Daughter, Doctor…" />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Alert after (days)
                     </label>
-                    <input {...f('inactivityDays')} type="number" min={1} max={30} className="field" />
+                    <SmoothInput {...f('inactivityDays')} type="number" min={1} max={30} className="field" />
                   </div>
                 </div>
                 {msg && (
