@@ -148,6 +148,48 @@ class NeedServiceTest {
         assertThat(result.getTotalElements()).isEqualTo(1);
     }
 
+    @Test
+    void shouldMarkMyApplicationStatusOnOpenNeeds() {
+        Need applied = buildNeed(elder, NeedStatus.OPEN);
+        Need untouched = buildNeed(elder, NeedStatus.OPEN);
+        NeedApplication app = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(applied).helper(helper)
+                .status(ApplicationStatus.PENDING).createdAt(java.time.LocalDateTime.now()).build();
+
+        when(applicationRepository.findByHelperId(helper.getId())).thenReturn(List.of(app));
+        when(needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN))
+                .thenReturn(List.of(applied, untouched));
+        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
+
+        List<NeedResponse> result = needService.getAllOpen(helper.getId());
+
+        NeedResponse appliedResp = result.stream().filter(r -> r.getId().equals(applied.getId())).findFirst().orElseThrow();
+        NeedResponse untouchedResp = result.stream().filter(r -> r.getId().equals(untouched.getId())).findFirst().orElseThrow();
+        assertThat(appliedResp.getMyApplicationStatus()).isEqualTo(ApplicationStatus.PENDING);
+        assertThat(untouchedResp.getMyApplicationStatus()).isNull();
+    }
+
+    @Test
+    void shouldGetMyApplicationsExcludingWithdrawn() {
+        Need pendingNeed = buildNeed(elder, NeedStatus.OPEN);
+        Need withdrawnNeed = buildNeed(elder, NeedStatus.OPEN);
+        NeedApplication pending = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(pendingNeed).helper(helper)
+                .status(ApplicationStatus.PENDING).createdAt(java.time.LocalDateTime.now()).build();
+        NeedApplication withdrawn = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(withdrawnNeed).helper(helper)
+                .status(ApplicationStatus.WITHDRAWN).createdAt(java.time.LocalDateTime.now().minusMinutes(5)).build();
+
+        when(applicationRepository.findByHelperId(helper.getId())).thenReturn(List.of(pending, withdrawn));
+        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
+
+        List<NeedResponse> result = needService.getMyApplications(helper.getId());
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(pendingNeed.getId());
+        assertThat(result.get(0).getMyApplicationStatus()).isEqualTo(ApplicationStatus.PENDING);
+    }
+
     private User buildUser(UUID id, UserRole role) {
         return User.builder()
                 .id(id).email(id + "@test.com").phone("+1234567890")
