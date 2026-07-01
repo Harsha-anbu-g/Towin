@@ -256,6 +256,9 @@ export default function HelperDashboard() {
   // Sub-filter for Browse Needs: available | applied | completed.
   const browseSeg = searchParams.get('bseg') || 'available';
   const setBrowseSeg = (next) => setParam('bseg', next);
+  // Sub-filter for Add Friends: invites | requested | find.
+  const friendsSeg = searchParams.get('fseg') || 'invites';
+  const setFriendsSeg = (next) => setParam('fseg', next);
   const [applying, setApplying] = useState(null);
   const [connectingTo, setConnectingTo] = useState(null);
   const [endingConn, setEndingConn] = useState(null);
@@ -342,7 +345,7 @@ export default function HelperDashboard() {
   useEffect(() => {
     if (tab === 'browse') { loadNeeds(); loadMyApplications(); }
     if (tab === 'connections') loadConnections();
-    if (tab === 'discover') loadElders();
+    if (tab === 'requests') { loadConnections(); loadElders(); }
   }, [tab, radiusKm]);
 
   async function withdrawApplication(needId) {
@@ -368,7 +371,7 @@ export default function HelperDashboard() {
     setConnectingTo(elderId);
     try {
       await api.post('/connections/request', { targetUserId: elderId });
-      setConnectMsg(prev => ({...prev, [elderId]: 'Request sent!'}));
+      setConnectMsg(prev => ({...prev, [elderId]: 'Requested'}));
       await loadConnections();
     } catch (err) {
       setConnectMsg(prev => ({...prev, [elderId]: err?.response?.data?.message || 'Could not connect.'}));
@@ -431,6 +434,14 @@ export default function HelperDashboard() {
   const incomingRequests = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const sentRequests = connections.filter(c => c.status === 'PENDING' && c.initiatedByMe);
   const requestsBadge = incomingRequests.length;
+  // Elders this helper has already sent a friend request to — show "Requested"
+  // (grey) on their Find New Elders card even after a page reload.
+  const requestedElderIds = new Set(sentRequests.map(c => c.otherUserId));
+  const friendsSegments = [
+    { id: 'invites',   label: 'New Invites',      count: incomingRequests.length, notify: true },
+    { id: 'requested', label: 'Requested',        count: sentRequests.length },
+    { id: 'find',      label: 'Find New Elders' },
+  ];
 
   // My Elders badge now tracks only established (ACTIVE) connections — pending
   // requests carry their own badge on the Requests tab.
@@ -447,9 +458,8 @@ export default function HelperDashboard() {
 
   const tabs = [
     ['connections', 'My Elders', connBadge],
-    ['requests', 'Requests', requestsBadge],
-    ['browse', 'Browse Needs', browseBadge],
-    ['discover', 'Find New Elder', 0],
+    ['requests', 'Add Friends', requestsBadge],
+    ['browse', 'Help Nearby', browseBadge],
   ];
 
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
@@ -522,7 +532,7 @@ export default function HelperDashboard() {
   const browseList = { available: availableNeeds, applied: appliedNeeds, completed: completedNeeds }[browseSeg];
 
   // One pending-request card, shared by the Requests tab. Incoming invites get
-  // Accept / Decline; requests this helper sent show a quiet "Request Sent" pill.
+  // Accept / Decline; requests this helper sent show a quiet "Requested" pill.
   function renderPendingCard(conn, i) {
     const isIncoming = !conn.initiatedByMe;
     const avatar = (
@@ -543,13 +553,13 @@ export default function HelperDashboard() {
                 {avatar}
                 <div style={{ minWidth: 0 }}>
                   <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>wants to connect with you</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>sent you a friend request</p>
                   {conn.requestMessage && (
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
                   )}
                 </div>
               </div>
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Request</span>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Invite</span>
             </div>
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
               <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
@@ -564,7 +574,7 @@ export default function HelperDashboard() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
+                <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Requested</span>
               </div>
               {conn.requestMessage && (
                 <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
@@ -647,9 +657,9 @@ export default function HelperDashboard() {
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No connections yet</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Discover elders near you and send a connection request to get started.</p>
-                  <button onClick={() => setTab('discover')} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
-                    Find New Elder
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Find elders near you and send a friend request to get started.</p>
+                  <button onClick={() => { setTab('requests'); setFriendsSeg('find'); }} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
+                    Add Friends
                   </button>
                 </div>
               )}
@@ -777,41 +787,44 @@ export default function HelperDashboard() {
             </div>
           )}
 
-          {/* Requests tab — every pending connection request in one place */}
+          {/* Add Friends tab — invites you got, requests you sent, and finding new elders */}
           {tab === 'requests' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
-                Requests
+                Add Friends
               </h2>
-              {loading && (
+              <SegmentedTabs segments={friendsSegments} value={friendsSeg} onChange={setFriendsSeg} />
+
+              {/* New Invites — friend requests waiting for you to answer */}
+              {friendsSeg === 'invites' && (loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
                     <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
                   ))}
                 </div>
-              )}
-              {!loading && incomingRequests.length === 0 && sentRequests.length === 0 && (
-                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>}>
-                  No requests right now. When someone wants to connect, you'll see it here.
+              ) : incomingRequests.length === 0 ? (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
+                  No new invites right now. When someone wants to be friends, you'll see it here.
                 </SegmentEmpty>
-              )}
-              {!loading && incomingRequests.length > 0 && (
-                <>
-                  {sentRequests.length > 0 && (
-                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--ink-slate)', letterSpacing: '0.3px', textTransform: 'uppercase', margin: '4px 2px 0' }}>New Invites</p>
-                  )}
-                  {[...incomingRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))}
-                </>
-              )}
-              {!loading && sentRequests.length > 0 && (
-                <>
-                  {incomingRequests.length > 0 && (
-                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--ink-slate)', letterSpacing: '0.3px', textTransform: 'uppercase', margin: '12px 2px 0' }}>Requests You Sent</p>
-                  )}
-                  {[...sentRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))}
-                </>
-              )}
+              ) : (
+                [...incomingRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))
+              ))}
+
+              {/* Requested — friend requests you've sent, waiting on them */}
+              {friendsSeg === 'requested' && (loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                  ))}
+                </div>
+              ) : sentRequests.length === 0 ? (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>}>
+                  You haven't sent any friend requests yet. Add someone from "Find New Elders".
+                </SegmentEmpty>
+              ) : (
+                [...sentRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))
+              ))}
             </div>
           )}
 
@@ -820,7 +833,7 @@ export default function HelperDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
-                  Requests Near You
+                  Help Nearby
                 </h2>
                 <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
                   Elders nearby who could use a hand. Offer to help with one tap.
@@ -830,7 +843,7 @@ export default function HelperDashboard() {
               <SegmentedTabs segments={browseSegments} value={browseSeg} onChange={setBrowseSeg} />
 
               {/* Distance + location controls only matter for the Available list */}
-              {browseSeg === 'available' && <RadiusBar noun="requests" />}
+              {browseSeg === 'available' && <RadiusBar noun="help" />}
               {browseSeg === 'available' && locationStatus === 'primer' && (
                 <LocationPrimer onEnable={requestLocation} onManual={() => { setLocationStatus('denied'); loadNeeds(); loadElders(); }} />
               )}
@@ -844,11 +857,11 @@ export default function HelperDashboard() {
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                   </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No requests found</p>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No help nearby</p>
                   <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>
                     {locationStatus === 'granted'
                       ? `Nothing within ${radiusKm} km right now. Use the radius selector above to expand your search area.`
-                      : 'No open requests right now. Check back soon or enable location to filter by distance.'}
+                      : 'No open help right now. Check back soon or enable location to filter by distance.'}
                   </p>
                 </div>
               )}
@@ -856,12 +869,12 @@ export default function HelperDashboard() {
               {/* Applied / Completed — friendly segment empty states */}
               {browseSeg === 'applied' && appliedNeeds.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}>
-                  You haven't offered to help with anything yet. Find a request under Available and tap "Offer to Help."
+                  You haven't offered to help with anything yet. Find one under Available and tap "Offer to Help."
                 </SegmentEmpty>
               )}
               {browseSeg === 'completed' && completedNeeds.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>}>
-                  No completed requests yet. Requests you helped with show up here once the elder marks them done.
+                  No completed help yet. Help you gave shows up here once the elder marks it done.
                 </SegmentEmpty>
               )}
 
@@ -875,17 +888,12 @@ export default function HelperDashboard() {
             </div>
           )}
 
-          {/* Find New Elder tab */}
-          {tab === 'discover' && (
+          {/* Add Friends → Find New Elders segment */}
+          {tab === 'requests' && friendsSeg === 'find' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div>
-                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
-                  Find an Elder to Help
-                </h2>
-                <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
-                  Reach out to elders near you and start building trust.
-                </p>
-              </div>
+              <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
+                Find elders near you and send a friend request.
+              </p>
               <RadiusBar noun="elders" />
               {locationStatus === 'primer' && (
                 <LocationPrimer onEnable={requestLocation} onManual={() => { setLocationStatus('denied'); loadNeeds(); loadElders(); }} />
@@ -933,6 +941,8 @@ export default function HelperDashboard() {
               {elders.map((elder, i) => {
                 const alreadyConnected = connectedElderIds.has(elder.userId);
                 const sent = connectMsg[elder.userId];
+                const requested = requestedElderIds.has(elder.userId) || sent === 'Requested';
+                const errorMsg = sent && sent !== 'Requested' ? sent : null;
                 return (
                   <div key={elder.userId} style={{
                     background: '#ffffff', borderRadius: '18px', padding: '20px',
@@ -973,17 +983,15 @@ export default function HelperDashboard() {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Connected</span>
-                        ) : sent ? (
-                          <span style={{
-                            fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center',
-                            background: sent.includes('!') ? '#E6F2FA' : '#f3f4f6',
-                            color: sent.includes('!') ? '#2E7DA6' : '#5a6470',
-                          }}>{sent}</span>
+                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
+                        ) : requested ? (
+                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: '#f3f4f6', color: '#8a929c' }}>Requested</span>
+                        ) : errorMsg ? (
+                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: '#f3f4f6', color: '#5a6470' }}>{errorMsg}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
                             style={{ height: '40px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-                            {connectingTo === elder.userId ? '...' : 'Connect'}
+                            {connectingTo === elder.userId ? '...' : 'Add Friend'}
                           </button>
                         )}
                         <button onClick={() => navigate(`/user/${elder.userId}`)}
