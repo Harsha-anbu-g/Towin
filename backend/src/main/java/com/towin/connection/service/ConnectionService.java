@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ConnectionService {
 
-    private static final int MAX_REQUESTS_PER_DAY = 10;
+    private static final int MAX_REQUESTS_PER_DAY = 50;
 
     private int activeLimit(User user) {
         return switch (user.getRole()) {
