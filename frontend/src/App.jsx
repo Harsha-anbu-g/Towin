@@ -68,8 +68,7 @@ function PublicRoute({ children }) {
   if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
   // Elders land on the daily check-in first — keeps the post-login flow
   // consistent even when navigation races the auth context update
-  if (user.role === 'ELDER' || user.role === 'BOTH') return <Navigate to="/streaks" replace />;
-  return <Navigate to="/dashboard" replace />;
+  return <Navigate to="/streaks" replace />;
 }
 
 function ElderOnly({ children }) {
@@ -113,7 +112,7 @@ function App() {
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
             <Route path="/messages" element={<PrivateRoute><MessagesInbox /></PrivateRoute>} />
             <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
-            <Route path="/streaks" element={<ElderOnly><Streaks /></ElderOnly>} />
+            <Route path="/streaks" element={<PrivateRoute><Streaks /></PrivateRoute>} />
             <Route path="/game" element={<PrivateRoute><PeekabooGame /></PrivateRoute>} />
             <Route path="/trust" element={<PrivateRoute><Trust /></PrivateRoute>} />
             <Route path="/user/:id" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
