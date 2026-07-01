@@ -2,7 +2,6 @@
 // Landing.jsx renders SLIDES[index].render() inside the slide shell.
 // Helpers here are hero-scale (bigger type than guideContent's card-scale).
 
-import { FlipFadeText } from '../components/ui/flip-fade-text';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -227,21 +226,6 @@ export const SLIDES = [
         </div>
         <Title>ToWin</Title>
         <Lead>It takes two To Win.</Lead>
-        {/* Cycling verb — simple words already in the copy below (meet, talk, help, grow). */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: '8px', margin: '0 0 16px',
-        }}>
-          <span style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: 'var(--ink-slate)' }}>
-            A place to
-          </span>
-          <span style={{
-            fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: BLUE,
-            minWidth: '72px', display: 'inline-flex', justifyContent: 'flex-start',
-          }}>
-            <FlipFadeText words={['Meet', 'Talk', 'Help', 'Grow']} interval={2000} />
-          </span>
-        </div>
         <p style={{
           fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: BLUE,
           textAlign: 'center', margin: '0 0 16px',
