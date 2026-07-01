@@ -245,7 +245,7 @@ export default function ProfileEdit() {
   }
 
   const verBadge = (ok, pts) => ok
-    ? <span style={{ fontSize: '12px', background: 'rgba(79,163,206,0.10)', color: 'var(--blue)', border: '1px solid rgba(79,163,206,0.20)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
+    ? <span style={{ fontSize: '12px', background: 'rgba(34,160,80,0.10)', color: '#1a7a3a', border: '1px solid rgba(34,160,80,0.25)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
     : null;
 
   const card = {

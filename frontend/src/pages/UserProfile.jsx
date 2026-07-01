@@ -197,12 +197,12 @@ export default function UserProfile() {
                   )}
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {profile.verificationStatus === 'VERIFIED' && (
-                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>
+                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
                         ✓ ID Verified
                       </span>
                     )}
                     {profile.phoneVerified && (
-                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: BLUE, background: BG, border: '1px solid #BFD9EA', borderRadius: '9999px', padding: '3px 10px' }}>
+                      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
                         ✓ Phone Verified
                       </span>
                     )}
