@@ -152,7 +152,7 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private void seed() {
         User margaret = ensureUser(ELDER_DEMO_EMAIL, "+14165550101", UserRole.ELDER, "12345678");
-        User james    = ensureUser(HELPER_DEMO_EMAIL, "+14165550102", UserRole.HELPER, "123456789");
+        User james    = ensureUser(HELPER_DEMO_EMAIL, "+14385355782", UserRole.HELPER, "123456789");
         User priya    = ensureUser("demo.priya@towin.app", "+14165550103", UserRole.HELPER, "DemoPriya!2026");
         User tom      = ensureUser("demo.tom@towin.app",   "+14165550104", UserRole.HELPER, "DemoTom!2026");
         User david    = ensureUser("demo.david@towin.app", "+14165550105", UserRole.ELDER,  "DemoDavid!2026");
@@ -184,7 +184,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new String[]{"Reading", "Crosswords", "Gardening"}, "Retired librarian", Gender.FEMALE,
                 "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/rose.jpg");
 
-        ensureHelperProfile(james, "James", 28,
+        ensureHelperProfile(james, "Harsha", 23,
                 "I love to play chess and helping with anything tech.",
                 new String[]{"Chess", "Technology", "Errands"}, new String[]{"Chess", "Cycling"},
                 Gender.MALE, "Tech Support Volunteer",
@@ -224,7 +224,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
         // Incoming pending request to James (helper accept/decline)
         ensureConnection(grace, james, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, grace,
-                "Hi James, I'd love a hand learning to video-call my grandchildren.");
+                "Hi Harsha, I'd love a hand learning to video-call my grandchildren.");
         // Outgoing pending request James sent to Rose — shows in the helper's "Requested" tab
         ensureConnection(james, rose, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, james,
                 "Hello Rose! I saw you love reading too. I'd be happy to help with anything you need.");
@@ -237,8 +237,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         // introduce → phone → video → social media → meet → trusted friends.
         seedJourneyIfEmpty(cTrusted, List.of(
                 // Just Connected → Messaging: they introduce themselves
-                tmsg(james,    28800, "Hello Margaret, I'm James. I saw you love chess too. I'd be glad to play, and to help with any tech whenever you need."),
-                tmsg(margaret, 28793, "Hello James! How lovely. Chess is my favourite, though I'm a little rusty. And my new tablet does puzzle me."),
+                tmsg(james,    28800, "Hello Margaret, I'm Harsha. I saw you love chess too. I'd be glad to play, and to help with any tech whenever you need."),
+                tmsg(margaret, 28793, "Hello Harsha! How lovely. Chess is my favourite, though I'm a little rusty. And my new tablet does puzzle me."),
                 tmsg(james,    28786, "We can take both slowly. What would you most like to do on the tablet?"),
                 tmsg(margaret, 28779, "I'd dearly love to video call my sister in Vancouver. I haven't managed it on my own yet."),
                 // Phone Ready: they share phone numbers
@@ -258,7 +258,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 tmsg(margaret,  5754, "Perfect. Thursday at 3pm? A public spot puts my mind at ease."),
                 tmsg(james,     5748, "Thursday at 3 it is. I'll bring the biscuits."),
                 // Fully Trusted: after meeting, true friends
-                tmsg(margaret,   240, "Thank you for a wonderful afternoon, James. You're a true friend now — and you let me win!"),
+                tmsg(margaret,   240, "Thank you for a wonderful afternoon, Harsha. You're a true friend now — and you let me win!"),
                 tmsg(james,      150, "Never! You won fair and square. Same time next week for a rematch?"),
                 tmsg(margaret,    95, "Absolutely. I'll be practising my openings all week.")));
         seedMessagesIfEmpty(cAdvance, 1450, List.of(
@@ -303,7 +303,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureApplication(chess, priya, "I'd love to learn chess while keeping you company!");
 
         ensureReview(margaret, james, tablet, 5,
-                "James set up my tablet and patiently taught me video calling. Wonderful young man.",
+                "Harsha set up my tablet and patiently taught me video calling. Wonderful young man.",
                 List.of("Patient", "Friendly"));
         ensureReview(david, james, null, 4,
                 "Very reliable and great company. Always on time.",
@@ -376,7 +376,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 u.setLocationLat(baseLat(role).add(jitter(email)));
                 u.setLocationLng(baseLng(role).add(jitter(email + "lng")));
                 u.setCity(baseCity(role));
-                u.setDateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(1998, 9, 2));
+                u.setDateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(2003, 3, 14));
                 u.setVerificationStatus(VerificationStatus.VERIFIED);
                 u.setPhoneVerified(true);
                 u.setIsActive(true);
@@ -408,7 +408,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .locationLng(baseLng(role).add(jitter(email + "lng")))
                 .city(baseCity(role))
                 .isActive(true)
-                .dateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(1998, 9, 2))
+                .dateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(2003, 3, 14))
                 .build();
         u.setPhoneVerified(true);
         log.info("Seeding demo user {}", email);
