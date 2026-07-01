@@ -8,6 +8,7 @@ import BlurFade from '../components/magic/BlurFade';
 import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
+import TagInput from '../components/TagInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -69,9 +70,9 @@ export default function ProfileEdit() {
 
   const [form, setForm] = useState({
     name: '', age: '', bio: '',
-    interests: '', languages: '', lookingFor: 'BOTH',
-    skillsOffered: '', availabilityDays: '', availabilityTimes: '',
-    hobbies: '', occupation: '', gender: '', facebookUrl: '', instagramUrl: '', dateOfBirth: '',
+    interests: [], languages: [], lookingFor: 'BOTH',
+    skillsOffered: [], availabilityDays: [], availabilityTimes: [],
+    hobbies: [], occupation: '', gender: '', facebookUrl: '', instagramUrl: '', dateOfBirth: '',
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -109,13 +110,13 @@ export default function ProfileEdit() {
         name: p.name || '',
         age: p.age || '',
         bio: p.bio || '',
-        interests: (p.interests || []).join(', '),
-        languages: (p.languages || []).join(', '),
+        interests: p.interests || [],
+        languages: p.languages || [],
         lookingFor: p.lookingFor || 'BOTH',
-        skillsOffered: (p.skillsOffered || []).join(', '),
-        availabilityDays: (p.availabilityDays || []).join(', '),
-        availabilityTimes: (p.availabilityTimes || []).join(', '),
-        hobbies: (p.hobbies || []).join(', '),
+        skillsOffered: p.skillsOffered || [],
+        availabilityDays: p.availabilityDays || [],
+        availabilityTimes: p.availabilityTimes || [],
+        hobbies: p.hobbies || [],
         occupation: p.occupation || '',
         gender: p.gender || '',
         facebookUrl: p.facebookUrl || '',
@@ -221,7 +222,7 @@ export default function ProfileEdit() {
       if (isElder) {
         await api.put('/profile/elder', {
           name: form.name, age: computedAge, bio: form.bio,
-          interests: toArr(form.interests), languages: toArr(form.languages), lookingFor: form.lookingFor,
+          interests: form.interests, languages: form.languages, lookingFor: form.lookingFor,
           facebookUrl: form.facebookUrl || null,
           instagramUrl: form.instagramUrl || null,
           occupation: form.occupation || null,
@@ -231,9 +232,9 @@ export default function ProfileEdit() {
       } else {
         await api.put('/profile/helper', {
           name: form.name, age: computedAge, bio: form.bio,
-          skillsOffered: toArr(form.skillsOffered), languages: toArr(form.languages),
-          availabilityDays: toArr(form.availabilityDays), availabilityTimes: toArr(form.availabilityTimes),
-          hobbies: toArr(form.hobbies),
+          skillsOffered: form.skillsOffered, languages: form.languages,
+          availabilityDays: form.availabilityDays, availabilityTimes: form.availabilityTimes,
+          hobbies: form.hobbies,
           occupation: form.occupation,
           gender: form.gender || null,
           facebookUrl: form.facebookUrl,
@@ -421,14 +422,24 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Languages">
-                    <SmoothInput {...f('languages')} placeholder="English, French" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <TagInput
+                      value={form.languages}
+                      onChange={tags => setForm(p => ({ ...p, languages: tags }))}
+                      placeholder="Type a language, press Enter…"
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                    />
                   </FieldRow>
 
                   {isElder && (
                     <>
                       <Divider />
                       <FieldRow label="Interests">
-                        <SmoothInput {...f('interests')} placeholder="Gardening, Reading, Chess" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <TagInput
+                          value={form.interests}
+                          onChange={tags => setForm(p => ({ ...p, interests: tags }))}
+                          placeholder="Type an interest, press Enter…"
+                          style={{ width: '100%', boxSizing: 'border-box' }}
+                        />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Looking For">
@@ -444,19 +455,39 @@ export default function ProfileEdit() {
                     <>
                       <Divider />
                       <FieldRow label="Skills Offered">
-                        <SmoothInput {...f('skillsOffered')} placeholder="Driving, Cooking, Tech help" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <TagInput
+                          value={form.skillsOffered}
+                          onChange={tags => setForm(p => ({ ...p, skillsOffered: tags }))}
+                          placeholder="Type a skill, press Enter…"
+                          style={{ width: '100%', boxSizing: 'border-box' }}
+                        />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Availability Days">
-                        <SmoothInput {...f('availabilityDays')} placeholder="Monday, Wednesday" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <TagInput
+                          value={form.availabilityDays}
+                          onChange={tags => setForm(p => ({ ...p, availabilityDays: tags }))}
+                          placeholder="e.g. Monday, press Enter…"
+                          style={{ width: '100%', boxSizing: 'border-box' }}
+                        />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Availability Times">
-                        <SmoothInput {...f('availabilityTimes')} placeholder="Morning, Afternoon" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <TagInput
+                          value={form.availabilityTimes}
+                          onChange={tags => setForm(p => ({ ...p, availabilityTimes: tags }))}
+                          placeholder="e.g. Morning, press Enter…"
+                          style={{ width: '100%', boxSizing: 'border-box' }}
+                        />
                       </FieldRow>
                       <Divider />
                       <FieldRow label="Hobbies">
-                        <SmoothInput {...f('hobbies')} placeholder="Reading, Hiking, Cooking" style={{ width: '100%', boxSizing: 'border-box' }} />
+                        <TagInput
+                          value={form.hobbies}
+                          onChange={tags => setForm(p => ({ ...p, hobbies: tags }))}
+                          placeholder="Type a hobby, press Enter…"
+                          style={{ width: '100%', boxSizing: 'border-box' }}
+                        />
                       </FieldRow>
                     </>
                   )}
