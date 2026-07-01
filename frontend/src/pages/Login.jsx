@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import SiteFooter from '../components/SiteFooter';
+import SmoothInput from '../components/SmoothInput';
 
 function HeroPanel() {
   return (
@@ -353,7 +354,7 @@ export default function Login() {
                 }}>
                   Username, Gmail, or phone
                 </label>
-                <input
+                <SmoothInput
                   type="text" required autoComplete="username"
                   className="field"
                   value={form.identifier}
@@ -372,7 +373,7 @@ export default function Login() {
                   Password
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <input
+                  <SmoothInput
                     type={showPwd ? 'text' : 'password'} required autoComplete="current-password"
                     className="field"
                     value={form.password}
