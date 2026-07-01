@@ -9,8 +9,12 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 // Capitalized alias so the JSX usage counts (project ESLint has no jsx-uses-vars).
 const MotionSpan = motion.span;
 
-// Types where a single-line horizontal caret makes sense.
-const SMOOTH_TYPES = new Set(['text', 'password', 'email', 'tel', 'url', 'search']);
+// Types where a single-line horizontal caret makes sense. Note: `email` is
+// intentionally excluded — email/number/date inputs return null for
+// selectionStart/selectionEnd (no text-selection API), so the caret index can't
+// be tracked; those fall back to the native caret. text/tel/url/search/password
+// all support selection.
+const SMOOTH_TYPES = new Set(['text', 'password', 'tel', 'url', 'search']);
 const SPRING = { stiffness: 500, damping: 30, mass: 0.5 };
 
 // Firefox masks passwords with a slightly different bullet glyph.

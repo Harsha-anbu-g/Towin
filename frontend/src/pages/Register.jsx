@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import SiteFooter from '../components/SiteFooter';
+import SmoothInput from '../components/SmoothInput';
 
 const TERMS_CONTENT = [
   { h: '1. Welcome to ToWin',
@@ -560,7 +561,7 @@ export default function Register() {
                 }}>
                   Username
                 </label>
-                <input
+                <SmoothInput
                   type="text" autoComplete="username" required
                   className="field"
                   value={form.username}
@@ -582,7 +583,7 @@ export default function Register() {
                 }}>
                   Email
                 </label>
-                <input
+                <SmoothInput
                   type="email" autoComplete="email" required
                   className="field"
                   value={form.email}
@@ -605,7 +606,7 @@ export default function Register() {
                   Password
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <input
+                  <SmoothInput
                     type={showPwd ? 'text' : 'password'} autoComplete="new-password" required
                     className="field"
                     value={form.password}
@@ -646,7 +647,7 @@ export default function Register() {
                   Re-enter password
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <input
+                  <SmoothInput
                     type={showConfirm ? 'text' : 'password'} autoComplete="new-password" required
                     className="field"
                     value={form.confirmPassword}
