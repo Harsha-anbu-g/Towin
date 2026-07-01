@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
+import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -387,7 +388,7 @@ export default function Admin() {
           <div style={card}>
             {/* Search bar */}
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0' }}>
-              <input
+              <SmoothInput
                 value={search}
                 onChange={e => { setSearch(e.target.value); setUserPage(0); }}
                 placeholder="Search users by email or username…"

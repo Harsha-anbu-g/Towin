@@ -12,6 +12,7 @@ import LocationPrompt from '../components/LocationPrompt';
 import LocationPrimer from '../components/LocationPrimer';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import SmoothInput from '../components/SmoothInput';
 import { useAuth } from '../context/AuthContext';
 import { useSeenIds } from '../lib/useSeenIds';
 
@@ -1037,7 +1038,7 @@ export default function ElderDashboard() {
               <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <label style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What do you need help with?</label>
-                  <input value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
+                  <SmoothInput value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
                     placeholder="e.g. Help with grocery shopping" required
                     style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid #d8dce2', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none' }}
                     onFocus={focusIn} onBlur={focusOut} />
@@ -1064,7 +1065,7 @@ export default function ElderDashboard() {
                     })}
                   </div>
                   {needForm.category === 'OTHER' && (
-                    <input value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
+                    <SmoothInput value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
                       placeholder="Please tell us what kind of help" required autoFocus
                       style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid #d8dce2', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none', marginTop: '4px' }}
                       onFocus={focusIn} onBlur={focusOut} />

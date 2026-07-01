@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -167,7 +168,7 @@ export default function MessagesInbox() {
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                   </svg>
                 </span>
-                <input
+                <SmoothInput
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Search conversations"
