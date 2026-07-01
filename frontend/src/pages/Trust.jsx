@@ -89,9 +89,10 @@ function Meter({ label, earned, max, shape, hint }) {
 
 /* ── A small overlapping circle (photo or initial) for the helper stack ────── */
 function MiniAvatar({ name, photoUrl }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const ring = { width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #fff', flexShrink: 0 };
-  if (photoUrl) {
-    return <img src={photoUrl} alt="" style={{ ...ring, objectFit: 'cover' }} />;
+  if (photoUrl && !imgFailed) {
+    return <img src={photoUrl} alt="" style={{ ...ring, objectFit: 'cover' }} onError={() => setImgFailed(true)} />;
   }
   const initial = (name || '?').trim().charAt(0).toUpperCase();
   return (
@@ -260,9 +261,10 @@ function ProfileCard({ profile, onGoToProfile }) {
 
 /* ── Avatar for a customer ───────────────────────────────────────────────── */
 function Avatar({ name, photoUrl }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const initial = (name || '?').trim().charAt(0).toUpperCase();
-  if (photoUrl) {
-    return <img src={photoUrl} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
+  if (photoUrl && !imgFailed) {
+    return <img src={photoUrl} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={() => setImgFailed(true)} />;
   }
   return (
     <div style={{

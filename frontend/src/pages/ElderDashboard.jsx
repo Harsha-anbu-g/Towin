@@ -13,6 +13,7 @@ import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import SmoothInput from '../components/SmoothInput';
 import { useAuth } from '../context/AuthContext';
+import Avatar from '../components/ui/Avatar';
 import { useSeenIds } from '../lib/useSeenIds';
 
 function TabBadge({ count }) {
@@ -672,9 +673,7 @@ export default function ElderDashboard() {
                 </SegmentEmpty>
               )}
               {!loading && visibleConnections.map((conn, i) => {
-                const avatar = conn.otherUserPhotoUrl
-                  ? <img src={conn.otherUserPhotoUrl} alt="" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                  : <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>{initials(conn.otherUserName)}</div>;
+                const avatar = <Avatar name={conn.otherUserName} photoUrl={conn.otherUserPhotoUrl} size={48} />;
                 return (
                 <div key={conn.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '22px',
@@ -891,10 +890,7 @@ export default function ElderDashboard() {
                     return (
                       <div key={helper.userId} style={{ background: '#ffffff', borderRadius: '18px', padding: '20px', border: '1px solid #e0e0e0', animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both` }}>
                         <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                          {helper.photoUrl
-                            ? <img src={helper.photoUrl} alt="" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                            : <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>{initials(helper.name)}</div>
-                          }
+                          <Avatar name={helper.name} photoUrl={helper.photoUrl} size={50} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                               <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{helper.name || 'Helper'}</p>

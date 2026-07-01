@@ -13,7 +13,8 @@ const initials = (name) =>
   name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
 function Avatar({ name, photoUrl, size = 96 }) {
-  if (photoUrl) {
+  const [imgFailed, setImgFailed] = useState(false);
+  if (photoUrl && !imgFailed) {
     return (
       <img
         src={photoUrl}
@@ -24,6 +25,7 @@ function Avatar({ name, photoUrl, size = 96 }) {
           border: '3px solid #fff', boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
           flexShrink: 0,
         }}
+        onError={() => setImgFailed(true)}
       />
     );
   }

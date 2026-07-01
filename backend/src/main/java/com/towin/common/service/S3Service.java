@@ -80,6 +80,8 @@ public class S3Service {
         return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
     }
 
+    // Always call this before returning any S3 URL in an API response.
+    // Raw S3 URLs are private (403) — this generates a 7-day signed URL the browser can load.
     public String presignedUrl(String rawUrl) {
         if (rawUrl == null || rawUrl.isBlank()) return null;
         try {
