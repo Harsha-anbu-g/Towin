@@ -973,7 +973,10 @@ export default function HelperDashboard() {
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {elders.map((elder, i) => {
+              {[...elders].sort((a, b) => {
+                const rank = u => connectedElderIds.has(u.userId) ? 2 : (requestedElderIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
+                return rank(a) - rank(b);
+              }).map((elder, i) => {
                 const alreadyConnected = connectedElderIds.has(elder.userId);
                 const sent = connectMsg[elder.userId];
                 const requested = requestedElderIds.has(elder.userId) || sent === 'Requested';
