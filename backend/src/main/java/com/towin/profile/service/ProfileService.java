@@ -84,16 +84,17 @@ public class ProfileService {
     }
 
     @Transactional
-    public void updateLocation(UUID userId, Double lat, Double lng) {
+    public void updateLocation(UUID userId, Double lat, Double lng, String cityHint) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setLocationLat(lat != null ? BigDecimal.valueOf(lat) : null);
         user.setLocationLng(lng != null ? BigDecimal.valueOf(lng) : null);
         if (lat != null && lng != null) {
-            // Reverse-geocode to a readable place name. Returns null on failure,
-            // in which case we keep whatever city the user already had.
+            // Prefer a reverse-geocoded name; fall back to the city the frontend
+            // resolved via forward geocode (cityHint) so the field is never blank.
             String city = geocodingService.reverseGeocode(lat, lng);
             if (city != null) user.setCity(city);
+            else if (cityHint != null && !cityHint.isBlank()) user.setCity(cityHint);
         }
         userRepository.save(user);
     }
