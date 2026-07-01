@@ -14,6 +14,7 @@ import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { useSeenIds } from '../lib/useSeenIds';
+import { parseServerDate } from '../lib/utils';
 
 function TabBadge({ count }) {
   if (!count) return null;
@@ -107,8 +108,9 @@ const catLabel = (c) => CATEGORY[c] || c;
 // Plain, everyday relative time — "just now", "2 days ago", "3 weeks ago" —
 // so a helper can see how fresh (or stale) a request is at a glance.
 function postedAgo(iso) {
-  if (!iso) return '';
-  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
+  const date = parseServerDate(iso);
+  if (!date) return '';
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
   if (secs < 60) return 'just now';
   const m = Math.floor(secs / 60);
   if (m < 60) return `${m} minute${m === 1 ? '' : 's'} ago`;
@@ -185,7 +187,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
 }
 
 function TabIcon({ id, active }) {
-  const color = active ? '#fff' : '#5a6470';
+  const color = active ? '#1f2937' : '#5a6470';
   const svgProps = {
     width: 16, height: 16,
     viewBox: '0 0 24 24',
