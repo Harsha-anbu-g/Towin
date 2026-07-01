@@ -57,6 +57,7 @@ public class ConnectionService {
     private final Optional<ConnectionEventProducer> eventProducer;
     private final MessageRepository messageRepository;
     private final com.towin.common.service.TrustScoreService trustScoreService;
+    private final com.towin.common.service.S3Service s3Service;
 
     @Transactional
     public ConnectionResponse sendRequest(UUID senderId, ConnectionRequest request) {
@@ -206,6 +207,7 @@ public class ConnectionService {
                 .requestMessage(connection.getRequestMessage())
                 .otherUserPhone(phoneUnlocked ? other.getPhone() : null)
                 .otherUserAge(resolveAge(other))
+                .otherUserPhotoUrl(resolvePhotoUrl(other))
                 .createdAt(connection.getCreatedAt())
                 .updatedAt(connection.getUpdatedAt())
                 .lastMessagePreview(preview)
@@ -222,6 +224,14 @@ public class ConnectionService {
         if (helper.isPresent()) return helper.get().getName();
 
         return user.getEmail();
+    }
+
+    private String resolvePhotoUrl(User user) {
+        return elderProfileRepository.findByUserId(user.getId())
+                .map(e -> s3Service.presignedUrl(e.getPhotoUrl()))
+                .or(() -> helperProfileRepository.findByUserId(user.getId())
+                        .map(h -> s3Service.presignedUrl(h.getPhotoUrl())))
+                .orElse(null);
     }
 
     private Integer resolveAge(User user) {
