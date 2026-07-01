@@ -150,6 +150,12 @@ function TabIcon({ id, active }) {
       <polyline points="14 2 14 8 20 8"/>
     </svg>
   );
+  if (id === 'post') return (
+    <svg {...svgProps}>
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  );
   return null;
 }
 
@@ -199,7 +205,7 @@ export default function ElderDashboard() {
   const [posting, setPosting] = useState(false);
   const [postMsg, setPostMsg] = useState('');
   const [accepting, setAccepting] = useState(null);
-  const [showPostForm, setShowPostForm] = useState(false);
+  // showPostForm replaced by tab === 'post'
   const [endingConn, setEndingConn] = useState(null);
   const [respondingConn, setRespondingConn] = useState(null);
   const [confirmingTrust, setConfirmingTrust] = useState(null);
@@ -248,7 +254,7 @@ export default function ElderDashboard() {
   // form, then strip the flag so a refresh doesn't force it back open.
   useEffect(() => {
     if (searchParams.get('post') === '1') {
-      setShowPostForm(true);
+      setTab('post');
       setParam('post', null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -354,7 +360,7 @@ export default function ElderDashboard() {
       if (location) { body.locationLat = location.lat; body.locationLng = location.lng; }
       await api.post('/needs', body);
       setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
-      setPostMsg('Help posted!'); await loadNeeds(); setShowPostForm(false); setTab('needs');
+      setPostMsg('Help posted!'); await loadNeeds(); setTab('needs');
     } catch (err) { setPostMsg(err?.response?.data?.message || 'Failed to post.'); }
     finally { setPosting(false); }
   }
@@ -443,6 +449,7 @@ export default function ElderDashboard() {
 
   const tabs = [
     ['connections', 'My Helpers', connBadge],
+    ['post', 'Post Help', 0],
     ['needs', 'My Help', requestsBadge],
     ['friends', 'Add Friends', friendsBadge],
   ];
@@ -552,9 +559,9 @@ export default function ElderDashboard() {
         <div className="dash-tab-wrap">
           <div className="dash-tab-scroll">
             {tabs.map(([id, label, badge]) => {
-              const active = tab === id && !showPostForm;
+              const active = tab === id;
               return (
-                <button key={id} onClick={() => { setShowPostForm(false); setTab(id); }} style={{
+                <button key={id} onClick={() => setTab(id)} style={{
                   flex: '1 1 auto',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   height: '44px', padding: '0 16px',
@@ -590,7 +597,7 @@ export default function ElderDashboard() {
           <PeekabooCard />
 
           {/* My Helpers tab (landing) */}
-          {!showPostForm && tab === 'connections' && (
+          {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100% { opacity:0.6 } 50% { opacity:1 } }`}</style>
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
@@ -745,7 +752,7 @@ export default function ElderDashboard() {
           )}
 
           {/* Add Friends tab */}
-          {!showPostForm && tab === 'friends' && (
+          {tab === 'friends' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
                 Add Friends
@@ -898,7 +905,7 @@ export default function ElderDashboard() {
           )}
 
           {/* My Help tab */}
-          {!showPostForm && tab === 'needs' && (
+          {tab === 'needs' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: 0 }}>
@@ -919,7 +926,7 @@ export default function ElderDashboard() {
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No help posted yet</p>
                   <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px' }}>Post help and helpers near you will offer to assist. It only takes a minute.</p>
-                  <button onClick={() => setShowPostForm(true)} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
+                  <button onClick={() => setTab('post')} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
                     Post Help
                   </button>
                 </div>
@@ -1064,9 +1071,9 @@ export default function ElderDashboard() {
           )}
 
           {/* Post Request form — lives inside My Requests */}
-          {showPostForm && (
+          {tab === 'post' && (
             <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid #e0e0e0' }}>
-              <button type="button" onClick={() => setShowPostForm(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--blue)', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
+              <button type="button" onClick={() => setTab('needs')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--blue)', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 Back
               </button>
