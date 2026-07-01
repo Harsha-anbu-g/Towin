@@ -74,6 +74,6 @@ public class ProfileController {
         UUID userId = UUID.fromString(auth.getName());
         String url = s3Service.uploadPhoto(userId, file);
         profileService.updatePhotoUrl(userId, url);
-        return ResponseEntity.ok(Map.of("photoUrl", url));
+        return ResponseEntity.ok(Map.of("photoUrl", s3Service.presignedUrl(url)));
     }
 }

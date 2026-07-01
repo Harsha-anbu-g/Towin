@@ -2,6 +2,7 @@ package com.towin.discovery.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.discovery.dto.DiscoveredUserResponse;
 import com.towin.discovery.dto.DiscoveryFilter;
@@ -28,6 +29,7 @@ public class DiscoveryService {
     private final HelperProfileRepository helperProfileRepository;
     private final UserRepository userRepository;
     private final TrustScoreService trustScoreService;
+    private final S3Service s3Service;
 
     @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
@@ -87,7 +89,7 @@ public class DiscoveryService {
                 .userId(p.getUser().getId())
                 .name(p.getName())
                 .age(p.getAge())
-                .photoUrl(p.getPhotoUrl())
+                .photoUrl(s3Service.presignedUrl(p.getPhotoUrl()))
                 .bio(p.getBio())
                 .interests(p.getInterests() != null ? Arrays.asList(p.getInterests()) : List.of())
                 .languages(p.getLanguages() != null ? Arrays.asList(p.getLanguages()) : List.of())
@@ -104,7 +106,7 @@ public class DiscoveryService {
                 .userId(p.getUser().getId())
                 .name(p.getName())
                 .age(p.getAge())
-                .photoUrl(p.getPhotoUrl())
+                .photoUrl(s3Service.presignedUrl(p.getPhotoUrl()))
                 .bio(p.getBio())
                 .interests(p.getHobbies() != null ? Arrays.asList(p.getHobbies()) : List.of())
                 .languages(p.getLanguages() != null ? Arrays.asList(p.getLanguages()) : List.of())

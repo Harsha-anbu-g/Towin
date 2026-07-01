@@ -62,9 +62,9 @@ public class AdminService {
 
     private String getPhotoUrl(UUID userId) {
         var elder = elderProfileRepository.findByUserId(userId).orElse(null);
-        if (elder != null) return elder.getPhotoUrl();
+        if (elder != null) return s3Service.presignedUrl(elder.getPhotoUrl());
         var helper = helperProfileRepository.findByUserId(userId).orElse(null);
-        if (helper != null) return helper.getPhotoUrl();
+        if (helper != null) return s3Service.presignedUrl(helper.getPhotoUrl());
         return null;
     }
 
