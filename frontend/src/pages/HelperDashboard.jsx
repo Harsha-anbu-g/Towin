@@ -218,6 +218,12 @@ function TabIcon({ id, active }) {
       <polyline points="14 2 14 8 20 8"/>
     </svg>
   );
+  if (id === 'requests') return (
+    <svg {...svgProps}>
+      <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+    </svg>
+  );
   return null;
 }
 
@@ -420,7 +426,16 @@ export default function HelperDashboard() {
   // show the Connected badge in Discover.
   const connectedElderIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
 
-  const connTokens = connections.map(c => `${c.id}:${c.status}`);
+  // Pending connection requests, split for the dedicated Requests tab:
+  //   incoming = invites this helper needs to answer (Accept / Decline)
+  //   sent     = requests this helper made, waiting on the elder
+  const incomingRequests = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+  const sentRequests = connections.filter(c => c.status === 'PENDING' && c.initiatedByMe);
+  const requestsBadge = incomingRequests.length;
+
+  // My Elders badge now tracks only established (ACTIVE) connections — pending
+  // requests carry their own badge on the Requests tab.
+  const connTokens = connections.filter(c => c.status === 'ACTIVE').map(c => `${c.id}:${c.status}`);
   const needTokens = needs.map(n => n.id);
   const connBadge = seenConn.unseenCount(connTokens);
   const browseBadge = seenNeeds.unseenCount(needTokens);
@@ -433,6 +448,7 @@ export default function HelperDashboard() {
 
   const tabs = [
     ['connections', 'My Elders', connBadge],
+    ['requests', 'Requests', requestsBadge],
     ['browse', 'Browse Needs', browseBadge],
     ['discover', 'Find New Elder', 0],
   ];
@@ -471,27 +487,22 @@ export default function HelperDashboard() {
   const elderCounts = {
     active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
     building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
-    requests: connections.filter(c => c.status === 'PENDING').length,
   };
-  // Always open on Active — a helper's home base is their established elders,
-  // not the incoming-requests queue. The Requests segment still shows its
-  // notify badge when a new request needs attention.
+  // Always open on Active — a helper's home base is their established elders.
+  // Pending connection requests now live in their own top-level Requests tab.
   const eldersDefault = 'active';
   const activeEldersSeg = eldersSeg ?? eldersDefault;
   const elderSegments = [
     { id: 'active',   label: 'Active',         count: elderCounts.active },
     { id: 'building', label: 'Building Trust', count: elderCounts.building },
-    { id: 'requests', label: 'Requests',       count: elderCounts.requests, notify: true },
   ];
   const visibleConnections = [...connections].filter(c => {
-    if (activeEldersSeg === 'active')   return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
     if (activeEldersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
-    return c.status === 'PENDING';
+    return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
   }).sort(sortConnections);
   const eldersEmptyText = {
     active:   <>No fully trusted elders yet. As your trust grows with an elder, they'll appear here.</>,
     building: <>No connections in progress. Reach out to an elder to start building trust together.</>,
-    requests: <>No pending requests. New connection requests will show up here.</>,
   }[activeEldersSeg];
 
   // ── Browse Needs — split into Available / Applied / Completed ──
@@ -510,6 +521,61 @@ export default function HelperDashboard() {
     { id: 'completed', label: 'Completed', count: completedNeeds.length },
   ];
   const browseList = { available: availableNeeds, applied: appliedNeeds, completed: completedNeeds }[browseSeg];
+
+  // One pending-request card, shared by the Requests tab. Incoming invites get
+  // Accept / Decline; requests this helper sent show a quiet "Request Sent" pill.
+  function renderPendingCard(conn, i) {
+    const isIncoming = !conn.initiatedByMe;
+    const avatar = (
+      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>
+        {initials(conn.otherUserName)}
+      </div>
+    );
+    return (
+      <div key={conn.id} style={{
+        background: '#ffffff', borderRadius: '18px', padding: '22px',
+        border: isIncoming ? '1px solid #BFD9EA' : '1px solid #e0e0e0',
+        animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+      }}>
+        {isIncoming ? (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+                {avatar}
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>wants to connect with you</p>
+                  {conn.requestMessage && (
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
+                  )}
+                </div>
+              </div>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Request</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
+                style={{ flex: 1, height: '44px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>Accept</button>
+              <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
+                style={{ flex: 1, height: '44px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>Decline</button>
+            </div>
+          </>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            {avatar}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
+                <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
+              </div>
+              {conn.requestMessage && (
+                <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: "-apple-system, 'SF Pro Text', system-ui, sans-serif" }}>
@@ -582,7 +648,6 @@ export default function HelperDashboard() {
                 </SegmentEmpty>
               )}
               {visibleConnections.map((conn, i) => {
-                const isIncoming = conn.status === 'PENDING' && !conn.initiatedByMe;
                 const avatar = (
                   <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>
                     {initials(conn.otherUserName)}
@@ -591,42 +656,16 @@ export default function HelperDashboard() {
                 return (
                 <div key={conn.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '22px',
-                  border: isIncoming ? '1px solid #BFD9EA' : '1px solid #e0e0e0',
+                  border: '1px solid #e0e0e0',
                   animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
                 }}>
-                  {isIncoming ? (
-                    <>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-                          {avatar}
-                          <div style={{ minWidth: 0 }}>
-                            <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>wants to connect with you</p>
-                            {conn.requestMessage && (
-                              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
-                            )}
-                          </div>
-                        </div>
-                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)', padding: '5px 12px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>New Request</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                        <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-                          style={{ flex: 1, height: '44px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>Accept</button>
-                        <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-                          style={{ flex: 1, height: '44px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>Decline</button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Identity row */}
+                  {/* Identity row */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         {avatar}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
-                            {conn.status !== 'ACTIVE' ? (
-                              <span style={{ display: 'inline-block', ...statusStyle('PENDING') }}>Request Sent</span>
-                            ) : conn.currentTrustLevel !== 'TRUSTED' && (
+                            {conn.currentTrustLevel !== 'TRUSTED' && (
                               // In-progress stages show a blue pill; "Fully Trusted" is omitted
                               // here since it's already shown in the trust-ladder card below.
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
@@ -635,21 +674,17 @@ export default function HelperDashboard() {
                               </div>
                             )}
                           </div>
-                          {conn.status === 'ACTIVE' && conn.otherUserPhone && (
+                          {conn.otherUserPhone && (
                             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '7px' }}>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a6470" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                               {conn.otherUserPhone}
                             </p>
                           )}
-                          {conn.requestMessage && conn.status !== 'ACTIVE' && (
-                            <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontStyle: 'italic', margin: '6px 0 0' }}>"{conn.requestMessage}"</p>
-                          )}
                         </div>
                       </div>
 
                       {/* Action bar */}
-                      {conn.status === 'ACTIVE' && (
-                        endingConn === conn.id ? (
+                      {endingConn === conn.id ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this elder'}?</span>
                             <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '36px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
@@ -676,10 +711,7 @@ export default function HelperDashboard() {
                             )}
                             <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: 'var(--red-tint)', color: '#CF6A66', border: '1px solid #F3CDCD', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
-                        )
-                      )}
-                    </>
-                  )}
+                        )}
 
                   {reviewingConn === conn.id && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -728,6 +760,44 @@ export default function HelperDashboard() {
                 </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Requests tab — every pending connection request in one place */}
+          {tab === 'requests' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
+                Requests
+              </h2>
+              {loading && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[1,2].map(i => (
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                  ))}
+                </div>
+              )}
+              {!loading && incomingRequests.length === 0 && sentRequests.length === 0 && (
+                <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>}>
+                  No requests right now. When someone wants to connect, you'll see it here.
+                </SegmentEmpty>
+              )}
+              {!loading && incomingRequests.length > 0 && (
+                <>
+                  {sentRequests.length > 0 && (
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--ink-slate)', letterSpacing: '0.3px', textTransform: 'uppercase', margin: '4px 2px 0' }}>New Invites</p>
+                  )}
+                  {[...incomingRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))}
+                </>
+              )}
+              {!loading && sentRequests.length > 0 && (
+                <>
+                  {incomingRequests.length > 0 && (
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--ink-slate)', letterSpacing: '0.3px', textTransform: 'uppercase', margin: '12px 2px 0' }}>Requests You Sent</p>
+                  )}
+                  {[...sentRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))}
+                </>
+              )}
             </div>
           )}
 
