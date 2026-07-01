@@ -23,6 +23,7 @@ public class ConnectionResponse {
     private boolean initiatedByMe;
     private String otherUserPhone;
     private Integer otherUserAge;
+    private String otherUserPhotoUrl;
     private String requestMessage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
