@@ -19,6 +19,7 @@ public class NeedResponse {
     private NeedSchedule schedule;
     private NeedUrgency urgency;
     private NeedStatus status;
+    private ApplicationStatus myApplicationStatus;
     private Double distanceKm;
     private LocalDateTime createdAt;
     private List<ApplicantDto> applications;

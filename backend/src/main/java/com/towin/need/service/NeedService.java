@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -73,14 +74,16 @@ public class NeedService {
     }
 
     public List<NeedResponse> getAllOpen(UUID helperId) {
+        Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
         return needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN)
                 .stream()
-                .map(n -> toResponse(n, null))
+                .map(n -> toResponse(n, null, false, myApps.get(n.getId())))
                 .collect(Collectors.toList());
     }
 
     public List<NeedResponse> browseNearby(UUID helperId, Double lat, Double lng, Double radiusKm, int page, int size) {
         User helper = getUser(helperId);
+        Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
         double helperLat = lat != null ? lat : (helper.getLocationLat() != null ? helper.getLocationLat().doubleValue() : 0);
         double helperLng = lng != null ? lng : (helper.getLocationLng() != null ? helper.getLocationLng().doubleValue() : 0);
 
@@ -95,7 +98,18 @@ public class NeedService {
                 .sorted((a, b) -> Double.compare((double) a[1], (double) b[1]))
                 .skip((long) page * size)
                 .limit(size)
-                .map(pair -> toResponse((Need) pair[0], (double) pair[1]))
+                .map(pair -> {
+                    Need n = (Need) pair[0];
+                    return toResponse(n, (double) pair[1], false, myApps.get(n.getId()));
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<NeedResponse> getMyApplications(UUID helperId) {
+        return applicationRepository.findByHelperId(helperId).stream()
+                .filter(a -> a.getStatus() != ApplicationStatus.WITHDRAWN)
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .map(a -> toResponse(a.getNeed(), null, false, a.getStatus()))
                 .collect(Collectors.toList());
     }
 
@@ -230,11 +244,20 @@ public class NeedService {
         return response;
     }
 
+    private Map<UUID, ApplicationStatus> helperApplicationMap(UUID helperId) {
+        return applicationRepository.findByHelperId(helperId).stream()
+                .collect(Collectors.toMap(a -> a.getNeed().getId(), NeedApplication::getStatus, (a, b) -> a));
+    }
+
     private NeedResponse toResponse(Need need, Double distanceKm) {
-        return toResponse(need, distanceKm, false);
+        return toResponse(need, distanceKm, false, null);
     }
 
     private NeedResponse toResponse(Need need, Double distanceKm, boolean includeApplicants) {
+        return toResponse(need, distanceKm, includeApplicants, null);
+    }
+
+    private NeedResponse toResponse(Need need, Double distanceKm, boolean includeApplicants, ApplicationStatus myStatus) {
         String elderName = elderProfileRepository.findByUserId(need.getElder().getId())
                 .map(p -> p.getName())
                 .orElse(need.getElder().getEmail());
@@ -266,6 +289,7 @@ public class NeedService {
                 .schedule(need.getSchedule())
                 .urgency(need.getUrgency())
                 .status(need.getStatus())
+                .myApplicationStatus(myStatus)
                 .distanceKm(distanceKm != null ? Math.round(distanceKm * 10.0) / 10.0 : null)
                 .createdAt(need.getCreatedAt())
                 .applications(applications)

@@ -15,6 +15,8 @@ public interface NeedApplicationRepository extends JpaRepository<NeedApplication
 
     List<NeedApplication> findByNeedId(UUID needId);
 
+    List<NeedApplication> findByHelperId(UUID helperId);
+
     Optional<NeedApplication> findByNeedIdAndHelperId(UUID needId, UUID helperId);
 
     boolean existsByNeedIdAndHelperId(UUID needId, UUID helperId);
