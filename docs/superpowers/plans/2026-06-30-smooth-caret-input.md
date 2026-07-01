@@ -16,6 +16,29 @@
 
 ---
 
+## Implementation notes (post-execution deltas)
+
+Three things surfaced while executing; the shipped code reflects these, not the
+literal code blocks below:
+
+1. **`email` excluded from the smooth set.** `email` inputs return `null` for
+   `selectionStart`/`selectionEnd`, so the caret can't be tracked; the real
+   `SMOOTH_TYPES` is `{ text, password, tel, url, search }`. Email fields (Register,
+   ForgotPassword, Feedback) render the native caret via the passthrough branch.
+2. **A third flex-row field:** `ProfileEdit.jsx:495` (the location search) is also
+   a `flex:1` child, so it gets `wrapperStyle={{ flex: 1 }}` too — alongside
+   `ProfileEdit:577` and `LocationPrompt:41`.
+3. **Two lint-driven refinements** in `SmoothInput.jsx`: `motion.span` is aliased to
+   a capitalized `MotionSpan` (project ESLint has no `jsx-uses-vars`), and the
+   "latest closure" ref is assigned inside a `useEffect` rather than during render
+   (per `react-hooks/refs`).
+
+Verified on the running app (Playwright + installed Chrome): caret tracks typing on
+text/tel/search fields; passwords mask with the caret over bullets; email/date/file
+and `prefers-reduced-motion` fall back to native; flex-row fields fill their row
+(location wrapper 331px in a 410px row); no console errors; no new lint errors
+(frontend total unchanged at 237).
+
 ## File Structure
 
 - **Create:** `frontend/src/components/SmoothInput.jsx` — the component. Single responsibility: render an input with an optional smooth-caret overlay; transparent prop/style/ref forwarding; native fallback.
@@ -35,7 +58,7 @@ Line numbers are pre-edit references; after adding the import they shift by a fe
 | `pages/ResetPassword.jsx` | 72 password, 79 password | — |
 | `pages/ChangePassword.jsx` | 82, 88, 94 (all password) | — |
 | `pages/FinishSetup.jsx` | 181 text, 204 tel | — |
-| `pages/ProfileEdit.jsx` | 374, 423, 430, 446, 450, 454, 458, 470, 483, 487, 495, 577¹, 679, 683, 689 (text) | 303 file, 397 number, 466 date, 606 file, 693 number |
+| `pages/ProfileEdit.jsx` | 374, 423, 430, 446, 450, 454, 458, 470, 483, 487, 495¹, 577¹, 679, 683, 689 (text) | 303 file, 397 number, 466 date, 606 file, 693 number |
 | `pages/Feedback.jsx` | 170 text, 175 email, 180 tel | — |
 | `pages/EmergencyContacts.jsx` | 363, 369, 377 (text) | 383 number |
 | `pages/Admin.jsx` | 390 text | — |
@@ -43,7 +66,7 @@ Line numbers are pre-edit references; after adding the import they shift by a fe
 | `pages/MessagesInbox.jsx` | 170 text | — |
 | `components/LocationPrompt.jsx` | 41¹ text | — |
 
-¹ **Flex-row field** — relies on `flex:1` to grow; use `wrapperStyle={{ flex: 1 }}` (see Task 5, Step 2a).
+¹ **Flex-row field** — relies on `flex:1` to grow; use `wrapperStyle={{ flex: 1 }}` (see Task 5, Step 2a). Three of these: `ProfileEdit:495`, `ProfileEdit:577`, `LocationPrompt:41`.
 
 The swap is mechanical: change the tag name `<input` → `<SmoothInput` (and its self-closing `/>` stays). All attributes (`className`, `style`, `value`, `onChange`, `{...f('x')}` spreads, `required`, `placeholder`, `autoComplete`, `paddingRight`, error `borderColor`) are forwarded unchanged.
 
