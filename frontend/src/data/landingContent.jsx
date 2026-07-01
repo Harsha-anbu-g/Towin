@@ -288,7 +288,7 @@ export const SLIDES = [
     render: () => (
       <>
         <Kicker>The problem we solve</Kicker>
-        <Title>Help is hard to find alone for older people</Title>
+        <Title>Help is hard to find alone for elder people</Title>
         <Lead>
           Small daily things, like shopping, a ride, or someone to talk to, take
           energy that elders don&apos;t always have.
