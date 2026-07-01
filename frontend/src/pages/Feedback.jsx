@@ -2,6 +2,7 @@ import { useState } from 'react';
 import api from '../api/axios';
 import { Mail, Phone, MapPin, Briefcase, Code2, Camera, Globe, Star } from 'lucide-react';
 import SiteFooter from '../components/SiteFooter';
+import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -167,17 +168,17 @@ export default function Feedback() {
                 <div className="fb-3col">
                   <div>
                     <label style={labelStyle}>Name <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
-                    <input style={inputStyle} value={form.name}
+                    <SmoothInput style={inputStyle} value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name" />
                   </div>
                   <div>
                     <label style={labelStyle}>Email <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
-                    <input type="email" style={inputStyle} value={form.email}
+                    <SmoothInput type="email" style={inputStyle} value={form.email}
                       onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="you@example.com" />
                   </div>
                   <div>
                     <label style={labelStyle}>Phone <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
-                    <input type="tel" style={inputStyle} value={form.phone}
+                    <SmoothInput type="tel" style={inputStyle} value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+1 000-000-0000" />
                   </div>
                 </div>
