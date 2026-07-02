@@ -22,22 +22,22 @@ this map with zero extra work.
 
 For reading the API without running the backend:
 
-- **`towin-api-docs.html`** ← a single self-contained file (Redoc engine + spec both
-  inlined). **Open it in any browser, fully offline** — no server, no CDN. 16
-  controllers, every endpoint, request/response schemas, auth.
+- **`towin-api-docs.html`** ← the **exact same Swagger UI as `localhost:8080`**, as a
+  single self-contained file (swagger-ui CSS + JS + the OpenAPI spec all inlined).
+  **Open it in any browser, fully offline** — no server, no CDN. Same topbar, same
+  green Authorize button, all 16 controllers and endpoints. (Try-it-out can't reach a
+  live server offline, but every endpoint, schema, and auth detail is browsable.)
 - **`towin-openapi.json`** / **`towin-openapi.yaml`** — the raw spec. Import into
   Postman, Insomnia, IntelliJ's HTTP client, or paste at https://editor.swagger.io.
 
-Regenerate (spec changes) from this folder:
+Regenerate (after the API changes) with the backend running on :8080:
 
 ```bash
-./build-offline-api-docs.sh          # uses the committed towin-openapi.json
-./build-offline-api-docs.sh --fresh  # pull a fresh spec from a running :8080 first
+./build-offline-api-docs.sh
 ```
 
-> Note: `npx @redocly/cli build-docs` alone is **not** offline-safe — it links the
-> Redoc script from a CDN. The script above inlines it so the file works with no
-> internet.
+> It pulls the swagger-ui assets straight from your running backend, so the offline
+> copy matches your local Swagger UI byte-for-byte.
 
 ## Frontend — module dependency graph (dependency-cruiser)
 
