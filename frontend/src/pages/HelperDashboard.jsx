@@ -168,7 +168,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
             <span style={greenPill}>{check}You're helping</span>
           ) : mine === 'PENDING' ? (
             <>
-              <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', padding: '0 18px', background: '#f3f4f6', color: 'var(--ink-slate)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>Waiting to hear back</span>
+              <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', padding: '0 18px', background: '#f3f4f6', color: 'var(--ink-slate)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>Waiting to hear back — the elder reviews all helpers and picks one</span>
               <button onClick={() => onWithdraw(need.id)}
                 style={{ fontSize: '14px', color: 'var(--ink-slate)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
                 Withdraw
@@ -610,7 +610,7 @@ export default function HelperDashboard() {
           <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
           <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Waiting for response…
+            Waiting for {name} to accept — they'll see your request in their Add Friends tab.
           </p>
         </div>
         <span style={{
