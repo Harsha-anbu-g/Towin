@@ -260,6 +260,13 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hi Arthur! I saw you enjoy chess and history. I'd love to help out and maybe learn a thing or two from you!",
                 true, false);
 
+        // One-time repair for DBs seeded before the default changed: earlier seeds
+        // set both confirm flags true on active connections, an impossible state
+        // (both-confirmed advances the level instantly and resets the flags). Left
+        // stuck, those cards showed "trust is advancing" that never advanced. Reset
+        // them to the realistic "waiting for the elder to advance" state.
+        normalizeStuckTrustFlags();
+
         // James + Margaret are TRUSTED — the top of the ladder — so their thread
         // walks the full trust journey in order, spread across ~3 weeks so the
         // Messages screen draws natural date separators between stages. The last
@@ -442,6 +449,22 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     // ── helpers ──────────────────────────────────────────────────────────
 
+    /** Reset any ACTIVE connection stuck with both confirm flags true back to
+     *  false. Both-true never persists in production (it advances the level and
+     *  resets), so this only ever touches the old seed artifact — real one-sided
+     *  confirmations (true/false) and pending requests are left untouched. */
+    private void normalizeStuckTrustFlags() {
+        for (Connection c : connectionRepository.findAll()) {
+            if (c.getStatus() == ConnectionStatus.ACTIVE
+                    && Boolean.TRUE.equals(c.getConfirmedByA())
+                    && Boolean.TRUE.equals(c.getConfirmedByB())) {
+                c.setConfirmedByA(false);
+                c.setConfirmedByB(false);
+                connectionRepository.save(c);
+            }
+        }
+    }
+
     private User ensureUser(String email, String phone, UserRole role, String rawPassword) {
         Optional<User> existing = userRepository.findByEmail(email);
         if (existing.isPresent()) {
@@ -576,8 +599,12 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private Connection ensureConnection(User a, User b, ConnectionStatus status,
                                         TrustLevel level, User initiator, String requestMessage) {
-        boolean active = status == ConnectionStatus.ACTIVE;
-        return ensureConnection(a, b, status, level, initiator, requestMessage, active, active);
+        // Default to nobody having confirmed the *current* level yet. Both-confirmed
+        // is an impossible production state — the moment both sides confirm, the level
+        // advances and both flags reset (see TrustService.confirmTrustLevel). Seeding
+        // both-true left connections stuck showing "trust is advancing" forever; false,
+        // false gives the realistic "elder must advance next, helper waits to accept".
+        return ensureConnection(a, b, status, level, initiator, requestMessage, false, false);
     }
 
     /** Variant with explicit per-side confirm flags — used to stage a connection
