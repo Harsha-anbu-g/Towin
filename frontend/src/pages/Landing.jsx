@@ -239,17 +239,6 @@ export default function Landing() {
                 onAdvance={() => setIndex(i => Math.min(total - 1, i + 1))}
               />
             </div>
-            {/* Always-visible real exit, so a confused tapper can reach the app immediately. */}
-            <button
-              onClick={() => navigate('/login')}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: SF, fontSize: '15px', fontWeight: 600,
-                color: 'var(--ink-4)', padding: '6px 4px',
-              }}
-            >
-              Skip the tour →
-            </button>
           </div>
         )}
 
