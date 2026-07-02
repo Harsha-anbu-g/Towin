@@ -119,7 +119,7 @@ export default function Landing() {
 
   return (
     <div style={{
-      height: '100%', minHeight: 0, overflow: 'hidden',
+      height: '100svh', minHeight: 0, overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
       background:
         'radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.8) 0%, transparent 55%),' +
@@ -149,18 +149,6 @@ export default function Landing() {
           Already a member? Log in
         </Link>
       </header>
-
-      {/* Framing pill: makes it unmistakable that this is a tour, not the live app.
-          Shown on every slide so a tapping user always sees what they're looking at. */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 40px 4px' }}>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: '7px',
-          fontFamily: SF, fontSize: '13px', fontWeight: 600, color: SKY,
-          padding: '6px 14px', letterSpacing: '0.2px',
-        }}>
-          A quick look at how ToWin works
-        </span>
-      </div>
 
       {/* Slide content — key remounts the wrapper so .bf re-animates per slide.
           The middle scrolls on its own only when a slide is taller than the
