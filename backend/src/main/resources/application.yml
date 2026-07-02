@@ -68,6 +68,11 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  admin:
+    # Admin account is created/reconciled at startup from these values (source of
+    # truth) — no admin credential lives in the repo. Leave blank to skip.
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
   oauth:
     frontend-redirect: ${APP_OAUTH_FRONTEND_REDIRECT:http://localhost:5173}
   mail:
