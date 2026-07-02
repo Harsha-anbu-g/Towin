@@ -4,7 +4,7 @@
 
 ### It takes two To Win.
 
-One who helps, one who gets help — and both win.
+Youngers who help, elders who get help — and both win.
 
 **[🚀 Try the live demo →](https://towin.vercel.app)**
 
