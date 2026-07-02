@@ -720,9 +720,9 @@ export default function ElderDashboard() {
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--blue)', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
-                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--blue)', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="#F4C95E" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>
@@ -931,7 +931,7 @@ export default function ElderDashboard() {
                               </button>
                             )}
                             <button onClick={() => navigate(`/user/${helper.userId}`)}
-                              style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--blue)', border: '1px solid #BFD9EA', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                              style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                               View Profile
                             </button>
                           </div>
@@ -1055,7 +1055,7 @@ export default function ElderDashboard() {
                         </div>
                       )}
                       <button onClick={() => completeNeed(need.id)}
-                        style={{ height: '42px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
+                        style={{ height: '42px', padding: '0 22px', background: 'var(--green-deep)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
                         Mark as Complete
                       </button>
                     </div>
@@ -1094,7 +1094,7 @@ export default function ElderDashboard() {
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                           {acceptedApp && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>Helped by <strong style={{ color: 'var(--ink)' }}>{acceptedApp.helperName}</strong></span>}
-                          <button onClick={() => setReviewingNeed(need.id)} style={{ height: '42px', padding: '0 20px', background: '#fff', color: 'var(--blue)', border: '1px solid #BFD9EA', borderRadius: '10px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
+                          <button onClick={() => setReviewingNeed(need.id)} style={{ height: '42px', padding: '0 20px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
                             ★ Leave a Review
                           </button>
                         </div>
