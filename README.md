@@ -95,7 +95,7 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
 - 🤝 **Build trust gradually** — connections move through levels (message → phone → meet), and **both people** confirm each step.
 - 📝 **Post & answer needs** — elders post tasks, helpers apply, accepting one starts a connection.
 - 💬 **Message privately** — chat opens once you connect; phone numbers stay hidden until trust is earned.
-- ⭐ **Earn a trust score** — verification, completed help, and reviews build a 0–100 score.
+- ⭐ **Earn a trust score** — verification, trust-ladder progress, and reviews build your score, one connection at a time.
 - 🔥 **Keep a streak** — daily elder check-ins.
 - 🚨 **Stay safe** — emergency contacts, SOS, reviews, and reports.
 - 👀 **Try it instantly** — one-click guest mode for beta testers.
@@ -154,17 +154,25 @@ ToWin/
 
 ## 🧠 How the trust score works
 
+Trust is scored **per connection**. Every active friendship is worth up to **15 points**, and your total score is the sum across all of them — so trust grows with real relationships, not one-off form-filling.
+
 | Factor | Points |
 |---|---|
-| Phone verified | +10 |
-| ID verified | +20 |
-| Each trusted connection *(max +25)* | +5 |
-| Each completed help *(max +15)* | +3 |
-| Average review rating | 0–10 |
-| Active 30+ days | +5 |
-| Each report received | −15 |
+| **Rooting** — each stage you climb on the Trust Ladder with that person | +1 per stage *(max +7)* |
+| **Review** — stars from that person's latest review of you | +1 per star *(max +5)* |
+| **Profile** — how complete your own profile is | *(max +3)* |
 
-Scored 0–100, with auto-suspend on abuse.
+Your profile (photo, bio, occupation, interests, social link, plus phone & ID verification) is split into **3 groups**; each fully-filled group is worth +1 and is counted toward *every* connection.
+
+As your total grows, you move up tiers:
+
+| Score | Tier |
+|---|---|
+| 90+ | Community Champion |
+| 45+ | Highly Trusted |
+| 15+ | Reliable |
+| 1+ | Getting Started |
+| 0 | New Member |
 
 **Roles:** `ELDER` · `HELPER` · `ADMIN` *(a `BOTH` role is reserved for a future feature)*
 
