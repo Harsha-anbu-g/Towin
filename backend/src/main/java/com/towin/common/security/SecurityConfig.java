@@ -70,6 +70,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
+                // OpenAPI docs + Swagger UI (API explorer) — public so the spec is browsable.
+                .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml",
+                    "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/feedback").permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()

@@ -33,6 +33,9 @@ build/
 .playwright-mcp/
 graphify-out/
 docs-generated/
+# dependency-cruiser interactive report (regenerable via `npm run graph:report`);
+# the small Mermaid snapshot (.mmd) is kept as a viewable, GitHub-renderable diagram.
+docs/architecture/frontend-deps.html
 
 # Archived local working files (dev screenshots, tool output) — kept local, never published
 .artifacts/
