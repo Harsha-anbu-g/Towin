@@ -68,4 +68,6 @@ client_secret_*.json
 owasp-top-10-towin.*
 q-and-a-interview.*
 linkedin-video-scripts.*
+docs/SECURITY-AUDIT.md
+docs/SECURITY-REPORT.md
 .vercel
