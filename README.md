@@ -121,25 +121,6 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
 
 ---
 
-## 🚀 Run it locally
-
-```bash
-# 1. Start the database (Redis + Kafka optional)
-docker compose up -d postgres
-
-# 2. Backend → http://localhost:8080
-cd backend && ./mvnw spring-boot:run
-
-# 3. Frontend → http://localhost:5173
-cd frontend && npm install && npm run dev
-```
-
-Flyway runs the migrations automatically on boot. Copy `.env.example` to `.env` first and fill in the secrets.
-
-> Want the full Redis + Kafka stack for a demo? Run `docker compose up -d` — both are enabled locally via `APP_REDIS_ENABLED` / `APP_KAFKA_ENABLED`.
-
----
-
 ## 📁 Project structure
 
 ```
