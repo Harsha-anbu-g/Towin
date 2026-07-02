@@ -774,7 +774,7 @@ export default function ElderDashboard() {
                         placeholder="Share your experience (optional)" rows={2}
                         style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #e0e0e0', fontSize: 'var(--text-sm)', resize: 'none', boxSizing: 'border-box', marginBottom: '10px' }} />
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => submitHelperReview(conn)} disabled={submittingReview} className="btn-primary" style={{ flex: 1, padding: '10px' }}>
+                        <button onClick={() => submitHelperReview(conn)} disabled={submittingReview} className="btn-confirm" style={{ flex: 1, padding: '10px' }}>
                           {submittingReview ? 'Submitting…' : 'Submit Review'}
                         </button>
                         <button onClick={() => setReviewingConn(null)} className="btn-ghost" style={{ padding: '10px 16px' }}>Cancel</button>
@@ -1085,7 +1085,7 @@ export default function ElderDashboard() {
                             Flag a safety concern
                           </label>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => submitReview(need)} disabled={submittingReview} className="btn-primary" style={{ flex: 1, padding: '10px' }}>
+                            <button onClick={() => submitReview(need)} disabled={submittingReview} className="btn-confirm" style={{ flex: 1, padding: '10px' }}>
                               {submittingReview ? 'Submitting...' : 'Submit Review'}
                             </button>
                             <button onClick={() => setReviewingNeed(null)} className="btn-ghost">Cancel</button>
