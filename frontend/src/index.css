@@ -567,6 +567,23 @@ img {
   .landing-split-text .landing-lead { text-align: center !important; }
 }
 
+/* Short-viewport laptops (e.g. 13" at 768px height) — tighten spacing so all
+   slide content fits without any scroll, which looks cheap. */
+@media (max-height: 780px) {
+  .landing-topbar { padding: 12px 40px !important; }
+  .landing-main   { padding: 12px 40px !important; }
+  .landing-footer { padding: 0 40px 20px !important; }
+  .landing-title  { font-size: 36px !important; margin-bottom: 10px !important; }
+  .landing-lead   { font-size: 18px !important; margin-bottom: 16px !important; }
+}
+@media (max-height: 680px) {
+  .landing-topbar { padding: 8px 40px !important; }
+  .landing-main   { padding: 8px 40px !important; }
+  .landing-footer { padding: 0 40px 14px !important; }
+  .landing-title  { font-size: 30px !important; margin-bottom: 8px !important; }
+  .landing-lead   { font-size: 16px !important; margin-bottom: 12px !important; }
+}
+
 /* ── Floating "Give Feedback" button ──────────────────────────────────────
    Desktop: a labelled pill. Mobile: collapse to a compact circular icon FAB so
    it stops overlapping cards in the bottom-right, and lift it above the iOS
