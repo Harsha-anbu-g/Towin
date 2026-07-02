@@ -248,7 +248,6 @@ export const SLIDES = [
         <Lead>
           Everyone on ToWin is one of these two.
         </Lead>
-        <ExampleTag />
         <CardGrid>
           <MiniCard title="Elder">
             An older person looking for friendship, company, or help with daily tasks.
@@ -305,7 +304,6 @@ export const SLIDES = [
 
         {/* Right: three score cards + total */}
         <div style={{ flexShrink: 0, width: '280px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <ExampleTag />
           <MiniCard title="Profile" badge="+3" compact>
             Full profile with ID, phone, and photo, all checked.
           </MiniCard>
@@ -357,7 +355,6 @@ export const SLIDES = [
 
         {/* Right: the ladder */}
         <div style={{ flexShrink: 0 }}>
-          <ExampleTag />
           <StageLadder stages={[
             'Just Connected', 'Messaging', 'Phone Ready', 'Video Ready',
             'Social Media', 'Ready to Meet', 'Fully Trusted',
