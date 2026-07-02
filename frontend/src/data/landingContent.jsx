@@ -233,8 +233,7 @@ export const SLIDES = [
           Connecting generations, building <span style={{ color: 'var(--trust-gold)' }}>trust</span>.
         </p>
         <Body>
-          One who helps, one who gets help, and both win. A safer place for
-          elders and helpers to meet, talk, and grow trust at their own pace.
+          A place where elders connect with younger people for company and daily help.
         </Body>
       </>
     ),
