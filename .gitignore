@@ -34,6 +34,9 @@ build/
 graphify-out/
 docs-generated/
 
+# Archived local working files (dev screenshots, tool output) — kept local, never published
+.artifacts/
+
 # Local dev assets / reference images (not part of the app)
 assets/
 
