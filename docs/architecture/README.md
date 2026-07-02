@@ -18,6 +18,27 @@ path, request/response shapes, and auth. Click **Authorize**, paste a JWT, and y
 can call secured endpoints straight from the page. Adding a new endpoint updates
 this map with zero extra work.
 
+### Offline copy (no server, no internet)
+
+For reading the API without running the backend:
+
+- **`towin-api-docs.html`** ← a single self-contained file (Redoc engine + spec both
+  inlined). **Open it in any browser, fully offline** — no server, no CDN. 16
+  controllers, every endpoint, request/response schemas, auth.
+- **`towin-openapi.json`** / **`towin-openapi.yaml`** — the raw spec. Import into
+  Postman, Insomnia, IntelliJ's HTTP client, or paste at https://editor.swagger.io.
+
+Regenerate (spec changes) from this folder:
+
+```bash
+./build-offline-api-docs.sh          # uses the committed towin-openapi.json
+./build-offline-api-docs.sh --fresh  # pull a fresh spec from a running :8080 first
+```
+
+> Note: `npx @redocly/cli build-docs` alone is **not** offline-safe — it links the
+> Redoc script from a CDN. The script above inlines it so the file works with no
+> internet.
+
 ## Frontend — module dependency graph (dependency-cruiser)
 
 Shows how `frontend/src` modules import each other (pages → components / context →
