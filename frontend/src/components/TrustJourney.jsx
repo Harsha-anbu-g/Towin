@@ -59,7 +59,7 @@ export default function TrustJourney({
     let message, button = null;
     if (isElder && !confirmedByMe)            { message = current.nextAction;                                                  button = advanceBtn('Advance →'); }
     else if (isElder && confirmedByMe)        { message = `Request sent — waiting for ${otherUserName} to accept.`; }
-    else if (!isElder && !confirmedByOther)   { message = `${otherUserName} decides when to move forward${current.helperNextAction ? ` (next: ${current.helperNextAction})` : ''}. You'll get a tap to confirm when they're ready.`; }
+    else if (!isElder && !confirmedByOther)   { message = `Waiting for ${otherUserName} to move to the next step.`; }
     else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} is ready to ${current.helperNextAction || 'advance'}. Confirm to move forward together.`; button = advanceBtn('Accept →'); }
     else                                      { message = `You accepted — trust is advancing.`; }
     footer = (
