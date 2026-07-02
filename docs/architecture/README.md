@@ -28,12 +28,22 @@ npm run graph          # visual flow chart  -> docs/architecture/frontend-deps.m
 npm run graph:report   # interactive report -> docs/architecture/frontend-deps.html
 ```
 
-- **`frontend-deps.mmd`** — a Mermaid flow chart. Preview it in VS Code (Markdown
-  Preview Mermaid Support), on GitHub, or at https://mermaid.live. No extra tools.
-- **`frontend-deps.html`** — an interactive dependency report you open in a browser.
+### Which file to open
 
-### Optional: rendered SVG
-The Mermaid file needs no tooling. For a classic Graphviz SVG instead:
+- **`frontend-deps.svg`** ← easiest. A rendered flow chart. **Open it in a browser**
+  (drag the file into any browser tab, or right-click → Open With → your browser) and
+  zoom with ⌘/Ctrl +/−. Also renders on GitHub. No tools, no server.
+- **`frontend-deps.mmd`** — the Mermaid source. In VS Code it only renders with the
+  **"Markdown Preview Mermaid Support"** extension; otherwise paste it into
+  https://mermaid.live. GitHub renders it too.
+- **`frontend-deps.html`** — an interactive dependency matrix.
+
+> ⚠️ **`.html` / `.svg` won't render inside the VS Code editor** — double-clicking
+> just shows the source text. That's expected: open them in a **browser**, not the editor.
+
+### Regenerating
+`npm run graph` / `graph:report` rebuild the `.mmd` / `.html`. The committed `.svg`
+was rendered from the `.mmd`. To refresh the SVG with the classic Graphviz look:
 
 ```bash
 brew install graphviz
