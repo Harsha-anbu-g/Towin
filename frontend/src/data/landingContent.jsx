@@ -247,8 +247,7 @@ export const SLIDES = [
         <Kicker>Who it&apos;s for</Kicker>
         <Title>Two kinds of people</Title>
         <Lead>
-          Everyone on ToWin is one of these two. You pick yours when you
-          create your account.
+          Everyone on ToWin is one of these two.
         </Lead>
         <ExampleTag />
         <CardGrid>
