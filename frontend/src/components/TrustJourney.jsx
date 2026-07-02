@@ -61,7 +61,7 @@ export default function TrustJourney({
     else if (isElder && confirmedByMe)        { const next = LEVELS[idx + 1]; message = `You asked to move to ${next?.label || 'the next step'} — waiting for ${otherUserName} to confirm. They'll get a tap on their side.`; }
     else if (!isElder && !confirmedByOther)   { const next = LEVELS[idx + 1]; message = `Waiting for ${otherUserName} to advance to ${next?.label || 'the next step'}. They decide when to move forward — you'll get a tap to confirm when they're ready.`; }
     else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} is ready to ${current.helperNextAction || 'advance'}. Confirm to move forward together.`; button = advanceBtn('Accept →'); }
-    else                                      { message = `You accepted — trust is advancing.`; }
+    else                                      { const next = LEVELS[idx + 1]; message = `You accepted — trust is advancing to ${next?.label || 'the next step'}.`; }
     footer = (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #D8EAF4' }}>
         <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
