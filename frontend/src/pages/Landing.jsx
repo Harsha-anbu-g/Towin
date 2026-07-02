@@ -181,35 +181,37 @@ export default function Landing() {
 
         {isLast ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
-            <button
-              onClick={() => navigate('/login')}
-              style={{
-                minWidth: '260px', height: '54px', background: SKY, color: '#fff',
-                border: 'none', borderRadius: '9999px', cursor: 'pointer',
-                fontFamily: SF, fontSize: '17px', fontWeight: 400,
-                boxShadow: '0 6px 20px rgba(79,163,206,0.4)',
-              }}
-            >
-              Start
-            </button>
-            <div style={{ display: 'flex', gap: '22px', alignItems: 'center' }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', gap: '12px',
+              maxWidth: '480px', width: '100%', margin: '0 auto',
+            }}>
               <button
                 onClick={() => setIndex(i => Math.max(0, i - 1))}
                 style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: SF, fontSize: '16px', fontWeight: 600,
-                  color: 'var(--ink-slate)', padding: '8px 4px',
+                  padding: '13px 28px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
+                  borderRadius: '9999px', cursor: 'pointer',
+                  background: '#fff', color: '#1d1d1f',
+                  border: '1px solid #e0e0e0',
                 }}
               >
                 Back
               </button>
-              <Link to="/how-it-works" style={{
-                fontFamily: SF, fontSize: '16px', fontWeight: 600,
-                color: SKY, textDecoration: 'none', padding: '8px 4px',
-              }}>
-                Read the full guide
-              </Link>
+              <ChargingNext
+                key={slide.id}
+                slideKey={slide.id}
+                durationMs={slide.readMs || 3000}
+                label="Start"
+                alreadySeen={seen.has(index)}
+                onCharged={() => setSeen(s => new Set(s).add(index))}
+                onAdvance={() => navigate('/login')}
+              />
             </div>
+            <Link to="/how-it-works" style={{
+              fontFamily: SF, fontSize: '16px', fontWeight: 600,
+              color: SKY, textDecoration: 'none', padding: '8px 4px',
+            }}>
+              Read the full guide
+            </Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
