@@ -51,13 +51,17 @@ npm run graph:report   # interactive report -> docs/architecture/frontend-deps.h
 
 ### Which file to open
 
-- **`frontend-deps.svg`** ← easiest. A rendered flow chart. **Open it in a browser**
-  (drag the file into any browser tab, or right-click → Open With → your browser) and
-  zoom with ⌘/Ctrl +/−. Also renders on GitHub. No tools, no server.
+- **`frontend-deps-viewer.html`** ← best. A self-contained **zoom + pan viewer** for the
+  graph (fits to screen, scroll to zoom, drag to pan, +/−/reset buttons). Open in any
+  browser, offline. Best because the raw graph is a very wide ribbon that's hard to read
+  without zoom.
+- **`frontend-deps.svg`** — the same flow chart as a plain image. Opens in a browser and
+  renders on GitHub, but it's ~9600px wide, so you'll be zooming a lot — the viewer above
+  is nicer.
 - **`frontend-deps.mmd`** — the Mermaid source. In VS Code it only renders with the
   **"Markdown Preview Mermaid Support"** extension; otherwise paste it into
   https://mermaid.live. GitHub renders it too.
-- **`frontend-deps.html`** — an interactive dependency matrix.
+- **`frontend-deps.html`** — an interactive dependency matrix *(local only — gitignored)*.
 
 > ⚠️ **`.html` / `.svg` won't render inside the VS Code editor** — double-clicking
 > just shows the source text. That's expected: open them in a **browser**, not the editor.
