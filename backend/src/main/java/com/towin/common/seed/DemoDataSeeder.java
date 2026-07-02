@@ -86,7 +86,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             ELDER_DEMO_EMAIL, HELPER_DEMO_EMAIL,
             "demo.priya@towin.app", "demo.tom@towin.app", "demo.david@towin.app",
             "demo.grace@towin.app", "demo.nina@towin.app", "demo.rose@towin.app",
-            "demo.helen@towin.app", "demo.arthur@towin.app");
+            "demo.helen@towin.app", "demo.arthur@towin.app", "demo.sofia@towin.app");
 
     // All demo personas (elders and helpers) are pinned to Montreal, Canada so
     // they cluster together and "near me" discovery matches across both roles.
@@ -162,8 +162,9 @@ public class DemoDataSeeder implements ApplicationRunner {
         User rose     = ensureUser("demo.rose@towin.app",  "+14165550108", UserRole.ELDER,  "DemoRose!2026");
         User helen    = ensureUser("demo.helen@towin.app", "+14165550109", UserRole.ELDER,  "DemoHelen!2026");
         User arthur   = ensureUser("demo.arthur@towin.app","+14165550110", UserRole.ELDER,  "DemoArthur!2026");
+        User sofia    = ensureUser("demo.sofia@towin.app", "+14165550111", UserRole.HELPER, "DemoSofia!2026");
 
-        List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur);
+        List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur, sofia);
 
         // Clear anything visitors left on the public demo accounts so the rest of
         // this method re-seeds a clean, minimal showcase (one of each type).
@@ -226,14 +227,20 @@ public class DemoDataSeeder implements ApplicationRunner {
                 Gender.FEMALE, "Driver", null,
                 "https://facebook.com/nina.helper.tw", null,
                 new String[]{"English"});
+        ensureHelperProfile(sofia, "Sofia Reyes", 29,
+                "Retired teacher's aide. I love reading aloud, gardening, and gentle tech help.",
+                new String[]{"Companionship", "Technology", "Gardening"}, new String[]{"Reading", "Gardening"},
+                Gender.FEMALE, "Community Volunteer", null,
+                "https://facebook.com/sofia.helper.tw", null,
+                new String[]{"English", "Spanish"});
 
         // Connections cover every state a viewer can act on:
         //  • TRUSTED   — top of the ladder, fully progressed
         //  • PHONE_CALL with the helper already confirmed — Margaret sees a live
         //    "confirm to advance" button (the core trust step in action)
-        //  • PENDING incoming — Margaret can accept or decline
-        //  • a PENDING request waiting on the helper (James) too, so the helper
-        //    account also has an accept/decline to show
+        //  • PENDING incoming/outgoing on BOTH demo accounts, so Add Friends →
+        //    New Invites and Requested are populated for the elder (Margaret) and
+        //    the helper (James) alike — see the four PENDING rows below.
         Connection cTrusted = ensureConnection(margaret, james, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, james,
                 "Hi Margaret, I'd love to help with tech or play a game of chess!");
         // confirmedByA=false (Margaret), confirmedByB=true (Priya) → confirm button live for Margaret
@@ -258,6 +265,14 @@ public class DemoDataSeeder implements ApplicationRunner {
         // PENDING: Harsha → Arthur (shows in Harsha's Requested tab)
         ensureConnection(james, arthur, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, james,
                 "Hi Arthur! I saw you enjoy chess and history. I'd love to help out and maybe learn a thing or two from you!",
+                true, false);
+        // PENDING: Nina → Margaret (shows in Margaret's New Invites tab — she can accept/decline)
+        ensureConnection(nina, margaret, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, nina,
+                "Hello Margaret! I'm Nina. I saw you love gardening — I'd be happy to help with errands or a lift, and a good chat.",
+                true, false);
+        // PENDING: Margaret → Sofia (shows in Margaret's Requested tab — waiting on Sofia)
+        ensureConnection(margaret, sofia, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, margaret,
+                "Hi Sofia! Your profile looked wonderful — I'd love a hand getting the hang of my new tablet.",
                 true, false);
 
         // One-time repair for DBs seeded before the default changed: earlier seeds
