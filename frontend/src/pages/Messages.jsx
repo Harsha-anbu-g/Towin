@@ -271,8 +271,8 @@ export default function Messages() {
               <button
                 type="submit"
                 disabled={reporting}
-                className="primary-btn"
-                style={{ background: '#cc3333', fontSize: '14px', padding: '7px 16px' }}
+                className="btn-danger"
+                style={{ fontSize: '14px', padding: '7px 16px' }}
               >
                 {reporting ? 'Submitting...' : 'Submit Report'}
               </button>

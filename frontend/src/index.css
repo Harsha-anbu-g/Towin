@@ -262,7 +262,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .shimmer-btn:disabled { opacity: 0.55; cursor: not-allowed; animation: none; background: #94a3b8; }
 
 /* Ghost button */
-.ghost-btn {
+.ghost-btn, .btn-ghost {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
@@ -274,7 +274,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
-.ghost-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(37,99,235,0.04); }
+.ghost-btn:hover, .btn-ghost:hover { border-color: var(--blue); color: var(--blue); background: rgba(37,99,235,0.04); }
 
 /* Primary button (non-shimmer) */
 .primary-btn {
@@ -309,11 +309,58 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .btn-primary:hover { opacity: 0.85; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* Confirm / save button — green, for positive submit actions */
+.btn-confirm {
+  background: var(--green-deep);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 11px 22px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-confirm:hover { opacity: 0.85; }
+.btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Danger button — red, for destructive / report actions */
+.btn-danger {
+  background: var(--red-deep);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-danger:hover { opacity: 0.85; }
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Text button — tertiary, no background or border */
+.btn-text {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--blue-deep);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-text:hover { opacity: 0.65; }
+
 /* ─── Touch targets (accessibility) ───────────────────────────────────────
    Floor the pill buttons at 44px tall (WCAG 2.5.5 / Apple HIG) for older users,
    and center their content. Scoped to these real buttons so inline link-style
    buttons (e.g. Terms/Privacy inside a sentence) are unaffected. */
-.shimmer-btn, .ghost-btn, .primary-btn, .btn-primary {
+.shimmer-btn, .ghost-btn, .btn-ghost, .primary-btn, .btn-primary, .btn-confirm, .btn-danger, .btn-text {
   min-height: 44px;
   display: inline-flex;
   align-items: center;

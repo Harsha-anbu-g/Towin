@@ -796,7 +796,7 @@ export default function HelperDashboard() {
                         Report a safety concern
                       </label>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => submitElderReview(conn)} disabled={submittingReview} className="btn-primary" style={{ flex: 1, padding: '10px' }}>
+                        <button onClick={() => submitElderReview(conn)} disabled={submittingReview} className="btn-confirm" style={{ flex: 1, padding: '10px' }}>
                           {submittingReview ? 'Submitting...' : 'Submit Review'}
                         </button>
                         <button onClick={() => setReviewingConn(null)} className="btn-ghost">Cancel</button>

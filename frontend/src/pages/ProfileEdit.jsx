@@ -532,8 +532,8 @@ export default function ProfileEdit() {
                         className="field"
                         wrapperStyle={{ flex: 1 }}
                       />
-                      <button type="button" onClick={saveLocation} disabled={savingLocation || locationSaved} className="primary-btn"
-                        style={{ fontSize: '14px', whiteSpace: 'nowrap', background: locationSaved ? '#4CAF50' : undefined, transition: 'background 0.2s' }}>
+                      <button type="button" onClick={saveLocation} disabled={savingLocation || locationSaved} className="ghost-btn"
+                        style={{ fontSize: '14px', whiteSpace: 'nowrap', color: locationSaved ? 'var(--green-deep)' : undefined, borderColor: locationSaved ? 'var(--green-deep)' : undefined }}>
                         {savingLocation ? 'Saving…' : locationSaved ? 'Saved ✓' : 'Save'}
                       </button>
                     </div>
@@ -727,18 +727,10 @@ export default function ProfileEdit() {
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                          <button type="submit" disabled={emAdding} style={{
-                            flex: 1, background: SKY, color: '#fff', border: 'none',
-                            borderRadius: '9999px', padding: '10px 0', fontSize: 'var(--text-sm)',
-                            fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
-                          }}>
+                          <button type="submit" disabled={emAdding} className="btn-confirm" style={{ flex: 1, fontSize: 'var(--text-sm)' }}>
                             {emAdding ? 'Adding…' : 'Add Contact'}
                           </button>
-                          <button type="button" onClick={() => { setEmShowAdd(false); setEmMsg(''); }} style={{
-                            flex: 1, background: 'transparent', color: 'var(--ink-3)',
-                            border: '1.5px solid #e0e0e0', borderRadius: '9999px', padding: '10px 0',
-                            fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
-                          }}>
+                          <button type="button" onClick={() => { setEmShowAdd(false); setEmMsg(''); }} className="ghost-btn" style={{ flex: 1, fontSize: 'var(--text-sm)' }}>
                             Cancel
                           </button>
                         </div>
@@ -858,18 +850,8 @@ export default function ProfileEdit() {
                   <button
                     type="button"
                     onClick={() => setConfirmSignOut(true)}
-                    style={{
-                      flex: 1,
-                      background: SKY,
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '9999px',
-                      padding: '10px 0',
-                      fontSize: 'var(--text-sm)',
-                      fontWeight: 600,
-                      fontFamily: SFText,
-                      cursor: 'pointer',
-                    }}
+                    className="ghost-btn"
+                    style={{ flex: 1, fontSize: 'var(--text-sm)' }}
                   >
                     Sign Out
                   </button>
