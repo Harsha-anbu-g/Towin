@@ -235,14 +235,17 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new String[]{"English", "Spanish"});
 
         // Connections cover every state a viewer can act on:
-        //  • TRUSTED   — top of the ladder, fully progressed
+        //  • TRUSTED   — top of the ladder (Grace ↔ Harsha, Margaret ↔ Tom)
         //  • PHONE_CALL with the helper already confirmed — Margaret sees a live
         //    "confirm to advance" button (the core trust step in action)
         //  • PENDING incoming/outgoing on BOTH demo accounts, so Add Friends →
         //    New Invites and Requested are populated for the elder (Margaret) and
         //    the helper (James) alike — see the four PENDING rows below.
-        Connection cTrusted = ensureConnection(margaret, james, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, james,
-                "Hi Margaret, I'd love to help with tech or play a game of chess!");
+        //
+        // Margaret and Harsha (the two public demo accounts) are deliberately NOT
+        // connected in the baseline: the product walkthrough is recorded live on
+        // these accounts (post → offer → accept), and any baseline row between
+        // them would be resurrected at its old trust level by acceptHelper().
         // confirmedByA=false (Margaret), confirmedByB=true (Priya) → confirm button live for Margaret
         Connection cAdvance = ensureConnection(margaret, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
                 "Hello Margaret! I'm Priya, happy to help with errands or cooking.", false, true);
@@ -250,9 +253,9 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hi David, fellow engineer here. Happy to help with anything.");
         ensureConnection(grace, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
                 "Hi Grace, I'd love to keep you company on your walks.");
-        Connection cMargaretTom = ensureConnection(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED, tom,
+        Connection cMargaretTom = ensureConnection(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, tom,
                 "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
-        Connection cGraceJames = ensureConnection(grace, james, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, grace,
+        Connection cGraceJames = ensureConnection(grace, james, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, grace,
                 "Hi Harsha, I'd love a hand learning to video-call my grandchildren.");
         Connection cJamesRose = ensureConnection(james, rose, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED, james,
                 "Hello Rose! I saw you love reading too. I'd be happy to help with anything you need.");
@@ -282,38 +285,38 @@ public class DemoDataSeeder implements ApplicationRunner {
         // them to the realistic "waiting for the elder to advance" state.
         normalizeStuckTrustFlags();
 
-        // James + Margaret are TRUSTED — the top of the ladder — so their thread
+        // Grace + Harsha are TRUSTED — the top of the ladder — so their thread
         // walks the full trust journey in order, spread across ~3 weeks so the
         // Messages screen draws natural date separators between stages. The last
-        // message lands 95 min ago, keeping James top of the inbox (Priya ~1 day,
-        // David ~2 days). This replaces generic chatter with the real arc:
+        // message lands 95 min ago, keeping Grace top of Harsha's inbox (David
+        // ~2 days). This replaces generic chatter with the real arc:
         // introduce → phone → video → social media → meet → trusted friends.
-        seedJourneyIfEmpty(cTrusted, List.of(
+        seedJourneyIfEmpty(cGraceJames, List.of(
                 // Just Connected → Messaging: they introduce themselves
-                tmsg(james,    28800, "Hello Margaret, I'm Harsha. I saw you love chess too. I'd be glad to play, and to help with any tech whenever you need."),
-                tmsg(margaret, 28793, "Hello Harsha! How lovely. Chess is my favourite, though I'm a little rusty. And my new tablet does puzzle me."),
-                tmsg(james,    28786, "We can take both slowly. What would you most like to do on the tablet?"),
-                tmsg(margaret, 28779, "I'd dearly love to video call my sister in Vancouver. I haven't managed it on my own yet."),
+                tmsg(james, 28800, "Hello Grace, I'm Harsha. I saw you'd like help video-calling your grandchildren. I'd be glad to help — it's easier than it looks."),
+                tmsg(grace, 28793, "Hello Harsha! That would be wonderful. I have a tablet full of buttons and no idea which one rings."),
+                tmsg(james, 28786, "We'll take it slowly, one step at a time. Where are the grandchildren calling from?"),
+                tmsg(grace, 28779, "Melbourne, the other side of the world. Seeing their faces would mean everything."),
                 // Phone Ready: they share phone numbers
-                tmsg(james,    23040, "We'll get you there. Shall we share phone numbers, so it's easier to plan a time?"),
-                tmsg(margaret, 23034, "Good idea. I've just added mine to my profile."),
-                tmsg(james,    23028, "Got it, thank you. I'll give you a quick call after lunch to walk through the first step."),
+                tmsg(james, 23040, "We'll get you there. Shall we share phone numbers, so I can talk you through it while you press the buttons?"),
+                tmsg(grace, 23034, "Good idea. I've just added mine to my profile."),
+                tmsg(james, 23028, "Got it, thank you. I'll give you a ring after lunch for the first lesson."),
                 // Video Ready: their first video call
-                tmsg(james,    17280, "Lovely chatting yesterday. Ready to try a video call? I'll show you on screen, then you'll have it for your sister."),
-                tmsg(margaret, 17274, "Yes please. Let me fetch my glasses first!"),
-                tmsg(margaret, 17150, "We did it! I could see your face clear as day. I feel so much braver with it now, thank you."),
+                tmsg(james, 17280, "You did brilliantly on the phone. Ready to try a video call next? Once you've done one, the rest is easy."),
+                tmsg(grace, 17274, "Yes please. Let me tidy my hair first!"),
+                tmsg(grace, 17150, "We did it! I could see your face clear as day. Melbourne, here I come."),
                 // Social Media Exchange: they share their profiles
-                tmsg(james,    11520, "You're a natural. If you'd like, we can share our social media too. I post my chess games on mine."),
-                tmsg(margaret, 11514, "Oh I'd enjoy that. I'll add my Facebook — my grandchildren set it up for me."),
-                tmsg(james,    11508, "Followed you, thank you. Wonderful photos of your garden, those roses are something."),
+                tmsg(james, 11520, "You're a natural. If you'd like, we can share our social media too — I'd love to see your watercolours."),
+                tmsg(grace, 11514, "Oh I'd enjoy that. My daughter set up a page for my paintings."),
+                tmsg(james, 11508, "Followed you, thank you. Your park scenes are beautiful — you must show me that bench by the pond."),
                 // Ready to Meet: they plan a first meet in a public place
-                tmsg(james,     5760, "I think it's time we played a real game of chess. Would the library café suit you? It's nice and busy."),
-                tmsg(margaret,  5754, "Perfect. Thursday at 3pm? A public spot puts my mind at ease."),
-                tmsg(james,     5748, "Thursday at 3 it is. I'll bring the biscuits."),
+                tmsg(james,  5760, "I think it's time for a proper hello. Would a walk in the park suit you? It's nice and busy this time of year."),
+                tmsg(grace,  5754, "Perfect. Thursday afternoon? A public spot puts my mind at ease — and I'll bring my lemon cake."),
+                tmsg(james,  5748, "Thursday it is. I never say no to cake."),
                 // Fully Trusted: after meeting, true friends
-                tmsg(margaret,   240, "Thank you for a wonderful afternoon, Harsha. You're a true friend now — and you let me win!"),
-                tmsg(james,      150, "Never! You won fair and square. Same time next week for a rematch?"),
-                tmsg(margaret,    95, "Absolutely. I'll be practising my openings all week.")));
+                tmsg(grace,   240, "Thank you for a lovely afternoon, Harsha. The grandchildren say the video calls work perfectly now — you're their favourite person."),
+                tmsg(james,   150, "It was my pleasure, Grace. Same walk next week? Bring the sketchbook."),
+                tmsg(grace,    95, "Absolutely. And there will be cake.")));
         seedMessagesIfEmpty(cAdvance, 1450, List.of(
                 msg(priya,    "Hello Margaret! Thanks for accepting my request."),
                 msg(margaret, "Hello Priya. Your profile says you like baking?"),
@@ -321,11 +324,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         seedMessagesIfEmpty(cVideo, 2900, List.of(
                 msg(james, "David, our video call was great! Same time next week?"),
                 msg(david, "Yes! And bring that pasta recipe you mentioned.")));
-        seedMessagesIfEmpty(cGraceJames, 720, List.of(
-                msg(grace, "Hello Harsha! I hope you can help me learn to video-call my grandchildren."),
-                msg(james, "Absolutely Grace, it's easier than it looks! When would suit you?"),
-                msg(grace, "Perhaps Thursday afternoon? I'll make a lemon cake too."),
-                msg(james, "Thursday it is — and I never say no to cake.")));
         seedMessagesIfEmpty(cMargaretTom, 350, List.of(
                 msg(tom, "Hello Margaret! Happy to help with any tech or wifi troubles."),
                 msg(margaret, "Thank you Tom, that's very kind. My wifi has been a bit slow lately.")));
@@ -367,18 +365,12 @@ public class DemoDataSeeder implements ApplicationRunner {
 
         // A pending offer Margaret can accept, and the accepted offer behind the assigned need
         ensureApplication(ride, nina, "Hi Margaret, I drive and would gladly take you on Tuesday.");
-        ensureApplication(shopping, james, "Happy to carry your groceries every Saturday!", ApplicationStatus.ACCEPTED);
+        ensureApplication(shopping, priya, "Happy to carry your groceries every Saturday!", ApplicationStatus.ACCEPTED);
         ensureApplication(chess, priya, "I'd love to learn chess while keeping you company!");
 
-        ensureReview(margaret, james, tablet, 5,
-                "Harsha set up my tablet and patiently taught me video calling. Wonderful young man.",
-                List.of("Patient", "Friendly"));
         ensureReview(david, james, null, 4,
                 "Very reliable and great company. Always on time.",
                 List.of("Reliable", "Punctual"));
-        ensureReview(james, margaret, null, 5,
-                "Margaret is delightful, and a much better chess player than she admits.",
-                List.of("Friendly", "Welcoming"));
         ensureReview(priya, margaret, null, 5,
                 "Margaret is warm and full of wonderful stories. A joy to visit.",
                 List.of("Friendly", "Welcoming"));
@@ -412,8 +404,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureReview(rose, james, null, 4,
                 "Harsha is warm and never makes me feel rushed. Very helpful.",
                 List.of("Patient", "Friendly"));
-        ensureReview(margaret, tom, null, 4,
-                "Tom solved everything quickly and explained it all so clearly.",
+        ensureReview(margaret, tom, tablet, 4,
+                "Tom set up my new tablet and explained it all so clearly.",
                 List.of("Reliable", "Patient"));
         ensureReview(david, nina, null, 4,
                 "Nina is cheerful, punctual, and makes every trip a pleasure.",
