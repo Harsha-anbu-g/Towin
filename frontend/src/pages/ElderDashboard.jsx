@@ -350,7 +350,25 @@ export default function ElderDashboard() {
   }
 
   async function postNeed(e) {
-    e.preventDefault(); setPosting(true); setPostMsg('');
+    e.preventDefault();
+    // Friendly inline errors instead of the browser's transient tooltip — the
+    // form scrolls inside the page, so the tooltip could point at a field that
+    // is off-screen and the tap would look like it did nothing.
+    const focusField = (id) => {
+      const el = document.getElementById(id);
+      if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus({ preventScroll: true }); }
+    };
+    if (!needForm.title.trim()) {
+      setPostMsg('Please write what you need help with.');
+      focusField('need-title');
+      return;
+    }
+    if (needForm.category === 'OTHER' && !needForm.categoryOther.trim()) {
+      setPostMsg('Please tell us what kind of help you need.');
+      focusField('need-category-other');
+      return;
+    }
+    setPosting(true); setPostMsg('');
     try {
       const { categoryOther, ...rest } = needForm;
       const body = { ...rest };
@@ -520,7 +538,7 @@ export default function ElderDashboard() {
               padding: '3px 10px', borderRadius: '9999px', flexShrink: 0,
             }}>New</span>
           </div>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
+          <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
             <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
               style={{ flex: 1, height: '36px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
               {respondingConn === conn.id ? '…' : 'Accept'}
@@ -709,13 +727,13 @@ export default function ElderDashboard() {
                     {/* Action bar */}
                     {(
                         endingConn === conn.id ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+                          <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this helper'}?</span>
                             <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '36px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
                             <button onClick={() => setEndingConn(null)} style={{ height: '36px', padding: '0 16px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+                          <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
@@ -917,7 +935,7 @@ export default function ElderDashboard() {
                               </div>
                             )}
                           </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
+                          <div className="card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
                             {alreadyConnected ? (
                               <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
                             ) : (alreadyRequested || sent === 'Requested') ? (
@@ -1011,7 +1029,7 @@ export default function ElderDashboard() {
                       </p>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {need.applications.map(app => (
-                          <div key={app.helperId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'var(--surface-pearl)', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px' }}>
+                          <div key={app.helperId} className="card-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'var(--surface-pearl)', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)', flexShrink: 0 }}>{initials(app.helperName)}</div>
                               <div style={{ minWidth: 0 }}>
@@ -1031,13 +1049,13 @@ export default function ElderDashboard() {
                   {need.status === 'OPEN' && (!need.applications || need.applications.length === 0) && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '12px', paddingTop: '12px' }}>
                       {cancelConfirm === need.id ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid #fee2e2', paddingTop: '10px', marginTop: '0', background: 'var(--red-tint)', borderRadius: '10px', padding: '10px 12px' }}>
+                        <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid #fee2e2', paddingTop: '10px', marginTop: '0', background: 'var(--red-tint)', borderRadius: '10px', padding: '10px 12px' }}>
                           <span style={{ fontSize: '14px', color: 'var(--ink-slate)', flex: 1 }}>Cancel this request?</span>
                           <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: '#fff', background: 'var(--ink-slate)', border: 'none', borderRadius: '9999px', padding: '5px 14px', cursor: 'pointer' }}>Yes, cancel</button>
                           <button onClick={() => setCancelConfirm(null)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', background: 'none', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '5px 12px', cursor: 'pointer' }}>Keep</button>
                         </div>
                       ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div className="card-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <p style={{ fontSize: '14px', color: 'var(--ink-4)', margin: 0 }}>No applicants yet</p>
                           <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid #fecaca', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
                             Cancel
@@ -1123,10 +1141,10 @@ export default function ElderDashboard() {
               <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: '0 0 24px' }}>
                 Tell us what you need. Helpers near you will offer to assist — it only takes a minute.
               </p>
-              <form onSubmit={postNeed} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <form onSubmit={postNeed} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What do you need help with?</label>
-                  <SmoothInput value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
+                  <label htmlFor="need-title" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What do you need help with?</label>
+                  <SmoothInput id="need-title" value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
                     placeholder="e.g. Help with grocery shopping" required
                     style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid #d8dce2', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none' }}
                     onFocus={focusIn} onBlur={focusOut} />
@@ -1140,20 +1158,23 @@ export default function ElderDashboard() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What kind of help?</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+                  <label id="need-category-label" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What kind of help?</label>
+                  {/* Real buttons with radio semantics — plain divs are invisible
+                      to keyboards and screen readers. */}
+                  <div role="radiogroup" aria-labelledby="need-category-label" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
                     {['COMPANIONSHIP', 'TRANSPORTATION', 'ERRANDS', 'CLEANING', 'OTHER'].map(key => {
                       const selected = needForm.category === key;
                       return (
-                        <div key={key} onClick={() => setNeedForm(f => ({ ...f, category: key }))}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${selected ? '#4FA3CE' : '#e0e0e0'}`, background: selected ? '#EAF5FB' : '#fff', borderRadius: '12px', padding: '14px', cursor: 'pointer' }}>
+                        <button type="button" key={key} role="radio" aria-checked={selected}
+                          onClick={() => setNeedForm(f => ({ ...f, category: key }))}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${selected ? '#4FA3CE' : '#e0e0e0'}`, background: selected ? '#EAF5FB' : '#fff', borderRadius: '12px', padding: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>
                           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: selected ? '#1d1d1f' : '#3a4450' }}>{catLabel(key)}</span>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
                   {needForm.category === 'OTHER' && (
-                    <SmoothInput value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
+                    <SmoothInput id="need-category-other" value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
                       placeholder="Please tell us what kind of help" required autoFocus
                       style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid #d8dce2', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none', marginTop: '4px' }}
                       onFocus={focusIn} onBlur={focusOut} />
@@ -1161,16 +1182,17 @@ export default function ElderDashboard() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>How urgent is it?</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <label id="need-urgency-label" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>How urgent is it?</label>
+                  <div role="radiogroup" aria-labelledby="need-urgency-label" style={{ display: 'flex', gap: '10px' }}>
                     {[['NORMAL', 'Normal'], ['URGENT', 'Urgent']].map(([key, label]) => {
                       const selected = needForm.urgency === key;
                       return (
-                        <div key={key} onClick={() => setNeedForm(f => ({ ...f, urgency: key }))}
-                          style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '9px', border: `2px solid ${selected ? '#4FA3CE' : '#e0e0e0'}`, background: selected ? '#EAF5FB' : '#fff', borderRadius: '12px', padding: '13px 16px', cursor: 'pointer' }}>
-                          <span style={{ width: '20px', height: '20px', borderRadius: '50%', border: selected ? '6px solid #4FA3CE' : '2px solid #c8ccd2', background: '#fff', boxSizing: 'border-box', flexShrink: 0 }} />
+                        <button type="button" key={key} role="radio" aria-checked={selected}
+                          onClick={() => setNeedForm(f => ({ ...f, urgency: key }))}
+                          style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '9px', border: `2px solid ${selected ? '#4FA3CE' : '#e0e0e0'}`, background: selected ? '#EAF5FB' : '#fff', borderRadius: '12px', padding: '13px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          <span aria-hidden style={{ width: '20px', height: '20px', borderRadius: '50%', border: selected ? '6px solid #4FA3CE' : '2px solid #c8ccd2', background: '#fff', boxSizing: 'border-box', flexShrink: 0 }} />
                           <span style={{ fontSize: 'var(--text-sm)', fontWeight: selected ? 700 : 600, color: selected ? '#1d1d1f' : '#3a4450' }}>{label}</span>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -1187,7 +1209,7 @@ export default function ElderDashboard() {
                     </button>
                   )}
                 </div>
-                {postMsg && <p style={{ fontSize: 'var(--text-sm)', color: postMsg.includes('!') ? '#2E7DA6' : '#5a6470', fontWeight: 500 }}>{postMsg}</p>}
+                {postMsg && <p role="alert" style={{ fontSize: 'var(--text-sm)', color: postMsg.includes('!') ? '#2E7DA6' : '#5a6470', fontWeight: 500 }}>{postMsg}</p>}
                 <button type="submit" disabled={posting} style={{ height: '50px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', boxShadow: '0 3px 12px rgba(79,163,206,0.35)' }}>
                   {posting ? 'Posting...' : 'Post Help'}
                 </button>

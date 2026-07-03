@@ -496,6 +496,11 @@ button, a, [role="button"], input, textarea, select, label, summary {
   .seg-tab { font-size: 13px; padding: 0 6px; gap: 5px; }
 }
 
+/* ─── Card action buttons — comfortable tap targets on phones ─── */
+@media (max-width: 640px) {
+  .card-actions > button { height: 44px !important; }
+}
+
 /* ─── Trust ladder stage labels ─── */
 .trust-ladder-stages { font-size: 11px; }
 @media (max-width: 640px) {
