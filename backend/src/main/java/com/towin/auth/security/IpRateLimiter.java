@@ -45,6 +45,11 @@ public class IpRateLimiter {
     /** Honour the proxy header on Railway, else fall back to the socket address. */
     private String clientIp(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
+        // TEMP DIAGNOSTIC (remove after verifying client-IP resolution on Railway):
+        // logs what the app actually receives so we can confirm whether X-Forwarded-For
+        // is client-spoofable here or already resolved to the real client by the proxy.
+        org.slf4j.LoggerFactory.getLogger(IpRateLimiter.class)
+            .info("iplimiter-diag xff=[{}] remoteAddr=[{}]", forwarded, request.getRemoteAddr());
         if (forwarded != null && !forwarded.isBlank()) {
             return forwarded.split(",")[0].trim();
         }

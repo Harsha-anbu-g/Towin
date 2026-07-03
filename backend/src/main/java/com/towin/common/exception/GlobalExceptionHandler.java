@@ -47,6 +47,8 @@ public class GlobalExceptionHandler {
         // Change-password flow
         SAFE_MESSAGES.put("Current password is incorrect.",               "Current password is incorrect.");
         SAFE_MESSAGES.put("New password must be different",               "New password must be different from your current password.");
+        SAFE_MESSAGES.put("Please choose a stronger password",            "Please choose a stronger password — that one is too common or easy to guess.");
+        SAFE_MESSAGES.put("Password must be at least 8 characters",       "Password must be at least 8 characters.");
         SAFE_MESSAGES.put("This account uses Google sign-in",             "This account uses Google sign-in, so it has no password to change.");
         // Connection flow
         SAFE_MESSAGES.put("A connection already exists",                  "You already have a pending or active connection with this person.");

@@ -4,6 +4,7 @@ import com.towin.auth.dto.*;
 import com.towin.auth.security.JwtUtil;
 import com.towin.auth.security.LoginRateLimiter;
 import com.towin.auth.security.OtpRateLimiter;
+import com.towin.auth.security.PasswordPolicy;
 import com.towin.common.entity.PendingRegistration;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
@@ -46,6 +47,7 @@ public class AuthService {
     private final EmailService emailService;
     private final PostHogService postHogService;
     private final PendingRegistrationRepository pendingRepository;
+    private final PasswordPolicy passwordPolicy;
 
     @Value("${app.mail.verify-base-url}")
     private String verifyBaseUrl;
@@ -67,6 +69,7 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
+        passwordPolicy.validate(request.getPassword(), request.getUsername(), request.getEmail());
 
         // Replace any earlier unverified attempt for this email so re-registering just refreshes the link.
         pendingRepository.deleteByEmail(request.getEmail());
@@ -116,19 +119,26 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         String id = request.getIdentifier().trim();
-        loginRateLimiter.checkNotLocked(id);
 
         User user = resolveUser(id);
-        boolean noPassword = user == null || user.getPasswordHash() == null;
-        if (noPassword || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            loginRateLimiter.recordFailure(id);
-            throw new IllegalArgumentException("Invalid credentials");
+        boolean credentialsOk = user != null && user.getPasswordHash() != null
+                && passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
+
+        // The correct password always works, even during a lockout window. This is
+        // what prevents a lockout denial-of-service: an attacker spraying wrong
+        // guesses at a known email can throttle further *guesses* but can never lock
+        // the real owner out of their own account.
+        if (credentialsOk) {
+            loginRateLimiter.reset(id);
+            String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(),
+                    user.getRole().name(), user.getTokenVersion());
+            return new AuthResponse(token, user.getRole().name(), user.getId().toString());
         }
 
-        loginRateLimiter.reset(id);
-        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name(),
-                user.getTokenVersion());
-        return new AuthResponse(token, user.getRole().name(), user.getId().toString());
+        // Wrong credentials: enforce the throttle so a wrong-guess flood is capped.
+        loginRateLimiter.checkNotLocked(id);
+        loginRateLimiter.recordFailure(id);
+        throw new IllegalArgumentException("Invalid credentials");
     }
 
     /** Clicking the email link is what actually creates the account. */
@@ -200,6 +210,7 @@ public class AuthService {
                 || user.getPasswordResetExpiresAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("This reset link has expired. Request a new one.");
         }
+        passwordPolicy.validate(newPassword, user.getUsername(), user.getEmail());
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setTokenVersion(user.getTokenVersion() + 1); // invalidate any existing sessions
         user.setPasswordResetToken(null);
@@ -222,6 +233,7 @@ public class AuthService {
         if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
             throw new IllegalArgumentException("New password must be different from your current password.");
         }
+        passwordPolicy.validate(request.getNewPassword(), user.getUsername(), user.getEmail());
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         user.setTokenVersion(user.getTokenVersion() + 1);

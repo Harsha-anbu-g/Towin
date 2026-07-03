@@ -4,6 +4,7 @@ import com.towin.auth.dto.LoginRequest;
 import com.towin.auth.dto.RegisterRequest;
 import com.towin.auth.security.JwtUtil;
 import com.towin.auth.security.LoginRateLimiter;
+import com.towin.auth.security.PasswordPolicy;
 import com.towin.common.entity.PendingRegistration;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
@@ -33,6 +34,7 @@ class AuthServiceTest {
     @Mock PostHogService postHogService;
     @Mock EmailService emailService;
     @Mock PendingRegistrationRepository pendingRepository;
+    @Mock PasswordPolicy passwordPolicy;
     @InjectMocks AuthService authService;
 
     @Test
