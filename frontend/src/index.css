@@ -461,6 +461,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
 }
 .dash-tab-scroll {
   display: flex;
+  flex-wrap: wrap; /* tabs must never hide behind an invisible scroll edge */
   gap: 6px;
   padding: 10px 0;
   align-items: center;
@@ -469,6 +470,19 @@ button, a, [role="button"], input, textarea, select, label, summary {
   -webkit-overflow-scrolling: touch;
 }
 .dash-tab-scroll::-webkit-scrollbar { display: none; }
+
+/* Mobile: wrap the tabs into a 2-column grid so every tab stays visible —
+   the hidden-scrollbar row left "Posted Help"/"Add Friends" cut off with no
+   hint they existed. An odd last tab spans the full row. */
+@media (max-width: 640px) {
+  .dash-tab-scroll {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow-x: visible;
+  }
+  .dash-tab-scroll > button { padding: 0 10px !important; font-size: 15px !important; }
+  .dash-tab-scroll > button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
 
 .dash-content {
   max-width: 860px;
@@ -485,7 +499,10 @@ button, a, [role="button"], input, textarea, select, label, summary {
 /* ─── Trust ladder stage labels ─── */
 .trust-ladder-stages { font-size: 11px; }
 @media (max-width: 640px) {
-  .trust-ladder-stages { font-size: 9px; }
+  /* Seven labels collide at phone width — show only the current stage,
+     larger. The bar + "Stage x of 7" pill keep the position context. */
+  .trust-ladder-stages { font-size: 12px; }
+  .tl-stage:not(.tl-stage-active) { display: none; }
 }
 
 /* ─── ProfileEdit responsive 2-col grid ─── */

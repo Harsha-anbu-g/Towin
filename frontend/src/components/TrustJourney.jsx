@@ -100,7 +100,7 @@ export default function TrustJourney({
         {LEVELS.map((level, i) => {
           const stagePct = Math.round((i / (LEVELS.length - 1)) * 100) / 100;
           return (
-            <span key={level.key} style={{
+            <span key={level.key} className={i === idx ? 'tl-stage tl-stage-active' : 'tl-stage'} style={{
               position: 'absolute', top: 0,
               left: `calc((100% - 34px) * ${stagePct} + 17px)`,
               transform: 'translateX(-50%)',
