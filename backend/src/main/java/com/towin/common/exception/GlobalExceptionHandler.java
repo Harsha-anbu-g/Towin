@@ -61,6 +61,12 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Initiator cannot respond",                     "You can't respond to your own request.");
         SAFE_MESSAGES.put("Connection is not pending",                    "This request is no longer pending.");
         SAFE_MESSAGES.put("Only active connections can be ended",         "Only active connections can be ended.");
+        // Review flow
+        SAFE_MESSAGES.put("You cannot review yourself",                   "You can't review yourself.");
+        SAFE_MESSAGES.put("You have already reviewed this service",       "You've already reviewed this.");
+        SAFE_MESSAGES.put("You can only review users from needs",         "You can only review someone you've actually helped or been helped by.");
+        SAFE_MESSAGES.put("You can only review the other person",         "You can only review the other person from that request.");
+        SAFE_MESSAGES.put("You can only review people you've connected",  "You can only review people you're connected with.");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

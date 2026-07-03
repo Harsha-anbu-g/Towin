@@ -3,6 +3,7 @@ package com.towin.review.service;
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
+import com.towin.connection.repository.ConnectionRepository;
 import com.towin.need.entity.Need;
 import com.towin.need.repository.NeedApplicationRepository;
 import com.towin.need.repository.NeedRepository;
@@ -31,6 +32,7 @@ public class ReviewService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final TrustScoreService trustScoreService;
+    private final ConnectionRepository connectionRepository;
 
     @Transactional
     public ReviewResponse submitReview(UUID reviewerId, ReviewRequest request) {
@@ -46,15 +48,30 @@ public class ReviewService {
         User reviewer = getUser(reviewerId);
         User reviewee = getUser(request.getRevieweeId());
 
+        // A review must reflect a real interaction, or the trust score it feeds could
+        // be gamed (fake 5-stars to inflate a stranger, fake 1-stars / safety flags to
+        // smear one). Two legitimate paths: a shared need, or an existing connection.
         Need need = null;
         if (request.getNeedId() != null) {
             need = needRepository.findById(request.getNeedId())
                     .orElseThrow(() -> new IllegalArgumentException("Need not found"));
-            // Verify reviewer participated in this need
-            boolean isElder = need.getElder().getId().equals(reviewerId);
-            boolean isHelper = needApplicationRepository.existsByNeedIdAndHelperId(need.getId(), reviewerId);
-            if (!isElder && !isHelper) {
+            // The reviewer must have been on this need (the elder or an applying helper)...
+            boolean reviewerIsElder = need.getElder().getId().equals(reviewerId);
+            boolean reviewerIsHelper = needApplicationRepository.existsByNeedIdAndHelperId(need.getId(), reviewerId);
+            if (!reviewerIsElder && !reviewerIsHelper) {
                 throw new IllegalArgumentException("You can only review users from needs you participated in");
+            }
+            // ...and the person being reviewed must be the *other* party on that same need.
+            boolean revieweeIsCounterparty = reviewerIsElder
+                    ? needApplicationRepository.existsByNeedIdAndHelperId(need.getId(), request.getRevieweeId())
+                    : need.getElder().getId().equals(request.getRevieweeId());
+            if (!revieweeIsCounterparty) {
+                throw new IllegalArgumentException("You can only review the other person from that need");
+            }
+        } else {
+            // No need attached (connection-based review): the two must actually be connected.
+            if (connectionRepository.findBetweenUsers(reviewerId, request.getRevieweeId()).isEmpty()) {
+                throw new IllegalArgumentException("You can only review people you've connected with");
             }
         }
 
