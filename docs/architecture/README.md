@@ -20,7 +20,8 @@ this map with zero extra work.
 
 ### Offline copy (no server, no internet)
 
-For reading the API without running the backend:
+For reading the API without running the backend. These files are **local only —
+gitignored** (they expose the full API surface, so they don't belong on GitHub):
 
 - **`towin-api-docs.html`** ← the **exact same Swagger UI as `localhost:8080`**, as a
   single self-contained file (swagger-ui CSS + JS + the OpenAPI spec all inlined).

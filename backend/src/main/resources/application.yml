@@ -110,6 +110,14 @@ nominatim:
   base-url: ${NOMINATIM_BASE_URL:https://nominatim.openstreetmap.org}
   user-agent: ${NOMINATIM_USER_AGENT:ToWin/1.0 (agharsha.anbu@gmail.com)}
 
+springdoc:
+  # Swagger UI and the OpenAPI spec expose the whole API surface, so they stay
+  # off unless a profile (dev) or env var turns them on.
+  api-docs:
+    enabled: ${SPRINGDOC_ENABLED:false}
+  swagger-ui:
+    enabled: ${SPRINGDOC_ENABLED:false}
+
 server:
   port: ${PORT:8080}
   forward-headers-strategy: framework

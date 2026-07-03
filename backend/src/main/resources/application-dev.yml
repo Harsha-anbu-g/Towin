@@ -10,3 +10,9 @@ spring:
 logging:
   level:
     com.towin: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
