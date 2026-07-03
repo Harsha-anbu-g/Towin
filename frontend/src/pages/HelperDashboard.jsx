@@ -465,7 +465,7 @@ export default function HelperDashboard() {
 
   const tabs = [
     ['connections', 'My Elders', connBadge],
-    ['browse', 'Offer a Help', browseBadge],
+    ['browse', 'Offer Help', browseBadge],
     ['requests', 'Add Friends', requestsBadge],
   ];
 
@@ -868,7 +868,7 @@ export default function HelperDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
                 <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
-                  Offer a Help
+                  Offer Help
                 </h2>
                 <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
                   Elders nearby who could use a hand. Offer to help with one tap.
