@@ -42,17 +42,18 @@ public class IpRateLimiter {
         }
     }
 
-    /** Honour the proxy header on Railway, else fall back to the socket address. */
+    /**
+     * The real client IP. The app runs behind Railway's edge with
+     * {@code forward-headers-strategy: framework}, so Spring's ForwardedHeaderFilter
+     * resolves the genuine client address into {@code getRemoteAddr()} and strips
+     * {@code X-Forwarded-For} before this code runs. Verified in production: a spoofed
+     * {@code X-Forwarded-For} does not change {@code getRemoteAddr()} (the header is
+     * already null here). We deliberately do NOT parse {@code X-Forwarded-For}
+     * ourselves — its leftmost entry is client-controlled and spoofable, which would
+     * let an attacker rotate the header to dodge the per-IP limit. {@code getRemoteAddr()}
+     * is the trusted value.
+     */
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        // TEMP DIAGNOSTIC (remove after verifying client-IP resolution on Railway):
-        // logs what the app actually receives so we can confirm whether X-Forwarded-For
-        // is client-spoofable here or already resolved to the real client by the proxy.
-        org.slf4j.LoggerFactory.getLogger(IpRateLimiter.class)
-            .info("iplimiter-diag xff=[{}] remoteAddr=[{}]", forwarded, request.getRemoteAddr());
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
         return request.getRemoteAddr();
     }
 }
