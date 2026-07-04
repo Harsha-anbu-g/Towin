@@ -136,11 +136,14 @@ export default function Streaks() {
         background: 'var(--surface-pearl)',
       }}>
         {/* Artwork area — contain (not cover) shows the whole illustration
-            uncropped; the art's own white background blends into the pearl panel. */}
+            uncropped. The JPG's background is pure white (#fff) while the panel
+            is pearl (#fafafc); multiply blending maps white onto the panel color
+            exactly, so no rectangle edge shows regardless of the display panel. */}
         <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
           <img src="/journey.jpg" alt="The master and his turtles, growing up together" style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
             objectFit: 'contain', objectPosition: 'center bottom', zIndex: 0,
+            mixBlendMode: 'multiply',
           }} />
           {/* Top edge melts into the page so the art has no hard border. */}
           <div style={{
