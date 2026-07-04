@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant B as Browser (Login.jsx)
+    participant A as axios.js
+    participant C as AuthController
+    participant S as AuthService
+    participant D as PostgreSQL
+
+    B->>A: submit email + password
+    A->>C: POST /api/auth/login
+    C->>S: login(request)
+    S->>D: find user by email
+    D-->>S: user row
+    alt password matches (BCrypt)
+        S-->>C: JWT (signed, 24h)
+        C-->>B: 200 { token, user }
+        Note over B: token saved,<br/>axios adds it to every call
+    else wrong password
+        S-->>C: error
+        C-->>B: 401 Unauthorized
+    end

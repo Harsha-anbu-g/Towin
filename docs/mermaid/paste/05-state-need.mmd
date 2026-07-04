@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> OPEN : elder posts a need
+    OPEN --> ASSIGNED : elder accepts a helper<br/>POST /api/needs/{id}/accept/{helperId}
+    OPEN --> CANCELLED : elder deletes it
+    ASSIGNED --> COMPLETED : marked done<br/>POST /api/needs/{id}/complete
+    ASSIGNED --> CANCELLED : called off
+    COMPLETED --> [*]
+    CANCELLED --> [*]

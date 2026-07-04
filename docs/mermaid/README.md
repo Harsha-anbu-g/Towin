@@ -15,7 +15,12 @@ enums, deploy setup). Learn the syntax here, then edit and re-render.
 
 - **GitHub** — just open the file; GitHub renders ```mermaid blocks automatically.
 - **VS Code** — install **"Markdown Preview Mermaid Support"**, open a file, press `⌘⇧V`.
-- **mermaid.live** — paste the code block (without the ``` fences) to edit interactively.
+- **mermaid.live** — use the **[paste/](paste/)** folder. Each `.mmd` file there is one
+  diagram, pure code, nothing else: open it, select all (`⌘A`), copy, then in
+  mermaid.live clear the code panel (`⌘A` → delete) and paste.
+
+> ⚠️ Don't paste these `.md` files into mermaid.live — the headings and text around
+> the code blocks are a syntax error to it. That's what `paste/` is for.
 
 ## Learning order
 

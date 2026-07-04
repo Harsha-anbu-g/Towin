@@ -1,0 +1,25 @@
+flowchart TB
+    U([Elder / Helper])
+
+    subgraph FE["Frontend — React + Vite (Vercel)"]
+        P["pages/ (25 screens)<br/>Dashboards, Messages, Trust, Streaks..."]
+        CTX["context/<br/>AuthContext, ToastContext"]
+        AX["api/axios.js<br/>adds Bearer JWT to every call"]
+        P --> CTX
+        P --> AX
+    end
+
+    subgraph BE["Backend — Spring Boot (Railway)"]
+        F["JwtAuthFilter<br/>checks the token"]
+        subgraph SLICE["one slice per feature (x16)"]
+            direction LR
+            CO["Controller"] --> SV["Service"] --> RE["Repository"]
+        end
+        F --> CO
+    end
+
+    DB[("PostgreSQL")]
+
+    U --> P
+    AX -- "HTTPS: /api/**" --> F
+    RE --> DB

@@ -1,0 +1,11 @@
+stateDiagram-v2
+    direction LR
+    [*] --> DISCOVERED
+    DISCOVERED --> MESSAGING
+    MESSAGING --> PHONE_CALL
+    PHONE_CALL --> VIDEO_CALL
+    VIDEO_CALL --> VERIFIED
+    VERIFIED --> FIRST_MEET
+    FIRST_MEET --> TRUSTED
+    TRUSTED --> [*]
+    note right of TRUSTED : Fully Trusted —<br/>both confirmed every step

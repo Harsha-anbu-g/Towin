@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant B as Browser (HelperDashboard.jsx)
+    participant F as JwtAuthFilter
+    participant N as NeedController
+    participant S as NeedService
+    participant D as PostgreSQL
+
+    B->>F: POST /api/needs/{id}/apply  (Bearer JWT)
+    F->>F: validate token, load user
+    F->>N: authenticated request
+    N->>S: apply(needId, helper)
+    S->>D: insert NeedApplication (status=PENDING)
+    D-->>S: saved
+    S-->>N: application
+    N-->>B: 200 OK
+    Note over B: elder later calls<br/>POST /api/needs/{id}/accept/{helperId}

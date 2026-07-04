@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> PENDING : POST /api/connections/request
+    PENDING --> ACTIVE : other person accepts
+    PENDING --> DECLINED : other person declines
+    ACTIVE --> PAUSED : POST /api/trust/{id}/pause
+    PAUSED --> ACTIVE : POST /api/trust/{id}/resume
+    ACTIVE --> ENDED : DELETE /api/connections/{id}
+    DECLINED --> [*]
+    ENDED --> [*]
