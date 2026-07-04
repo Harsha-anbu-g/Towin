@@ -227,15 +227,15 @@ export default function ElderDashboard() {
   const [connectingTo, setConnectingTo] = useState(null);
   const [connectMsg, setConnectMsg] = useState({});
 
-  async function loadConnections() {
-    setLoading(true);
+  async function loadConnections(silent = false) {
+    if (!silent) setLoading(true);
     try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   }
-  async function loadNeeds() {
-    setLoading(true);
+  async function loadNeeds(silent = false) {
+    if (!silent) setLoading(true);
     try { const res = await api.get('/needs/mine'); setMyNeeds(res.data.content ?? []); } catch {}
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   }
 
   useEffect(() => {
@@ -250,6 +250,15 @@ export default function ElderDashboard() {
     if (tab === 'connections') loadConnections();
     if (tab === 'friends') { loadConnections(); loadHelpers(); }
   }, [tab, radiusKm]);
+
+  // Refetch when the window regains focus, so actions taken in another tab
+  // (e.g. a helper accepting a request) show up without a manual refresh.
+  // Silent: swapping the lists for a spinner on every focus would be jarring.
+  useEffect(() => {
+    const onFocus = () => { loadConnections(true); loadNeeds(true); };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, []);
 
   // The "Post Request" button in the top nav lands here with ?post=1 — open the
   // form, then strip the flag so a refresh doesn't force it back open.

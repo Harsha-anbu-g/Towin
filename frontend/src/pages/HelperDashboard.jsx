@@ -293,10 +293,10 @@ export default function HelperDashboard() {
   async function loadMyApplications() {
     try { const r = await api.get('/needs/applications'); setMyApplications(r.data); } catch {}
   }
-  async function loadConnections() {
-    setLoading(true);
+  async function loadConnections(silent = false) {
+    if (!silent) setLoading(true);
     try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   }
   async function loadElders(loc) {
     setDiscovering(true);
@@ -354,6 +354,16 @@ export default function HelperDashboard() {
     if (tab === 'connections') loadConnections();
     if (tab === 'requests') { loadConnections(); loadElders(); }
   }, [tab, radiusKm]);
+
+  // Refetch when the window regains focus, so actions taken in another tab
+  // (e.g. an elder posting a request) show up without a manual refresh.
+  // Silent: swapping the lists for a spinner on every focus would be jarring.
+  // Re-registered on location/radius change so loadNeeds sees fresh coords.
+  useEffect(() => {
+    const onFocus = () => { loadNeeds(); loadMyApplications(); loadConnections(true); };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [location, radiusKm]);
 
   async function withdrawApplication(needId) {
     try {
