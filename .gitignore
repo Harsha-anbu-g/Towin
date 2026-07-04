@@ -65,17 +65,23 @@ docs/screenshots/*
 !docs/screenshots/messages.png
 !docs/screenshots/trust.png
 
-# Stray screenshots at repo root
+# Stray screenshots / diagrams at repo root
 /*.png
+/*.svg
 
 # Google OAuth client secret files — never commit these
 client_secret_*.json
 
 # Security scan reports & personal study/marketing docs — kept local, never published
 *-security-scan-*.md
+*-AUDIT-REPORT.md
 owasp-top-10-towin.*
 q-and-a-interview.*
 linkedin-video-scripts.*
 docs/SECURITY-AUDIT.md
 docs/SECURITY-REPORT.md
+docs/video-scripts/
+docs/ToWin-Video-*.docx
+# Regenerable dependency-graph export (the tracked copy lives in docs/architecture/)
+docs/architecture/frontend-graph.pdf
 .vercel
