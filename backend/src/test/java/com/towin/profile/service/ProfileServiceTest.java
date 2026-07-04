@@ -27,6 +27,7 @@ class ProfileServiceTest {
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock com.towin.common.service.TrustScoreService trustScoreService;
     @Mock com.towin.geocoding.GeocodingService geocodingService;
+    @Mock com.towin.common.service.S3Service s3Service;
     @InjectMocks ProfileService profileService;
 
     @Test
@@ -65,7 +66,7 @@ class ProfileServiceTest {
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
         when(geocodingService.reverseGeocode(43.65, -79.38)).thenReturn("Toronto");
 
-        profileService.updateLocation(userId, 43.65, -79.38);
+        profileService.updateLocation(userId, 43.65, -79.38, null);
 
         assertThat(user.getCity()).isEqualTo("Toronto");
         assertThat(user.getLocationLat().doubleValue()).isEqualTo(43.65);
@@ -79,7 +80,7 @@ class ProfileServiceTest {
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
         when(geocodingService.reverseGeocode(anyDouble(), anyDouble())).thenReturn(null);
 
-        profileService.updateLocation(userId, 1.0, 2.0);
+        profileService.updateLocation(userId, 1.0, 2.0, null);
 
         assertThat(user.getLocationLat().doubleValue()).isEqualTo(1.0);
         assertThat(user.getCity()).isEqualTo("OldCity"); // unchanged on null

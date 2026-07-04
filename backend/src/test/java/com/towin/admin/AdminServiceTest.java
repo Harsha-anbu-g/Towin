@@ -3,11 +3,13 @@ package com.towin.admin;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.seed.DemoDataSeeder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +21,8 @@ import static org.mockito.Mockito.*;
 class AdminServiceTest {
 
     @Mock UserRepository userRepository;
+    @Mock ObjectProvider<DemoDataSeeder> demoDataSeederProvider;
+    @Mock DemoDataSeeder demoDataSeeder;
     @InjectMocks AdminService adminService;
 
     private User user(UserRole role) {
@@ -52,5 +56,37 @@ class AdminServiceTest {
         // The admin stays active and nothing is persisted — no self-lockout possible.
         assertThat(admin.getIsActive()).isTrue();
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void resetDemoData_runsSeederReset() {
+        when(demoDataSeederProvider.getIfAvailable()).thenReturn(demoDataSeeder);
+        when(demoDataSeeder.isResetEnabled()).thenReturn(true);
+
+        adminService.resetDemoData();
+
+        verify(demoDataSeeder).resetDemo();
+    }
+
+    @Test
+    void resetDemoData_failsWhenSeedingDisabled() {
+        when(demoDataSeederProvider.getIfAvailable()).thenReturn(null);
+
+        assertThatThrownBy(() -> adminService.resetDemoData())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("SEED");
+    }
+
+    @Test
+    void resetDemoData_failsWhenResetDisabled() {
+        when(demoDataSeederProvider.getIfAvailable()).thenReturn(demoDataSeeder);
+        when(demoDataSeeder.isResetEnabled()).thenReturn(false);
+
+        assertThatThrownBy(() -> adminService.resetDemoData())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("RESET");
+
+        // resetDemo() would silently keep visitor data — must not be called.
+        verify(demoDataSeeder, never()).resetDemo();
     }
 }

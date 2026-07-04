@@ -151,6 +151,13 @@ public class DemoDataSeeder implements ApplicationRunner {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> seed());
     }
 
+    /** Whether {@link #resetDemo()} will actually restore the baseline, or
+     *  silently keep visitor data (APP_DEMO_RESET_ENABLED=false). Lets callers
+     *  like the admin reset endpoint fail loudly instead of pretending success. */
+    public boolean isResetEnabled() {
+        return resetEnabled;
+    }
+
     private void seed() {
         User margaret = ensureUser(ELDER_DEMO_EMAIL, "+14165550101", UserRole.ELDER, "12345678");
         User james    = ensureUser(HELPER_DEMO_EMAIL, "+14385355782", UserRole.HELPER, "123456789");

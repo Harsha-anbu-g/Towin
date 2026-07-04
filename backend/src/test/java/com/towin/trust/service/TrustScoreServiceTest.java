@@ -35,6 +35,7 @@ class TrustScoreServiceTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock ReviewRepository reviewRepository;
     @Mock ConnectionRepository connectionRepository;
+    @Mock com.towin.common.service.S3Service s3Service;
 
     @InjectMocks TrustScoreService trustScoreService;
 
@@ -206,7 +207,8 @@ class TrustScoreServiceTest {
 
         TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
 
-        assertThat(r.getTotalScore()).isEqualTo(11.0);
+        // profile counts once standalone (3) + per customer: 3 + 5 + 6
+        assertThat(r.getTotalScore()).isEqualTo(14.0);
         assertThat(r.getCustomers()).hasSize(2);
         assertThat(r.getMaxPerCustomer()).isEqualTo(15);
         // highest-total customer first

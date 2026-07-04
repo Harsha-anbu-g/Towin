@@ -167,6 +167,7 @@ export default function Admin() {
   const [dataTab, setDataTab] = useState('Connections');
   const [search, setSearch] = useState('');
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [demoReset, setDemoReset] = useState('idle'); // idle | working | done | failed
 
   const [users, setUsers] = useState([]);
   const [verifications, setVerifications] = useState([]);
@@ -193,6 +194,21 @@ export default function Admin() {
   async function fetchReviews() {
     const r = await api.get(`/admin/reviews?safetyOnly=${safetyOnly}`);
     setReviews(r.data);
+  }
+
+  // Puts the demo accounts back to their seeded baseline (removes any
+  // connection/trust built between Margaret and Harsha while recording).
+  async function resetDemo() {
+    if (demoReset === 'working') return;
+    setDemoReset('working');
+    try {
+      await api.post('/admin/demo/reset');
+      await fetchTab(tab);
+      setDemoReset('done');
+    } catch {
+      setDemoReset('failed');
+    }
+    setTimeout(() => setDemoReset('idle'), 3000);
   }
 
   async function fetchDataTab(dt) {
@@ -275,6 +291,25 @@ export default function Admin() {
         textAlign: 'center',
         position: 'relative',
       }}>
+        <button
+          onClick={resetDemo}
+          disabled={demoReset === 'working'}
+          style={{
+            position: 'absolute', top: '20px', left: '24px',
+            fontSize: '14px',
+            color: demoReset === 'failed' ? 'var(--red)' : '#5a6b75',
+            background: '#ffffff', border: '1px solid #DCEBF4',
+            borderRadius: '9999px', padding: '6px 16px',
+            cursor: demoReset === 'working' ? 'wait' : 'pointer',
+            fontFamily: SFText, fontWeight: 500,
+          }}
+        >
+          {demoReset === 'idle' && 'Demo reset'}
+          {demoReset === 'working' && 'Resetting demo…'}
+          {demoReset === 'done' && 'Demo is fresh ✓'}
+          {demoReset === 'failed' && 'Reset failed — try again'}
+        </button>
+
         <button
           onClick={() => setConfirmSignOut(true)}
           style={{

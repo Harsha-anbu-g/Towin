@@ -16,6 +16,13 @@ public class AdminController {
 
     private final AdminService adminService;
 
+    // Demo — reset the public demo accounts to their seeded baseline right away
+    @PostMapping("/demo/reset")
+    public ResponseEntity<Void> resetDemo() {
+        adminService.resetDemoData();
+        return ResponseEntity.ok().build();
+    }
+
     // Users
     @GetMapping("/users")
     public ResponseEntity<List<AdminUserResponse>> getUsers() {

@@ -5,6 +5,7 @@ import com.towin.admin.dto.*;
 import com.towin.common.entity.User;
 import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.seed.DemoDataSeeder;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.repository.ConnectionRepository;
@@ -17,6 +18,7 @@ import com.towin.report.repository.ReportRepository;
 import com.towin.review.repository.ReviewRepository;
 import com.towin.trust.repository.TrustProgressionLogRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,8 @@ public class AdminService {
     private final S3Service s3Service;
     private final TrustScoreService trustScoreService;
     private final AccountService accountService;
+    // ObjectProvider because the seeder bean only exists when app.demo.seed-enabled=true.
+    private final ObjectProvider<DemoDataSeeder> demoDataSeeder;
 
     public List<AdminUserResponse> getAllUsers() {
         return userRepository.findAll().stream()
@@ -245,6 +249,25 @@ public class AdminService {
     @Transactional
     public void deleteMessage(UUID messageId) {
         messageRepository.deleteById(messageId);
+    }
+
+    /**
+     * Put the demo accounts back to their seeded baseline right now, instead of
+     * waiting for the debounced {@code DemoResetCoordinator} reset. Wipes every
+     * connection, message, trust log, review and application the demo accounts
+     * accumulated (e.g. a Margaret ↔ Harsha link made while recording a video)
+     * and re-seeds, recalculating trust scores. No @Transactional here: the
+     * seeder runs in its own transaction via TransactionTemplate.
+     */
+    public void resetDemoData() {
+        DemoDataSeeder seeder = demoDataSeeder.getIfAvailable();
+        if (seeder == null) {
+            throw new IllegalStateException("Demo seeding is disabled on this server (APP_DEMO_SEED_ENABLED=false)");
+        }
+        if (!seeder.isResetEnabled()) {
+            throw new IllegalStateException("Demo reset is disabled on this server (APP_DEMO_RESET_ENABLED=false)");
+        }
+        seeder.resetDemo();
     }
 
     private User getUser(UUID userId) {
