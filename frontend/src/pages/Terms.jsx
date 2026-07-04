@@ -35,7 +35,7 @@ export default function Terms() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 600, marginBottom: 12 }}>Contact</h2>
-        <p>Questions about these terms? Email <a href="mailto:support@towin.app" style={{ color: 'var(--blue)' }}>support@towin.app</a>.</p>
+        <p>Questions about these terms? Email <a href="mailto:agharsha.anbu@gmail.com" style={{ color: 'var(--blue)' }}>agharsha.anbu@gmail.com</a>.</p>
       </section>
     </div>
   );

@@ -25,7 +25,7 @@ export default function Privacy() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 600, marginBottom: 12 }}>Your rights</h2>
-        <p>You have the right to access, correct, or request deletion of your personal data. You can update your profile at any time from the app. To request a full export of your data or account deletion, email <a href="mailto:privacy@towin.app" style={{ color: 'var(--blue)' }}>privacy@towin.app</a>.</p>
+        <p>You have the right to access, correct, or request deletion of your personal data. You can update your profile at any time from the app. To request a full export of your data or account deletion, email <a href="mailto:agharsha.anbu@gmail.com" style={{ color: 'var(--blue)' }}>agharsha.anbu@gmail.com</a>.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -35,7 +35,7 @@ export default function Privacy() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 600, marginBottom: 12 }}>Contact</h2>
-        <p>For privacy questions or data requests, contact us at <a href="mailto:privacy@towin.app" style={{ color: 'var(--blue)' }}>privacy@towin.app</a>.</p>
+        <p>For privacy questions or data requests, contact us at <a href="mailto:agharsha.anbu@gmail.com" style={{ color: 'var(--blue)' }}>agharsha.anbu@gmail.com</a>.</p>
       </section>
     </div>
   );
