@@ -610,13 +610,15 @@ img {
    Desktop: a labelled pill. Mobile: collapse to a compact circular icon FAB so
    it stops overlapping cards in the bottom-right, and lift it above the iOS
    home-indicator / gesture bar via the safe-area inset. */
+/* The Ask AI helper owns the primary bottom-right slot, so the feedback pill is
+   lifted to stack just above it. */
 .feedback-fab {
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
   right: calc(28px + env(safe-area-inset-right, 0px));
 }
 @media (max-width: 640px) {
   .feedback-fab {
-    bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
     right: calc(16px + env(safe-area-inset-right, 0px)) !important;
     padding: 0 !important;
     width: 52px;
@@ -624,6 +626,37 @@ img {
     gap: 0 !important;
   }
   .feedback-fab-label { display: none; }
+}
+
+/* ── "Ask AI" tortoise helper — FAB + chat panel, bottom-right (primary) ── */
+.ask-ai-fab {
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  right: calc(28px + env(safe-area-inset-right, 0px));
+}
+.ask-ai-panel {
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  right: calc(24px + env(safe-area-inset-right, 0px));
+  width: min(384px, calc(100vw - 32px));
+  height: min(564px, calc(100dvh - 130px));
+}
+@media (max-width: 640px) {
+  .ask-ai-fab {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    padding: 0 !important;
+    width: 56px;
+    height: 56px;
+    gap: 0 !important;
+  }
+  .ask-ai-fab-label { display: none; }
+  /* On phones the panel becomes a near-full-width bottom sheet. */
+  .ask-ai-panel {
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    height: min(78dvh, 620px);
+  }
 }
 
 /* ── Floating "Play Peekaboo" button (mirrors the feedback FAB, bottom-left) ──

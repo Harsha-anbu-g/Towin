@@ -15,6 +15,8 @@ public interface NeedRepository extends JpaRepository<Need, UUID> {
 
     Page<Need> findByElderIdOrderByCreatedAtDesc(UUID elderId, Pageable pageable);
 
+    long countByElderIdAndStatus(UUID elderId, NeedStatus status);
+
     @Query("SELECT n FROM Need n WHERE n.status = :status AND n.locationLat IS NOT NULL ORDER BY n.createdAt DESC")
     List<Need> findOpenNeedsWithLocation(@Param("status") NeedStatus status);
 

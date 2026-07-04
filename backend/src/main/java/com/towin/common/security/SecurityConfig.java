@@ -74,6 +74,10 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml",
                     "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/feedback").permitAll()
+                // "Ask AI" help assistant: public so logged-out visitors get help too.
+                // A JWT, when present, still flows through jwtAuthFilter, so signed-in
+                // users are recognised and get personalized answers. Throttled per IP.
+                .requestMatchers("/api/assistant/**").permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
             )

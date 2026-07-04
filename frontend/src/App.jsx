@@ -20,6 +20,7 @@ import UserProfile from './pages/UserProfile';
 import PeekabooGame from './pages/PeekabooGame';
 import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
+import AskAiAssistant from './components/AskAiAssistant';
 import CookieConsent from './components/CookieConsent';
 import VerifyEmail from './pages/VerifyEmail';
 import CheckEmail from './pages/CheckEmail';
@@ -127,6 +128,7 @@ function App() {
           </Routes>
           </div>
           <FeedbackWidget />
+          <AskAiAssistant />
           <CookieConsent />
           </div>
         </BrowserRouter>

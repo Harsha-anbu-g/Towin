@@ -110,6 +110,21 @@ nominatim:
   base-url: ${NOMINATIM_BASE_URL:https://nominatim.openstreetmap.org}
   user-agent: ${NOMINATIM_USER_AGENT:ToWin/1.0 (agharsha.anbu@gmail.com)}
 
+# "Ask AI" tortoise help assistant. Uses Groq's free OpenAI-compatible API. The
+# key lives ONLY here (env var) — never in the browser or the repo. Blank key or
+# enabled=false makes the assistant reply with a graceful "not available" message
+# instead of calling out. Model note: llama-3.1-8b / llama-3.3-70b are being
+# deprecated on Groq (2026) — default to the gpt-oss line.
+groq:
+  api-key: ${GROQ_API_KEY:}
+  base-url: ${GROQ_BASE_URL:https://api.groq.com/openai/v1}
+  model: ${GROQ_MODEL:openai/gpt-oss-20b}
+  enabled: ${GROQ_ENABLED:true}
+  # gpt-oss is a reasoning model; "low" stops it burning the token budget on
+  # thinking and truncating the reply. Set blank if you switch to a non-reasoning
+  # model (e.g. a Llama instruct model) that rejects this field.
+  reasoning-effort: ${GROQ_REASONING_EFFORT:low}
+
 springdoc:
   # Swagger UI and the OpenAPI spec expose the whole API surface, so they stay
   # off unless a profile (dev) or env var turns them on.
