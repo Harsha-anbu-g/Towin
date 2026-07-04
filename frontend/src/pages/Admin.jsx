@@ -1,14 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import {
+  Users as UsersIcon, ShieldCheck, Flag, Star, Database, MessageSquare,
+  Search, LogOut, RefreshCw,
+} from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
+import SegmentedTabs from '../components/SegmentedTabs';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
-const TABS = ['Users', 'Verifications', 'Reports', 'Reviews', 'Data', 'Feedback'];
+// Section nav — each entry is one screen of the console.
+const NAV = [
+  { id: 'Users', label: 'Users', icon: UsersIcon, blurb: 'Every account on ToWin. Search, suspend, or remove.' },
+  { id: 'Verifications', label: 'Verifications', icon: ShieldCheck, blurb: 'People waiting for their ID check.' },
+  { id: 'Reports', label: 'Reports', icon: Flag, blurb: 'Things people flagged. Look at these first.' },
+  { id: 'Reviews', label: 'Reviews', icon: Star, blurb: 'What people said after helping each other.' },
+  { id: 'Data', label: 'Data', icon: Database, blurb: 'Raw records: connections, needs, and messages.' },
+  { id: 'Feedback', label: 'Feedback', icon: MessageSquare, blurb: 'Ratings and notes from the feedback form.' },
+];
+
 const DATA_TABS = ['Connections', 'Needs', 'Messages'];
 
 function ConfirmButton({ label, style, onConfirm }) {
@@ -79,13 +93,109 @@ const trustColor = (score) => {
   return '#cc0000';
 };
 
+const thStyle = {
+  padding: '12px 16px',
+  textAlign: 'left',
+  fontSize: '12px',
+  fontWeight: 600,
+  color: 'var(--ink-4)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  fontFamily: SFText,
+  borderBottom: '1px solid #e0e0e0',
+  background: 'var(--surface-pearl)',
+  whiteSpace: 'nowrap',
+};
+
+const tdStyle = {
+  padding: '14px 16px',
+  fontSize: 'var(--text-sm)',
+  color: 'var(--ink)',
+  fontFamily: SFText,
+  borderBottom: '1px solid #f5f5f7',
+  verticalAlign: 'middle',
+};
+
+const card = {
+  background: '#ffffff',
+  borderRadius: '18px',
+  border: '1px solid #e0e0e0',
+  overflow: 'hidden',
+};
+
+// ——— Shared table states ———
+
+function SkeletonRows() {
+  return (
+    <div style={{ padding: '24px 20px' }} aria-hidden="true">
+      {[0, 1, 2, 3, 4].map(i => (
+        <div key={i} className="admin-skel" style={{
+          height: '15px', borderRadius: '8px', background: '#f5f5f7',
+          marginBottom: i === 4 ? 0 : '16px', width: `${92 - i * 8}%`,
+          animation: 'adminPulse 1.4s ease-in-out infinite', animationDelay: `${i * 0.08}s`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function EmptyBlock({ icon: Icon, text }) {
+  return (
+    <div style={{ padding: '56px 24px', textAlign: 'center' }}>
+      <div style={{
+        width: '52px', height: '52px', borderRadius: '50%', background: 'var(--blue-wash)',
+        margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon size={22} color="#4FA3CE" strokeWidth={1.8} />
+      </div>
+      <p style={{ fontSize: '15px', color: 'var(--ink-slate)', margin: 0, fontFamily: SFText }}>{text}</p>
+    </div>
+  );
+}
+
+function ErrorBlock({ onRetry }) {
+  return (
+    <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+      <p style={{ fontSize: '15px', color: 'var(--ink-slate)', margin: '0 0 16px', fontFamily: SFText }}>
+        Could not load this. Please try again.
+      </p>
+      <button onClick={onRetry} style={{
+        background: '#4FA3CE', color: '#ffffff', border: 'none', borderRadius: '9999px',
+        padding: '9px 22px', fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
+      }}>
+        Try again
+      </button>
+    </div>
+  );
+}
+
+// Table zone: skeleton while loading, retry on error, friendly empty state,
+// otherwise a real table inside its own horizontal-scroll wrapper.
+function TableZone({ headers, minWidth = 640, loading, error, onRetry, empty, emptyIcon, emptyText, children }) {
+  if (loading) return <SkeletonRows />;
+  if (error && empty) return <ErrorBlock onRetry={onRetry} />;
+  if (empty) return <EmptyBlock icon={emptyIcon} text={emptyText} />;
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table className="admin-tbl" style={{ width: '100%', minWidth: `${minWidth}px`, borderCollapse: 'collapse', fontFamily: SFText }}>
+        <thead>
+          <tr>{headers.map(h => <th key={h} style={thStyle}>{h}</th>)}</tr>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+    </div>
+  );
+}
+
+// ——— Feedback ———
+
 const RATING_LABELS = [
   { key: 'ratingIdea', label: 'Idea' },
   { key: 'ratingUi', label: 'UI' },
   { key: 'ratingTheme', label: 'Theme' },
   { key: 'ratingSecurity', label: 'Security' },
-  { key: 'ratingEaseOfUse', label: 'Ease' },
-  { key: 'ratingPerformance', label: 'Perf' },
+  { key: 'ratingEaseOfUse', label: 'Ease of use' },
+  { key: 'ratingPerformance', label: 'Speed' },
   { key: 'ratingOverall', label: 'Overall' },
 ];
 
@@ -98,63 +208,68 @@ function avgRating(rows, key) {
 function FeedbackTab() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
+  function load() {
+    setLoading(true);
+    setError(false);
     api.get('/admin/feedback')
       .then(({ data }) => setRows(data))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }
 
-  if (loading) return <p style={{ fontFamily: SFText, color: 'var(--ink-3)', padding: '24px' }}>Loading feedback…</p>;
-  if (!rows.length) return <p style={{ fontFamily: SFText, color: 'var(--ink-3)', padding: '24px' }}>No feedback yet.</p>;
+  useEffect(() => { load(); }, []);
 
   return (
-    <div style={{ padding: '24px 0' }}>
-      <div style={{
-        display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '28px',
-        background: '#fff', borderRadius: '14px', padding: '16px 20px', border: '1px solid #e0e0e0',
-      }}>
-        {RATING_LABELS.map(({ key, label }) => {
-          const a = avgRating(rows, key);
-          return (
-            <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
-              <div style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue)', fontFamily: SF }}>
-                {a ?? '—'}
+    <div>
+      {!loading && !error && rows.length > 0 && (
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '20px',
+          background: '#ffffff', borderRadius: '14px', padding: '16px 20px', border: '1px solid #e0e0e0',
+        }}>
+          {RATING_LABELS.map(({ key, label }) => {
+            const a = avgRating(rows, key);
+            return (
+              <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
+                <div style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue)', fontFamily: SF, fontVariantNumeric: 'tabular-nums' }}>
+                  {a ?? '—'}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontFamily: SFText }}>{label}</div>
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontFamily: SFText }}>{label}</div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: SFText, fontSize: '14px' }}>
-          <thead>
-            <tr style={{ background: 'var(--surface)', textAlign: 'left' }}>
-              {['Date', 'Name', 'Email', 'Phone', ...RATING_LABELS.map(r => r.label), 'Message'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', color: 'var(--ink)', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(r => (
-              <tr key={r.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ padding: '10px 12px', color: 'var(--ink-3)', whiteSpace: 'nowrap' }}>
-                  {new Date(r.createdAt).toLocaleDateString()}
+      <div style={card}>
+        <TableZone
+          headers={['Date', 'Name', 'Email', 'Phone', ...RATING_LABELS.map(r => r.label), 'Message']}
+          minWidth={980}
+          loading={loading}
+          error={error}
+          onRetry={load}
+          empty={rows.length === 0}
+          emptyIcon={MessageSquare}
+          emptyText="No feedback yet."
+        >
+          {rows.map(r => (
+            <tr key={r.id}>
+              <td style={{ ...tdStyle, color: 'var(--ink-3)', whiteSpace: 'nowrap' }}>
+                {new Date(r.createdAt).toLocaleDateString()}
+              </td>
+              <td style={tdStyle}>{r.name ?? '—'}</td>
+              <td style={tdStyle}>{r.email ?? '—'}</td>
+              <td style={tdStyle}>{r.phone ?? '—'}</td>
+              {RATING_LABELS.map(({ key }) => (
+                <td key={key} style={{ ...tdStyle, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
+                  {r[key] != null ? <>{r[key]} <span style={{ color: '#f59e0b' }}>★</span></> : '—'}
                 </td>
-                <td style={{ padding: '10px 12px' }}>{r.name ?? '—'}</td>
-                <td style={{ padding: '10px 12px' }}>{r.email ?? '—'}</td>
-                <td style={{ padding: '10px 12px' }}>{r.phone ?? '—'}</td>
-                {RATING_LABELS.map(({ key }) => (
-                  <td key={key} style={{ padding: '10px 12px', textAlign: 'center' }}>
-                    {r[key] != null ? `${r[key]} ⭐` : '—'}
-                  </td>
-                ))}
-                <td style={{ padding: '10px 12px', maxWidth: '240px', color: 'var(--ink)' }}>{r.message}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              ))}
+              <td style={{ ...tdStyle, maxWidth: '240px' }}>{r.message}</td>
+            </tr>
+          ))}
+        </TableZone>
       </div>
     </div>
   );
@@ -163,6 +278,7 @@ function FeedbackTab() {
 export default function Admin() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [narrow, setNarrow] = useState(window.innerWidth <= 1024);
   const [tab, setTab] = useState('Users');
   const [dataTab, setDataTab] = useState('Connections');
   const [search, setSearch] = useState('');
@@ -179,21 +295,77 @@ export default function Admin() {
   const [needs, setNeeds] = useState([]);
   const [messages, setMessages] = useState([]);
 
-  useEffect(() => { fetchTab(tab); }, [tab]);
+  // One loading/error pair for whatever view is on screen.
+  const [busy, setBusy] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const booted = useRef(false);
+
+  useEffect(() => {
+    const onResize = () => setNarrow(window.innerWidth <= 1024);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Load users + verifications + reports together so the overview numbers
+  // and the nav badges are right from the first paint.
+  useEffect(() => {
+    (async () => {
+      setBusy(true);
+      setFailed(false);
+      try {
+        const [u, v, r] = await Promise.all([
+          api.get('/admin/users'),
+          api.get('/admin/verifications'),
+          api.get('/admin/reports'),
+        ]);
+        setUsers(u.data);
+        setVerifications(v.data);
+        setReports(r.data);
+      } catch {
+        setFailed(true);
+      }
+      setBusy(false);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!booted.current) { booted.current = true; return; }
+    fetchTab(tab);
+  }, [tab]);
   useEffect(() => { if (tab === 'Reviews') fetchReviews(); }, [safetyOnly]);
   useEffect(() => { if (tab === 'Data') fetchDataTab(dataTab); }, [dataTab]);
 
-  async function fetchTab(t) {
-    if (t === 'Users') { const r = await api.get('/admin/users'); setUsers(r.data); }
-    if (t === 'Verifications') { const r = await api.get('/admin/verifications'); setVerifications(r.data); }
-    if (t === 'Reports') { const r = await api.get('/admin/reports'); setReports(r.data); }
-    if (t === 'Reviews') fetchReviews();
-    if (t === 'Data') fetchDataTab(dataTab);
+  async function guarded(hasRows, work) {
+    setFailed(false);
+    if (!hasRows) setBusy(true);
+    try {
+      await work();
+    } catch {
+      setFailed(true);
+    }
+    setBusy(false);
   }
 
-  async function fetchReviews() {
-    const r = await api.get(`/admin/reviews?safetyOnly=${safetyOnly}`);
-    setReviews(r.data);
+  function fetchTab(t) {
+    if (t === 'Users') return guarded(users.length > 0, async () => { const r = await api.get('/admin/users'); setUsers(r.data); });
+    if (t === 'Verifications') return guarded(verifications.length > 0, async () => { const r = await api.get('/admin/verifications'); setVerifications(r.data); });
+    if (t === 'Reports') return guarded(reports.length > 0, async () => { const r = await api.get('/admin/reports'); setReports(r.data); });
+    if (t === 'Reviews') return fetchReviews();
+    if (t === 'Data') return fetchDataTab(dataTab);
+    if (t === 'Feedback') { setBusy(false); setFailed(false); }
+  }
+
+  function fetchReviews() {
+    return guarded(false, async () => {
+      const r = await api.get(`/admin/reviews?safetyOnly=${safetyOnly}`);
+      setReviews(r.data);
+    });
+  }
+
+  function fetchDataTab(dt) {
+    if (dt === 'Connections') return guarded(connections.length > 0, async () => { const r = await api.get('/admin/connections'); setConnections(r.data); });
+    if (dt === 'Needs') return guarded(needs.length > 0, async () => { const r = await api.get('/admin/needs'); setNeeds(r.data); });
+    if (dt === 'Messages') return guarded(messages.length > 0, async () => { const r = await api.get('/admin/messages'); setMessages(r.data); });
   }
 
   // Puts the demo accounts back to their seeded baseline (removes any
@@ -211,12 +383,6 @@ export default function Admin() {
     setTimeout(() => setDemoReset('idle'), 3000);
   }
 
-  async function fetchDataTab(dt) {
-    if (dt === 'Connections') { const r = await api.get('/admin/connections'); setConnections(r.data); }
-    if (dt === 'Needs') { const r = await api.get('/admin/needs'); setNeeds(r.data); }
-    if (dt === 'Messages') { const r = await api.get('/admin/messages'); setMessages(r.data); }
-  }
-
   const filteredUsers = users.filter(u => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -228,571 +394,636 @@ export default function Admin() {
   const userPageCount = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
   const clampedPage = Math.min(userPage, userPageCount - 1);
   const pagedUsers = filteredUsers.slice(clampedPage * USERS_PER_PAGE, (clampedPage + 1) * USERS_PER_PAGE);
+  const rangeStart = filteredUsers.length === 0 ? 0 : clampedPage * USERS_PER_PAGE + 1;
+  const rangeEnd = Math.min(filteredUsers.length, (clampedPage + 1) * USERS_PER_PAGE);
 
   const statsData = [
-    { label: 'Total Users', value: users.length },
-    { label: 'Active Elders', value: users.filter(u => (u.role === 'ELDER' || u.role === 'BOTH') && u.isActive).length },
-    { label: 'Active Helpers', value: users.filter(u => (u.role === 'HELPER' || u.role === 'BOTH') && u.isActive).length },
-    { label: 'Reports', value: reports.length },
-    { label: 'Verifications', value: verifications.length },
-    { label: 'Avg Trust', value: users.length ? Math.round(users.reduce((s, u) => s + (u.trustScore || 0), 0) / users.length) : '—' },
+    { label: 'Users', value: users.length },
+    { label: 'Active elders', value: users.filter(u => (u.role === 'ELDER' || u.role === 'BOTH') && u.isActive).length },
+    { label: 'Active helpers', value: users.filter(u => (u.role === 'HELPER' || u.role === 'BOTH') && u.isActive).length },
+    { label: 'Open reports', value: reports.length },
+    { label: 'Waiting ID checks', value: verifications.length },
+    { label: 'Average trust', value: users.length ? Math.round(users.reduce((s, u) => s + (u.trustScore || 0), 0) / users.length) : '—' },
   ];
 
-  const thStyle = {
-    padding: '12px 16px',
-    textAlign: 'left',
-    fontSize: '12px',
-    fontWeight: 600,
-    color: 'var(--ink-4)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    fontFamily: SFText,
-    borderBottom: '1px solid #e0e0e0',
-    background: 'var(--surface-pearl)',
+  const active = NAV.find(n => n.id === tab);
+  const safetyCount = safetyOnly ? reviews.length : reviews.filter(r => r.safetyConcern).length;
+
+  const navBadge = (id) => {
+    if (id === 'Reports' && reports.length > 0) {
+      return (
+        <span style={{
+          minWidth: '20px', padding: '1px 7px', borderRadius: '9999px', textAlign: 'center',
+          fontSize: '12px', fontWeight: 700, color: '#ffffff', background: 'var(--red)',
+        }}>
+          {reports.length}
+        </span>
+      );
+    }
+    if (id === 'Verifications' && verifications.length > 0) {
+      return (
+        <span style={{
+          minWidth: '20px', padding: '1px 7px', borderRadius: '9999px', textAlign: 'center',
+          fontSize: '12px', fontWeight: 700, color: '#2E7DA6', background: 'var(--blue-tint)',
+        }}>
+          {verifications.length}
+        </span>
+      );
+    }
+    return null;
   };
 
-  const tdStyle = {
-    padding: '14px 16px',
-    fontSize: 'var(--text-sm)',
-    color: 'var(--ink)',
-    fontFamily: SFText,
-    borderBottom: '1px solid #f5f5f7',
-    verticalAlign: 'middle',
-  };
+  const brand = (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: '8px',
+      fontSize: '20px', fontWeight: 600, fontFamily: SF, letterSpacing: '-0.374px',
+      color: 'var(--green-deep)',
+    }}>
+      <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+      ToWin
+      <span style={{
+        fontSize: '11px', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
+        color: '#2E7DA6', background: 'var(--blue-tint)', borderRadius: '9999px', padding: '3px 9px',
+        fontFamily: SFText,
+      }}>
+        Admin
+      </span>
+    </span>
+  );
 
-  const card = {
-    background: '#ffffff',
-    borderRadius: '18px',
-    border: '1px solid #e0e0e0',
-    overflow: 'hidden',
-  };
+  const demoResetLabel = {
+    idle: 'Demo reset',
+    working: 'Resetting demo…',
+    done: 'Demo is fresh ✓',
+    failed: 'Reset failed — try again',
+  }[demoReset];
 
-  const subTabStyle = (active, accent = '#4FA3CE') => ({
-    fontSize: 'var(--text-sm)',
-    fontWeight: active ? 700 : 500,
-    color: active ? '#ffffff' : '#1d1d1f',
-    background: active ? accent : '#ffffff',
-    border: active ? `1px solid ${accent}` : '1px solid #e0e0e0',
-    borderRadius: '9999px',
-    padding: '9px 20px',
-    cursor: 'pointer',
-    fontFamily: SFText,
-    transition: 'all 0.15s',
+  const demoResetBtnStyle = (full) => ({
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+    width: full ? '100%' : 'auto',
+    fontSize: '14px', fontWeight: 500, fontFamily: SFText,
+    color: demoReset === 'failed' ? 'var(--red)' : '#5a6b75',
+    background: '#ffffff', border: '1px solid #DCEBF4',
+    borderRadius: '9999px', padding: '9px 16px',
+    cursor: demoReset === 'working' ? 'wait' : 'pointer',
   });
 
+  const navItem = (item) => {
+    const isActive = tab === item.id;
+    const Icon = item.icon;
+    return (
+      <button
+        key={item.id}
+        onClick={() => setTab(item.id)}
+        aria-current={isActive ? 'page' : undefined}
+        className="admin-nav-item"
+        style={{
+          display: 'flex', alignItems: 'center', gap: '11px', width: '100%',
+          padding: '11px 14px', borderRadius: '12px', border: 'none',
+          background: isActive ? 'var(--blue-tint)' : 'transparent',
+          color: isActive ? '#2E7DA6' : 'var(--ink-2)',
+          fontSize: '15px', fontWeight: isActive ? 700 : 500, fontFamily: SFText,
+          cursor: 'pointer', textAlign: 'left',
+          transition: 'background 0.15s ease, color 0.15s ease',
+        }}
+        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f5f5f7'; }}
+        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+      >
+        <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} style={{ flexShrink: 0 }} />
+        <span style={{ flex: 1 }}>{item.label}</span>
+        {navBadge(item.id)}
+      </button>
+    );
+  };
+
+  const pill = (item) => {
+    const isActive = tab === item.id;
+    return (
+      <button
+        key={item.id}
+        onClick={() => setTab(item.id)}
+        aria-current={isActive ? 'page' : undefined}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0,
+          height: '42px', padding: '0 18px', borderRadius: '9999px',
+          fontSize: '15px', fontWeight: isActive ? 700 : 500, fontFamily: SFText,
+          color: isActive ? '#ffffff' : '#1d1d1f',
+          background: isActive ? '#4FA3CE' : '#ffffff',
+          border: isActive ? '1px solid #4FA3CE' : '1px solid #e0e0e0',
+          boxShadow: isActive ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
+          cursor: 'pointer', whiteSpace: 'nowrap',
+        }}
+      >
+        {item.label}
+        {item.id === 'Reports' && reports.length > 0 && (
+          <span style={{
+            fontSize: '12px', fontWeight: 700, color: '#ffffff', background: 'var(--red)',
+            borderRadius: '9999px', padding: '1px 7px',
+          }}>
+            {reports.length}
+          </span>
+        )}
+      </button>
+    );
+  };
+
   return (
-    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
+    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText, display: 'flex', flexDirection: narrow ? 'column' : 'row' }}>
+      <style>{`
+        .admin-tbl tbody tr { transition: background 0.12s ease; }
+        .admin-tbl tbody tr:hover { background: #fafafc; }
+        .admin-nav-scroll { scrollbar-width: none; }
+        .admin-nav-scroll::-webkit-scrollbar { display: none; }
+        @keyframes adminPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+        @media (prefers-reduced-motion: reduce) { .admin-skel { animation: none !important; } }
+      `}</style>
 
-      {/* Hero header — calm sky-blue, matches the rest of the app */}
-      <div style={{
-        background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
-        borderBottom: '1px solid #DCEBF4',
-        padding: '40px 24px 32px',
-        textAlign: 'center',
-        position: 'relative',
-      }}>
-        <button
-          onClick={resetDemo}
-          disabled={demoReset === 'working'}
-          style={{
-            position: 'absolute', top: '20px', left: '24px',
-            fontSize: '14px',
-            color: demoReset === 'failed' ? 'var(--red)' : '#5a6b75',
-            background: '#ffffff', border: '1px solid #DCEBF4',
-            borderRadius: '9999px', padding: '6px 16px',
-            cursor: demoReset === 'working' ? 'wait' : 'pointer',
-            fontFamily: SFText, fontWeight: 500,
-          }}
-        >
-          {demoReset === 'idle' && 'Demo reset'}
-          {demoReset === 'working' && 'Resetting demo…'}
-          {demoReset === 'done' && 'Demo is fresh ✓'}
-          {demoReset === 'failed' && 'Reset failed — try again'}
-        </button>
-
-        <button
-          onClick={() => setConfirmSignOut(true)}
-          style={{
-            position: 'absolute', top: '20px', right: '24px',
-            fontSize: '14px', color: '#5a6b75',
-            background: '#ffffff', border: '1px solid #DCEBF4',
-            borderRadius: '9999px', padding: '6px 16px',
-            cursor: 'pointer', fontFamily: SFText, fontWeight: 500,
-          }}
-        >
-          Sign out
-        </button>
-
-        <div style={{
-          width: '60px', height: '60px', borderRadius: '16px',
-          background: '#ffffff', border: '1px solid #BFD9EA',
-          margin: '0 auto 18px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(79,163,206,0.15)',
-        }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" />
-          </svg>
-        </div>
-        <h1 style={{
-          fontSize: 'var(--text-3xl)', fontWeight: 600, color: 'var(--ink)',
-          fontFamily: SF, letterSpacing: '-0.8px', marginBottom: '8px',
-        }}>
-          Admin
-        </h1>
-        <p style={{ fontSize: '16px', color: '#5a6b75', maxWidth: '460px', margin: '0 auto 28px', lineHeight: 1.5 }}>
-          Care for the community: users, trust, and safety in one place.
-        </p>
-
-        {/* Stats — light, airy cards */}
-        <div style={{
-          maxWidth: '960px', margin: '0 auto',
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px',
-        }}>
-          {statsData.map(stat => (
-            <div key={stat.label} style={{
-              background: '#ffffff',
-              border: '1px solid #DCEBF4',
-              borderRadius: '14px',
-              padding: '16px 18px',
-              textAlign: 'left',
-            }}>
-              <p style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>
-                {stat.value}
-              </p>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', marginTop: '6px', fontWeight: 500, margin: '6px 0 0' }}>
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 32px 64px' }}>
-
-        {/* Prominent pill tab bar — matches elder/helper dashboards */}
-        <div style={{
-          display: 'flex', gap: '10px', flexWrap: 'wrap',
-          marginBottom: '32px',
-        }}>
-          {TABS.map(t => {
-            const active = tab === t;
-            const hasBadge = t === 'Reports' && reports.length > 0;
-            return (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                style={{
-                  flex: '1 1 auto', minWidth: '140px',
-                  height: '64px', padding: '0 24px',
-                  fontSize: '17px', letterSpacing: '-0.2px',
-                  fontWeight: active ? 700 : 500,
-                  color: active ? '#ffffff' : '#1d1d1f',
-                  background: active ? '#4FA3CE' : '#ffffff',
-                  border: active ? '1px solid #4FA3CE' : '1px solid #e0e0e0',
-                  borderRadius: '16px',
-                  cursor: 'pointer',
-                  transition: 'background 0.18s ease, color 0.18s ease, border-color 0.18s ease',
-                  whiteSpace: 'nowrap',
-                  fontFamily: SFText,
-                  boxShadow: active ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f7'; }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.background = '#ffffff'; }}
-              >
-                {t}
-                {hasBadge && (
-                  <span style={{
-                    fontSize: '12px', fontWeight: 600,
-                    color: '#ffffff', background: 'var(--red)',
-                    borderRadius: '9999px', padding: '1px 8px',
-                  }}>
-                    {reports.length}
-                  </span>
-                )}
+      {/* ——— Navigation: sidebar on desktop, top bar + pills on small screens ——— */}
+      {narrow ? (
+        <header style={{ background: '#ffffff', borderBottom: '1px solid #ececef', position: 'sticky', top: 0, zIndex: 50 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '12px 16px' }}>
+            {brand}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={resetDemo} disabled={demoReset === 'working'} style={demoResetBtnStyle(false)}>
+                <RefreshCw size={14} strokeWidth={2} />
+                {demoResetLabel}
               </button>
-            );
-          })}
-        </div>
-
-        <div>
-
-        {/* Users tab */}
-        {tab === 'Users' && (
-          <div style={card}>
-            {/* Search bar */}
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0' }}>
-              <SmoothInput
-                value={search}
-                onChange={e => { setSearch(e.target.value); setUserPage(0); }}
-                placeholder="Search users by email or username…"
+              <button
+                onClick={() => setConfirmSignOut(true)}
+                aria-label="Sign out"
                 style={{
-                  width: '320px',
-                  padding: '9px 16px',
-                  borderRadius: '9999px',
-                  border: '1.5px solid #e0e0e0',
-                  fontSize: 'var(--text-sm)',
-                  fontFamily: SFText,
-                  color: 'var(--ink)',
-                  outline: 'none',
-                  background: 'var(--surface-pearl)',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: '44px', height: '44px', borderRadius: '9999px',
+                  background: '#ffffff', border: '1px solid #DCEBF4', color: '#5a6b75', cursor: 'pointer',
                 }}
-              />
+              >
+                <LogOut size={17} strokeWidth={1.8} />
+              </button>
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
-              <thead>
-                <tr>
-                  {['User', 'Role', 'Trust Score', 'Tier', 'Status', 'Verified', 'Joined', 'Actions'].map(h => (
-                    <th key={h} style={thStyle}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pagedUsers.map(u => {
-                  const lowTrust = (u.trustScore || 0) < 20;
-                  return (
-                    <tr key={u.id} style={{ background: lowTrust ? 'rgba(204,0,0,0.03)' : 'transparent' }}>
-                      <td style={tdStyle}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            background: lowTrust ? 'rgba(204,0,0,0.15)' : 'rgba(0,102,204,0.12)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: lowTrust ? '#cc0000' : '#4FA3CE',
-                            flexShrink: 0,
-                          }}>
-                            {u.email?.[0]?.toUpperCase() || '?'}
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                            <span style={{ fontSize: '14px', color: 'var(--ink)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {u.email}
-                            </span>
-                            {u.username && (
-                              <span
-                                title="Click to copy username"
-                                onClick={() => navigator.clipboard?.writeText(u.username)}
-                                style={{ fontSize: '12px', color: 'var(--ink-4)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>
-                                @{u.username}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td style={tdStyle}>{roleBadge(u.role)}</td>
-                      <td style={tdStyle}>
-                        <span style={{ fontWeight: 600, color: trustColor(u.trustScore || 0), fontSize: '16px' }}>
-                          {u.trustScore ?? '—'}
-                        </span>
-                      </td>
-                      <td style={tdStyle}>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', fontWeight: 500 }}>{u.trustTier || '—'}</span>
-                      </td>
-                      <td style={tdStyle}>{statusBadge(u.isActive)}</td>
-                      <td style={tdStyle}>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)' }}>{u.verificationStatus}</span>
-                      </td>
-                      <td style={tdStyle}>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>
-                          {new Date(u.createdAt).toLocaleDateString()}
-                        </span>
-                      </td>
-                      <td style={tdStyle}>
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          {u.isActive
-                            ? <button onClick={() => api.put(`/admin/users/${u.id}/suspend`).then(() => fetchTab('Users'))} style={yellowBtn}>Suspend</button>
-                            : <button onClick={() => api.put(`/admin/users/${u.id}/unsuspend`).then(() => fetchTab('Users'))} style={greenBtn}>Unsuspend</button>
-                          }
-                          {u.photoUrl && (
-                            <ConfirmButton label="Del Photo" style={grayBtn}
-                              onConfirm={() => api.delete(`/admin/users/${u.id}/photo`).then(() => fetchTab('Users'))} />
-                          )}
-                          <ConfirmButton label="Delete" style={redBtn}
-                            onConfirm={() => api.delete(`/admin/users/${u.id}`).then(() => fetchTab('Users'))} />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          </div>
+          <nav className="admin-nav-scroll" aria-label="Admin sections" style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '2px 16px 12px' }}>
+            {NAV.map(pill)}
+          </nav>
+        </header>
+      ) : (
+        <aside style={{
+          width: '236px', flexShrink: 0, background: '#ffffff', borderRight: '1px solid #ececef',
+          position: 'sticky', top: 0, height: '100svh', overflowY: 'auto',
+          display: 'flex', flexDirection: 'column', padding: '22px 14px 18px',
+        }}>
+          <div style={{ padding: '0 8px 22px' }}>{brand}</div>
 
-            {/* Pagination controls */}
-            <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', borderTop: '1px solid #e0e0e0' }}>
-              <span style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText }}>
-                Page {clampedPage + 1} of {userPageCount}
-              </span>
-              <button
-                onClick={() => setUserPage(p => Math.max(0, p - 1))}
-                disabled={clampedPage === 0}
-                style={{
-                  background: 'transparent',
-                  color: clampedPage === 0 ? '#c8c8cd' : '#4FA3CE',
-                  border: '1.5px solid #e0e0e0',
-                  borderRadius: '9999px',
-                  padding: '7px 18px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  fontFamily: SFText,
-                  cursor: clampedPage === 0 ? 'default' : 'pointer',
-                }}>Prev</button>
-              <button
-                onClick={() => setUserPage(p => Math.min(userPageCount - 1, p + 1))}
-                disabled={clampedPage >= userPageCount - 1}
-                style={{
-                  background: clampedPage >= userPageCount - 1 ? '#e0e0e0' : '#4FA3CE',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '9999px',
-                  padding: '7px 18px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  fontFamily: SFText,
-                  cursor: clampedPage >= userPageCount - 1 ? 'default' : 'pointer',
-                }}>Next</button>
-            </div>
+          <nav aria-label="Admin sections" style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            {NAV.map(navItem)}
+          </nav>
+
+          <div style={{ flex: 1 }} />
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '18px', borderTop: '1px solid #ececef' }}>
+            <button onClick={resetDemo} disabled={demoReset === 'working'} style={demoResetBtnStyle(true)}>
+              <RefreshCw size={14} strokeWidth={2} />
+              {demoResetLabel}
+            </button>
+            <button
+              onClick={() => setConfirmSignOut(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px', width: '100%',
+                fontSize: '14px', fontWeight: 500, fontFamily: SFText, color: '#5a6b75',
+                background: 'transparent', border: 'none', borderRadius: '9999px',
+                padding: '9px 16px', cursor: 'pointer',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              <LogOut size={15} strokeWidth={1.8} />
+              Sign out
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* ——— Main content ——— */}
+      <main style={{ flex: 1, minWidth: 0, padding: narrow ? '20px 16px 48px' : '30px 36px 64px', maxWidth: '1200px' }}>
+
+        <header style={{ marginBottom: '22px' }}>
+          <h1 style={{
+            fontSize: narrow ? 'var(--text-xl)' : 'var(--text-2xl)', fontWeight: 600, color: 'var(--ink)',
+            fontFamily: SF, letterSpacing: '-0.6px', margin: '0 0 6px',
+          }}>
+            {active.label}
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--ink-slate)', margin: 0, lineHeight: 1.5 }}>
+            {active.blurb}
+          </p>
+        </header>
+
+        {/* Overview numbers — shown on the home (Users) section */}
+        {tab === 'Users' && (
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px',
+            marginBottom: '22px',
+          }}>
+            {statsData.map(stat => (
+              <div key={stat.label} style={{
+                background: '#ffffff',
+                border: '1px solid #DCEBF4',
+                borderRadius: '14px',
+                padding: '16px 18px',
+              }}>
+                <p style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.5px', lineHeight: 1, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                  {busy ? '—' : stat.value}
+                </p>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', fontWeight: 500, margin: '6px 0 0' }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Verifications tab */}
-        {tab === 'Verifications' && (
+        {/* Users */}
+        {tab === 'Users' && (
           <div style={card}>
-            {verifications.length === 0 && (
-              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
-                No pending verifications.
-              </p>
-            )}
-            <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
-              <thead>
-                <tr>
-                  {['Email', 'ID Document', 'Submitted', 'Actions'].map(h => (
-                    <th key={h} style={thStyle}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {verifications.map(v => (
-                  <tr key={v.userId}>
-                    <td style={tdStyle}>{v.email}</td>
+            <div style={{
+              padding: '14px 20px', borderBottom: '1px solid #e0e0e0',
+              display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '9px',
+                flex: '1 1 240px', maxWidth: '360px',
+                border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                padding: '8px 16px', background: 'var(--surface-pearl)',
+              }}>
+                <Search size={16} color="#a0a0a5" strokeWidth={2} style={{ flexShrink: 0 }} />
+                <SmoothInput
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setUserPage(0); }}
+                  placeholder="Search by email or username…"
+                  aria-label="Search users"
+                  wrapperStyle={{ flex: 1, minWidth: 0, width: 'auto' }}
+                  style={{
+                    width: '100%', border: 'none', outline: 'none', background: 'transparent',
+                    fontSize: 'var(--text-sm)', fontFamily: SFText, color: 'var(--ink)', padding: 0,
+                  }}
+                />
+              </div>
+              {!busy && (
+                <span style={{ fontSize: '14px', color: 'var(--ink-3)', fontVariantNumeric: 'tabular-nums' }}>
+                  {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}
+                </span>
+              )}
+            </div>
+
+            <TableZone
+              headers={['User', 'Role', 'Trust score', 'Tier', 'Status', 'Verified', 'Joined', 'Actions']}
+              minWidth={860}
+              loading={busy}
+              error={failed}
+              onRetry={() => fetchTab('Users')}
+              empty={filteredUsers.length === 0}
+              emptyIcon={search ? Search : UsersIcon}
+              emptyText={search ? 'No one matches your search.' : 'No users yet.'}
+            >
+              {pagedUsers.map(u => {
+                const lowTrust = (u.trustScore || 0) < 20;
+                return (
+                  <tr key={u.id} style={lowTrust ? { background: 'rgba(204,0,0,0.03)' } : undefined}>
                     <td style={tdStyle}>
-                      {v.idDocumentUrl
-                        ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', fontSize: '14px', fontWeight: 600 }}>View Document</a>
-                        : <span style={{ color: 'var(--ink-4)' }}>—</span>}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          background: lowTrust ? 'rgba(204,0,0,0.15)' : 'rgba(0,102,204,0.12)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: lowTrust ? '#cc0000' : '#4FA3CE',
+                          flexShrink: 0,
+                        }}>
+                          {u.email?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                          <span style={{ fontSize: '14px', color: 'var(--ink)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {u.email}
+                          </span>
+                          {u.username && (
+                            <span
+                              title="Click to copy username"
+                              onClick={() => navigator.clipboard?.writeText(u.username)}
+                              style={{ fontSize: '12px', color: 'var(--ink-4)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                              @{u.username}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </td>
-                    <td style={tdStyle}>{new Date(v.createdAt).toLocaleDateString()}</td>
+                    <td style={tdStyle}>{roleBadge(u.role)}</td>
                     <td style={tdStyle}>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => api.put(`/admin/verifications/${v.userId}/approve`).then(() => fetchTab('Verifications'))} style={greenBtn}>
-                          Approve
-                        </button>
-                        <ConfirmButton label="Reject" style={redBtn}
-                          onConfirm={() => api.put(`/admin/verifications/${v.userId}/reject`).then(() => fetchTab('Verifications'))} />
+                      <span style={{ fontWeight: 600, color: trustColor(u.trustScore || 0), fontSize: '16px', fontVariantNumeric: 'tabular-nums' }}>
+                        {u.trustScore ?? '—'}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)', fontWeight: 500 }}>{u.trustTier || '—'}</span>
+                    </td>
+                    <td style={tdStyle}>{statusBadge(u.isActive)}</td>
+                    <td style={tdStyle}>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-3)' }}>{u.verificationStatus}</span>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', whiteSpace: 'nowrap' }}>
+                        {new Date(u.createdAt).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {u.isActive
+                          ? <button onClick={() => api.put(`/admin/users/${u.id}/suspend`).then(() => fetchTab('Users'))} style={yellowBtn}>Suspend</button>
+                          : <button onClick={() => api.put(`/admin/users/${u.id}/unsuspend`).then(() => fetchTab('Users'))} style={greenBtn}>Unsuspend</button>
+                        }
+                        {u.photoUrl && (
+                          <ConfirmButton label="Remove photo" style={grayBtn}
+                            onConfirm={() => api.delete(`/admin/users/${u.id}/photo`).then(() => fetchTab('Users'))} />
+                        )}
+                        <ConfirmButton label="Delete" style={redBtn}
+                          onConfirm={() => api.delete(`/admin/users/${u.id}`).then(() => fetchTab('Users'))} />
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                );
+              })}
+            </TableZone>
+
+            {!busy && !failed && filteredUsers.length > 0 && (
+              <div style={{
+                padding: '14px 20px', borderTop: '1px solid #e0e0e0',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
+              }}>
+                <span style={{ fontSize: '14px', color: 'var(--ink-3)', fontVariantNumeric: 'tabular-nums' }}>
+                  Showing {rangeStart}–{rangeEnd} of {filteredUsers.length}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '14px', color: 'var(--ink-3)', fontVariantNumeric: 'tabular-nums' }}>
+                    Page {clampedPage + 1} of {userPageCount}
+                  </span>
+                  <button
+                    onClick={() => setUserPage(p => Math.max(0, p - 1))}
+                    disabled={clampedPage === 0}
+                    style={{
+                      background: 'transparent',
+                      color: clampedPage === 0 ? '#c8c8cd' : '#4FA3CE',
+                      border: '1.5px solid #e0e0e0',
+                      borderRadius: '9999px',
+                      padding: '7px 18px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      fontFamily: SFText,
+                      cursor: clampedPage === 0 ? 'default' : 'pointer',
+                    }}>Prev</button>
+                  <button
+                    onClick={() => setUserPage(p => Math.min(userPageCount - 1, p + 1))}
+                    disabled={clampedPage >= userPageCount - 1}
+                    style={{
+                      background: clampedPage >= userPageCount - 1 ? '#e0e0e0' : '#4FA3CE',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '9999px',
+                      padding: '7px 18px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      fontFamily: SFText,
+                      cursor: clampedPage >= userPageCount - 1 ? 'default' : 'pointer',
+                    }}>Next</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Reports tab */}
+        {/* Verifications */}
+        {tab === 'Verifications' && (
+          <div style={card}>
+            <TableZone
+              headers={['Email', 'ID document', 'Submitted', 'Actions']}
+              loading={busy}
+              error={failed}
+              onRetry={() => fetchTab('Verifications')}
+              empty={verifications.length === 0}
+              emptyIcon={ShieldCheck}
+              emptyText="No one is waiting for an ID check."
+            >
+              {verifications.map(v => (
+                <tr key={v.userId}>
+                  <td style={tdStyle}>{v.email}</td>
+                  <td style={tdStyle}>
+                    {v.idDocumentUrl
+                      ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', fontSize: '14px', fontWeight: 600 }}>View document</a>
+                      : <span style={{ color: 'var(--ink-4)' }}>—</span>}
+                  </td>
+                  <td style={tdStyle}>{new Date(v.createdAt).toLocaleDateString()}</td>
+                  <td style={tdStyle}>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button onClick={() => api.put(`/admin/verifications/${v.userId}/approve`).then(() => fetchTab('Verifications'))} style={greenBtn}>
+                        Approve
+                      </button>
+                      <ConfirmButton label="Reject" style={redBtn}
+                        onConfirm={() => api.put(`/admin/verifications/${v.userId}/reject`).then(() => fetchTab('Verifications'))} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </TableZone>
+          </div>
+        )}
+
+        {/* Reports */}
         {tab === 'Reports' && (
           <div style={card}>
-            {reports.length === 0 && (
-              <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
-                No reports.
-              </p>
-            )}
-            <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
-              <thead>
-                <tr>
-                  {['Reporter', 'Reported', 'Reason', 'Description', 'Date', 'Actions'].map(h => (
-                    <th key={h} style={thStyle}>{h}</th>
-                  ))}
+            <TableZone
+              headers={['Reporter', 'Reported', 'Reason', 'Description', 'Date', 'Actions']}
+              minWidth={760}
+              loading={busy}
+              error={failed}
+              onRetry={() => fetchTab('Reports')}
+              empty={reports.length === 0}
+              emptyIcon={Flag}
+              emptyText="No reports. All is calm."
+            >
+              {reports.map(r => (
+                <tr key={r.id}>
+                  <td style={tdStyle}>{r.reporterEmail}</td>
+                  <td style={tdStyle}>{r.reportedEmail}</td>
+                  <td style={tdStyle}>
+                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--red)', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
+                      {r.reason}
+                    </span>
+                  </td>
+                  <td style={{ ...tdStyle, maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.description}>
+                    {r.description}
+                  </td>
+                  <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>
+                  <td style={tdStyle}>
+                    <ConfirmButton label="Delete" style={redBtn}
+                      onConfirm={() => api.delete(`/admin/reports/${r.id}`).then(() => fetchTab('Reports'))} />
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {reports.map(r => (
-                  <tr key={r.id}>
-                    <td style={tdStyle}>{r.reporterEmail}</td>
-                    <td style={tdStyle}>{r.reportedEmail}</td>
+              ))}
+            </TableZone>
+          </div>
+        )}
+
+        {/* Reviews */}
+        {tab === 'Reviews' && (
+          <div>
+            <div style={{ marginBottom: '18px' }}>
+              <SegmentedTabs
+                segments={[
+                  { id: 'all', label: 'All reviews' },
+                  { id: 'safety', label: 'Safety flags', color: '#cc0000', notify: true, count: safetyCount },
+                ]}
+                value={safetyOnly ? 'safety' : 'all'}
+                onChange={id => setSafetyOnly(id === 'safety')}
+              />
+            </div>
+            <div style={card}>
+              <TableZone
+                headers={['Reviewer', 'Reviewee', 'Rating', 'Tags', 'Safety', 'Date', 'Actions']}
+                minWidth={760}
+                loading={busy}
+                error={failed}
+                onRetry={fetchReviews}
+                empty={reviews.length === 0}
+                emptyIcon={Star}
+                emptyText={safetyOnly ? 'No safety flags. All is calm.' : 'No reviews yet.'}
+              >
+                {reviews.map(r => (
+                  <tr key={r.id} style={r.safetyConcern ? { background: 'rgba(204,0,0,0.03)' } : undefined}>
+                    <td style={tdStyle}>{r.reviewerEmail}</td>
+                    <td style={tdStyle}>{r.revieweeEmail}</td>
+                    <td style={tdStyle}><span style={{ color: '#f59e0b' }}>{'★'.repeat(r.rating)}</span></td>
+                    <td style={tdStyle}>{r.tags?.join(', ')}</td>
                     <td style={tdStyle}>
-                      <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--red)', background: 'rgba(204,0,0,0.08)', padding: '3px 8px', borderRadius: '9999px' }}>
-                        {r.reason}
-                      </span>
-                    </td>
-                    <td style={{ ...tdStyle, maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {r.description}
+                      {r.safetyConcern
+                        ? <span style={{ fontSize: 'var(--text-xs)', color: 'var(--red)', fontWeight: 600 }}>Safety flag</span>
+                        : <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>—</span>}
                     </td>
                     <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>
                     <td style={tdStyle}>
                       <ConfirmButton label="Delete" style={redBtn}
-                        onConfirm={() => api.delete(`/admin/reports/${r.id}`).then(() => fetchTab('Reports'))} />
+                        onConfirm={() => api.delete(`/admin/reviews/${r.id}`).then(fetchReviews)} />
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Reviews tab */}
-        {tab === 'Reviews' && (
-          <div>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <button onClick={() => setSafetyOnly(false)} style={subTabStyle(!safetyOnly)}>All Reviews</button>
-              <button onClick={() => setSafetyOnly(true)} style={subTabStyle(safetyOnly, '#cc0000')}>Safety Flags</button>
-            </div>
-            <div style={card}>
-              {reviews.length === 0 && (
-                <p style={{ padding: '40px 24px', color: 'var(--ink-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>No reviews.</p>
-              )}
-              <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
-                <thead>
-                  <tr>
-                    {['Reviewer', 'Reviewee', 'Rating', 'Tags', 'Safety', 'Date', 'Actions'].map(h => (
-                      <th key={h} style={thStyle}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {reviews.map(r => (
-                    <tr key={r.id} style={{ background: r.safetyConcern ? 'rgba(204,0,0,0.03)' : 'transparent' }}>
-                      <td style={tdStyle}>{r.reviewerEmail}</td>
-                      <td style={tdStyle}>{r.revieweeEmail}</td>
-                      <td style={tdStyle}><span style={{ color: '#f59e0b' }}>{'★'.repeat(r.rating)}</span></td>
-                      <td style={tdStyle}>{r.tags?.join(', ')}</td>
-                      <td style={tdStyle}>
-                        {r.safetyConcern
-                          ? <span style={{ fontSize: 'var(--text-xs)', color: 'var(--red)', fontWeight: 600 }}>Safety Flag</span>
-                          : <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>—</span>}
-                      </td>
-                      <td style={tdStyle}>{new Date(r.createdAt).toLocaleDateString()}</td>
-                      <td style={tdStyle}>
-                        <ConfirmButton label="Delete" style={redBtn}
-                          onConfirm={() => api.delete(`/admin/reviews/${r.id}`).then(fetchReviews)} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              </TableZone>
             </div>
           </div>
         )}
 
-        {/* Feedback tab */}
+        {/* Feedback */}
         {tab === 'Feedback' && <FeedbackTab />}
 
-        {/* Data tab */}
+        {/* Data */}
         {tab === 'Data' && (
           <div>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              {DATA_TABS.map(dt => (
-                <button key={dt} onClick={() => setDataTab(dt)} style={subTabStyle(dataTab === dt)}>
-                  {dt}
-                </button>
-              ))}
+            <div style={{ marginBottom: '18px' }}>
+              <SegmentedTabs
+                segments={DATA_TABS.map(dt => ({ id: dt, label: dt }))}
+                value={dataTab}
+                onChange={setDataTab}
+              />
             </div>
 
             {dataTab === 'Connections' && (
               <div style={card}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
-                  <thead>
-                    <tr>
-                      {['User A', 'User B', 'Trust Level', 'Status', 'Created', 'Actions'].map(h => (
-                        <th key={h} style={thStyle}>{h}</th>
-                      ))}
+                <TableZone
+                  headers={['User A', 'User B', 'Trust level', 'Status', 'Created', 'Actions']}
+                  minWidth={760}
+                  loading={busy}
+                  error={failed}
+                  onRetry={() => fetchDataTab('Connections')}
+                  empty={connections.length === 0}
+                  emptyIcon={Database}
+                  emptyText="No connections yet."
+                >
+                  {connections.map(c => (
+                    <tr key={c.id}>
+                      <td style={tdStyle}>{c.userAEmail}</td>
+                      <td style={tdStyle}>{c.userBEmail}</td>
+                      <td style={tdStyle}>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--blue)', fontWeight: 600 }}>{c.trustLevel}</span>
+                      </td>
+                      <td style={tdStyle}>{c.status}</td>
+                      <td style={tdStyle}>{new Date(c.createdAt).toLocaleDateString()}</td>
+                      <td style={tdStyle}>
+                        <ConfirmButton label="Delete" style={redBtn}
+                          onConfirm={() => api.delete(`/admin/connections/${c.id}`).then(() => fetchDataTab('Connections'))} />
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {connections.map(c => (
-                      <tr key={c.id}>
-                        <td style={tdStyle}>{c.userAEmail}</td>
-                        <td style={tdStyle}>{c.userBEmail}</td>
-                        <td style={tdStyle}>
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--blue)', fontWeight: 600 }}>{c.trustLevel}</span>
-                        </td>
-                        <td style={tdStyle}>{c.status}</td>
-                        <td style={tdStyle}>{new Date(c.createdAt).toLocaleDateString()}</td>
-                        <td style={tdStyle}>
-                          <ConfirmButton label="Delete" style={redBtn}
-                            onConfirm={() => api.delete(`/admin/connections/${c.id}`).then(() => fetchDataTab('Connections'))} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  ))}
+                </TableZone>
               </div>
             )}
 
             {dataTab === 'Needs' && (
               <div style={card}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
-                  <thead>
-                    <tr>
-                      {['Elder', 'Category', 'Status', 'Created', 'Actions'].map(h => (
-                        <th key={h} style={thStyle}>{h}</th>
-                      ))}
+                <TableZone
+                  headers={['Elder', 'Category', 'Status', 'Created', 'Actions']}
+                  loading={busy}
+                  error={failed}
+                  onRetry={() => fetchDataTab('Needs')}
+                  empty={needs.length === 0}
+                  emptyIcon={Database}
+                  emptyText="No needs yet."
+                >
+                  {needs.map(n => (
+                    <tr key={n.id}>
+                      <td style={tdStyle}>{n.elderEmail}</td>
+                      <td style={tdStyle}>{n.category}</td>
+                      <td style={tdStyle}>{n.status}</td>
+                      <td style={tdStyle}>{new Date(n.createdAt).toLocaleDateString()}</td>
+                      <td style={tdStyle}>
+                        <ConfirmButton label="Delete" style={redBtn}
+                          onConfirm={() => api.delete(`/admin/needs/${n.id}`).then(() => fetchDataTab('Needs'))} />
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {needs.map(n => (
-                      <tr key={n.id}>
-                        <td style={tdStyle}>{n.elderEmail}</td>
-                        <td style={tdStyle}>{n.category}</td>
-                        <td style={tdStyle}>{n.status}</td>
-                        <td style={tdStyle}>{new Date(n.createdAt).toLocaleDateString()}</td>
-                        <td style={tdStyle}>
-                          <ConfirmButton label="Delete" style={redBtn}
-                            onConfirm={() => api.delete(`/admin/needs/${n.id}`).then(() => fetchDataTab('Needs'))} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  ))}
+                </TableZone>
               </div>
             )}
 
             {dataTab === 'Messages' && (
               <div style={card}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block', overflowX: 'auto' }}>
-                  <thead>
-                    <tr>
-                      {['Sender', 'Content', 'Date', 'Actions'].map(h => (
-                        <th key={h} style={thStyle}>{h}</th>
-                      ))}
+                <TableZone
+                  headers={['Sender', 'Content', 'Date', 'Actions']}
+                  loading={busy}
+                  error={failed}
+                  onRetry={() => fetchDataTab('Messages')}
+                  empty={messages.length === 0}
+                  emptyIcon={Database}
+                  emptyText="No messages yet."
+                >
+                  {messages.map(m => (
+                    <tr key={m.id}>
+                      <td style={tdStyle}>{m.senderEmail}</td>
+                      <td style={{ ...tdStyle, maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={m.content}>
+                        {m.content}
+                      </td>
+                      <td style={tdStyle}>{new Date(m.createdAt).toLocaleDateString()}</td>
+                      <td style={tdStyle}>
+                        <ConfirmButton label="Delete" style={redBtn}
+                          onConfirm={() => api.delete(`/admin/messages/${m.id}`).then(() => fetchDataTab('Messages'))} />
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {messages.map(m => (
-                      <tr key={m.id}>
-                        <td style={tdStyle}>{m.senderEmail}</td>
-                        <td style={{ ...tdStyle, maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {m.content}
-                        </td>
-                        <td style={tdStyle}>{new Date(m.createdAt).toLocaleDateString()}</td>
-                        <td style={tdStyle}>
-                          <ConfirmButton label="Delete" style={redBtn}
-                            onConfirm={() => api.delete(`/admin/messages/${m.id}`).then(() => fetchDataTab('Messages'))} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  ))}
+                </TableZone>
               </div>
             )}
           </div>
         )}
-
-        </div>
-      </div>
+      </main>
 
       <ConfirmDialog
         open={confirmSignOut}
