@@ -1,0 +1,79 @@
+classDiagram
+    class NeedController {
+        +postNeed(auth, NeedRequest) NeedResponse
+        +getAllOpen(auth) List~NeedResponse~
+        +browseNearby(auth, lat, lng, radiusKm) List~NeedResponse~
+        +getMyNeeds(auth, page, size) Page~NeedResponse~
+        +apply(auth, needId, ApplyRequest) void
+        +acceptHelper(auth, needId, helperId) NeedResponse
+        +complete(auth, needId) NeedResponse
+        +cancelNeed(auth, needId) void
+        +withdrawApplication(auth, needId) void
+    }
+
+    class NeedService {
+        -NeedRepository needRepository
+        +postNeed(elderId, request) NeedResponse
+        +getAllOpen(helperId) List~NeedResponse~
+        +apply(helperId, needId, request) void
+        +acceptHelper(elderId, needId, helperId) NeedResponse
+        +complete(elderId, needId) NeedResponse
+        +cancelNeed(elderId, needId) void
+    }
+
+    class NeedRepository {
+        <<interface>>
+        +findByStatusOrderByCreatedAtDesc(status) List~Need~
+        +findOpenNeedsWithLocation(status) List~Need~
+    }
+
+    class JpaRepository {
+        <<interface>>
+    }
+
+    class Need {
+        -UUID id
+        -String title
+        -NeedCategory category
+        -NeedStatus status
+        -BigDecimal locationLat
+        -BigDecimal locationLng
+    }
+
+    class NeedApplication {
+        -UUID id
+        -String message
+        -ApplicationStatus status
+    }
+
+    class User {
+        -UUID id
+        -String username
+        -UserRole role
+    }
+
+    class NeedStatus {
+        <<enumeration>>
+        OPEN
+        ASSIGNED
+        COMPLETED
+        CANCELLED
+    }
+
+    class ApplicationStatus {
+        <<enumeration>>
+        PENDING
+        ACCEPTED
+        REJECTED
+        WITHDRAWN
+    }
+
+    NeedController --> NeedService : delegates to
+    NeedService --> NeedRepository : uses
+    NeedRepository --|> JpaRepository : extends
+    NeedRepository ..> Need : manages
+    Need "1" --> "0..*" NeedApplication : receives
+    Need --> "1" User : elder
+    NeedApplication --> "1" User : helper
+    Need --> NeedStatus : status
+    NeedApplication --> ApplicationStatus : status

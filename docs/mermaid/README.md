@@ -10,6 +10,7 @@ enums, deploy setup). Learn the syntax here, then edit and re-render.
 | 3 | [03-er-diagram.md](03-er-diagram.md) | Entity Relationship | The database: User, Need, Connection, Message… and how they link |
 | 4 | [04-state.md](04-state.md) | State | Lifecycles: Need status, Connection status, and the trust ladder |
 | 5 | [05-architecture.md](05-architecture.md) | C4 context | Big picture: Vercel frontend, Railway backend, Postgres, S3, Brevo… |
+| 6 | [06-class.md](06-class.md) | Class | The Need slice as classes: Controller → Service → Repository, entities, enums |
 
 ## How to view
 
