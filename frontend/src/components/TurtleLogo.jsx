@@ -1,13 +1,15 @@
 /**
- * Top-view turtle logo — shell scute pattern, head, four legs, tail visible.
- * Use as the ToWin mark anywhere a brand logo is needed.
+ * Top-view turtle logo — heart-shaped shell, hexagon scute pattern,
+ * head, four swept flippers. Use as the ToWin mark anywhere a brand
+ * logo is needed. `shellFill` masks the flipper roots behind the shell;
+ * set it to the page background color when not on white.
  */
-export default function TurtleLogo({ size = 28, color = '#4FA3CE', strokeWidth = 1.6, ...rest }) {
+export default function TurtleLogo({ size = 28, color = '#055330', strokeWidth = 4.5, shellFill = '#ffffff', ...rest }) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 100 100"
       fill="none"
       stroke={color}
       strokeWidth={strokeWidth}
@@ -16,32 +18,29 @@ export default function TurtleLogo({ size = 28, color = '#4FA3CE', strokeWidth =
       aria-hidden="true"
       {...rest}
     >
-      {/* Head (top, peeking out from shell) */}
-      <ellipse cx="16" cy="6" rx="2.4" ry="2.6" />
+      {/* Flippers (tucked behind the shell) */}
+      <ellipse cx="25" cy="26.5" rx="13.5" ry="5" transform="rotate(42 25 26.5)" />
+      <ellipse cx="75" cy="26.5" rx="13.5" ry="5" transform="rotate(-42 75 26.5)" />
+      <ellipse cx="26" cy="70" rx="12" ry="5" transform="rotate(-40 26 70)" />
+      <ellipse cx="74" cy="70" rx="12" ry="5" transform="rotate(40 74 70)" />
 
-      {/* Front-left leg */}
-      <ellipse cx="6.5" cy="12" rx="2.4" ry="1.8" transform="rotate(-30 6.5 12)" />
-      {/* Front-right leg */}
-      <ellipse cx="25.5" cy="12" rx="2.4" ry="1.8" transform="rotate(30 25.5 12)" />
-      {/* Back-left leg */}
-      <ellipse cx="6.5" cy="22" rx="2.4" ry="1.8" transform="rotate(30 6.5 22)" />
-      {/* Back-right leg */}
-      <ellipse cx="25.5" cy="22" rx="2.4" ry="1.8" transform="rotate(-30 25.5 22)" />
+      {/* Heart shell — fill masks the flipper roots */}
+      <path
+        fill={shellFill}
+        d="M43 29 C40 25.5 34.5 25.7 30.8 29.3 C25 34.5 23.5 44 25.3 51.5 C27.5 63.5 36.5 73.5 50 85 C63.5 73.5 72.5 63.5 74.7 51.5 C76.5 44 75 34.5 69.2 29.3 C65.5 25.7 60 25.5 57 29 L57 21 Q57 13.5 50 13.5 Q43 13.5 43 21 Z"
+      />
 
-      {/* Tail (bottom) */}
-      <path d="M14.8 25.5 L16 28.2 L17.2 25.5" />
+      {/* Head arch */}
+      <path d="M43 29 L43 21 Q43 13.5 50 13.5 Q57 13.5 57 21 L57 29" />
 
-      {/* Shell outline */}
-      <ellipse cx="16" cy="17" rx="8" ry="8.5" />
+      {/* Shell outline (redrawn over the fill edge) */}
+      <path d="M43 29 C40 25.5 34.5 25.7 30.8 29.3 C25 34.5 23.5 44 25.3 51.5 C27.5 63.5 36.5 73.5 50 85 C63.5 73.5 72.5 63.5 74.7 51.5 C76.5 44 75 34.5 69.2 29.3 C65.5 25.7 60 25.5 57 29" />
 
-      {/* Central hexagonal scute */}
-      <path d="M16 11.5 L20 14 L20 20 L16 22.5 L12 20 L12 14 Z" />
-
-      {/* Scute dividers radiating from hexagon to shell edge */}
-      <path d="M20 14 L23.2 12.5" />
-      <path d="M20 20 L23.2 21.5" />
-      <path d="M12 20 L8.8 21.5" />
-      <path d="M12 14 L8.8 12.5" />
+      {/* Scute pattern */}
+      <path d="M43 29 L41 44 M57 29 L59 44" />
+      <path d="M41 44 L59 44 L66.5 55 L59 66 L41 66 L33.5 55 Z" />
+      <path d="M33.5 55 L25.4 55 M66.5 55 L74.6 55" />
+      <path d="M41 66 L36.1 71.7 M59 66 L63.9 71.7" />
     </svg>
   );
 }
