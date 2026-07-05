@@ -163,6 +163,9 @@ function HeroPanel() {
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           objectFit: 'cover', objectPosition: 'center', zIndex: 0,
           userSelect: 'none', WebkitUserDrag: 'none',
+          // walking.jpg is hazier than the Login hero photo; lift it so both
+          // auth pages feel equally vivid under the same readability wash.
+          filter: 'brightness(1.15) saturate(1.45) contrast(1.03)',
         }}
       />
 
