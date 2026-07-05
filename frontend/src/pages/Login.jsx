@@ -323,7 +323,7 @@ export default function Login() {
 
             {/* Error state */}
             {error && (
-              <div style={{
+              <div role="alert" style={{
                 background: 'var(--red-tint)', border: '1px solid #fecaca',
                 borderRadius: '11px', padding: '12px 16px',
                 fontSize: 'var(--text-sm)', color: 'var(--red-error)', marginBottom: '20px',
@@ -347,7 +347,7 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{
+                <label htmlFor="login-identifier" style={{
                   display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600,
                   color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -355,6 +355,7 @@ export default function Login() {
                   Username, Gmail, or phone
                 </label>
                 <SmoothInput
+                  id="login-identifier"
                   type="text" required autoComplete="username"
                   className="field"
                   value={form.identifier}
@@ -365,7 +366,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label style={{
+                <label htmlFor="login-password" style={{
                   display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600,
                   color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -374,6 +375,7 @@ export default function Login() {
                 </label>
                 <div style={{ position: 'relative' }}>
                   <SmoothInput
+                    id="login-password"
                     type={showPwd ? 'text' : 'password'} required autoComplete="current-password"
                     className="field"
                     value={form.password}
