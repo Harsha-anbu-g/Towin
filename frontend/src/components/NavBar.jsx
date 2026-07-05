@@ -153,7 +153,7 @@ export default function NavBar() {
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        borderBottom: '1px solid #ececef',
+        borderBottom: '1px solid var(--border)',
       }}>
         {/* Brand */}
         <Link to="/dashboard" style={{
@@ -240,7 +240,7 @@ export default function NavBar() {
                 <div role="menu" style={{
                   position: 'absolute', top: '52px', right: 0,
                   background: '#fff', borderRadius: '14px',
-                  border: '1px solid #ececef', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  border: '1px solid var(--border)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                   padding: '8px', minWidth: '210px', zIndex: 110,
                 }}>
                   <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #f0f0f0', marginBottom: '6px' }}>
@@ -256,7 +256,7 @@ export default function NavBar() {
                     padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
                     color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                   >
                     <User size={18} strokeWidth={2} aria-hidden="true" />Profile
@@ -267,7 +267,7 @@ export default function NavBar() {
                       padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
                       color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
                     }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                     >
                       <Siren size={18} strokeWidth={2} aria-hidden="true" />Emergency Contacts
@@ -279,7 +279,7 @@ export default function NavBar() {
                     cursor: 'pointer', color: 'var(--ink-3)', fontSize: '16px', fontWeight: 500,
                     fontFamily: SF, textAlign: 'left',
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                   >
                     <LogOut size={18} strokeWidth={2} aria-hidden="true" />Log out
@@ -352,7 +352,7 @@ export default function NavBar() {
             position: 'fixed', top: drawerTop, left: 0, right: 0,
             background: '#ffffff', zIndex: 99,
             padding: '0 24px 24px',
-            borderBottom: '1px solid #e0e0e0',
+            borderBottom: '1px solid var(--border)',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
           }}>
             <MenuLink to="/dashboard" label="Dashboard" icon={Home} />

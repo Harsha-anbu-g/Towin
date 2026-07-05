@@ -43,7 +43,7 @@ function StarPicker({ value, onChange }) {
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             fontSize: '32px', padding: '0',
-            color: n <= value ? '#F5B400' : '#e0e0e0',
+            color: n <= value ? '#F5B400' : 'var(--border)',
             transition: 'color 0.1s',
             fontFamily: SFT,
           }}
@@ -84,11 +84,11 @@ const sortNeeds = (a, b) => {
 
 const statusStyle = (status) => {
   const map = {
-    ACTIVE:  { bg: '#f5f5f7', color: 'var(--blue)' },
-    PENDING: { bg: '#f3f4f6', color: 'var(--ink-slate)' },
-    DECLINED: { bg: '#f3f4f6', color: 'var(--ink-slate)' },
+    ACTIVE:  { bg: 'var(--surface)', color: 'var(--blue)' },
+    PENDING: { bg: 'var(--surface-2)', color: 'var(--ink-slate)' },
+    DECLINED: { bg: 'var(--surface-2)', color: 'var(--ink-slate)' },
   };
-  const s = map[status] ?? { bg: '#f3f4f6', color: '#6b7280' };
+  const s = map[status] ?? { bg: 'var(--surface-2)', color: '#6b7280' };
   return { background: s.bg, color: s.color, fontSize: '12px', fontWeight: 600,
     padding: '3px 10px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' };
 };
@@ -135,7 +135,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
   return (
     <div style={{
       background: '#ffffff', borderRadius: '18px', padding: '20px',
-      border: '1px solid #e0e0e0',
+      border: '1px solid var(--border)',
       animation: `fadeSlideUp 0.4s ease ${index * 0.05}s both`,
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
@@ -145,7 +145,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
           <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
             {need.urgency === 'URGENT' && (
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: '#EEF1F4', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: 'var(--surface-2)', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />Urgent
               </span>
             )}
@@ -168,7 +168,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
             <span style={greenPill}>{check}You're helping</span>
           ) : mine === 'PENDING' ? (
             <>
-              <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', padding: '0 18px', background: '#f3f4f6', color: 'var(--ink-slate)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>Waiting to hear back — the elder reviews all helpers and picks one</span>
+              <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', padding: '0 18px', background: 'var(--surface-2)', color: 'var(--ink-slate)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>Waiting to hear back — the elder reviews all helpers and picks one</span>
               <button onClick={() => onWithdraw(need.id)}
                 style={{ fontSize: '14px', color: 'var(--ink-slate)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>
                 Withdraw
@@ -482,7 +482,7 @@ export default function HelperDashboard() {
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
 
   const RadiusBar = ({ noun = 'people' }) => (
-    <div style={{ background: '#ffffff', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid #e0e0e0' }}>
+    <div style={{ background: '#ffffff', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid var(--border)' }}>
       <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         {locationStatus === 'asking' && 'Getting your location...'}
@@ -591,7 +591,7 @@ export default function HelperDashboard() {
               {respondingConn === conn.id ? '…' : 'Accept'}
             </button>
             <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-              style={{ flex: 1, height: '36px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '8px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+              style={{ flex: 1, height: '36px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
               Decline
             </button>
           </div>
@@ -625,7 +625,7 @@ export default function HelperDashboard() {
         </div>
         <span style={{
           fontSize: '12px', fontWeight: 600, color: '#8a929c',
-          background: '#f3f4f6', border: '1px solid #e8e8ed',
+          background: 'var(--surface-2)', border: '1px solid #e8e8ed',
           padding: '6px 14px', borderRadius: '9999px', flexShrink: 0,
         }}>Requested</span>
       </div>
@@ -640,8 +640,7 @@ export default function HelperDashboard() {
       <div style={{
         position: 'sticky', top: '60px', zIndex: 50,
         background: '#ffffff',
-        borderBottom: '1px solid #ececef',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        borderBottom: '1px solid var(--border)',
       }}>
         <div className="dash-tab-wrap">
           <div className="dash-tab-scroll">
@@ -686,7 +685,7 @@ export default function HelperDashboard() {
           {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
-              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 My Elders
               </h2>
               {loading && (
@@ -698,7 +697,7 @@ export default function HelperDashboard() {
                 </div>
               )}
               {!loading && connections.length === 0 && (
-                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid #e0e0e0' }}>
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '48px 24px', border: '1px solid var(--border)' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid #BFD9EA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
@@ -722,7 +721,7 @@ export default function HelperDashboard() {
                 return (
                 <div key={conn.id} style={{
                   background: '#ffffff', borderRadius: '18px', padding: '22px',
-                  border: '1px solid #e0e0e0',
+                  border: '1px solid var(--border)',
                   animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
                 }}>
                   {/* Identity row */}
@@ -757,7 +756,7 @@ export default function HelperDashboard() {
                           <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this elder'}?</span>
                             <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '36px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
-                            <button onClick={() => setEndingConn(null)} style={{ height: '36px', padding: '0 16px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
+                            <button onClick={() => setEndingConn(null)} style={{ height: '36px', padding: '0 16px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
                           </div>
                         ) : (
                           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
@@ -765,9 +764,9 @@ export default function HelperDashboard() {
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
-                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="#F4C95E" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>
@@ -792,7 +791,7 @@ export default function HelperDashboard() {
                             ...f, tags: f.tags.includes(t) ? f.tags.filter(x => x !== t) : [...f.tags, t]
                           }))} style={{
                             fontSize: '14px', padding: '5px 14px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
-                            borderColor: reviewForm.tags.includes(t) ? '#4FA3CE' : '#e0e0e0',
+                            borderColor: reviewForm.tags.includes(t) ? '#4FA3CE' : 'var(--border)',
                             background: reviewForm.tags.includes(t) ? '#4FA3CE' : '#fff',
                             color: reviewForm.tags.includes(t) ? '#fff' : '#7a7a7a',
                           }}>{t}</button>
@@ -800,7 +799,7 @@ export default function HelperDashboard() {
                       </div>
                       <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
                         placeholder="Any comments? (optional)" rows={2}
-                        style={{ width: '100%', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '10px 14px', fontSize: 'var(--text-sm)', outline: 'none', fontFamily: 'inherit' }} />
+                        style={{ width: '100%', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', fontSize: 'var(--text-sm)', outline: 'none', fontFamily: 'inherit' }} />
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--ink-3)', cursor: 'pointer' }}>
                         <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
                         Report a safety concern
@@ -836,7 +835,7 @@ export default function HelperDashboard() {
           {tab === 'requests' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
-              <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '8px 0 0' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 Add Friends
               </h2>
               <SegmentedTabs segments={friendsSegments} value={friendsSeg} onChange={setFriendsSeg} />
@@ -877,7 +876,7 @@ export default function HelperDashboard() {
           {tab === 'browse' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
-                <h2 style={{ fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif", fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--ink)', margin: '0 0 6px' }}>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px' }}>
                   Offer Help
                 </h2>
                 <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
@@ -896,7 +895,7 @@ export default function HelperDashboard() {
 
               {/* Available — location-aware empty state */}
               {browseSeg === 'available' && availableNeeds.length === 0 && locationStatus !== 'asking' && (
-                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid var(--border)' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--surface)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -966,7 +965,7 @@ export default function HelperDashboard() {
               )}
 
               {!discovering && !discoverError && elders.length === 0 && (
-                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid #e0e0e0' }}>
+                <div style={{ background: '#ffffff', borderRadius: '18px', textAlign: 'center', padding: '64px 24px', border: '1px solid var(--border)' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--surface)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
@@ -994,7 +993,7 @@ export default function HelperDashboard() {
                 return (
                   <div key={elder.userId} style={{
                     background: '#ffffff', borderRadius: '18px', padding: '20px',
-                    border: '1px solid #e0e0e0',
+                    border: '1px solid var(--border)',
                     animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
                   }}>
                     <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
@@ -1029,9 +1028,9 @@ export default function HelperDashboard() {
                         {alreadyConnected ? (
                           <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
                         ) : requested ? (
-                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: '#f3f4f6', color: '#8a929c' }}>Requested</span>
+                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: '#8a929c' }}>Requested</span>
                         ) : errorMsg ? (
-                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: '#f3f4f6', color: '#5a6470' }}>{errorMsg}</span>
+                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: '#5a6470' }}>{errorMsg}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
                             style={{ height: '40px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
@@ -1039,7 +1038,7 @@ export default function HelperDashboard() {
                           </button>
                         )}
                         <button onClick={() => navigate(`/user/${elder.userId}`)}
-                          style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid #e0e0e0', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                          style={{ height: '36px', padding: '0 14px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                           View Profile
                         </button>
                       </div>

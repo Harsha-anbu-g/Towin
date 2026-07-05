@@ -206,15 +206,15 @@ export const STEPS = [
         </Lead>
         <SubHead>Each person earns you up to 15 points</SubHead>
         <CardGrid>
-          <MiniCard title="Trust stages — up to 7">
+          <MiniCard title="Trust stages: up to 7">
             Your friendship moves through 7 stages, from first connected to fully trusted.
             Each stage you reach with that person is worth 1 point.
           </MiniCard>
-          <MiniCard title="Their review — up to 5">
+          <MiniCard title="Their review: up to 5">
             When the person you helped leaves you a review, you earn 1 point for each star,
             so a 5-star review is 5 points.
           </MiniCard>
-          <MiniCard title="Your profile — up to 3">
+          <MiniCard title="Your profile: up to 3">
             Your profile is split into 3 sets. Fill a whole set to earn its point: introduce
             yourself, share more about you, and verify yourself. It counts for every person you help.
           </MiniCard>

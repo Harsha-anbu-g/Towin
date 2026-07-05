@@ -14,7 +14,7 @@ function PublicHeader() {
   return (
     <header style={{
       background: '#ffffff', height: '72px', display: 'flex', alignItems: 'center',
-      justifyContent: 'space-between', padding: '0 32px', borderBottom: '1px solid #ececef',
+      justifyContent: 'space-between', padding: '0 32px', borderBottom: '1px solid var(--border)',
     }}>
       <Link to="/" style={{
         display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -50,7 +50,7 @@ function RoleTab({ role, setRole }) {
           fontWeight: active ? 700 : 500,
           color: active ? '#fff' : '#5a6470',
           background: active ? SKY : '#fff',
-          border: `1px solid ${active ? SKY : '#e0e0e0'}`,
+          border: `1px solid ${active ? SKY : 'var(--border)'}`,
           borderRadius: '9999px', cursor: 'pointer', transition: 'all 0.15s',
         }}
       >
@@ -80,8 +80,9 @@ function ProgressDots({ count, current, onJump }) {
             style={{
               width: here ? '26px' : '11px', height: '11px', borderRadius: '9999px',
               border: 'none', cursor: 'pointer', padding: 0,
-              background: here ? SKY : done ? BORDER : '#e0e0e0',
-              transition: 'width 0.2s, background 0.2s',
+              background: here ? SKY : done ? BORDER : 'var(--border)',
+              // GPU-only: the width change lands instantly; only paint animates.
+              transition: 'background 0.2s ease-out',
             }}
           />
         );
@@ -113,8 +114,8 @@ export default function Guide() {
         {/* Page heading */}
         <div style={{ marginBottom: '22px' }}>
           <h1 style={{
-            fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
-            letterSpacing: '-0.4px', margin: '0 0 6px',
+            fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)',
+            letterSpacing: '-0.02em', margin: '0 0 6px',
           }}>
             How It Works
           </h1>
@@ -137,9 +138,8 @@ export default function Guide() {
 
         {/* Step card */}
         <div style={{
-          background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-          padding: '24px 28px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-          minHeight: '280px',
+          background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+          padding: '24px 28px',          minHeight: '280px',
         }}>
           {current.render(ctx)}
         </div>
@@ -153,7 +153,7 @@ export default function Guide() {
               padding: '11px 24px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
               borderRadius: '9999px', cursor: step === 0 ? 'default' : 'pointer',
               background: '#fff', color: step === 0 ? '#c8c8cd' : '#1d1d1f',
-              border: '1px solid #e0e0e0',
+              border: '1px solid var(--border)',
             }}
           >
             Back
@@ -164,7 +164,7 @@ export default function Guide() {
               style={{
                 padding: '11px 28px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
                 borderRadius: '9999px', cursor: 'pointer', background: SKY, color: '#fff',
-                border: 'none', boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
+                border: 'none', boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
               }}
             >
               Next

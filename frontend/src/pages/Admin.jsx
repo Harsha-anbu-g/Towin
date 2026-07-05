@@ -102,7 +102,7 @@ const thStyle = {
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
   fontFamily: SFText,
-  borderBottom: '1px solid #e0e0e0',
+  borderBottom: '1px solid var(--border)',
   background: 'var(--surface-pearl)',
   whiteSpace: 'nowrap',
 };
@@ -112,14 +112,14 @@ const tdStyle = {
   fontSize: 'var(--text-sm)',
   color: 'var(--ink)',
   fontFamily: SFText,
-  borderBottom: '1px solid #f5f5f7',
+  borderBottom: '1px solid var(--surface)',
   verticalAlign: 'middle',
 };
 
 const card = {
   background: '#ffffff',
   borderRadius: '18px',
-  border: '1px solid #e0e0e0',
+  border: '1px solid var(--border)',
   overflow: 'hidden',
 };
 
@@ -130,7 +130,7 @@ function SkeletonRows() {
     <div style={{ padding: '24px 20px' }} aria-hidden="true">
       {[0, 1, 2, 3, 4].map(i => (
         <div key={i} className="admin-skel" style={{
-          height: '15px', borderRadius: '8px', background: '#f5f5f7',
+          height: '15px', borderRadius: '8px', background: 'var(--surface)',
           marginBottom: i === 4 ? 0 : '16px', width: `${92 - i * 8}%`,
           animation: 'adminPulse 1.4s ease-in-out infinite', animationDelay: `${i * 0.08}s`,
         }} />
@@ -226,7 +226,7 @@ function FeedbackTab() {
       {!loading && !error && rows.length > 0 && (
         <div style={{
           display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '20px',
-          background: '#ffffff', borderRadius: '14px', padding: '16px 20px', border: '1px solid #e0e0e0',
+          background: '#ffffff', borderRadius: '14px', padding: '16px 20px', border: '1px solid var(--border)',
         }}>
           {RATING_LABELS.map(({ key, label }) => {
             const a = avgRating(rows, key);
@@ -486,7 +486,7 @@ export default function Admin() {
           cursor: 'pointer', textAlign: 'left',
           transition: 'background 0.15s ease, color 0.15s ease',
         }}
-        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f5f5f7'; }}
+        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--surface)'; }}
         onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
       >
         <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} style={{ flexShrink: 0 }} />
@@ -509,7 +509,7 @@ export default function Admin() {
           fontSize: '15px', fontWeight: isActive ? 700 : 500, fontFamily: SFText,
           color: isActive ? '#ffffff' : '#1d1d1f',
           background: isActive ? '#4FA3CE' : '#ffffff',
-          border: isActive ? '1px solid #4FA3CE' : '1px solid #e0e0e0',
+          border: isActive ? '1px solid #4FA3CE' : '1px solid var(--border)',
           boxShadow: isActive ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
           cursor: 'pointer', whiteSpace: 'nowrap',
         }}
@@ -531,7 +531,7 @@ export default function Admin() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText, display: 'flex', flexDirection: narrow ? 'column' : 'row' }}>
       <style>{`
         .admin-tbl tbody tr { transition: background 0.12s ease; }
-        .admin-tbl tbody tr:hover { background: #fafafc; }
+        .admin-tbl tbody tr:hover { background: var(--surface-pearl); }
         .admin-nav-scroll { scrollbar-width: none; }
         .admin-nav-scroll::-webkit-scrollbar { display: none; }
         @keyframes adminPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
@@ -540,7 +540,7 @@ export default function Admin() {
 
       {/* ——— Navigation: sidebar on desktop, top bar + pills on small screens ——— */}
       {narrow ? (
-        <header style={{ background: '#ffffff', borderBottom: '1px solid #ececef', position: 'sticky', top: 0, zIndex: 50 }}>
+        <header style={{ background: '#ffffff', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '12px 16px' }}>
             {brand}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -567,7 +567,7 @@ export default function Admin() {
         </header>
       ) : (
         <aside style={{
-          width: '236px', flexShrink: 0, background: '#ffffff', borderRight: '1px solid #ececef',
+          width: '236px', flexShrink: 0, background: '#ffffff', borderRight: '1px solid var(--border)',
           position: 'sticky', top: 0, height: '100svh', overflowY: 'auto',
           display: 'flex', flexDirection: 'column', padding: '22px 14px 18px',
         }}>
@@ -579,7 +579,7 @@ export default function Admin() {
 
           <div style={{ flex: 1 }} />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '18px', borderTop: '1px solid #ececef' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '18px', borderTop: '1px solid var(--border)' }}>
             <button onClick={resetDemo} disabled={demoReset === 'working'} style={demoResetBtnStyle(true)}>
               <RefreshCw size={14} strokeWidth={2} />
               {demoResetLabel}
@@ -592,7 +592,7 @@ export default function Admin() {
                 background: 'transparent', border: 'none', borderRadius: '9999px',
                 padding: '9px 16px', cursor: 'pointer',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
             >
               <LogOut size={15} strokeWidth={1.8} />
@@ -607,8 +607,8 @@ export default function Admin() {
 
         <header style={{ marginBottom: '22px' }}>
           <h1 style={{
-            fontSize: narrow ? 'var(--text-xl)' : 'var(--text-2xl)', fontWeight: 600, color: 'var(--ink)',
-            fontFamily: SF, letterSpacing: '-0.6px', margin: '0 0 6px',
+            fontSize: narrow ? 'var(--text-xl)' : 'var(--text-2xl)', fontWeight: 400, color: 'var(--ink)',
+            fontFamily: 'var(--font-display)', letterSpacing: '-0.02em', margin: '0 0 6px',
           }}>
             {active.label}
           </h1>
@@ -645,13 +645,13 @@ export default function Admin() {
         {tab === 'Users' && (
           <div style={card}>
             <div style={{
-              padding: '14px 20px', borderBottom: '1px solid #e0e0e0',
+              padding: '14px 20px', borderBottom: '1px solid var(--border)',
               display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
             }}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '9px',
                 flex: '1 1 240px', maxWidth: '360px',
-                border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                border: '1.5px solid var(--border)', borderRadius: '9999px',
                 padding: '8px 16px', background: 'var(--surface-pearl)',
               }}>
                 <Search size={16} color="#a0a0a5" strokeWidth={2} style={{ flexShrink: 0 }} />
@@ -759,7 +759,7 @@ export default function Admin() {
 
             {!busy && !failed && filteredUsers.length > 0 && (
               <div style={{
-                padding: '14px 20px', borderTop: '1px solid #e0e0e0',
+                padding: '14px 20px', borderTop: '1px solid var(--border)',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
               }}>
                 <span style={{ fontSize: '14px', color: 'var(--ink-3)', fontVariantNumeric: 'tabular-nums' }}>
@@ -775,7 +775,7 @@ export default function Admin() {
                     style={{
                       background: 'transparent',
                       color: clampedPage === 0 ? '#c8c8cd' : '#4FA3CE',
-                      border: '1.5px solid #e0e0e0',
+                      border: '1.5px solid var(--border)',
                       borderRadius: '9999px',
                       padding: '7px 18px',
                       fontSize: '14px',
@@ -787,7 +787,7 @@ export default function Admin() {
                     onClick={() => setUserPage(p => Math.min(userPageCount - 1, p + 1))}
                     disabled={clampedPage >= userPageCount - 1}
                     style={{
-                      background: clampedPage >= userPageCount - 1 ? '#e0e0e0' : '#4FA3CE',
+                      background: clampedPage >= userPageCount - 1 ? 'var(--border)' : '#4FA3CE',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '9999px',

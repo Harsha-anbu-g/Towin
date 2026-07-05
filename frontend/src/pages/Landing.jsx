@@ -28,7 +28,8 @@ function Trail({ count, current, onJump }) {
             <span style={{
               display: 'block', width: here ? '34px' : '18px', height: '4px', borderRadius: '9999px',
               background: here ? SKY : done ? BORDER : '#dfe6ec',
-              transition: 'width 0.28s cubic-bezier(0.16,1,0.3,1), background 0.28s',
+              // GPU-only: animate paint, not layout (width). Emil #7 / Impeccable layout-transition.
+              transition: 'background 0.28s cubic-bezier(0.16,1,0.3,1)',
             }} />
           </button>
         );
@@ -73,6 +74,7 @@ export default function Landing() {
       height: '100svh', minHeight: 0, overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
       // Warm paper canvas with a whisper of sky top-right — editorial, not clinical.
+      // (User-approved 2026-07-05: warm parchment over near-neutral.)
       background:
         'radial-gradient(ellipse at 82% -8%, #E9F2F7 0%, transparent 42%),' +
         'linear-gradient(168deg, #FAF8F3 0%, #F4F1E9 100%)',

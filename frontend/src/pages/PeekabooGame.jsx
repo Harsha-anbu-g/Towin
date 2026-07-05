@@ -104,7 +104,7 @@ export default function PeekabooGame() {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '18px', gap: '16px' }}>
           <div>
-            <h1 style={{ fontFamily: SF, fontSize: '38px', fontWeight: 600, color: GREEN, margin: 0, letterSpacing: '-0.8px', lineHeight: 1 }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '38px', fontWeight: 400, color: GREEN, margin: 0, letterSpacing: '-0.02em', lineHeight: 1 }}>
               Peekaboo!
             </h1>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '5px 0 0' }}>
@@ -133,8 +133,8 @@ export default function PeekabooGame() {
 
         {/* Progress bar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '36px' }}>
-          <div style={{ flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '9999px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: SKY, borderRadius: '9999px', width: `${(matchedCount / PAIRS) * 100}%`, transition: 'width 0.4s' }} />
+          <div style={{ flex: 1, height: '8px', background: 'var(--border)', borderRadius: '9999px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: '100%', background: SKY, borderRadius: '9999px', transform: `scaleX(${matchedCount / PAIRS})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
           </div>
           <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', fontWeight: 600, flexShrink: 0 }}>{matchedCount}/{PAIRS}</span>
         </div>
@@ -212,7 +212,7 @@ export default function PeekabooGame() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
           <div style={{ background: '#fff', borderRadius: '18px', padding: '48px 40px', maxWidth: '340px', width: '90%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <img src="/logo.png" alt="tortoise" style={{ width: 80, height: 80, objectFit: 'contain', marginBottom: '16px', filter: 'drop-shadow(0 4px 16px rgba(26,92,46,0.25))' }} />
-            <h2 style={{ fontFamily: SF, fontSize: 'var(--text-xl)', fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.4px' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
               {phase === 'won' ? 'You found them all!' : "Time's up!"}
             </h2>
             <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 28px', lineHeight: 1.55, fontFamily: SFT }}>

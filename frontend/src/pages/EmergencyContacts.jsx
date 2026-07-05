@@ -105,7 +105,7 @@ export default function EmergencyContacts() {
       {/* Hero tile — calm sky-blue, matches dashboard theme */}
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
+          background: 'linear-gradient(180deg, #EAF5FB 0%, var(--surface) 100%)',
           borderBottom: '1px solid #DCEBF4',
           padding: 'clamp(32px, 7vw, 64px) 20px clamp(24px, 5vw, 48px)',
           textAlign: 'center',
@@ -128,10 +128,10 @@ export default function EmergencyContacts() {
           </div>
           <h1 style={{
             fontSize: 'clamp(28px, 8vw, 48px)',
-            fontWeight: 600,
+            fontWeight: 400,
             color: 'var(--ink)',
-            fontFamily: SF,
-            letterSpacing: '-1px',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '-0.02em',
             marginBottom: '12px',
             lineHeight: 1.1,
           }}>
@@ -271,7 +271,7 @@ export default function EmergencyContacts() {
                 borderRadius: '18px',
                 overflow: 'hidden',
                 marginBottom: '14px',
-                border: '1px solid #ececef',
+                border: '1px solid var(--border)',
               }}>
                 {/* Colored top accent bar */}
                 <div style={{ height: '4px', background: accent }} />
@@ -321,7 +321,7 @@ export default function EmergencyContacts() {
                         flex: 1,
                         background: 'transparent',
                         color: 'var(--ink-3)',
-                        border: '1.5px solid #e0e0e0',
+                        border: '1.5px solid var(--border)',
                         borderRadius: '9999px',
                         padding: '10px 0',
                         fontSize: 'var(--text-sm)',
@@ -418,7 +418,7 @@ export default function EmergencyContacts() {
                       flex: 1,
                       background: 'transparent',
                       color: 'var(--ink-3)',
-                      border: '1.5px solid #e0e0e0',
+                      border: '1.5px solid var(--border)',
                       borderRadius: '9999px',
                       padding: '12px 0',
                       fontSize: '16px',

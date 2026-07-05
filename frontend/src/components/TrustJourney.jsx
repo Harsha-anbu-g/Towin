@@ -58,7 +58,7 @@ export default function TrustJourney({
   } else {
     let message, button = null;
     if (isElder && !confirmedByMe)            { message = current.nextAction;                                                  button = advanceBtn('Advance →'); }
-    else if (isElder && confirmedByMe)        { const next = LEVELS[idx + 1]; message = `You asked to move to ${next?.label || 'the next step'} — waiting for ${otherUserName} to confirm. They'll get a tap on their side.`; }
+    else if (isElder && confirmedByMe)        { const next = LEVELS[idx + 1]; message = `You asked to move to ${next?.label || 'the next step'}, waiting for ${otherUserName} to confirm. They'll get a tap on their side.`; }
     else if (!isElder && !confirmedByOther)   { const next = LEVELS[idx + 1]; message = `Waiting for the elder to move to ${next?.label || 'the next step'}.`; }
     else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} is ready to ${current.helperNextAction || 'advance'}. Confirm to move forward together.`; button = advanceBtn('Accept →'); }
     else                                      { const next = LEVELS[idx + 1]; message = `You accepted — trust is advancing to ${next?.label || 'the next step'}.`; }

@@ -4,28 +4,32 @@
 // Design system ("The Patient Path"): the six slides read as a guided, numbered
 // walk — one step at a time, the way trust grows on ToWin. Each slide is anchored
 // by a Chapter marker (0N · label); the shell echoes it as a trail in the footer.
-// Palette/gradients/shadows are the locked brand tokens — only type, layout and
-// structure carry the redesign. Copy is deliberately plain (elder-first).
+//
+// Typography carries the redesign: Newsreader (serif) at weight 400 for the big
+// headings + the tagline, SF Pro for body. Warm canvas, warm hairline borders,
+// no drop shadows. Sky-blue is reserved for actions (buttons, the trail); gold
+// stays for "trust" words. Copy is deliberately plain (elder-first).
 
 
-const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
-const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+const SERIF = `'Newsreader', Georgia, 'Times New Roman', serif`;  // headings + tagline, weight 400
+const SANS  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`; // wordmark, labels, UI numerals
+const SF    = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;    // body
 
-// Locked brand values (all pulled from the existing token set — no new colors).
-const INK = 'var(--ink)';
+const INK   = 'var(--ink)';
 const SLATE = 'var(--ink-slate)';
-const BLUE = '#3D8AB0';
-const SKY = '#4FA3CE';
-const DEEP = '#2E7DA6';
-const WASH = '#EAF5FB';
-const BORDER = '#BFD9EA';
-const GOLD = 'var(--trust-gold)';
+const FAINT = 'var(--ink-4)';
+const HAIR  = 'var(--border)';   // warm hairline for structural card borders
+const BLUE  = '#3D8AB0';         // interactive/semantic only
+const SKY   = '#4FA3CE';
+const WASH  = '#EAF5FB';         // sky wash — trust chips only
+const SKYLINE = '#BFD9EA';       // sky hairline — trust chips only
+const GOLD  = 'var(--trust-gold)';
 
 // ── Presentational helpers ───────────────────────────────────────────────
 
 // Chapter marker — the page's structural signature. A tabular numeral + hairline
 // + a quiet label reads as wayfinding on a genuine 6-step sequence (not a
-// decorative eyebrow). Left-aligned by default; centered on the cover.
+// decorative eyebrow). Kept neutral so sky-blue stays reserved for actions.
 function Chapter({ n, label, align = 'left' }) {
   return (
     <div style={{
@@ -34,12 +38,12 @@ function Chapter({ n, label, align = 'left' }) {
       marginBottom: '20px',
     }}>
       <span style={{
-        fontFamily: SFD, fontSize: '15px', fontWeight: 700, color: SKY,
+        fontFamily: SANS, fontSize: '14px', fontWeight: 700, color: SLATE,
         fontVariantNumeric: 'tabular-nums', letterSpacing: '0.5px',
       }}>{String(n).padStart(2, '0')}</span>
-      <span aria-hidden style={{ width: '26px', height: '1.5px', background: BORDER, borderRadius: '2px' }} />
+      <span aria-hidden style={{ width: '26px', height: '1px', background: HAIR }} />
       <span style={{
-        fontFamily: SF, fontSize: '13px', fontWeight: 600, color: DEEP,
+        fontFamily: SF, fontSize: '13px', fontWeight: 600, color: FAINT,
         letterSpacing: '1.4px', textTransform: 'uppercase',
       }}>{label}</span>
     </div>
@@ -49,9 +53,9 @@ function Chapter({ n, label, align = 'left' }) {
 function Title({ children, align = 'left' }) {
   return (
     <h1 className="landing-title" style={{
-      fontFamily: SFD, fontSize: '46px', fontWeight: 600, color: INK,
-      letterSpacing: '-1px', lineHeight: 1.08, textAlign: align,
-      margin: '0 0 16px', maxWidth: '18ch',
+      fontFamily: SERIF, fontSize: '46px', fontWeight: 400, color: INK,
+      letterSpacing: '-0.02em', lineHeight: 1.1, textAlign: align,
+      margin: '0 0 16px', maxWidth: '20ch',
       marginLeft: align === 'center' ? 'auto' : 0,
       marginRight: align === 'center' ? 'auto' : 0,
     }}>{children}</h1>
@@ -81,9 +85,8 @@ function Body({ children, align = 'left' }) {
 }
 
 // Content column — consistent left-anchored rhythm shared by the text slides.
-// The column shrinks to its content (title 18ch, lead 54ch, cards 600px) and
-// centers itself in the slide, so the text stays left-aligned but the block
-// sits in the middle of a laptop screen instead of hugging the wrapper's left.
+// The column shrinks to its content and centers itself in the slide, so the
+// text stays left-aligned but the block sits in the middle of a laptop screen.
 function Slide({ children }) {
   return (
     <div style={{
@@ -96,24 +99,24 @@ function Slide({ children }) {
 function MiniCard({ title, badge, stars, compact, children }) {
   return (
     <div style={{
-      background: '#ffffff', border: `1px solid ${BORDER}`,
+      background: '#ffffff', border: `1px solid ${HAIR}`,
       borderRadius: compact ? '14px' : '18px',
-      padding: compact ? '11px 15px' : '22px 24px', textAlign: 'left',
+      padding: compact ? '12px 16px' : '24px 26px', textAlign: 'left',
     }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: '8px', marginBottom: compact ? '4px' : '7px',
+        gap: '8px', marginBottom: compact ? '4px' : '8px',
       }}>
         <p style={{
-          fontFamily: SFD, fontSize: compact ? '15px' : '19px', fontWeight: 600,
-          color: BLUE, margin: 0, letterSpacing: '-0.2px',
+          fontFamily: SANS, fontSize: compact ? '15px' : '18px', fontWeight: 600,
+          color: INK, margin: 0, letterSpacing: '-0.2px',
         }}>
           {title}
         </p>
         {badge && (
           <span style={{
-            fontFamily: SFD, fontSize: 'var(--text-xs)', fontWeight: 700, color: GOLD,
-            background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
+            fontFamily: SANS, fontSize: 'var(--text-xs)', fontWeight: 700, color: GOLD,
+            background: WASH, border: `1px solid ${SKYLINE}`, borderRadius: '9999px',
             padding: '2px 10px', whiteSpace: 'nowrap', flexShrink: 0,
           }}>{badge}</span>
         )}
@@ -121,7 +124,7 @@ function MiniCard({ title, badge, stars, compact, children }) {
       {stars && (
         <div aria-label="five stars" style={{ display: 'flex', gap: '3px', marginBottom: compact ? '5px' : '9px' }}>
           {Array.from({ length: 5 }).map((_, i) => (
-            <span key={i} style={{ fontSize: compact ? '13px' : '16px', lineHeight: 1, color: SKY }}>★</span>
+            <span key={i} style={{ fontSize: compact ? '13px' : '16px', lineHeight: 1, color: GOLD }}>★</span>
           ))}
         </div>
       )}
@@ -145,13 +148,11 @@ function CardGrid({ children }) {
 }
 
 // A quiet slab that carries a single important caveat/number below a Lead.
-function NoteBox({ children, tone = 'plain' }) {
-  const gold = tone === 'gold';
+function NoteBox({ children }) {
   return (
     <div style={{
-      background: '#ffffff',
-      border: `1px solid ${gold ? BORDER : '#e8e8ed'}`,
-      borderRadius: '14px', padding: '15px 20px', maxWidth: '58ch',
+      background: '#ffffff', border: `1px solid ${HAIR}`,
+      borderRadius: '14px', padding: '16px 20px', maxWidth: '58ch',
       margin: '0', fontFamily: SF, fontSize: '16px',
       color: SLATE, lineHeight: 1.6, textAlign: 'left',
     }}>{children}</div>
@@ -161,6 +162,7 @@ function NoteBox({ children, tone = 'plain' }) {
 // Vertical trust journey — read top to bottom: the first step sits at the top
 // and the eye walks down the ladder to the goal, "Fully Trusted", at the bottom.
 // Each step is worth +1 (seven steps → +7, matching the Trust Ladder card).
+// The sky wash + chips read as the trust theme (kept), goal node holds the mark.
 function StageLadder({ stages }) {
   const ordered = stages;
   return (
@@ -176,11 +178,10 @@ function StageLadder({ stages }) {
               <div style={{
                 width: `${size}px`, height: `${size}px`, borderRadius: '50%',
                 background: isGoal ? '#ffffff' : WASH,
-                border: isGoal ? 'none' : `2px solid ${BORDER}`,
+                border: isGoal ? `1px solid ${SKYLINE}` : `1.5px solid ${SKYLINE}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: SFD, fontSize: '16px', fontWeight: 700,
-                color: BLUE, flexShrink: 0,
-                boxShadow: isGoal ? '0 4px 14px rgba(61,138,176,0.35)' : 'none',
+                fontFamily: SANS, fontSize: '15px', fontWeight: 700,
+                color: SLATE, flexShrink: 0,
               }}>
                 {isGoal
                   ? <img src="/logo.png" alt="ToWin" draggable="false"
@@ -188,7 +189,7 @@ function StageLadder({ stages }) {
                   : i + 1}
               </div>
               {!isBottom && (
-                <div style={{ flex: 1, width: '2px', minHeight: '10px', background: BORDER }} />
+                <div style={{ flex: 1, width: '1.5px', minHeight: '10px', background: SKYLINE }} />
               )}
             </div>
 
@@ -199,14 +200,15 @@ function StageLadder({ stages }) {
               paddingBottom: isBottom ? 0 : '13px',
             }}>
               <span style={{
-                fontFamily: SF,
-                fontSize: isGoal ? '19px' : '17px',
-                fontWeight: isGoal ? 700 : 500,
-                color: isGoal ? BLUE : '#1d1d1f',
+                fontFamily: isGoal ? SERIF : SF,
+                fontSize: isGoal ? '20px' : '17px',
+                fontWeight: isGoal ? 400 : 500,
+                letterSpacing: isGoal ? '-0.01em' : 0,
+                color: INK,
               }}>{s}</span>
               <span style={{
-                fontFamily: SFD, fontSize: 'var(--text-xs)', fontWeight: 700, color: BLUE,
-                background: WASH, border: `1px solid ${BORDER}`, borderRadius: '9999px',
+                fontFamily: SANS, fontSize: 'var(--text-xs)', fontWeight: 700, color: SLATE,
+                background: WASH, border: `1px solid ${SKYLINE}`, borderRadius: '9999px',
                 padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
               }}><span style={{ color: GOLD }}>+1</span> trust score</span>
             </div>
@@ -231,39 +233,39 @@ export const SLIDES = [
       <div style={{ textAlign: 'center' }}>
         <Chapter n={1} label="Welcome" align="center" />
 
-        {/* Brand lockup — the mark and wordmark read as one unit */}
+        {/* Brand lockup — the mark and wordmark read as one unit (wordmark stays sans) */}
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '13px', marginBottom: '22px',
+          display: 'inline-flex', alignItems: 'center', gap: '13px', marginBottom: '24px',
         }}>
           <img
             src="/tortoise-logo-alpha.png"
             alt="ToWin tortoise logo"
-            style={{ width: 66, height: 66, objectFit: 'contain' }}
+            style={{ width: 62, height: 62, objectFit: 'contain' }}
           />
           <span style={{
-            fontFamily: SFD, fontSize: '30px', fontWeight: 600, color: INK,
+            fontFamily: SANS, fontSize: '28px', fontWeight: 600, color: INK,
             letterSpacing: '-0.6px',
           }}>ToWin</span>
         </div>
 
-        {/* The tagline is the hero line */}
+        {/* The tagline is the hero line — serif at 400, "two" set in italic */}
         <h1 className="landing-title" style={{
-          fontFamily: SFD, fontSize: '58px', fontWeight: 600, color: INK,
-          letterSpacing: '-1.6px', lineHeight: 1.04, margin: '0 auto 18px',
+          fontFamily: SERIF, fontSize: '60px', fontWeight: 400, color: INK,
+          letterSpacing: '-0.02em', lineHeight: 1.05, margin: '0 auto 20px',
           maxWidth: '14ch',
         }}>
-          It takes <span style={{ color: SKY }}>two</span> To&nbsp;Win.
+          It takes <span style={{ fontStyle: 'italic' }}>two</span> To&nbsp;Win.
         </h1>
 
         <p className="landing-lead" style={{
-          fontFamily: SFD, fontSize: '21px', fontWeight: 600, color: BLUE,
-          textAlign: 'center', margin: '0 0 16px',
+          fontFamily: SF, fontSize: '20px', fontWeight: 500, color: SLATE,
+          textAlign: 'center', margin: '0 0 18px',
         }}>
-          Connecting generations, building <span style={{ color: GOLD }}>trust</span>.
+          Connecting generations, building <span style={{ color: GOLD, fontWeight: 600 }}>trust</span>.
         </p>
 
         <Body align="center">
-          A place where elders connect with younger people for company and daily help — with a trust score and trust ladder that keeps every connection safe.
+          A place where elders connect with younger people for company and daily help, with a trust score and trust ladder that keeps every connection safe.
         </Body>
       </div>
     ),
@@ -276,7 +278,7 @@ export const SLIDES = [
         <Chapter n={2} label="Who it's for" />
         <Title>Two kinds of people</Title>
         <Lead>Everyone on ToWin is one of these two.</Lead>
-        <div style={{ height: '22px' }} />
+        <div style={{ height: '24px' }} />
         <CardGrid>
           <MiniCard title="Elder">
             An older person looking for friendship, company, or help with daily tasks.
@@ -323,29 +325,29 @@ export const SLIDES = [
             Letting someone new into your life is a big step. So every member
             has a <span style={{ color: GOLD, fontWeight: 600 }}>Trust Score</span>, visible to elders before they ever say yes.
           </Lead>
-          <div style={{ height: '16px' }} />
+          <div style={{ height: '18px' }} />
           <NoteBox>
-            Each person you help can earn you a <strong style={{ color: INK }}>maximum of 15 points</strong> &mdash; so your score grows with every new connection.
+            Each person you help can earn you a <strong style={{ color: INK }}>maximum of 15 points</strong>, so your score grows with every new connection.
           </NoteBox>
         </div>
 
         {/* Right: three score cards + total */}
-        <div style={{ flexShrink: 0, width: '284px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ flexShrink: 0, width: '288px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
           <MiniCard title="Profile" badge="+3" compact>
             Full profile with ID, phone, and photo, all checked.
           </MiniCard>
           <MiniCard title="Trust Ladder" badge="+7" compact>
-            With each new person you climb the same seven steps &mdash; points earned as that friendship grows.
+            With each new person you climb the same seven steps, points earned as that friendship grows.
           </MiniCard>
           <MiniCard title="Review" badge="+5" stars compact>
             Star ratings from the people they have already helped.
           </MiniCard>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            background: '#ffffff', border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '9px 14px',
+            background: '#ffffff', border: `1px solid ${HAIR}`, borderRadius: '12px', padding: '10px 14px',
           }}>
-            <span style={{ fontFamily: SFD, fontSize: 'var(--text-sm)', fontWeight: 600, color: SLATE }}>3 + 7 + 5 =</span>
-            <span style={{ fontFamily: SFD, fontSize: '20px', fontWeight: 700, color: BLUE }}>15</span>
+            <span style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 500, color: SLATE }}>3 + 7 + 5 =</span>
+            <span style={{ fontFamily: SERIF, fontSize: '24px', fontWeight: 400, color: GOLD }}>15</span>
             <span style={{ fontFamily: SF, fontSize: '14px', color: SLATE }}>points per connection</span>
           </div>
         </div>
@@ -368,7 +370,7 @@ export const SLIDES = [
             Like a tree growing roots, every friendship on ToWin grows slowly,
             through 7 simple stages.
           </Lead>
-          <div style={{ height: '16px' }} />
+          <div style={{ height: '18px' }} />
           <NoteBox>
             <strong style={{ color: INK }}>Both people must agree to every step.</strong> Nothing personal,
             like a phone number, is shared until trust has grown.
@@ -397,7 +399,7 @@ export const SLIDES = [
           changed: feeling lonely, and not having enough energy for everyday things.
         </Lead>
         <div style={{ height: '18px' }} />
-        <NoteBox tone="gold">
+        <NoteBox>
           Elders have <strong style={{ color: INK }}>time and money</strong>, but need energy and company.{' '}
           Helpers have <strong style={{ color: INK }}>energy and time</strong>, but need money and care.{' '}
           <strong style={{ color: INK }}>ToWin is where they meet and share, and both win.</strong>

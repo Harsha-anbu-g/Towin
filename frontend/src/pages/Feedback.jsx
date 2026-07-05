@@ -81,7 +81,7 @@ export default function Feedback() {
 
   const inputStyle = {
     width: '100%', padding: '10px 14px', borderRadius: '10px',
-    border: '1px solid #e0e0e0', fontSize: '16px', fontFamily: SFText,
+    border: '1px solid var(--border)', fontSize: '16px', fontFamily: SFText,
     color: 'var(--ink)', background: 'var(--surface-pearl)', outline: 'none', boxSizing: 'border-box',
   };
 
@@ -95,7 +95,7 @@ export default function Feedback() {
       <style>{`
         .fb-shell { display: grid; grid-template-columns: 1fr 360px; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 48px 32px; align-items: start; }
         .fb-left { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
-        .fb-card { background: #fff; border-radius: 18px; border: 1px solid #e0e0e0; padding: 28px 28px; }
+        .fb-card { background: #fff; border-radius: 18px; border: 1px solid var(--border); padding: 28px 28px; }
         .fb-portfolio { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
         .fb-portfolio:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(156,122,60,0.18); border-color: var(--trust-gold); }
         .fb-brand { display: flex; align-items: center; gap: 10px; padding: 24px 20px 0; }
@@ -149,7 +149,7 @@ export default function Feedback() {
             </div>
           ) : (
             <div className="fb-card">
-              <h2 style={{ fontFamily: SF, fontSize: '26px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 4px' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: 400, color: 'var(--ink)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
                 Share Your Feedback
               </h2>
               <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '0 0 24px' }}>

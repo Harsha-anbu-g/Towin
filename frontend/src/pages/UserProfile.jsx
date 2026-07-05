@@ -78,7 +78,7 @@ function ScoreRing({ score }) {
   const pct = Math.min((score ?? 0) / 65, 1);
   return (
     <svg width="88" height="88" viewBox="0 0 88 88" style={{ flexShrink: 0 }}>
-      <circle cx="44" cy="44" r={r} fill="none" stroke="#ececef" strokeWidth="7" />
+      <circle cx="44" cy="44" r={r} fill="none" stroke="var(--border)" strokeWidth="7" />
       <circle cx="44" cy="44" r={r} fill="none" stroke="#5a6470" strokeWidth="7"
         strokeDasharray={`${pct * circ} ${circ}`} strokeLinecap="round"
         transform="rotate(-90 44 44)"
@@ -98,9 +98,8 @@ function ScoreRing({ score }) {
 function Section({ title, children }) {
   return (
     <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-      padding: '24px 28px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-    }}>
+      background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+      padding: '24px 28px',    }}>
       <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 16px', letterSpacing: '-0.2px' }}>
         {title}
       </h3>
@@ -161,7 +160,7 @@ export default function UserProfile() {
 
         {loading && (
           <div style={{
-            background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
+            background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
             padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '16px', color: 'var(--ink-4)',
           }}>
             Loading profile…
@@ -183,13 +182,12 @@ export default function UserProfile() {
 
             {/* Hero card */}
             <div style={{
-              background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-              padding: '32px 28px 28px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+              background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+              padding: '32px 28px 28px',              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
             }}>
               <Avatar name={profile.name} photoUrl={profile.photoUrl} size={88} />
 
-              <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: 'var(--ink)', margin: '14px 0 2px', letterSpacing: '-0.3px' }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)', margin: '14px 0 2px', letterSpacing: '-0.02em' }}>
                 {profile.name || 'User'}
               </h1>
 

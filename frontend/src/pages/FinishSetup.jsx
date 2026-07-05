@@ -83,7 +83,7 @@ export default function FinishSetup() {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', minHeight: '100%', padding: '40px 24px',
-      background: '#f9fafb', fontFamily: SF,
+      background: 'var(--surface-pearl)', fontFamily: SF,
     }}>
       <div style={{
         width: '100%', maxWidth: '420px',
@@ -98,9 +98,9 @@ export default function FinishSetup() {
         </div>
 
         <h2 style={{
-          fontFamily: SFD, fontSize: 'var(--text-xl)', fontWeight: 600,
+          fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400,
           color: 'var(--ink)', textAlign: 'center', margin: '0 0 8px',
-          letterSpacing: '-0.3px',
+          letterSpacing: '-0.02em',
         }}>
           One last step
         </h2>
@@ -149,7 +149,7 @@ export default function FinishSetup() {
                   <button key={value} type="button" onClick={() => setRole(value)}
                     style={{
                       padding: '14px 12px', borderRadius: '11px',
-                      border: active ? `2px solid ${BLUE}` : '1.5px solid #e0e0e0',
+                      border: active ? `2px solid ${BLUE}` : '1.5px solid var(--border)',
                       background: active ? '#EAF5FB' : '#ffffff',
                       cursor: 'pointer', textAlign: 'left',
                       transition: 'all 0.15s',

@@ -20,7 +20,7 @@ const GREETING = {
   role: 'assistant',
   intro: true,
   content:
-    "Hello! I'm the ToWin tortoise. Ask me anything about how ToWin works — or, " +
+    "Hello! I'm the ToWin tortoise. Ask me anything about how ToWin works, or " +
     "if you're logged in, about your own account like your trust score or streak.",
 };
 
@@ -170,7 +170,7 @@ export default function AskAiAssistant() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          aria-label="Ask AI — the ToWin helper"
+          aria-label="Ask AI, the ToWin helper"
           className={pathname === '/' ? 'ask-ai-fab ask-ai-fab--landing' : 'ask-ai-fab'}
           style={{
             position: 'fixed', zIndex: 1000,

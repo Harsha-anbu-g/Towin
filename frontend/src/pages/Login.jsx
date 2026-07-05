@@ -71,9 +71,9 @@ function HeroPanel() {
           It takes two To Win.
         </span>
         <h1 style={{
-          fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-          fontSize: 'var(--text-3xl)', lineHeight: 1.15, color: '#fff',
-          marginBottom: '16px', letterSpacing: '-0.3px', fontWeight: 600,
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--text-3xl)', lineHeight: 1.12, color: '#fff',
+          marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
           Connecting generations,<br />building <span style={{ color: 'var(--trust-gold)' }}>trust</span>.
@@ -101,15 +101,14 @@ function GoogleButton({ label }) {
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         width: '100%', height: '48px',
-        background: '#ffffff', border: '1.5px solid #e0e0e0',
+        background: '#ffffff', border: '1.5px solid var(--border)',
         borderRadius: '9999px', textDecoration: 'none',
         fontSize: '16px', fontWeight: 500, color: 'var(--ink)',
         fontFamily: SF, cursor: 'pointer',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-        transition: 'border-color 0.15s, box-shadow 0.15s',
+        transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FA3CE'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(79,163,206,0.2)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FA3CE'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
       <svg width="20" height="20" viewBox="0 0 48 48">
         <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.9z"/>
@@ -280,11 +279,10 @@ export default function Login() {
             background: '#ffffff',
             borderRadius: '18px',
             padding: '40px 36px',
-            border: '1px solid rgba(191,217,234,0.6)',
-            boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
+            border: '1px solid var(--border)',
           }}>
             {/* Log in / Create account switcher */}
-            <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', gap: '6px', background: 'var(--surface-2)', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
               <button type="button" style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
@@ -299,9 +297,9 @@ export default function Login() {
 
             {/* Headline */}
             <h2 style={{
-              fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-              fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
-              marginBottom: '6px', letterSpacing: '-0.3px',
+              fontFamily: 'var(--font-display)',
+              fontSize: '28px', fontWeight: 400, color: 'var(--ink)',
+              marginBottom: '6px', letterSpacing: '-0.02em',
             }}>
               Welcome back.
             </h2>
@@ -338,7 +336,7 @@ export default function Login() {
             {/* Google log-in — the easiest path, especially for new users */}
             <GoogleButton label="Log in with Google" />
             <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--ink-4)', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
-              Fastest way in — no password to remember.
+              Fastest way in, no password to remember.
             </p>
 
             {/* Divider */}
@@ -426,7 +424,7 @@ export default function Login() {
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   marginTop: '4px',
                   transition: 'background 0.15s',
-                  boxShadow: '0 6px 18px rgba(79,163,206,0.35)',
+                  boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
                 }}
               >
                 {loading ? 'Logging in…' : 'Log In'}
@@ -448,11 +446,11 @@ export default function Login() {
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: 'var(--blue)', color: '#ffffff', textDecoration: 'none',
+              background: 'transparent', color: 'var(--blue-teal)', textDecoration: 'none',
               borderRadius: '9999px', padding: '11px 24px',
-              fontSize: 'var(--text-sm)', fontWeight: 400,
+              fontSize: 'var(--text-sm)', fontWeight: 500,
+              border: '1px solid var(--border)',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
             }}>
               How It Works
             </Link>

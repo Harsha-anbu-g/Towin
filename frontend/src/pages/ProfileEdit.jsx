@@ -21,7 +21,7 @@ const LEAF_DARK = '#4FA3CE';
 const LEAF_TINT = 'rgba(79,163,206,0.10)';
 const LEAF_BORDER = 'rgba(79,163,206,0.22)';
 const MUTED = '#a0a0a5';
-const BORDER = '#e0e0e0';
+const BORDER = 'var(--border)';
 
 const STAR_GOLD = '#F5B400';
 
@@ -292,7 +292,7 @@ export default function ProfileEdit() {
       {/* Hero section — calm sky-blue, matches app theme */}
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
+          background: 'linear-gradient(180deg, #EAF5FB 0%, var(--surface) 100%)',
           borderBottom: '1px solid #DCEBF4',
           padding: 'clamp(28px, 6vw, 48px) 20px clamp(24px, 4vw, 36px)',
           textAlign: 'center',
@@ -359,10 +359,10 @@ export default function ProfileEdit() {
 
           <h1 style={{
             fontSize: 'clamp(26px, 7vw, 40px)',
-            fontWeight: 600,
+            fontWeight: 400,
             color: 'var(--ink)',
-            fontFamily: SF,
-            letterSpacing: '-0.8px',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '-0.02em',
             marginBottom: '8px',
           }}>
             {form.name || 'Your Name'}
@@ -403,7 +403,7 @@ export default function ProfileEdit() {
                       return age ? (
                         <div style={{
                           padding: '10px 14px', borderRadius: '12px',
-                          background: 'var(--surface)', border: '1.5px solid #e0e0e0',
+                          background: 'var(--surface)', border: '1.5px solid var(--border)',
                           fontSize: 'var(--text-sm)', color: 'var(--ink)', lineHeight: 1.6,
                         }}>
                           <span style={{ fontWeight: 600, fontSize: '20px', color: 'var(--green-deep)' }}>
@@ -428,7 +428,7 @@ export default function ProfileEdit() {
                     <textarea {...f('bio')} rows={3}
                       style={{
                         width: '100%',
-                        border: '1.5px solid #e0e0e0',
+                        border: '1.5px solid var(--border)',
                         borderRadius: '12px',
                         padding: '12px 16px',
                         fontSize: '16px',
@@ -583,7 +583,7 @@ export default function ProfileEdit() {
                 {sectionHeader('Verification')}
 
                 {/* Phone */}
-                <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '18px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ border: '1.5px solid var(--border)', borderRadius: '14px', padding: '18px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: SKY_TINT, border: `1px solid ${SKY_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -596,7 +596,7 @@ export default function ProfileEdit() {
                     </div>
                     {profileData?.phoneVerified
                       ? verBadge(true, 10)
-                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid #e0e0e0', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not verified</span>
+                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid var(--border)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not verified</span>
                     }
                   </div>
 
@@ -616,7 +616,7 @@ export default function ProfileEdit() {
                 </div>
 
                 {/* ID */}
-                <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ border: '1.5px solid var(--border)', borderRadius: '14px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: SKY_TINT, border: `1px solid ${SKY_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -631,7 +631,7 @@ export default function ProfileEdit() {
                       ? verBadge(true, 20)
                       : profileData?.verificationStatus === 'PENDING'
                       ? <span style={{ fontSize: '12px', background: SKY_TINT, color: SKY, border: `1px solid ${SKY_BORDER}`, padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Under review</span>
-                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid #e0e0e0', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not submitted</span>
+                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid var(--border)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not submitted</span>
                     }
                   </div>
                   {(profileData?.verificationStatus === 'NONE' || !profileData?.verificationStatus) && (
@@ -665,7 +665,7 @@ export default function ProfileEdit() {
                   </p>
 
                   {emContacts.length === 0 ? (
-                    <div style={{ border: '1.5px solid #e0e0e0', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
+                    <div style={{ border: '1.5px solid var(--border)', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
                       <p style={{ fontSize: 'var(--text-sm)', color: MUTED, margin: 0 }}>
                         No emergency contacts yet. Add up to 3 people who care about you.
                       </p>
@@ -673,7 +673,7 @@ export default function ProfileEdit() {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {emContacts.map(c => (
-                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '12px 14px' }}>
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 14px' }}>
                           <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: SKY_TINT, border: `1px solid ${SKY_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <Siren size={18} color={SKY} strokeWidth={2} />
                           </div>
@@ -685,7 +685,7 @@ export default function ProfileEdit() {
                           </div>
                           <button type="button" onClick={() => setEmPendingRemove(c)} style={{
                             flexShrink: 0, background: 'transparent', color: 'var(--red-deep)',
-                            border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                            border: '1.5px solid var(--border)', borderRadius: '9999px',
                             padding: '6px 14px', fontSize: '14px', fontWeight: 600,
                             fontFamily: SFText, cursor: 'pointer',
                           }}>
@@ -767,7 +767,7 @@ export default function ProfileEdit() {
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {reviews.map(r => (
-                    <div key={r.id} style={{ border: '1px solid #e0e0e0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div key={r.id} style={{ border: '1px solid var(--border)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>{r.reviewerName}</p>
                         <Stars rating={r.rating} />

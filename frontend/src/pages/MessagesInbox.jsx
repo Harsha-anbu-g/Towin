@@ -88,17 +88,16 @@ export default function MessagesInbox() {
 
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, #EAF5FB 0%, #f5f5f7 100%)',
+          background: 'linear-gradient(180deg, #EAF5FB 0%, var(--surface) 100%)',
           borderBottom: '1px solid #DCEBF4',
           padding: 'clamp(28px, 6vw, 48px) 20px clamp(20px, 4vw, 32px)',
           textAlign: 'center',
         }}>
           <h1 style={{
-            fontSize: 'clamp(28px, 7vw, 40px)',
-            fontWeight: 600,
+            fontSize: 'clamp(28px, 7vw, 40px)',            fontWeight: 400,
             color: 'var(--ink)',
-            fontFamily: SF,
-            letterSpacing: '-0.8px',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '-0.02em',
             marginBottom: '8px',
           }}>
             Messages
@@ -116,7 +115,7 @@ export default function MessagesInbox() {
               <div key={i} style={{
                 background: '#fff', borderRadius: '14px', height: '76px',
                 animation: 'shimmer 1.5s ease-in-out infinite',
-                border: '1px solid #ececef',
+                border: '1px solid var(--border)',
               }} />
             ))}
           </div>
@@ -126,7 +125,7 @@ export default function MessagesInbox() {
           <BlurFade delay={2}>
             <div style={{
               background: '#ffffff',
-              border: '1px solid #ececef',
+              border: '1px solid var(--border)',
               borderRadius: '18px',
               padding: '56px 24px',
               textAlign: 'center',
@@ -177,20 +176,20 @@ export default function MessagesInbox() {
                   aria-label="Search conversations"
                   style={{
                     width: '100%', boxSizing: 'border-box', height: '48px',
-                    border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                    border: '1.5px solid var(--border)', borderRadius: '9999px',
                     padding: '0 18px 0 44px', fontSize: '16px', fontFamily: SFText,
                     color: 'var(--ink)', background: '#fff', outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
                   onFocus={e => e.currentTarget.style.borderColor = '#4FA3CE'}
-                  onBlur={e => e.currentTarget.style.borderColor = '#e0e0e0'}
+                  onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
                 />
               </div>
             </BlurFade>
 
             {filtered.length === 0 ? (
               <div style={{
-                background: '#ffffff', border: '1px solid #ececef',
+                background: '#ffffff', border: '1px solid var(--border)',
                 borderRadius: '18px', padding: '40px 24px', textAlign: 'center',
               }}>
                 <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
@@ -200,7 +199,7 @@ export default function MessagesInbox() {
             ) : (
               <div style={{
                 background: '#ffffff',
-                border: '1px solid #ececef',
+                border: '1px solid var(--border)',
                 borderRadius: '18px',
                 overflow: 'hidden',
               }}>
@@ -214,7 +213,7 @@ export default function MessagesInbox() {
                         width: '100%',
                         background: 'transparent',
                         border: 'none',
-                        borderBottom: i === filtered.length - 1 ? 'none' : '1px solid #ececef',
+                        borderBottom: i === filtered.length - 1 ? 'none' : '1px solid var(--border)',
                         padding: '14px 18px',
                         display: 'flex',
                         alignItems: 'center',
@@ -242,7 +241,7 @@ export default function MessagesInbox() {
                               <span className="inbox-trust-pill" style={{
                                 fontSize: '12px', fontWeight: 600, fontFamily: SFText,
                                 color: 'var(--blue)', background: 'var(--surface)',
-                                border: '1px solid #e0e0e0', borderRadius: '9999px',
+                                border: '1px solid var(--border)', borderRadius: '9999px',
                                 padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
                                 letterSpacing: '0.1px',
                               }}>

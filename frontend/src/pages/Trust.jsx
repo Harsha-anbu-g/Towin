@@ -9,7 +9,7 @@ const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SKY   = '#4FA3CE';
 const BLUE  = '#4FA3CE';
 const TRUST = '#9C7A3C';
-const BG    = '#f5f5f7';
+const BG    = 'var(--surface)';
 const INK   = '#1d1d1f';
 const GREY  = '#7a7a7a';
 const FAINT = '#a0a0a5';
@@ -32,8 +32,7 @@ const TIER_COLORS = {
 };
 
 const card = {
-  background: '#fff', borderRadius: '18px', border: '1px solid #e0e0e0',
-  boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+  background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
 };
 
 /* ── Score: a plain number — it keeps growing, so no bounded ring ─────────── */
@@ -44,7 +43,7 @@ function ScoreRing({ score }) {
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
     }}>
-      <span style={{ fontFamily: SFD, fontSize: '44px', fontWeight: 700, color: INK, lineHeight: 1, letterSpacing: '-0.8px' }}>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 400, color: INK, lineHeight: 1, letterSpacing: '-0.02em' }}>
         {score}
       </span>
       <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', color: FAINT, marginTop: '4px' }}>
@@ -249,7 +248,7 @@ function ProfileCard({ profile, onGoToProfile }) {
           <button onClick={onGoToProfile} style={{
             background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',
             padding: '12px 28px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SF,
-            cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
+            cursor: 'pointer', boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
           }}>
             Finish your profile →
           </button>
@@ -298,8 +297,13 @@ function CustomerCard({ c }) {
         </div>
       </div>
 
-      <div style={{ height: '6px', borderRadius: '9999px', background: '#ececef', marginBottom: '8px' }}>
-        <div style={{ height: '100%', width: `${(c.total / c.totalMax) * 100}%`, background: SKY, borderRadius: '9999px', transition: 'width 0.6s ease' }} />
+      <div style={{ height: '6px', borderRadius: '9999px', background: 'var(--border)', marginBottom: '8px', overflow: 'hidden' }}>
+        {/* GPU-only fill: scaleX instead of width so the reveal never thrashes layout */}
+        <div style={{
+          height: '100%', width: '100%', background: SKY, borderRadius: '9999px',
+          transform: `scaleX(${c.total / c.totalMax})`, transformOrigin: 'left center',
+          transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        }} />
       </div>
 
       <div style={{ borderTop: '1px solid #f0f0f2', paddingTop: '6px' }}>
@@ -334,7 +338,7 @@ export default function Trust() {
       <div style={{ maxWidth: '780px', margin: '0 auto', padding: '40px 24px 80px' }}>
 
         <div style={{ marginBottom: '22px' }}>
-          <h1 style={{ fontFamily: SFD, fontSize: '24px', fontWeight: 700, color: INK, margin: '0 0 6px', letterSpacing: '-0.4px' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: INK, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
             Your <span style={{ color: TRUST }}>Trust</span> Score
           </h1>
           <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: 0, lineHeight: 1.5 }}>
@@ -385,7 +389,7 @@ export default function Trust() {
                 <button onClick={() => navigate('/dashboard')} style={{
                   background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',
                   padding: '12px 28px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SF,
-                  cursor: 'pointer', boxShadow: '0 4px 14px rgba(79,163,206,0.3)',
+                  cursor: 'pointer', boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
                 }}>
                   Find {isHelper ? 'an elder' : 'a helper'} →
                 </button>

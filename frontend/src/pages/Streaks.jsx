@@ -137,7 +137,7 @@ export default function Streaks() {
       }}>
         {/* Artwork area — contain (not cover) shows the whole illustration
             uncropped. The JPG's background is pure white (#fff) while the panel
-            is pearl (#fafafc); multiply blending maps white onto the panel color
+            is pearl (#fbfaf6); multiply blending maps white onto the panel color
             exactly, so no rectangle edge shows regardless of the display panel. */}
         <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
           <img src="/journey.jpg" alt="The master and his turtles, growing up together" style={{
@@ -148,7 +148,7 @@ export default function Streaks() {
           {/* Top edge melts into the page so the art has no hard border. */}
           <div style={{
             position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-            background: 'linear-gradient(to bottom, #fafafc 0%, rgba(250,250,252,0) 12%)',
+            background: 'linear-gradient(to bottom, #fbfaf6 0%, rgba(251,250,246,0) 12%)',
           }} />
         </div>
         {/* Tagline — a caption beneath the artwork, on its own pearl band. */}
@@ -178,8 +178,8 @@ export default function Streaks() {
             {greeting()}
           </p>
           <h1 className="streaks-heading" style={{
-            fontFamily: SF, fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 600,
-            color: 'var(--ink)', letterSpacing: '-0.6px',
+            fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 400,
+            color: 'var(--ink)', letterSpacing: '-0.02em',
             marginBottom: '32px', lineHeight: 1.1,
           }}>
             {alreadyDone ? 'You showed up today.' : 'Ready to check in?'}
@@ -188,9 +188,8 @@ export default function Streaks() {
           {/* Streak card */}
           <div className="streak-card" style={{
             background: '#ffffff', borderRadius: '18px',
-            border: '1px solid #e0e0e0', padding: '36px',
+            border: '1px solid var(--border)', padding: '36px',
             textAlign: 'center', marginBottom: '28px',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.05)',
           }}>
             {loading ? (
               <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>Loading…</p>
@@ -203,9 +202,9 @@ export default function Streaks() {
                   key={justCheckedIn ? 'checked' : 'idle'}
                   className={`streak-number${justCheckedIn ? ' checkin-pop' : ''}`}
                   style={{
-                    fontFamily: SF, fontSize: '80px', fontWeight: 600,
+                    fontFamily: 'var(--font-display)', fontSize: '80px', fontWeight: 400,
                     color: 'var(--ink)', lineHeight: 1, margin: '16px 0 4px',
-                    letterSpacing: '-2px',
+                    letterSpacing: '-0.02em',
                   }}
                 >
                   {streak?.currentStreak ?? 0}
@@ -262,9 +261,8 @@ export default function Streaks() {
           {/* Age display */}
           <div className="age-card" style={{
             background: '#ffffff', borderRadius: '18px',
-            border: '1px solid #e0e0e0', padding: '24px 28px',
+            border: '1px solid var(--border)', padding: '24px 28px',
             marginBottom: '28px',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
           }}>
             {dob && computeAge(dob) ? (() => {
               const age = computeAge(dob);
@@ -309,7 +307,7 @@ export default function Streaks() {
                 <button
                   onClick={() => navigate('/profile')}
                   style={{
-                    background: 'none', border: '1.5px solid #e0e0e0',
+                    background: 'none', border: '1.5px solid var(--border)',
                     borderRadius: '9999px', padding: '8px 20px',
                     fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue)',
                     fontFamily: SFT, cursor: 'pointer',
@@ -327,7 +325,7 @@ export default function Streaks() {
               /* Already checked in — show two options */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{
-                  background: 'var(--surface)', border: '1px solid #e0e0e0',
+                  background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: '14px', padding: '14px 20px',
                   textAlign: 'center',
                 }}>
@@ -353,7 +351,7 @@ export default function Streaks() {
                   onClick={() => navigate('/game')}
                   style={{
                     width: '100%', background: '#ffffff', color: 'var(--ink)',
-                    border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+                    border: '1.5px solid var(--border)', borderRadius: '9999px',
                     padding: '16px 0', fontSize: '16px', fontWeight: 600,
                     fontFamily: SFT, cursor: 'pointer',
                   }}
@@ -373,7 +371,7 @@ export default function Streaks() {
                     padding: '22px 0', fontSize: '20px', fontWeight: 600,
                     fontFamily: SFT, cursor: checkingIn ? 'not-allowed' : 'pointer',
                     letterSpacing: '-0.2px',
-                    boxShadow: '0 4px 20px rgba(79,163,206,0.35)',
+                    boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
                     opacity: checkingIn ? 0.7 : 1,
                   }}
                 >

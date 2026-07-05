@@ -154,13 +154,13 @@ export default function Messages() {
       background: '#ffffff',
       display: 'flex',
       flexDirection: 'column',
-      borderLeft: '1px solid #e0e0e0',
-      borderRight: '1px solid #e0e0e0',
+      borderLeft: '1px solid var(--border)',
+      borderRight: '1px solid var(--border)',
      }}>
       {/* Chat header — iMessage style */}
       <header className="chat-header" style={{
         background: '#ffffff',
-        borderBottom: '1px solid #ececef',
+        borderBottom: '1px solid var(--border)',
         padding: '12px 20px',
         display: 'flex',
         alignItems: 'center',
@@ -190,7 +190,7 @@ export default function Messages() {
 
         {/* Avatar — real photo or initials */}
         {otherPhotoUrl ? (
-          <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid #e0e0e0' }}>
+          <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border)' }}>
             <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
         ) : (
@@ -216,7 +216,7 @@ export default function Messages() {
         <button
           className="chat-report"
           onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
-          style={{ fontSize: '14px', color: 'var(--ink-3)', background: 'transparent', border: '1px solid #e0e0e0', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
+          style={{ fontSize: '14px', color: 'var(--ink-3)', background: 'transparent', border: '1px solid var(--border)', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
         >
           Report
         </button>
@@ -297,7 +297,7 @@ export default function Messages() {
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', marginTop: '64px' }}>
             {otherPhotoUrl ? (
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 20px', border: '1px solid #e0e0e0' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 20px', border: '1px solid var(--border)' }}>
                 <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             ) : (
@@ -389,7 +389,7 @@ export default function Messages() {
       {/* Input bar */}
       <form onSubmit={send} style={{
         background: '#ffffff',
-        borderTop: '1px solid #ececef',
+        borderTop: '1px solid var(--border)',
         padding: '12px 16px',
         display: 'flex',
         gap: '10px',
@@ -414,7 +414,7 @@ export default function Messages() {
               borderRadius: '18px',
               padding: '10px 18px',
               background: '#ffffff',
-              border: '1.5px solid #e0e0e0',
+              border: '1.5px solid var(--border)',
               fontSize: '16px',
               fontFamily: SFText,
               color: 'var(--ink)',
@@ -433,7 +433,7 @@ export default function Messages() {
           aria-label="Send message"
           className="chat-send-btn"
           style={{
-            background: text.trim() && loadError !== 'trust' ? '#4FA3CE' : '#e0e0e0',
+            background: text.trim() && loadError !== 'trust' ? '#4FA3CE' : 'var(--border)',
             color: '#fff',
             border: 'none',
             borderRadius: '50%',

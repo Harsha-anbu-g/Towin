@@ -79,20 +79,20 @@ function LegalModal({ title, sections, onClose }) {
         }}
       >
         <div style={{
-          padding: '24px 32px', borderBottom: '1px solid #ececef',
+          padding: '24px 32px', borderBottom: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
         }}>
           <h3 style={{
-            margin: 0, fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)',
-            fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-            letterSpacing: '-0.3px',
+            margin: 0, fontSize: 'var(--text-lg)', fontWeight: 400, color: 'var(--ink)',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '-0.02em',
           }}>{title}</h3>
           <button
             onClick={onClose}
             aria-label="Close"
             style={{
               width: '32px', height: '32px', borderRadius: '50%',
-              border: '1px solid #e0e0e0', background: '#ffffff',
+              border: '1px solid var(--border)', background: '#ffffff',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 'var(--text-base)', color: 'var(--ink-3)',
             }}
@@ -118,7 +118,7 @@ function LegalModal({ title, sections, onClose }) {
           ))}
         </div>
         <div style={{
-          padding: '16px 32px', borderTop: '1px solid #ececef',
+          padding: '16px 32px', borderTop: '1px solid var(--border)',
           display: 'flex', justifyContent: 'flex-end',
         }}>
           <button
@@ -204,9 +204,9 @@ function HeroPanel() {
           It takes two To Win.
         </span>
         <h1 style={{
-          fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-          fontSize: 'var(--text-3xl)', lineHeight: 1.15, color: '#fff',
-          marginBottom: '16px', letterSpacing: '-0.3px', fontWeight: 600,
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--text-3xl)', lineHeight: 1.12, color: '#fff',
+          marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
           Your community<br />is waiting <span style={{ color: 'var(--trust-gold)' }}>for you</span>.
@@ -257,15 +257,14 @@ function GoogleButton() {
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         width: '100%', height: '48px',
-        background: '#ffffff', border: '1.5px solid #e0e0e0',
+        background: '#ffffff', border: '1.5px solid var(--border)',
         borderRadius: '9999px', textDecoration: 'none',
         fontSize: '16px', fontWeight: 500, color: 'var(--ink)',
         fontFamily: SF, cursor: 'pointer',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-        transition: 'border-color 0.15s, box-shadow 0.15s',
+        transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FA3CE'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(79,163,206,0.2)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FA3CE'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
       <svg width="20" height="20" viewBox="0 0 48 48">
         <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.9z"/>
@@ -452,11 +451,10 @@ export default function Register() {
             background: '#ffffff',
             borderRadius: '18px',
             padding: '40px 36px',
-            border: '1px solid rgba(191,217,234,0.6)',
-            boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07), 0 26px 56px rgba(79,163,206,0.12)',
+            border: '1px solid var(--border)',
           }}>
             {/* Log in / Create account switcher */}
-            <div style={{ display: 'flex', gap: '6px', background: '#eef1f4', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', gap: '6px', background: 'var(--surface-2)', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
               <button type="button" onClick={() => navigate('/login')} style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
@@ -471,9 +469,9 @@ export default function Register() {
 
             {/* Headline */}
             <h2 style={{
-              fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
-              fontSize: '24px', fontWeight: 700, color: 'var(--ink)',
-              marginBottom: '6px', letterSpacing: '-0.3px',
+              fontFamily: 'var(--font-display)',
+              fontSize: '28px', fontWeight: 400, color: 'var(--ink)',
+              marginBottom: '6px', letterSpacing: '-0.02em',
             }}>
               Join ToWin.
             </h2>
@@ -487,7 +485,7 @@ export default function Register() {
             {/* Google sign-up — the easiest path, especially for new users */}
             <GoogleButton />
             <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--ink-4)', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
-              Fastest way in — no password to remember.
+              Fastest way in, no password to remember.
             </p>
 
             {/* Divider */}
@@ -517,7 +515,7 @@ export default function Register() {
                     <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
                       style={{
                         padding: '14px 12px', borderRadius: '11px',
-                        border: active ? '2px solid #4FA3CE' : '1.5px solid #e0e0e0',
+                        border: active ? '2px solid #4FA3CE' : '1.5px solid var(--border)',
                         background: active ? '#EAF5FB' : '#ffffff',
                         cursor: 'pointer', textAlign: 'left',
                         transition: 'all 0.15s',
@@ -630,7 +628,7 @@ export default function Register() {
                         flex: 1, height: '3px', borderRadius: '9999px',
                         background: i <= pwdStrength(form.password)
                           ? ['#ff3b30','#ff9500','#4FA3CE','#4FA3CE'][pwdStrength(form.password)-1]
-                          : '#e0e0e0',
+                          : 'var(--border)',
                         transition: 'background 0.2s',
                       }} />
                     ))}
@@ -727,11 +725,11 @@ export default function Register() {
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: 'var(--blue)', color: '#ffffff', textDecoration: 'none',
+              background: 'transparent', color: 'var(--blue-teal)', textDecoration: 'none',
               borderRadius: '9999px', padding: '11px 24px',
-              fontSize: 'var(--text-sm)', fontWeight: 400,
+              fontSize: 'var(--text-sm)', fontWeight: 500,
+              border: '1px solid var(--border)',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              boxShadow: '0 4px 16px rgba(79,163,206,0.35)',
             }}>
               How It Works
             </Link>

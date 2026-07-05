@@ -59,7 +59,7 @@ export default function ChangePassword() {
         </button>
 
         <BlurFade delay={1}>
-          <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid #e0e0e0' }}>
+          <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid var(--border)' }}>
             <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
               Change Password
             </p>
