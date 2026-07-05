@@ -86,3 +86,6 @@ docs/ToWin-Video-*.docx
 docs/architecture/frontend-graph.pdf
 .vercel
 .gstack/
+
+# Claude Code machine-local settings (permissions/hooks for this machine only)
+.claude/settings.local.json
