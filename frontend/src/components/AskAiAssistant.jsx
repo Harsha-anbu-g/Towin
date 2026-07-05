@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X } from 'lucide-react';
+import { Send, X, Volume2, Square, Mic, MicOff } from 'lucide-react';
 import api from '../api/axios';
 
 // The tortoise mascot image (served from /public).
@@ -29,15 +29,74 @@ const SUGGESTIONS = [
   'What is my trust score?',
 ];
 
+// Browser speech features — both fail gracefully where unsupported.
+const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
+const SpeechRec =
+  typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+
+// What the read-aloud voice actually says: the reply without markdown marks.
+function speakableText(text) {
+  return String(text ?? '').replace(/\*+/g, '').replace(/^\s*[-•]\s+/gm, '');
+}
+
 export default function AskAiAssistant() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([GREETING]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [speakingIdx, setSpeakingIdx] = useState(null);
+  const [listening, setListening] = useState(false);
 
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  // Read one tortoise reply aloud; tapping again (or another reply) stops it.
+  const toggleSpeak = useCallback((idx, content) => {
+    if (!canSpeak) return;
+    window.speechSynthesis.cancel();
+    if (speakingIdx === idx) { setSpeakingIdx(null); return; }
+    const utterance = new SpeechSynthesisUtterance(speakableText(content));
+    utterance.rate = 0.95;
+    utterance.onend = () => setSpeakingIdx(null);
+    utterance.onerror = () => setSpeakingIdx(null);
+    setSpeakingIdx(idx);
+    window.speechSynthesis.speak(utterance);
+  }, [speakingIdx]);
+
+  // Dictate a question with the mic (where the browser supports it).
+  const toggleMic = useCallback(() => {
+    if (!SpeechRec) return;
+    if (listening) { recognitionRef.current?.stop(); return; }
+    const rec = new SpeechRec();
+    rec.lang = navigator.language || 'en-US';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.onresult = (e) => {
+      const heard = e.results[0]?.[0]?.transcript ?? '';
+      if (heard) setInput((prev) => (prev ? `${prev} ${heard}` : heard));
+      inputRef.current?.focus();
+    };
+    rec.onend = () => setListening(false);
+    rec.onerror = () => setListening(false);
+    recognitionRef.current = rec;
+    setListening(true);
+    rec.start();
+  }, [listening]);
+
+  // Stop any voice activity when the panel closes or the component unmounts.
+  useEffect(() => {
+    if (open) return;
+    if (canSpeak) window.speechSynthesis.cancel();
+    recognitionRef.current?.abort?.();
+    setSpeakingIdx(null);
+    setListening(false);
+  }, [open]);
+  useEffect(() => () => {
+    if (canSpeak) window.speechSynthesis.cancel();
+    recognitionRef.current?.abort?.();
+  }, []);
 
   // Keep the newest message in view whenever the list or typing state changes.
   useEffect(() => {
@@ -188,7 +247,13 @@ export default function AskAiAssistant() {
               display: 'flex', flexDirection: 'column', gap: '10px',
             }}>
               {messages.map((m, i) => (
-                <Bubble key={i} role={m.role} content={m.content} />
+                <Bubble
+                  key={i}
+                  role={m.role}
+                  content={m.content}
+                  speaking={speakingIdx === i}
+                  onSpeak={canSpeak && m.role === 'assistant' ? () => toggleSpeak(i, m.content) : null}
+                />
               ))}
 
               {loading && <TypingDots />}
@@ -221,11 +286,29 @@ export default function AskAiAssistant() {
                 padding: '12px', borderTop: '1px solid var(--border-soft)', background: '#fff',
               }}
             >
+              {SpeechRec && (
+                <button
+                  type="button"
+                  onClick={toggleMic}
+                  aria-label={listening ? 'Stop listening' : 'Speak your question'}
+                  title={listening ? 'Stop listening' : 'Speak your question'}
+                  style={{
+                    flexShrink: 0, width: '44px', height: '44px', borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', transition: 'background 0.15s',
+                    background: listening ? 'var(--blue)' : 'var(--blue-wash)',
+                    color: listening ? '#fff' : 'var(--blue-deep)',
+                    border: '1px solid var(--blue-soft)',
+                  }}
+                >
+                  {listening ? <MicOff size={19} /> : <Mic size={19} />}
+                </button>
+              )}
               <input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your question…"
+                placeholder={listening ? 'Listening…' : 'Type your question…'}
                 aria-label="Type your question"
                 maxLength={1000}
                 style={{
@@ -256,7 +339,7 @@ export default function AskAiAssistant() {
   );
 }
 
-function Bubble({ role, content }) {
+function Bubble({ role, content, speaking, onSpeak }) {
   const isUser = role === 'user';
   return (
     <div style={{
@@ -271,6 +354,24 @@ function Bubble({ role, content }) {
       whiteSpace: 'pre-wrap', wordBreak: 'break-word',
     }}>
       {isUser ? content : <RichText text={content} />}
+      {onSpeak && (
+        <button
+          onClick={onSpeak}
+          aria-label={speaking ? 'Stop reading aloud' : 'Read this answer aloud'}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            marginTop: '8px', padding: '5px 12px', cursor: 'pointer',
+            background: speaking ? 'var(--blue)' : '#fff',
+            color: speaking ? '#fff' : 'var(--blue-deep)',
+            border: '1px solid var(--blue-soft)', borderRadius: '9999px',
+            fontFamily: SF, fontSize: 'var(--text-xs, 13px)', fontWeight: 600,
+            transition: 'background 0.15s',
+          }}
+        >
+          {speaking ? <Square size={13} /> : <Volume2 size={14} />}
+          {speaking ? 'Stop' : 'Read aloud'}
+        </button>
+      )}
     </div>
   );
 }

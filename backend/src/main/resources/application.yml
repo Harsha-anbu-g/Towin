@@ -118,7 +118,7 @@ nominatim:
 groq:
   api-key: ${GROQ_API_KEY:}
   base-url: ${GROQ_BASE_URL:https://api.groq.com/openai/v1}
-  model: ${GROQ_MODEL:openai/gpt-oss-20b}
+  model: ${GROQ_MODEL:openai/gpt-oss-120b}
   enabled: ${GROQ_ENABLED:true}
   # gpt-oss is a reasoning model; "low" stops it burning the token budget on
   # thinking and truncating the reply. Set blank if you switch to a non-reasoning

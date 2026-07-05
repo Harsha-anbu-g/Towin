@@ -34,8 +34,8 @@ import java.util.UUID;
 @Service
 public class AssistantService {
 
-    /** How many recent turns we forward — keeps prompts small and cheap. */
-    private static final int MAX_HISTORY = 8;
+    /** How many recent turns we forward — enough to hold a real back-and-forth. */
+    private static final int MAX_HISTORY = 20;
 
     private static final String FALLBACK =
             "Sorry, I can't answer just now. Please try again in a moment. "

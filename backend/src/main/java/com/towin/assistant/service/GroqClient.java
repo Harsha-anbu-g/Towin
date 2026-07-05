@@ -36,7 +36,7 @@ public class GroqClient {
     public GroqClient(
             @Value("${groq.base-url:https://api.groq.com/openai/v1}") String baseUrl,
             @Value("${groq.api-key:}") String apiKey,
-            @Value("${groq.model:openai/gpt-oss-20b}") String model,
+            @Value("${groq.model:openai/gpt-oss-120b}") String model,
             @Value("${groq.enabled:true}") boolean enabled,
             @Value("${groq.reasoning-effort:low}") String reasoningEffort) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
@@ -75,7 +75,7 @@ public class GroqClient {
             body.put("model", model);
             body.put("messages", messages);
             body.put("temperature", 0.3);
-            body.put("max_tokens", 700);
+            body.put("max_tokens", 1000);
             // Reasoning models (gpt-oss) otherwise spend the whole token budget
             // "thinking" and truncate the actual answer. "low" keeps replies direct.
             // Blank omits it, for non-reasoning models that reject the field.

@@ -270,6 +270,8 @@ export const STEPS = [
           'Ask how anything on ToWin works, like "How does the Trust Journey work?"',
           'When you are logged in, ask about your own account, like "What is my trust score?" or "How is my streak going?"',
           'Not sure what to do next? Ask "What should I do today?" and it will point the way.',
+          'Tap "Read aloud" under any answer to hear it spoken out loud.',
+          'Rather talk than type? Tap the microphone and speak your question.',
           'It replies in short, simple words, any time of day.',
         ]} />
         <NoteBox>
