@@ -43,7 +43,7 @@ function HeroPanel() {
 
       {/* Tagline — centered on the photo */}
       <span style={{
-        position: 'absolute', top: '62%', left: '50%', transform: 'translate(-50%, -50%)',
+        position: 'absolute', top: '46%', left: '50%', transform: 'translate(-50%, -50%)',
         zIndex: 2, whiteSpace: 'nowrap',
         background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
@@ -61,7 +61,10 @@ function HeroPanel() {
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
-        <img src="/tortoise-logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{
+          width: 40, height: 40, objectFit: 'contain',
+          filter: 'brightness(0) invert(1) drop-shadow(0 1px 10px rgba(20,55,80,0.45))',
+        }} />
         <p style={{
           fontSize: '21px', fontWeight: 600, color: '#ffffff', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
