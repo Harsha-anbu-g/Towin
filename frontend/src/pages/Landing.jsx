@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SLIDES } from '../data/landingContent';
 
@@ -7,12 +6,6 @@ const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SKY = '#4FA3CE';
 const BORDER = '#BFD9EA';
-
-// Aliased so the JSX usage counts as a real use of `motion` under this repo's
-// flat eslint config (no eslint-plugin-react ⇒ no jsx-uses-vars), and the
-// capitalized names are exempt from no-unused-vars' varsIgnorePattern.
-const MotionButton = motion.button;
-const MotionSpan = motion.span;
 
 // Progress as a slim "trail" — the guided walk, one segment per step. The bar is
 // thin for calm, but each button pads out to a comfortable tap target (elders).
@@ -44,81 +37,33 @@ function Trail({ count, current, onJump }) {
   );
 }
 
-// The Next button "fills like water" before it unlocks, giving people a beat to
-// actually read the slide. Once a slide has been read through once it never
-// re-locks (the parent's `seen` set), and reduced-motion users skip the gate
-// entirely — so nobody who's already read, or who can't see the motion, is
-// ever trapped waiting.
-function ChargingNext({ slideKey, durationMs, label, onAdvance, alreadySeen, onCharged }) {
-  const reduce = useReducedMotion();
-  const instant = reduce || alreadySeen;     // no gate: unlock immediately
-  // The parent remounts this via key={slide.id}, so initial state resets per slide.
-  const [ready, setReady] = useState(instant);
-  const [justReady, setJustReady] = useState(false);
-
-  // Clear the one-shot "unlocked!" pulse after it plays.
-  useEffect(() => {
-    if (!justReady) return undefined;
-    const t = setTimeout(() => setJustReady(false), 450);
-    return () => clearTimeout(t);
-  }, [justReady]);
-
-  const handleFilled = () => {
-    setReady(true);
-    setJustReady(true);
-    onCharged();
-  };
-
+// Primary Next/Start action — always tappable. (The old read-gate that locked
+// this button for a few seconds tested badly for elders: a disabled primary
+// button reads as broken, and it added friction right before sign-up.)
+function NextButton({ label, onAdvance }) {
   return (
-    <MotionButton
+    <button
       type="button"
-      onClick={() => ready && onAdvance()}
-      disabled={!ready}
-      aria-label={ready ? label : 'Take a moment to read — this unlocks shortly'}
-      animate={{ scale: justReady ? [1, 1.05, 1] : 1 }}
-      transition={{ duration: 0.45 }}
+      onClick={onAdvance}
       style={{
-        position: 'relative', overflow: 'hidden',
         padding: '13px 32px', minWidth: '150px',
         fontFamily: SF, fontSize: '17px', fontWeight: 400,
-        borderRadius: '9999px',
-        cursor: ready ? 'pointer' : 'default',
-        background: ready ? SKY : '#E3F1F9',
-        color: ready ? '#fff' : '#5E7C8C',
-        border: ready ? 'none' : `1px solid ${BORDER}`,
-        boxShadow: ready ? '0 4px 16px rgba(79,163,206,0.3)' : 'none',
-        transition: 'background 0.3s, color 0.3s, box-shadow 0.3s',
+        borderRadius: '9999px', cursor: 'pointer',
+        background: SKY, color: '#fff', border: 'none',
+        boxShadow: '0 4px 16px rgba(79,163,206,0.3)',
+        transition: 'opacity 0.15s',
       }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
     >
-      {/* The rising water — only while this slide is still charging. */}
-      {!instant && !ready && (
-        <MotionSpan
-          key={slideKey}
-          aria-hidden
-          initial={{ height: '0%' }}
-          animate={{ height: '100%' }}
-          transition={{ duration: durationMs / 1000, ease: 'linear' }}
-          onAnimationComplete={handleFilled}
-          style={{
-            position: 'absolute', left: 0, right: 0, bottom: 0,
-            background: 'rgba(79,163,206,0.5)',
-            zIndex: 0,
-          }}
-        />
-      )}
-      <span style={{ position: 'relative', zIndex: 1 }}>
-        {ready ? label : 'Read this…'}
-      </span>
-    </MotionButton>
+      {label}
+    </button>
   );
 }
 
 export default function Landing() {
   const navigate = useNavigate();
   const [index, setIndex] = useState(0);
-  // Slides whose read-gate has already been completed — revisiting these
-  // unlocks Next instantly so Back/forward never re-traps the reader.
-  const [seen, setSeen] = useState(() => new Set());
   const total = SLIDES.length;
   const slide = SLIDES[index];
   const isLast = index === total - 1;
@@ -127,9 +72,10 @@ export default function Landing() {
     <div style={{
       height: '100svh', minHeight: 0, overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
+      // Warm paper canvas with a whisper of sky top-right — editorial, not clinical.
       background:
-        'radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.8) 0%, transparent 55%),' +
-        'linear-gradient(165deg, #F4FAFD 0%, #EAF5FB 55%, #D9EBF5 100%)',
+        'radial-gradient(ellipse at 82% -8%, #E9F2F7 0%, transparent 42%),' +
+        'linear-gradient(168deg, #FAF8F3 0%, #F4F1E9 100%)',
     }}>
       {/* Top bar: brand left, escape hatch right */}
       <header className="landing-topbar" style={{
@@ -203,15 +149,7 @@ export default function Landing() {
               >
                 Back
               </button>
-              <ChargingNext
-                key={slide.id}
-                slideKey={slide.id}
-                durationMs={slide.readMs || 3000}
-                label="Start"
-                alreadySeen={seen.has(index)}
-                onCharged={() => setSeen(s => new Set(s).add(index))}
-                onAdvance={() => navigate('/login')}
-              />
+              <NextButton label="Start" onAdvance={() => navigate('/login')} />
             </div>
             <Link to="/how-it-works" style={{
               fontFamily: SF, fontSize: '16px', fontWeight: 600,
@@ -238,13 +176,8 @@ export default function Landing() {
               >
                 Back
               </button>
-              <ChargingNext
-                key={slide.id}
-                slideKey={slide.id}
-                durationMs={slide.readMs || 3000}
+              <NextButton
                 label={slide.nextLabel || 'Next'}
-                alreadySeen={seen.has(index)}
-                onCharged={() => setSeen(s => new Set(s).add(index))}
                 onAdvance={() => setIndex(i => Math.min(total - 1, i + 1))}
               />
             </div>
