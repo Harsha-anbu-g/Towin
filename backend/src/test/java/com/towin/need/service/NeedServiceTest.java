@@ -34,6 +34,7 @@ class NeedServiceTest {
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
+    @Mock com.towin.common.service.S3Service s3Service;
     @Mock com.towin.common.service.TrustScoreService trustScoreService;
     @Mock com.towin.connection.repository.ConnectionRepository connectionRepository;
     NeedService needService;
@@ -47,7 +48,7 @@ class NeedServiceTest {
         // which @InjectMocks cannot populate
         needService = new NeedService(
                 needRepository, applicationRepository, userRepository,
-                elderProfileRepository, helperProfileRepository,
+                elderProfileRepository, helperProfileRepository, s3Service,
                 trustScoreService, connectionRepository, Optional.empty());
         elder = buildUser(UUID.randomUUID(), UserRole.ELDER);
         elder.setLocationLat(BigDecimal.valueOf(43.65));

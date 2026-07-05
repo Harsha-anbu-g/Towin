@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Terms() {
   const navigate = useNavigate();
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px', fontFamily: 'inherit', color: '#2d3748', lineHeight: 1.7 }}>
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px', fontFamily: 'inherit', color: 'var(--ink-deep)', lineHeight: 1.7 }}>
       <button
         onClick={() => navigate(-1)}
         style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'var(--text-sm)', marginBottom: 32, padding: 0 }}

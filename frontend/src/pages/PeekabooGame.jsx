@@ -6,9 +6,9 @@ import api from '../api/axios';
 const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const HEX   = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
-const GREEN = '#1a5c2e';
-const SHELL = '#3D8B5A';
-const SKY   = '#4FA3CE';
+const GREEN = 'var(--green-deep)';
+const SHELL = 'var(--leaf)';
+const SKY   = 'var(--blue)';
 const PAIRS = 6;
 const TIME  = 60;
 
@@ -93,7 +93,7 @@ export default function PeekabooGame() {
 
   const matchedCount = cards.filter(c => c.matched).length / 2;
   const timerPct     = timeLeft / TIME;
-  const timerColor   = timeLeft <= 15 ? '#dc2626' : timeLeft <= 30 ? '#F5B400' : GREEN;
+  const timerColor   = timeLeft <= 15 ? 'var(--red-error)' : timeLeft <= 30 ? 'var(--star-gold)' : GREEN;
 
   return (
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFT }}>
@@ -115,7 +115,7 @@ export default function PeekabooGame() {
           {/* Timer ring */}
           <div style={{ flexShrink: 0, position: 'relative', width: 68, height: 68 }}>
             <svg width="68" height="68" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="34" cy="34" r="28" fill="none" stroke="#e5e7eb" strokeWidth="6" />
+              <circle cx="34" cy="34" r="28" fill="none" stroke="var(--grey-line)" strokeWidth="6" />
               <circle cx="34" cy="34" r="28" fill="none" stroke={timerColor}
                 strokeWidth="6"
                 strokeDasharray={`${2 * Math.PI * 28}`}
@@ -164,10 +164,10 @@ export default function PeekabooGame() {
             <ellipse cx="190" cy="40" rx="18" ry="28" fill={GREEN} />
             <circle cx="190" cy="8" r="30" fill={GREEN} />
             {/* open, friendly eyes */}
-            <circle cx="178" cy="2" r="5.5" fill="#f0fdf4" />
-            <circle cx="202" cy="2" r="5.5" fill="#f0fdf4" />
-            <circle cx="178.5" cy="2.5" r="2.6" fill="#1d1d1f" />
-            <circle cx="201.5" cy="2.5" r="2.6" fill="#1d1d1f" />
+            <circle cx="178" cy="2" r="5.5" fill="var(--green-wash)" />
+            <circle cx="202" cy="2" r="5.5" fill="var(--green-wash)" />
+            <circle cx="178.5" cy="2.5" r="2.6" fill="var(--ink)" />
+            <circle cx="201.5" cy="2.5" r="2.6" fill="var(--ink)" />
 
             {/* Shell — vertical oval: dark rim, lighter plate, soft top-light + inner rim line */}
             <ellipse cx="190" cy="189" rx="152" ry="174" fill={GREEN} />
@@ -179,7 +179,7 @@ export default function PeekabooGame() {
             {cards.map((card, i) => {
               const [cx, cy] = POSITIONS[i];
               const revealed = card.flipped || card.matched;
-              const fill = card.matched ? SKY : revealed ? '#f0fdf4' : GREEN;
+              const fill = card.matched ? SKY : revealed ? 'var(--green-wash)' : GREEN;
               return (
                 <g key={card.id} onClick={() => flip(i)}
                   style={{ cursor: card.matched ? 'default' : 'pointer' }}>
@@ -217,7 +217,7 @@ export default function PeekabooGame() {
       {/* Result overlay */}
       {phase !== 'playing' && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}>
-          <div style={{ background: '#fff', borderRadius: '18px', padding: '48px 40px', maxWidth: '340px', width: '90%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+          <div style={{ background: 'var(--canvas)', borderRadius: '18px', padding: '48px 40px', maxWidth: '340px', width: '90%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <img src="/logo.png" alt="tortoise" style={{ width: 80, height: 80, objectFit: 'contain', marginBottom: '16px', filter: 'drop-shadow(0 4px 16px rgba(26,92,46,0.25))' }} />
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
               {phase === 'won' ? 'You found them all!' : "Time's up!"}

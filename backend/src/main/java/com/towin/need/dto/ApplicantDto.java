@@ -10,6 +10,7 @@ import java.util.UUID;
 public class ApplicantDto {
     private UUID helperId;
     private String helperName;
+    private String helperPhotoUrl;
     private String message;
     private ApplicationStatus status;
 }

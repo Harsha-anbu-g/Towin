@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useEffect } from 'react';
 import { ToastProvider } from './context/ToastContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Landing from './pages/Landing';
@@ -106,6 +107,7 @@ function ScrollShell({ children }) {
 
 function App() {
   return (
+    <ThemeProvider>
     <ToastProvider>
       <AuthProvider>
         <BrowserRouter>
@@ -156,6 +158,7 @@ function App() {
         </BrowserRouter>
       </AuthProvider>
     </ToastProvider>
+    </ThemeProvider>
   );
 }
 

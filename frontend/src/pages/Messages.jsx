@@ -151,7 +151,7 @@ export default function Messages() {
       width: '100%',
       maxWidth: '860px',
       height: '100%',
-      background: '#ffffff',
+      background: 'var(--canvas)',
       display: 'flex',
       flexDirection: 'column',
       borderLeft: '1px solid var(--border)',
@@ -159,7 +159,7 @@ export default function Messages() {
      }}>
       {/* Chat header — iMessage style */}
       <header className="chat-header" style={{
-        background: '#ffffff',
+        background: 'var(--canvas)',
         borderBottom: '1px solid var(--border)',
         padding: '12px 20px',
         display: 'flex',
@@ -183,7 +183,7 @@ export default function Messages() {
           gap: '4px',
         }}>
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
-            <path d="M8.5 1L1.5 8L8.5 15" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8.5 1L1.5 8L8.5 15" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <span className="chat-back-label">Back</span>
         </button>
@@ -224,8 +224,8 @@ export default function Messages() {
 
       {/* One consolidated trust hint (replaces the two stacked strips) */}
       {trustLevel && (
-        <div style={{ background: '#F4FAFD', borderBottom: '1px solid #E2EEF5', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div style={{ background: 'var(--sky-ghost)', borderBottom: '1px solid var(--sky-hairline)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
             {banner ? banner.text : `You're at the ${TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')} stage with ${otherName}.`}
           </p>
@@ -235,11 +235,11 @@ export default function Messages() {
       {/* Report panel */}
       {showReport && (
         <div style={{
-          background: '#fff5f5',
-          borderBottom: '1px solid #fecaca',
+          background: 'var(--red-wash-2)',
+          borderBottom: '1px solid var(--red-line)',
           padding: '16px 20px',
         }}>
-          <p style={{ fontSize: '16px', fontWeight: 600, color: '#cc3333', marginBottom: '12px', fontFamily: SF }}>
+          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--red-mid)', marginBottom: '12px', fontFamily: SF }}>
             Report {otherName}
           </p>
           <form onSubmit={submitReport} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -247,7 +247,7 @@ export default function Messages() {
               value={reportForm.reason}
               onChange={e => setReportForm(f => ({ ...f, reason: e.target.value }))}
               className="field"
-              style={{ borderColor: '#fecaca' }}
+              style={{ borderColor: 'var(--red-line)' }}
             >
               <option>Inappropriate Behavior</option>
               <option>Spam</option>
@@ -260,10 +260,10 @@ export default function Messages() {
               placeholder="Describe what happened (optional)..."
               rows={2}
               className="field"
-              style={{ borderColor: '#fecaca', resize: 'none' }}
+              style={{ borderColor: 'var(--red-line)', resize: 'none' }}
             />
             {reportMsg && (
-              <p style={{ fontSize: '14px', color: reportMsg.includes('Thank') ? '#4FA3CE' : '#cc3333' }}>
+              <p style={{ fontSize: '14px', color: reportMsg.includes('Thank') ? 'var(--blue)' : 'var(--red-mid)' }}>
                 {reportMsg}
               </p>
             )}
@@ -292,7 +292,7 @@ export default function Messages() {
         display: 'flex',
         flexDirection: 'column',
         gap: '4px',
-        background: '#ffffff',
+        background: 'var(--canvas)',
       }}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', marginTop: '64px' }}>
@@ -301,7 +301,7 @@ export default function Messages() {
                 <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             ) : (
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#e8e8ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 'var(--text-xl)', fontWeight: 600, color: 'var(--ink-slate)', fontFamily: SF }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--avatar-grey)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 'var(--text-xl)', fontWeight: 600, color: 'var(--ink-slate)', fontFamily: SF }}>
                 {initials(otherName)}
               </div>
             )}
@@ -355,14 +355,14 @@ export default function Messages() {
                   maxWidth: '68%',
                   padding: '10px 14px',
                   borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  background: isMe ? '#4FA3CE' : '#f0f0f5',
-                  color: isMe ? '#ffffff' : '#1d1d1f',
+                  background: isMe ? 'var(--blue)' : 'var(--bubble-in)',
+                  color: isMe ? '#ffffff' : 'var(--ink)',
                 }}>
                   <p style={{ fontSize: '16px', lineHeight: 1.45, fontFamily: SFText }}>{m.content}</p>
                   <p style={{
                     fontSize: '12px',
                     marginTop: '4px',
-                    color: isMe ? 'rgba(255,255,255,0.6)' : '#a0a0a5',
+                    color: isMe ? 'rgba(255,255,255,0.6)' : 'var(--ink-4)',
                   }}>
                     {fmtTime(m.createdAt)}{isMe && m.seenAt && ' · Seen'}
                   </p>
@@ -377,10 +377,10 @@ export default function Messages() {
       {/* Trust-level lock notice */}
       {loadError === 'trust' && (
         <div style={{
-          background: '#fef3c7', borderTop: '1px solid #fde68a',
+          background: 'var(--amber-wash)', borderTop: '1px solid var(--gold-line)',
           padding: '12px 20px', textAlign: 'center',
         }}>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#92400e', fontFamily: SFText, margin: 0 }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--amber-deep)', fontFamily: SFText, margin: 0 }}>
             Messaging is locked. Both of you need to click <strong>Confirm Trust</strong> on the dashboard to unlock messages.
           </p>
         </div>
@@ -388,7 +388,7 @@ export default function Messages() {
 
       {/* Input bar */}
       <form onSubmit={send} style={{
-        background: '#ffffff',
+        background: 'var(--canvas)',
         borderTop: '1px solid var(--border)',
         padding: '12px 16px',
         display: 'flex',
@@ -413,7 +413,7 @@ export default function Messages() {
               flex: 1,
               borderRadius: '18px',
               padding: '10px 18px',
-              background: '#ffffff',
+              background: 'var(--canvas)',
               border: '1.5px solid var(--border)',
               fontSize: '16px',
               fontFamily: SFText,
@@ -433,7 +433,7 @@ export default function Messages() {
           aria-label="Send message"
           className="chat-send-btn"
           style={{
-            background: text.trim() && loadError !== 'trust' ? '#4FA3CE' : 'var(--border)',
+            background: text.trim() && loadError !== 'trust' ? 'var(--blue)' : 'var(--border)',
             color: '#fff',
             border: 'none',
             borderRadius: '50%',

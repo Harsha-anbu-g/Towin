@@ -7,7 +7,7 @@ import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
-const SKY = '#4FA3CE';
+const SKY = 'var(--blue)';
 
 const labelStyle = {
   display: 'block', fontSize: '14px', fontWeight: 600,
@@ -59,7 +59,7 @@ export default function ChangePassword() {
         </button>
 
         <BlurFade delay={1}>
-          <div style={{ background: '#ffffff', borderRadius: '18px', padding: '28px', border: '1px solid var(--border)' }}>
+          <div style={{ background: 'var(--canvas)', borderRadius: '18px', padding: '28px', border: '1px solid var(--border)' }}>
             <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
               Change Password
             </p>

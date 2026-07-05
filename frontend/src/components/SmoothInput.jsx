@@ -251,6 +251,10 @@ const SmoothInput = forwardRef(function SmoothInput(
         aria-hidden
         style={{
           position: 'absolute',
+          // Anchor to the wrapper's left edge — without this the caret sits at
+          // its static position (after an inline-block input that's the input's
+          // right edge) and `x` pushes it outside the field entirely.
+          left: 0,
           top: 0,
           bottom: 0,
           margin: 'auto 0',

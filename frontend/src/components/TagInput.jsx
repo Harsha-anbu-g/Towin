@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-const SKY = '#4FA3CE';
+const SKY = 'var(--blue)';
 const SKY_TINT = 'rgba(79,163,206,0.12)';
 const SKY_BORDER = 'rgba(79,163,206,0.28)';
 
@@ -36,9 +36,9 @@ export default function TagInput({ value = [], onChange, placeholder = 'Type and
         flexWrap: 'wrap',
         gap: '6px',
         padding: '10px 12px',
-        border: '1.5px solid #e0e0e0',
+        border: '1.5px solid var(--hairline-2)',
         borderRadius: '12px',
-        background: '#ffffff',
+        background: 'var(--canvas)',
         cursor: 'text',
         minHeight: '46px',
         alignItems: 'center',

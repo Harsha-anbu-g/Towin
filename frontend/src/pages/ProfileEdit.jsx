@@ -13,17 +13,17 @@ import TagInput from '../components/TagInput';
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
-const SKY = '#4FA3CE';
+const SKY = 'var(--blue)';
 const SKY_TINT = 'rgba(79,163,206,0.10)';
 const SKY_BORDER = 'rgba(79,163,206,0.22)';
-const LEAF = '#4FA3CE';
-const LEAF_DARK = '#4FA3CE';
+const LEAF = 'var(--blue)';
+const LEAF_DARK = 'var(--blue)';
 const LEAF_TINT = 'rgba(79,163,206,0.10)';
 const LEAF_BORDER = 'rgba(79,163,206,0.22)';
-const MUTED = '#a0a0a5';
+const MUTED = 'var(--ink-4)';
 const BORDER = 'var(--border)';
 
-const STAR_GOLD = '#F5B400';
+const STAR_GOLD = 'var(--star-gold)';
 
 function computeAge(dobStr) {
   if (!dobStr) return null;
@@ -269,11 +269,11 @@ export default function ProfileEdit() {
   }
 
   const verBadge = (ok, pts) => ok
-    ? <span style={{ fontSize: '12px', background: 'rgba(34,160,80,0.10)', color: '#1a7a3a', border: '1px solid rgba(34,160,80,0.25)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
+    ? <span style={{ fontSize: '12px', background: 'rgba(34,160,80,0.10)', color: 'var(--green-verified)', border: '1px solid rgba(34,160,80,0.25)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
     : null;
 
   const card = {
-    background: '#ffffff',
+    background: 'var(--canvas)',
     borderRadius: '18px',
     padding: '28px 28px',
     marginBottom: '0',
@@ -292,8 +292,8 @@ export default function ProfileEdit() {
       {/* Hero section — calm sky-blue, matches app theme */}
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, #EAF5FB 0%, var(--surface) 100%)',
-          borderBottom: '1px solid #DCEBF4',
+          background: 'linear-gradient(180deg, var(--blue-wash) 0%, var(--surface) 100%)',
+          borderBottom: '1px solid var(--sky-line)',
           padding: 'clamp(28px, 6vw, 48px) 20px clamp(24px, 4vw, 36px)',
           textAlign: 'center',
         }}>
@@ -306,7 +306,7 @@ export default function ProfileEdit() {
             boxShadow: '0 4px 16px rgba(90,100,112,0.20)',
             overflow: 'hidden',
             margin: '0 auto 16px',
-            background: (localPhotoPreview || profileData?.photoUrl) ? 'transparent' : `linear-gradient(135deg, #8b939d, #5a6470)`,
+            background: (localPhotoPreview || profileData?.photoUrl) ? 'transparent' : `linear-gradient(135deg, #8b939d, var(--ink-slate))`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -434,7 +434,7 @@ export default function ProfileEdit() {
                         fontSize: '16px',
                         fontFamily: SFText,
                         color: 'var(--ink)',
-                        background: '#ffffff',
+                        background: 'var(--canvas)',
                         outline: 'none',
                         resize: 'vertical',
                         boxSizing: 'border-box',
@@ -538,14 +538,14 @@ export default function ProfileEdit() {
                       </button>
                     </div>
                     {locationMsg && (
-                      <p style={{ fontSize: '13px', color: '#CF6A66', margin: '8px 0 0' }}>
+                      <p style={{ fontSize: '13px', color: 'var(--red-mild)', margin: '8px 0 0' }}>
                         {locationMsg}
                       </p>
                     )}
                   </FieldRow>
 
                   {msg && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('saved') ? '#4FA3CE' : '#5a6470', fontWeight: 500, marginTop: '8px' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('saved') ? 'var(--blue)' : 'var(--ink-slate)', fontWeight: 500, marginTop: '8px' }}>
                       {msg}
                     </p>
                   )}
@@ -697,7 +697,7 @@ export default function ProfileEdit() {
                   )}
 
                   {emMsg && (
-                    <p style={{ fontSize: '14px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? '#3D8AB0' : '#9b3535' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? 'var(--blue-teal)' : 'var(--red-deep)' }}>
                       {emMsg}
                     </p>
                   )}
@@ -705,7 +705,7 @@ export default function ProfileEdit() {
                   {/* Add form — appears inline, no page change */}
                   {emContacts.length < 3 && (
                     emShowAdd ? (
-                      <form onSubmit={addEmContact} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px', borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
+                      <form onSubmit={addEmContact} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px', borderTop: '1px solid var(--hairline)', paddingTop: '16px' }}>
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Name</label>
@@ -737,7 +737,7 @@ export default function ProfileEdit() {
                       </form>
                     ) : (
                       <button type="button" onClick={() => { setEmShowAdd(true); setEmMsg(''); }} style={{
-                        width: '100%', marginTop: '16px', background: '#ffffff', color: SKY,
+                        width: '100%', marginTop: '16px', background: 'var(--canvas)', color: SKY,
                         border: `1.5px solid ${SKY}`, borderRadius: '9999px', padding: '10px 0',
                         fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                       }}>
@@ -790,7 +790,7 @@ export default function ProfileEdit() {
             {/* Account */}
             <BlurFade delay={5}>
               <div style={{
-                background: '#ffffff',
+                background: 'var(--canvas)',
                 borderRadius: '18px',
                 padding: '20px 24px',
                 border: `1px solid ${BORDER}`,
@@ -809,7 +809,7 @@ export default function ProfileEdit() {
 
                 {/* Linked Google account */}
                 {profileData?.authProvider === 'GOOGLE' && profileData?.email && (
-                  <div style={{ marginBottom: '10px', padding: '10px 14px', background: '#f0f7ff', border: '1px solid #bfdbfe', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ marginBottom: '10px', padding: '10px 14px', background: 'var(--info-wash)', border: '1px solid var(--info-line)', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -830,7 +830,7 @@ export default function ProfileEdit() {
                     onClick={() => navigate('/profile/change-password')}
                     style={{
                       width: '100%',
-                      background: '#ffffff',
+                      background: 'var(--canvas)',
                       color: SKY,
                       border: `1.5px solid ${SKY}`,
                       borderRadius: '9999px',

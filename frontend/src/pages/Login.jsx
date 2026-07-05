@@ -18,8 +18,8 @@ function HeroPanel() {
       padding: '52px 48px',
       background:
         'radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.55) 0%, transparent 55%),' +
-        'radial-gradient(ellipse at 80% 85%, #BFD9EA 0%, transparent 60%),' +
-        'linear-gradient(160deg, #EAF5FB 0%, #BFD9EA 45%, #4FA3CE 100%)',
+        'radial-gradient(ellipse at 80% 85%, var(--blue-soft) 0%, transparent 60%),' +
+        'linear-gradient(160deg, var(--blue-wash) 0%, var(--blue-soft) 45%, var(--blue) 100%)',
     }}>
       {/* Hero photo — handshake between elder and younger hand */}
       <img
@@ -110,13 +110,13 @@ function GoogleButton({ label }) {
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         width: '100%', height: '48px',
-        background: '#ffffff', border: '1.5px solid var(--border)',
+        background: 'var(--canvas)', border: '1.5px solid var(--border)',
         borderRadius: '9999px', textDecoration: 'none',
         fontSize: '16px', fontWeight: 500, color: 'var(--ink)',
         fontFamily: SF, cursor: 'pointer',
         transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FA3CE'; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--blue)'; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
       <svg width="20" height="20" viewBox="0 0 48 48">
@@ -216,13 +216,13 @@ export default function Login() {
           {/* Demo accounts — shown first so users don't miss it */}
           <div style={{
             marginBottom: '20px', background: 'var(--blue-wash)',
-            border: '1.5px solid #4FA3CE', borderRadius: '16px',
+            border: '1.5px solid var(--blue)', borderRadius: '16px',
             padding: '18px 18px 16px',
             position: 'relative',
           }}>
             <span style={{
               position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
-              background: '#4FA3CE', color: '#fff',
+              background: 'var(--blue)', color: '#fff',
               fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px',
               padding: '3px 12px', borderRadius: '9999px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -259,8 +259,8 @@ export default function Login() {
                   style={{
                     flex: 1,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    background: '#ffffff',
-                    border: '1.5px solid #BFD9EA',
+                    background: 'var(--canvas)',
+                    border: '1.5px solid var(--blue-soft)',
                     borderRadius: '11px',
                     padding: '12px 10px',
                     cursor: guestLoading ? 'not-allowed' : 'pointer',
@@ -269,8 +269,8 @@ export default function Login() {
                     transition: 'border-color 0.15s, background 0.15s',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}
-                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
+                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = 'var(--blue)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--blue-soft)'; }}
                 >
                   <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
                     {guestLoading === role ? 'Opening…' : label}
@@ -285,7 +285,7 @@ export default function Login() {
 
           {/* Form card */}
           <div className="auth-card" style={{
-            background: '#ffffff',
+            background: 'var(--canvas)',
             borderRadius: '18px',
             padding: '40px 36px',
             border: '1px solid var(--border)',
@@ -295,7 +295,7 @@ export default function Login() {
               <button type="button" style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
-                background: '#ffffff', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                background: 'var(--seg-active)', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}>Log in</button>
               <button type="button" onClick={() => navigate('/register')} style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
@@ -322,7 +322,7 @@ export default function Login() {
             {/* Session expired notice — explains why they're back here (H9) */}
             {sessionExpired && (
               <div style={{
-                background: 'var(--blue-wash)', border: '1px solid #BFD9EA',
+                background: 'var(--blue-wash)', border: '1px solid var(--blue-soft)',
                 borderRadius: '11px', padding: '12px 16px',
                 fontSize: 'var(--text-sm)', color: 'var(--blue-teal)', marginBottom: '20px',
                 lineHeight: 1.45,
@@ -334,7 +334,7 @@ export default function Login() {
             {/* Error state */}
             {error && (
               <div role="alert" style={{
-                background: 'var(--red-tint)', border: '1px solid #fecaca',
+                background: 'var(--red-tint)', border: '1px solid var(--red-line)',
                 borderRadius: '11px', padding: '12px 16px',
                 fontSize: 'var(--text-sm)', color: 'var(--red-error)', marginBottom: '20px',
               }}>
@@ -370,7 +370,7 @@ export default function Login() {
                   className="field"
                   value={form.identifier}
                   onChange={e => { setForm({ ...form, identifier: e.target.value }); setFieldErrors(f => ({ ...f, identifier: '' })); }}
-                  style={{ borderColor: fieldErrors.identifier ? '#fca5a5' : undefined }}
+                  style={{ borderColor: fieldErrors.identifier ? 'var(--red-soft)' : undefined }}
                 />
                 {fieldErrors.identifier && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.identifier}</p>}
               </div>
@@ -390,7 +390,7 @@ export default function Login() {
                     className="field"
                     value={form.password}
                     onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
-                    style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined, paddingRight: '44px' }}
+                    style={{ borderColor: fieldErrors.password ? 'var(--red-soft)' : undefined, paddingRight: '44px' }}
                   />
                   <button
                     type="button"
@@ -425,7 +425,7 @@ export default function Login() {
                 disabled={loading}
                 style={{
                   width: '100%', height: '48px',
-                  background: loading ? '#7BB8D6' : '#4FA3CE',
+                  background: loading ? 'var(--blue-mid)' : 'var(--blue)',
                   color: '#ffffff',
                   border: 'none', borderRadius: '9999px',
                   fontSize: '17px', fontWeight: 400,

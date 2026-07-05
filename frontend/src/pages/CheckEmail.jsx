@@ -26,7 +26,7 @@ export default function CheckEmail() {
 
   const card = {
     maxWidth: 460, margin: '0 auto', padding: '64px 24px', textAlign: 'center',
-    fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: '#2d3748',
+    fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: 'var(--ink-deep)',
   };
   const primaryBtn = {
     background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10,
@@ -46,7 +46,7 @@ export default function CheckEmail() {
       </p>
 
       <div style={{
-        background: '#FBEED9', color: '#7a5b1e', borderRadius: 10,
+        background: 'var(--gold-wash)', color: 'var(--gold-deep)', borderRadius: 10,
         padding: '12px 16px', marginBottom: 28, fontSize: 'var(--text-sm)', lineHeight: 1.5, textAlign: 'left',
       }}>
         📁 <strong>Can't find it?</strong> Please check your <strong>Spam</strong> or <strong>Junk</strong> folder —

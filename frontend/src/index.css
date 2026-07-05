@@ -17,6 +17,8 @@
 
 /* ─── Design tokens ─── */
 :root {
+  color-scheme: light;
+
   /* Brand blue — sky-blue scale */
   --blue:         #4FA3CE;   /* primary action */
   --blue-focus:   #0071e3;
@@ -38,9 +40,14 @@
   --ink-2:          #333333;
   --ink-3:          #7a7a7a;
   --ink-4:          #a0a0a5;
+  --ink-faint:      #c8c8cd;  /* faintest hints / disabled text */
+  --ink-deep:       #2d3748;  /* heavy slate headings */
   --ink-slate:      #5a6470;  /* common secondary text */
+  --ink-slate-2:    #5a6b75;
   --ink-slate-dark: #3a4450;
   --slate:          #718096;
+  --leaf:           #3d8b5a;  /* success text accent */
+  --red-mild:       #cf6a66;  /* soft error text */
 
   /* Surfaces */
   --canvas:         #ffffff;   /* white cards — elevation via surface contrast, not shadow */
@@ -93,10 +100,181 @@
   --text-2xl:  34px;
   --text-3xl:  40px;
 
+  /* Alias tokens — same values the JSX used as literals, so light mode stays
+     pixel-identical while night mode can re-map them. Role names, not hues. */
+  --hairline:     #f0f0f0;   /* menu/list row separators */
+  --hairline-2:   #e0e0e0;   /* slightly stronger neutral line */
+  --sky-line:     #dcebf4;   /* borders on sky-tinted chips */
+  --sky-line-2:   #d8eaf4;
+  --sky-ghost:    #f4fafd;   /* faintest sky fill */
+  --green-wash:   #f0fdf4;   /* success wash */
+  --green-line:   #bfe0c9;   /* success border */
+  --red-line:     #fecaca;   /* error border */
+  --gold-wash:    #fbeed9;   /* trust wash */
+  --gold-line:    #fde68a;   /* trust border */
+  --gold-deep:    #7a5b1e;   /* trust text on gold wash */
+  --grey-fill:    #f5f5f7;   /* neutral chip fill */
+  --grey-fill-2:  #f3f4f6;
+  --grey-fill-3:  #f0f0f3;   /* segmented-control track */
+  --grey-line:    #e5e7eb;   /* neutral chip border */
+  --star-gold:    #f5b400;   /* rating stars — stays lit in both themes */
+  --seg-active:   #ffffff;   /* active chip on a segmented-control track */
+  --btn-disabled: #94a3b8;   /* disabled filled-button grey */
+  --shadow-menu:  0 8px 24px rgba(0,0,0,0.12);   /* dropdowns / drawers */
+  --scrim:        rgba(0,0,0,0.2);               /* drawer backdrop */
+
+  /* One-off role aliases (exact former literals — see night block for remaps) */
+  --dot-idle:       #dfe6ec;   /* landing progress dots */
+  --chip-neutral:   #f2f4f7;   /* neutral status-chip fill */
+  --red-line-soft:  #fee2e2;
+  --ring-idle:      #c8ccd2;   /* unselected radio ring */
+  --idle-grey:      #d0d0d5;   /* empty stars / idle dots */
+  --track-empty:    #d8d8de;   /* trust-ladder empty segments */
+  --gold-wash-2:    #fff7e6;   /* champion badge fill */
+  --sky-line-3:     #a8d4ec;
+  --sky-line-4:     #dbe7ef;
+  --sky-hairline:   #e2eef5;
+  --grey-line-2:    #d1d5db;
+  --grey-text:      #9ca3af;
+  --grey-text-2:    #c0c0c8;
+  --hairline-3:     #f0f0f2;
+  --grey-fill-4:    #ededf0;
+  --card-idle:      #fafafa;   /* not-yet-earned trust cards */
+  --input-line:     #d8dce2;
+  --red-wash-2:     #fff5f5;
+  --red-mid:        #cc3333;
+  --avatar-grey:    #e8e8ed;
+  --bubble-in:      #f0f0f5;   /* incoming chat bubble */
+  --amber-wash:     #fef3c7;
+  --amber-deep:     #92400e;
+  --green-verified: #1a7a3a;
+  --ink-soft:       #3a3a3c;
+  --ink-mid:        #5a5a5a;
+  --steel-text:     #8a8d94;
+  --line-idle:      #e6e8ec;
+  --hover-wash:     #fafbfc;
+  --steel-2:        #6b7280;
+  --steel-3:        #7a8490;
+  --footer-text:    #8e8e93;
+  --rail-line:      #ececef;   /* segmented-tab rail */
+  --line-idle-2:    #d8d8d8;
+  --info-wash:      #f0f7ff;   /* linked-account panel */
+  --info-line:      #bfdbfe;
+
   /* Typography */
   --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
   --font-body:    -apple-system, 'SF Pro Text', system-ui, sans-serif;
   --font-sans:    -apple-system, 'SF Pro Display', system-ui, sans-serif;
+}
+
+/* ─── Night mode ──────────────────────────────────────────────────────────
+   Opt-in via the NavBar toggle (user-requested 2026-07-05); light stays the
+   default. Same warm cast as the parchment — charcoal, never blue-black.
+   Elevation grammar is preserved: cards sit LIGHTER than the page, hairlines
+   over shadows. Brand hues unchanged; text-role hues lightened only as far
+   as WCAG contrast on dark requires (same families). */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Brand blue — action blue itself is unchanged */
+  --blue-focus:   #4FA3CE;
+  --blue-dark:    #2E7DA6;
+  --blue-deep:    #7ec0e4;
+  --blue-teal:    #6fb4d8;
+  --blue-soft:    rgba(79, 163, 206, 0.42);
+  --blue-tint:    rgba(79, 163, 206, 0.16);
+  --blue-wash:    rgba(79, 163, 206, 0.10);
+
+  --slate-tint:   #33363b;
+  --slate-soft:   #4a4e55;
+
+  --ink:            #f2f0ec;
+  --ink-2:          #ddd9d2;
+  --ink-3:          #a8a49c;
+  --ink-4:          #949089;
+  --ink-faint:      #6f6c66;
+  --ink-deep:       #ccd3da;
+  --ink-slate:      #aeb6bf;
+  --ink-slate-2:    #a7b1b9;
+  --ink-slate-dark: #c6ccd4;
+  --slate:          #98a4b2;
+  --leaf:           #7cc28f;
+  --red-mild:       #e89490;
+
+  --canvas:         #2a2927;   /* cards — lighter than the page (elevation) */
+  --surface:        #201f1d;   /* page canvas — warm charcoal */
+  --surface-2:      #262523;
+  --surface-pearl:  #232220;
+
+  --border:      #3a3833;
+  --border-soft: #33312d;
+
+  --red:        #ff6b5e;
+  --red-error:  #f87171;
+  --red-tint:   rgba(220, 38, 38, 0.16);
+  --red-soft:   rgba(248, 113, 113, 0.45);
+  --red-deep:   #b45050;
+  --amber:      #e0954e;
+  --green-deep: #7cc28f;
+  --green-tint: rgba(61, 139, 90, 0.18);
+  --trust-gold: #c9a468;
+
+  --hairline:     #33312d;
+  --hairline-2:   #3a3833;
+  --sky-line:     rgba(79, 163, 206, 0.30);
+  --sky-line-2:   rgba(79, 163, 206, 0.26);
+  --sky-ghost:    rgba(79, 163, 206, 0.07);
+  --green-wash:   rgba(61, 139, 90, 0.12);
+  --green-line:   rgba(124, 194, 143, 0.38);
+  --red-line:     rgba(248, 113, 113, 0.35);
+  --gold-wash:    rgba(201, 164, 104, 0.14);
+  --gold-line:    rgba(201, 164, 104, 0.40);
+  --gold-deep:    #d4b478;
+  --grey-fill:    #2e2d2b;
+  --grey-fill-2:  #2e2d2b;
+  --grey-fill-3:  #2e2d2b;
+  --grey-line:    #3a3833;
+  --seg-active:   #403e3a;   /* lighter than the track — same elevation grammar */
+  --btn-disabled: #55534f;
+  --shadow-menu:  0 8px 24px rgba(0, 0, 0, 0.5);
+  --scrim:        rgba(0, 0, 0, 0.45);
+
+  --dot-idle:       #4a4e55;
+  --chip-neutral:   #33363b;
+  --red-line-soft:  rgba(248, 113, 113, 0.25);
+  --ring-idle:      #5a5751;
+  --idle-grey:      #55534f;
+  --track-empty:    #3a3833;
+  --gold-wash-2:    rgba(201, 164, 104, 0.16);
+  --sky-line-3:     rgba(79, 163, 206, 0.45);
+  --sky-line-4:     rgba(79, 163, 206, 0.30);
+  --sky-hairline:   rgba(79, 163, 206, 0.22);
+  --grey-line-2:    #3f3d38;
+  --grey-text:      #949089;
+  --grey-text-2:    #6f6c66;
+  --hairline-3:     #33312d;
+  --grey-fill-4:    #33322f;
+  --card-idle:      #252422;
+  --input-line:     #4a4e55;
+  --red-wash-2:     rgba(220, 38, 38, 0.10);
+  --red-mid:        #ef8080;
+  --avatar-grey:    #33322f;
+  --bubble-in:      #333230;
+  --amber-wash:     rgba(224, 149, 78, 0.15);
+  --amber-deep:     #e5b083;
+  --green-verified: #7cc28f;
+  --ink-soft:       #ddd9d2;
+  --ink-mid:        #b5b1a9;
+  --steel-text:     #a8a49c;
+  --line-idle:      #3a3833;
+  --hover-wash:     #2e2d2b;
+  --steel-2:        #a4adb8;
+  --steel-3:        #8b8781;
+  --footer-text:    #949089;
+  --rail-line:      #33312d;
+  --line-idle-2:    #3f3d38;
+  --info-wash:      rgba(79, 163, 206, 0.10);
+  --info-line:      rgba(79, 163, 206, 0.35);
 }
 
 /* ─── Base ─── */
@@ -118,6 +296,8 @@ html {
    Swap it for a soft neutral grey so selecting text stays quiet. */
 ::selection      { background: #d8dde3; color: var(--ink); }
 ::-moz-selection { background: #d8dde3; color: var(--ink); }
+[data-theme="dark"] ::selection      { background: #46505c; color: var(--ink); }
+[data-theme="dark"] ::-moz-selection { background: #46505c; color: var(--ink); }
 
 body {
   margin: 0;
@@ -240,6 +420,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
   border-color: var(--blue-soft);
   box-shadow: 0 4px 16px rgba(70, 60, 45, 0.07);
 }
+[data-theme="dark"] .lift:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35); }
 
 /* Shimmer button */
 .shimmer-btn {
@@ -267,7 +448,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
 }
 .shimmer-btn:hover  { opacity: 0.9; transform: scale(1.01); }
 .shimmer-btn:active { transform: scale(0.97); }
-.shimmer-btn:disabled { opacity: 0.55; cursor: not-allowed; animation: none; background: #94a3b8; }
+.shimmer-btn:disabled { opacity: 0.55; cursor: not-allowed; animation: none; background: var(--btn-disabled); }
 
 /* Ghost button */
 .ghost-btn, .btn-ghost {
@@ -283,6 +464,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 .ghost-btn:hover, .btn-ghost:hover { border-color: var(--blue); color: var(--blue); background: rgba(37,99,235,0.04); }
+[data-theme="dark"] .ghost-btn:hover, [data-theme="dark"] .btn-ghost:hover { background: rgba(79,163,206,0.10); }
 
 /* Primary button (non-shimmer) */
 .primary-btn {
@@ -299,7 +481,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
 }
 .primary-btn:hover  { background: var(--blue-dark); }
 .primary-btn:active { transform: scale(0.96); }
-.primary-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+.primary-btn:disabled { background: var(--btn-disabled); cursor: not-allowed; }
 
 /* Apple pill primary button */
 .btn-primary {
@@ -431,6 +613,44 @@ button, a, [role="button"], input, textarea, select, label, summary {
   .age-card         { padding: 16px 18px !important; margin-bottom: 16px !important; }
 }
 
+/* The turtle logo PNG carries its own white background — invisible on light
+   surfaces. On the night canvas, round it so it reads as the same white
+   app-icon badge the login hero introduced (light mode is untouched). */
+[data-theme="dark"] img[src="/logo.png"] { border-radius: 10px; }
+
+/* Landing page canvas — warm paper with a whisper of sky top-right.
+   Night twin keeps the same composition over the charcoal. */
+.landing-canvas {
+  background:
+    radial-gradient(ellipse at 82% -8%, #E9F2F7 0%, transparent 42%),
+    linear-gradient(168deg, #FAF8F3 0%, #F4F1E9 100%);
+}
+[data-theme="dark"] .landing-canvas {
+  background:
+    radial-gradient(ellipse at 82% -8%, rgba(79, 163, 206, 0.10) 0%, transparent 42%),
+    linear-gradient(168deg, #201f1d 0%, #262523 100%);
+}
+
+/* Streaks art panel: the top edge melts into the pearl band (light) or the
+   framed print card (dark) so the artwork never shows a hard border. */
+.streaks-fade {
+  background: linear-gradient(to bottom, #fbfaf6 0%, rgba(251, 250, 246, 0) 12%);
+}
+[data-theme="dark"] .streaks-fade {
+  background: linear-gradient(to bottom, #efece5 0%, rgba(239, 236, 229, 0) 12%);
+}
+
+/* Streaks tortoise photo: multiply lets the JPG's white background melt into
+   whatever sits behind it. In night mode the art hangs as a framed print — a
+   pearl card on the dark wall — so multiply keeps working and the illustration
+   keeps its colors. */
+.streaks-tortoise { mix-blend-mode: multiply; }
+[data-theme="dark"] .streaks-art {
+  background: #efece5;
+  border-radius: var(--radius-xl);
+  margin: 24px 24px 28px;
+}
+
 /* Check-in celebration — the daily "peak". A gentle pop on the streak number.
    Motion only; palette untouched. */
 @keyframes checkin-pop {
@@ -450,7 +670,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
 
 /* ─── Register hero header ─── */
 .register-head  { padding: 40px 64px 36px; text-align: center; }
-.register-title { font-size: 56px; font-weight: 600; color: #1d1d1f; margin-bottom: 10px; letter-spacing: -0.5px; line-height: 1.05; font-family: -apple-system, "SF Pro Display", system-ui, sans-serif; }
+.register-title { font-size: 56px; font-weight: 600; color: var(--ink); margin-bottom: 10px; letter-spacing: -0.5px; line-height: 1.05; font-family: -apple-system, "SF Pro Display", system-ui, sans-serif; }
 .register-form-card { padding: 36px 32px; }
 @media (max-width: 640px) {
   .register-head      { padding: 24px 20px 20px !important; }
@@ -554,6 +774,13 @@ button, a, [role="button"], input, textarea, select, label, summary {
     radial-gradient(ellipse at 85% 0%, #EAF5FB 0%, transparent 55%),
     radial-gradient(ellipse at 0% 100%, #EBF6EE 0%, transparent 45%),
     #faf8f3;
+}
+/* Night twin: same composition — a whisper of sky and leaf over the charcoal. */
+[data-theme="dark"] .auth-form {
+  background:
+    radial-gradient(ellipse at 85% 0%, rgba(79, 163, 206, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 0% 100%, rgba(61, 139, 90, 0.08) 0%, transparent 45%),
+    var(--surface);
 }
 
 @media (max-width: 900px) {

@@ -24,7 +24,7 @@ export default function SiteFooter({ style }) {
       <span style={{
         fontFamily: SF,
         fontSize: 'var(--text-xs)',
-        color: '#8e8e93',
+        color: 'var(--footer-text)',
         letterSpacing: '0.1px',
       }}>
         {COPYRIGHT}

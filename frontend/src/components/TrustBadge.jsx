@@ -2,11 +2,11 @@ const TRUST = 'var(--ink-slate)';
 
 const TIER_COLORS = {
   // Top tier earns the leaf-green achievement color (matches "Fully Trusted").
-  'Community Champion': { bg: '#EBF6EE', color: 'var(--green-deep)', border: '#BFE0C9' },
-  'Highly Trusted':     { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
-  'Reliable':           { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
-  'Getting Started':    { bg: '#f5f5f7', color: TRUST, border: '#e0e0e0' },
-  'New Member':         { bg: '#f5f5f7', color: 'var(--ink-4)', border: '#e0e0e0' },
+  'Community Champion': { bg: 'var(--green-tint)', color: 'var(--green-deep)', border: 'var(--green-line)' },
+  'Highly Trusted':     { bg: 'var(--grey-fill)', color: TRUST, border: 'var(--hairline-2)' },
+  'Reliable':           { bg: 'var(--grey-fill)', color: TRUST, border: 'var(--hairline-2)' },
+  'Getting Started':    { bg: 'var(--grey-fill)', color: TRUST, border: 'var(--hairline-2)' },
+  'New Member':         { bg: 'var(--grey-fill)', color: 'var(--ink-4)', border: 'var(--hairline-2)' },
 };
 
 export default function TrustBadge({ tier, score }) {

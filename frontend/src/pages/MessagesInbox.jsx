@@ -88,8 +88,8 @@ export default function MessagesInbox() {
 
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, #EAF5FB 0%, var(--surface) 100%)',
-          borderBottom: '1px solid #DCEBF4',
+          background: 'linear-gradient(180deg, var(--blue-wash) 0%, var(--surface) 100%)',
+          borderBottom: '1px solid var(--sky-line)',
           padding: 'clamp(28px, 6vw, 48px) 20px clamp(20px, 4vw, 32px)',
           textAlign: 'center',
         }}>
@@ -102,7 +102,7 @@ export default function MessagesInbox() {
           }}>
             Messages
           </h1>
-          <p style={{ fontSize: '16px', color: '#5a6b75', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '16px', color: 'var(--ink-slate-2)', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
             Your conversations with trusted connections.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function MessagesInbox() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[0, 1, 2].map(i => (
               <div key={i} style={{
-                background: '#fff', borderRadius: '14px', height: '76px',
+                background: 'var(--canvas)', borderRadius: '14px', height: '76px',
                 animation: 'shimmer 1.5s ease-in-out infinite',
                 border: '1px solid var(--border)',
               }} />
@@ -124,7 +124,7 @@ export default function MessagesInbox() {
         {!loading && active.length === 0 && (
           <BlurFade delay={2}>
             <div style={{
-              background: '#ffffff',
+              background: 'var(--canvas)',
               border: '1px solid var(--border)',
               borderRadius: '18px',
               padding: '56px 24px',
@@ -135,7 +135,7 @@ export default function MessagesInbox() {
                 background: 'var(--blue-wash)', margin: '0 auto 16px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
               </div>
@@ -165,7 +165,7 @@ export default function MessagesInbox() {
             <BlurFade delay={1}>
               <div style={{ position: 'relative', marginBottom: '18px' }}>
                 <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', display: 'flex' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a0a0a5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                   </svg>
                 </span>
@@ -178,10 +178,10 @@ export default function MessagesInbox() {
                     width: '100%', boxSizing: 'border-box', height: '48px',
                     border: '1.5px solid var(--border)', borderRadius: '9999px',
                     padding: '0 18px 0 44px', fontSize: '16px', fontFamily: SFText,
-                    color: 'var(--ink)', background: '#fff', outline: 'none',
+                    color: 'var(--ink)', background: 'var(--canvas)', outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
-                  onFocus={e => e.currentTarget.style.borderColor = '#4FA3CE'}
+                  onFocus={e => e.currentTarget.style.borderColor = 'var(--blue)'}
                   onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
                 />
               </div>
@@ -189,7 +189,7 @@ export default function MessagesInbox() {
 
             {filtered.length === 0 ? (
               <div style={{
-                background: '#ffffff', border: '1px solid var(--border)',
+                background: 'var(--canvas)', border: '1px solid var(--border)',
                 borderRadius: '18px', padding: '40px 24px', textAlign: 'center',
               }}>
                 <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
@@ -198,7 +198,7 @@ export default function MessagesInbox() {
               </div>
             ) : (
               <div style={{
-                background: '#ffffff',
+                background: 'var(--canvas)',
                 border: '1px solid var(--border)',
                 borderRadius: '18px',
                 overflow: 'hidden',
@@ -223,7 +223,7 @@ export default function MessagesInbox() {
                         fontFamily: SFText,
                         transition: 'background 0.15s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#fafbfc'}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-wash)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       <Avatar name={c.otherUserName} />
@@ -256,7 +256,7 @@ export default function MessagesInbox() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                           <p style={{
                             fontSize: '14px', margin: 0,
-                            color: c.unreadCount > 0 ? '#1d1d1f' : '#7a7a7a',
+                            color: c.unreadCount > 0 ? 'var(--ink)' : 'var(--ink-3)',
                             fontWeight: c.unreadCount > 0 ? 500 : 400,
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                           }}>

@@ -8,6 +8,17 @@
     <title>ToWin: Connecting Generations</title>
     <meta name="theme-color" content="#4FA3CE" />
 
+    <!-- Apply the saved night-mode choice before first paint so a dark-mode
+         user never sees a white flash. ThemeContext owns it after mount. -->
+    <script>
+      try {
+        if (localStorage.getItem('towin-theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#201f1d');
+        }
+      } catch (e) { /* storage blocked — stay light */ }
+    </script>
+
     <!-- Newsreader (serif) for headings + the tagline only, at weight 400.
          Body text stays on the system SF stack for on-screen/elderly legibility.
          display=swap so text is never invisible while the serif loads. -->

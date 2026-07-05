@@ -10,9 +10,9 @@
  */
 export default function LocationPrimer({ onEnable, onManual }) {
   return (
-    <div style={{ background: '#ffffff', borderRadius: '18px', border: '1px solid #e0e0e0', padding: '32px 24px', textAlign: 'center' }}>
+    <div style={{ background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--hairline-2)', padding: '32px 24px', textAlign: 'center' }}>
       <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--blue-wash)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7DA6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--blue-deep)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </div>
       <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 6px' }}>
         See people near you

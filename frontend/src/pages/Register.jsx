@@ -71,7 +71,7 @@ function LegalModal({ title, sections, onClose }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#ffffff', borderRadius: '18px',
+          background: 'var(--canvas)', borderRadius: '18px',
           maxWidth: '640px', width: '100%', maxHeight: '85vh',
           display: 'flex', flexDirection: 'column',
           boxShadow: '0 20px 60px rgba(20,55,80,0.25)',
@@ -92,7 +92,7 @@ function LegalModal({ title, sections, onClose }) {
             aria-label="Close"
             style={{
               width: '32px', height: '32px', borderRadius: '50%',
-              border: '1px solid var(--border)', background: '#ffffff',
+              border: '1px solid var(--border)', background: 'var(--canvas)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 'var(--text-base)', color: 'var(--ink-3)',
             }}
@@ -112,7 +112,7 @@ function LegalModal({ title, sections, onClose }) {
                 margin: '0 0 6px',
               }}>{s.h}</h4>
               <p style={{
-                fontSize: 'var(--text-sm)', color: '#5a6b75', lineHeight: 1.6, margin: 0,
+                fontSize: 'var(--text-sm)', color: 'var(--ink-slate-2)', lineHeight: 1.6, margin: 0,
               }}>{s.p}</p>
             </div>
           ))}
@@ -150,8 +150,8 @@ function HeroPanel() {
       padding: '52px 48px',
       background:
         'radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.55) 0%, transparent 55%),' +
-        'radial-gradient(ellipse at 80% 85%, #BFD9EA 0%, transparent 60%),' +
-        'linear-gradient(160deg, #EAF5FB 0%, #BFD9EA 45%, #4FA3CE 100%)',
+        'radial-gradient(ellipse at 80% 85%, var(--blue-soft) 0%, transparent 60%),' +
+        'linear-gradient(160deg, var(--blue-wash) 0%, var(--blue-soft) 45%, var(--blue) 100%)',
     }}>
       {/* Hero photo — elder and younger person walking hand in hand */}
       <img
@@ -265,13 +265,13 @@ function GoogleButton() {
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         width: '100%', height: '48px',
-        background: '#ffffff', border: '1.5px solid var(--border)',
+        background: 'var(--canvas)', border: '1.5px solid var(--border)',
         borderRadius: '9999px', textDecoration: 'none',
         fontSize: '16px', fontWeight: 500, color: 'var(--ink)',
         fontFamily: SF, cursor: 'pointer',
         transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FA3CE'; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--blue)'; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
       <svg width="20" height="20" viewBox="0 0 48 48">
@@ -389,13 +389,13 @@ export default function Register() {
           {/* Demo accounts — shown first so users don't miss it (matches Login) */}
           <div style={{
             marginBottom: '20px', background: 'var(--blue-wash)',
-            border: '1.5px solid #4FA3CE', borderRadius: '16px',
+            border: '1.5px solid var(--blue)', borderRadius: '16px',
             padding: '18px 18px 16px',
             position: 'relative',
           }}>
             <span style={{
               position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
-              background: '#4FA3CE', color: '#fff',
+              background: 'var(--blue)', color: '#fff',
               fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px',
               padding: '3px 12px', borderRadius: '9999px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -430,8 +430,8 @@ export default function Register() {
                   style={{
                     flex: 1,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    background: '#ffffff',
-                    border: '1.5px solid #BFD9EA',
+                    background: 'var(--canvas)',
+                    border: '1.5px solid var(--blue-soft)',
                     borderRadius: '11px',
                     padding: '12px 10px',
                     cursor: guestLoading ? 'not-allowed' : 'pointer',
@@ -440,8 +440,8 @@ export default function Register() {
                     transition: 'border-color 0.15s, background 0.15s',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}
-                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = '#4FA3CE'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#BFD9EA'; }}
+                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = 'var(--blue)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--blue-soft)'; }}
                 >
                   <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
                     {guestLoading === role ? 'Opening…' : label}
@@ -456,7 +456,7 @@ export default function Register() {
 
           {/* Form card — same shell as Login */}
           <div className="auth-card" style={{
-            background: '#ffffff',
+            background: 'var(--canvas)',
             borderRadius: '18px',
             padding: '40px 36px',
             border: '1px solid var(--border)',
@@ -471,7 +471,7 @@ export default function Register() {
               <button type="button" style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
-                background: '#ffffff', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                background: 'var(--seg-active)', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}>Create account</button>
             </div>
 
@@ -505,8 +505,8 @@ export default function Register() {
 
             {/* Role selector */}
             <div style={{
-              marginBottom: '20px', background: '#F4FAFD',
-              border: '1.5px solid #D8EAF4', borderRadius: '16px',
+              marginBottom: '20px', background: 'var(--sky-ghost)',
+              border: '1.5px solid var(--sky-line-2)', borderRadius: '16px',
               padding: '18px',
             }}>
               <label style={{
@@ -523,14 +523,14 @@ export default function Register() {
                     <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
                       style={{
                         padding: '14px 12px', borderRadius: '11px',
-                        border: active ? '2px solid #4FA3CE' : '1.5px solid var(--border)',
-                        background: active ? '#EAF5FB' : '#ffffff',
+                        border: active ? '2px solid var(--blue)' : '1.5px solid var(--border)',
+                        background: active ? 'var(--blue-wash)' : '#ffffff',
                         cursor: 'pointer', textAlign: 'left',
                         transition: 'all 0.15s',
                       }}>
                       <div style={{
                         fontSize: 'var(--text-sm)', fontWeight: 600,
-                        color: active ? '#4FA3CE' : '#1d1d1f',
+                        color: active ? 'var(--blue)' : 'var(--ink)',
                         marginBottom: '4px',
                         fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                       }}>
@@ -538,7 +538,7 @@ export default function Register() {
                       </div>
                       <div style={{
                         fontSize: 'var(--text-xs)', lineHeight: 1.3,
-                        color: active ? '#7BB8D6' : '#a0a0a5',
+                        color: active ? 'var(--blue-mid)' : 'var(--ink-4)',
                         fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                       }}>
                         {desc}
@@ -552,7 +552,7 @@ export default function Register() {
             {/* Error state */}
             {error && (
               <div style={{
-                background: 'var(--red-tint)', border: '1px solid #fecaca',
+                background: 'var(--red-tint)', border: '1px solid var(--red-line)',
                 borderRadius: '11px', padding: '12px 16px',
                 fontSize: 'var(--text-sm)', color: 'var(--red-error)', marginBottom: '20px',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -576,7 +576,7 @@ export default function Register() {
                   className="field"
                   value={form.username}
                   onChange={e => { setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }); setFieldErrors(f => ({ ...f, username: '' })); }}
-                  style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined }}
+                  style={{ borderColor: fieldErrors.username ? 'var(--red-soft)' : undefined }}
                 />
                 {fieldErrors.username && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
@@ -598,7 +598,7 @@ export default function Register() {
                   className="field"
                   value={form.email}
                   onChange={e => { setForm({ ...form, email: e.target.value }); setFieldErrors(f => ({ ...f, email: '' })); }}
-                  style={{ borderColor: fieldErrors.email ? '#fca5a5' : undefined }}
+                  style={{ borderColor: fieldErrors.email ? 'var(--red-soft)' : undefined }}
                 />
                 {fieldErrors.email && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
@@ -621,7 +621,7 @@ export default function Register() {
                     className="field"
                     value={form.password}
                     onChange={e => { setForm({ ...form, password: e.target.value }); setFieldErrors(f => ({ ...f, password: '' })); }}
-                    style={{ borderColor: fieldErrors.password ? '#fca5a5' : undefined, paddingRight: '44px' }}
+                    style={{ borderColor: fieldErrors.password ? 'var(--red-soft)' : undefined, paddingRight: '44px' }}
                   />
                   <button type="button" onClick={() => setShowPwd(v => !v)}
                     aria-label={showPwd ? 'Hide password' : 'Show password'} style={eyeBtn}>
@@ -635,7 +635,7 @@ export default function Register() {
                       <div key={i} style={{
                         flex: 1, height: '3px', borderRadius: '9999px',
                         background: i <= pwdStrength(form.password)
-                          ? ['#ff3b30','#ff9500','#4FA3CE','#4FA3CE'][pwdStrength(form.password)-1]
+                          ? ['#ff3b30','#ff9500','var(--blue)','var(--blue)'][pwdStrength(form.password)-1]
                           : 'var(--border)',
                         transition: 'background 0.2s',
                       }} />
@@ -662,7 +662,7 @@ export default function Register() {
                     className="field"
                     value={form.confirmPassword}
                     onChange={e => { setForm({ ...form, confirmPassword: e.target.value }); setFieldErrors(f => ({ ...f, confirmPassword: '' })); }}
-                    style={{ borderColor: fieldErrors.confirmPassword ? '#fca5a5' : undefined, paddingRight: '44px' }}
+                    style={{ borderColor: fieldErrors.confirmPassword ? 'var(--red-soft)' : undefined, paddingRight: '44px' }}
                   />
                   <button type="button" onClick={() => setShowConfirm(v => !v)}
                     aria-label={showConfirm ? 'Hide password' : 'Show password'} style={eyeBtn}>
@@ -684,7 +684,7 @@ export default function Register() {
                   type="checkbox"
                   checked={agreed}
                   onChange={e => setAgreed(e.target.checked)}
-                  style={{ marginTop: '2px', accentColor: '#4FA3CE', flexShrink: 0 }}
+                  style={{ marginTop: '2px', accentColor: 'var(--blue)', flexShrink: 0 }}
                 />
                 <span style={{
                   fontSize: '14px', color: 'var(--ink-3)', lineHeight: 1.5,
@@ -703,7 +703,7 @@ export default function Register() {
                 disabled={loading || !agreed}
                 style={{
                   width: '100%', height: '48px',
-                  background: loading || !agreed ? '#BFD9EA' : '#4FA3CE',
+                  background: loading || !agreed ? 'var(--blue-soft)' : 'var(--blue)',
                   color: '#ffffff',
                   border: 'none', borderRadius: '9999px',
                   fontSize: '17px', fontWeight: 400,

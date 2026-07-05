@@ -36,8 +36,8 @@ function StarRating({ value, onChange }) {
           <Star
             key={n}
             size={20}
-            fill={filled ? '#4FA3CE' : 'none'}
-            color={filled ? '#4FA3CE' : '#d0d0d5'}
+            fill={filled ? 'var(--blue)' : 'none'}
+            color={filled ? 'var(--blue)' : 'var(--idle-grey)'}
             style={{ cursor: 'pointer', transition: 'color 0.1s' }}
             onMouseEnter={() => setHovered(n)}
             onMouseLeave={() => setHovered(0)}
@@ -129,7 +129,7 @@ export default function Feedback() {
         <div>
           {/* Prototype notice */}
           <div style={{
-            background: 'var(--blue-wash)', border: '1px solid #BFD9EA', borderRadius: '14px',
+            background: 'var(--blue-wash)', border: '1px solid var(--blue-soft)', borderRadius: '14px',
             padding: '14px 20px', marginBottom: '16px',
           }}>
             <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0, lineHeight: 1.55 }}>
@@ -157,7 +157,7 @@ export default function Feedback() {
               </p>
               {error && (
                 <div style={{
-                  background: 'var(--red-tint)', border: '1px solid #fecaca', borderRadius: '10px',
+                  background: 'var(--red-tint)', border: '1px solid var(--red-line)', borderRadius: '10px',
                   padding: '12px 16px', fontSize: 'var(--text-sm)', color: 'var(--red-error)',
                   marginBottom: '20px', fontFamily: SFText,
                 }}>
@@ -210,7 +210,7 @@ export default function Feedback() {
                 </div>
                 <button type="submit" disabled={loading} style={{
                   width: '100%', height: '48px',
-                  background: loading ? '#7BB8D6' : '#4FA3CE',
+                  background: loading ? 'var(--blue-mid)' : 'var(--blue)',
                   color: '#fff', border: 'none', borderRadius: '9999px',
                   fontSize: '16px', fontWeight: 600,
                   cursor: loading ? 'not-allowed' : 'pointer',
@@ -230,7 +230,7 @@ export default function Feedback() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
               <div style={{
                 width: 52, height: 52, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #4FA3CE, #2a7da8)',
+                background: 'linear-gradient(135deg, var(--blue), #2a7da8)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '20px', fontWeight: 600, color: '#fff', fontFamily: SF, flexShrink: 0,
               }}>H</div>
@@ -261,7 +261,7 @@ export default function Feedback() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {CONTACTS.map(({ icon: Icon, label, href }) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Icon size={15} color="#4FA3CE" style={{ flexShrink: 0 }} />
+                  <Icon size={15} color="var(--blue)" style={{ flexShrink: 0 }} />
                   {href ? (
                     <a href={href} target="_blank" rel="noopener noreferrer"
                       style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue)', textDecoration: 'none' }}>

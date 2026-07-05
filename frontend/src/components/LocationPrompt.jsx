@@ -34,7 +34,7 @@ export default function LocationPrompt({ onResolved }) {
   }
 
   return (
-    <div style={{ background: '#ffffff', borderRadius: '14px', padding: '16px', border: '1px solid #e0e0e0' }}>
+    <div style={{ background: 'var(--canvas)', borderRadius: '14px', padding: '16px', border: '1px solid var(--hairline-2)' }}>
       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink-slate-dark)', margin: '0 0 10px' }}>
         Enter your town or postcode to see people near you
       </p>
@@ -45,19 +45,19 @@ export default function LocationPrompt({ onResolved }) {
           onChange={e => setQuery(e.target.value)}
           placeholder="e.g. Scarborough or M1B 1A1"
           wrapperStyle={{ flex: 1 }}
-          style={{ width: '100%', boxSizing: 'border-box', height: '40px', padding: '0 14px', fontSize: '15px', color: 'var(--ink-slate)', border: '1px solid #d8d8d8', borderRadius: '9999px', outline: 'none', fontFamily: 'inherit' }}
+          style={{ width: '100%', boxSizing: 'border-box', height: '40px', padding: '0 14px', fontSize: '15px', color: 'var(--ink-slate)', border: '1px solid var(--line-idle-2)', borderRadius: '9999px', outline: 'none', fontFamily: 'inherit' }}
         />
         <button type="submit" disabled={status === 'loading'} className="btn-primary" style={{ padding: '0 22px', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
           {status === 'loading' ? 'Finding…' : 'Find'}
         </button>
       </form>
       {status === 'notfound' && (
-        <p style={{ fontSize: 'var(--text-sm)', color: '#CF6A66', margin: '10px 0 0' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--red-mild)', margin: '10px 0 0' }}>
           We couldn't find that place — try a postcode.
         </p>
       )}
       {status === 'error' && (
-        <p style={{ fontSize: 'var(--text-sm)', color: '#CF6A66', margin: '10px 0 0' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--red-mild)', margin: '10px 0 0' }}>
           Something went wrong. Please try again.
         </p>
       )}

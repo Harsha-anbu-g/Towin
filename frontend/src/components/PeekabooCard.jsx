@@ -15,7 +15,7 @@ export default function PeekabooCard() {
         display: 'flex',
         alignItems: 'center',
         gap: '14px',
-        background: '#ffffff',
+        background: 'var(--canvas)',
         border: '1px solid var(--border)',
         borderRadius: '14px',
         padding: '14px 18px',
@@ -26,9 +26,9 @@ export default function PeekabooCard() {
     >
       <span style={{
         width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-        background: 'var(--green-tint)', border: '1px solid #BFE0C9',
+        background: 'var(--green-tint)', border: '1px solid var(--green-line)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#3D8B5A',
+        color: 'var(--leaf)',
       }}>
         <Gamepad2 size={19} />
       </span>

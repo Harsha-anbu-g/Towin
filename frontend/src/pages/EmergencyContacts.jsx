@@ -14,21 +14,21 @@ const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 const ROLE_ACCENT = {
-  GP: '#4FA3CE',
-  Doctor: '#4FA3CE',
-  Family: '#7a7a7a',
+  GP: 'var(--blue)',
+  Doctor: 'var(--blue)',
+  Family: 'var(--ink-3)',
   Neighbour: '#0a9396',
   Neighbor: '#0a9396',
-  Friend: '#3D8B5A',
+  Friend: 'var(--leaf)',
 };
 const roleAccent = (rel) => {
-  if (!rel) return '#a0a0a5';
+  if (!rel) return 'var(--ink-4)';
   const key = Object.keys(ROLE_ACCENT).find(k => rel.toLowerCase().includes(k.toLowerCase()));
-  return key ? ROLE_ACCENT[key] : '#a0a0a5';
+  return key ? ROLE_ACCENT[key] : 'var(--ink-4)';
 };
 
 // Simple WhatsApp-style default avatar (human silhouette in a circle)
-const DefaultAvatar = ({ color = '#4FA3CE', size = 52 }) => (
+const DefaultAvatar = ({ color = 'var(--blue)', size = 52 }) => (
   <div style={{
     width: `${size}px`,
     height: `${size}px`,
@@ -105,8 +105,8 @@ export default function EmergencyContacts() {
       {/* Hero tile — calm sky-blue, matches dashboard theme */}
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, #EAF5FB 0%, var(--surface) 100%)',
-          borderBottom: '1px solid #DCEBF4',
+          background: 'linear-gradient(180deg, var(--blue-wash) 0%, var(--surface) 100%)',
+          borderBottom: '1px solid var(--sky-line)',
           padding: 'clamp(32px, 7vw, 64px) 20px clamp(24px, 5vw, 48px)',
           textAlign: 'center',
         }}>
@@ -114,15 +114,15 @@ export default function EmergencyContacts() {
             width: '64px',
             height: '64px',
             borderRadius: '16px',
-            background: '#ffffff',
-            border: '1px solid #BFD9EA',
+            background: 'var(--canvas)',
+            border: '1px solid var(--blue-soft)',
             margin: '0 auto 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 4px 16px rgba(79,163,206,0.15)',
           }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
@@ -137,7 +137,7 @@ export default function EmergencyContacts() {
           }}>
             Emergency Contacts
           </h1>
-          <p style={{ fontSize: '17px', color: '#5a6b75', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '17px', color: 'var(--ink-slate-2)', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
             We'll alert these people if you don't check in for several days.
           </p>
         </div>
@@ -151,7 +151,7 @@ export default function EmergencyContacts() {
             style={{
               display: 'block',
               width: '100%',
-              background: sosSent ? '#3D8AB0' : '#cc0000',
+              background: sosSent ? 'var(--blue-teal)' : 'var(--red)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '9999px',
@@ -173,7 +173,7 @@ export default function EmergencyContacts() {
               marginTop: '12px',
               fontSize: 'var(--text-sm)',
               fontWeight: 500,
-              color: sosSent ? '#3D8AB0' : '#cc0000',
+              color: sosSent ? 'var(--blue-teal)' : 'var(--red)',
             }}>
               {sosMsg}
             </p>
@@ -232,7 +232,7 @@ export default function EmergencyContacts() {
         {contacts.length === 0 && (
           <BlurFade delay={4}>
             <div style={{
-              background: '#ffffff',
+              background: 'var(--canvas)',
               borderRadius: '18px',
               padding: '48px 24px',
               textAlign: 'center',
@@ -248,7 +248,7 @@ export default function EmergencyContacts() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#cc0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
@@ -267,7 +267,7 @@ export default function EmergencyContacts() {
           return (
             <BlurFade key={c.id} delay={4 + i * 0.5}>
               <div style={{
-                background: '#ffffff',
+                background: 'var(--canvas)',
                 borderRadius: '18px',
                 overflow: 'hidden',
                 marginBottom: '14px',
@@ -343,7 +343,7 @@ export default function EmergencyContacts() {
         {contacts.length < 3 && showAddForm && (
           <BlurFade delay={5}>
             <div style={{
-              background: '#ffffff',
+              background: 'var(--canvas)',
               borderRadius: '18px',
               padding: '28px 24px',
               marginBottom: '20px',
@@ -388,7 +388,7 @@ export default function EmergencyContacts() {
                   </div>
                 </div>
                 {msg && (
-                  <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('added') ? '#3D8AB0' : '#cc0000', fontWeight: 500 }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('added') ? 'var(--blue-teal)' : 'var(--red)', fontWeight: 500 }}>
                     {msg}
                   </p>
                 )}

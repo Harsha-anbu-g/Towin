@@ -195,7 +195,7 @@ export default function AskAiAssistant() {
         >
           <span style={{
             width: '30px', height: '30px', flexShrink: 0, borderRadius: '50%',
-            background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <img src={TORTOISE_IMG} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
           </span>
@@ -231,7 +231,7 @@ export default function AskAiAssistant() {
             }}>
               <span style={{
                 width: '40px', height: '40px', flexShrink: 0, borderRadius: '50%',
-                background: '#fff', border: '1px solid var(--blue-soft)',
+                background: 'var(--canvas)', border: '1px solid var(--blue-soft)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
               }}>
                 <img src={TORTOISE_IMG} alt="" style={{ width: '34px', height: '34px', objectFit: 'contain' }} />
@@ -280,7 +280,7 @@ export default function AskAiAssistant() {
                       key={s}
                       onClick={() => send(s)}
                       style={{
-                        textAlign: 'left', background: '#fff', cursor: 'pointer',
+                        textAlign: 'left', background: 'var(--canvas)', cursor: 'pointer',
                         border: '1px solid var(--blue-soft)', borderRadius: '12px',
                         padding: '10px 14px', fontFamily: SF, fontSize: 'var(--text-sm, 15px)',
                         color: 'var(--blue-deep)', lineHeight: 1.4,
@@ -298,7 +298,7 @@ export default function AskAiAssistant() {
               onSubmit={(e) => { e.preventDefault(); send(); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '12px', borderTop: '1px solid var(--border-soft)', background: '#fff',
+                padding: '12px', borderTop: '1px solid var(--border-soft)', background: 'var(--canvas)',
               }}
             >
               {SpeechRec && (

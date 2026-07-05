@@ -6,18 +6,18 @@ import { useToast } from '../context/ToastContext';
 
 const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
-const SKY = '#4FA3CE';
+const SKY = 'var(--blue)';
 
 function FlameIcon({ size = 56 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <path
         d="M12 2C12 2 7 7 7 12.5C7 15.5 9 18 12 18C15 18 17 15.5 17 12.5C17 10 15.5 8 14 7C14 9 13 10 12 10C11 10 10 9 10 7.5C10 5.5 12 2 12 2Z"
-        fill="#4FA3CE" opacity="0.85"
+        fill="var(--blue)" opacity="0.85"
       />
       <path
         d="M12 13C12 13 10.5 14.5 10.5 16C10.5 17.1 11.2 18 12 18C12.8 18 13.5 17.1 13.5 16C13.5 14.5 12 13 12 13Z"
-        fill="#1d1d1f" opacity="0.5"
+        fill="var(--ink)" opacity="0.5"
       />
     </svg>
   );
@@ -139,23 +139,21 @@ export default function Streaks() {
             uncropped. The JPG's background is pure white (#fff) while the panel
             is pearl (#fbfaf6); multiply blending maps white onto the panel color
             exactly, so no rectangle edge shows regardless of the display panel. */}
-        <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-          <img src="/journey.jpg" alt="The master and his turtles, growing up together" style={{
+        <div className="streaks-art" style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+          <img src="/journey.jpg" alt="The master and his turtles, growing up together" className="streaks-tortoise" style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
             objectFit: 'contain', objectPosition: 'center bottom', zIndex: 0,
-            mixBlendMode: 'multiply',
           }} />
           {/* Top edge melts into the page so the art has no hard border. */}
-          <div style={{
+          <div className="streaks-fade" style={{
             position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-            background: 'linear-gradient(to bottom, #fbfaf6 0%, rgba(251,250,246,0) 12%)',
           }} />
         </div>
         {/* Tagline — a caption beneath the artwork, on its own pearl band. */}
         <p style={{
           margin: 0, padding: '20px 32px 40px', textAlign: 'center',
           fontFamily: SF, fontSize: 'var(--text-base)', fontWeight: 600,
-          color: '#8a8d94', letterSpacing: '-0.3px', lineHeight: 1.35,
+          color: 'var(--steel-text)', letterSpacing: '-0.3px', lineHeight: 1.35,
           background: 'var(--surface-pearl)',
         }}>
           Slow is smooth and Smooth is fast and constant
@@ -187,7 +185,7 @@ export default function Streaks() {
 
           {/* Streak card */}
           <div className="streak-card" style={{
-            background: '#ffffff', borderRadius: '18px',
+            background: 'var(--canvas)', borderRadius: '18px',
             border: '1px solid var(--border)', padding: '36px',
             textAlign: 'center', marginBottom: '28px',
           }}>
@@ -234,7 +232,7 @@ export default function Streaks() {
                         width: '34px', height: '34px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: d.done ? SKY : '#fff',
-                        border: d.done ? 'none' : d.today ? `2px solid ${SKY}` : '1px solid #e6e8ec',
+                        border: d.done ? 'none' : d.today ? `2px solid ${SKY}` : '1px solid var(--line-idle)',
                         opacity: d.future ? 0.6 : 1,
                       }}>
                         {d.done && (
@@ -261,7 +259,7 @@ export default function Streaks() {
 
           {/* Age display */}
           <div className="age-card" style={{
-            background: '#ffffff', borderRadius: '18px',
+            background: 'var(--canvas)', borderRadius: '18px',
             border: '1px solid var(--border)', padding: '24px 28px',
             marginBottom: '28px',
           }}>
@@ -326,7 +324,7 @@ export default function Streaks() {
               /* Already checked in — show two options */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{
-                  background: 'var(--green-tint)', border: '1px solid #BFE0C9',
+                  background: 'var(--green-tint)', border: '1px solid var(--green-line)',
                   borderRadius: '14px', padding: '14px 20px',
                   textAlign: 'center',
                 }}>
@@ -351,7 +349,7 @@ export default function Streaks() {
                 <button
                   onClick={() => navigate('/game')}
                   style={{
-                    width: '100%', background: '#ffffff', color: 'var(--ink)',
+                    width: '100%', background: 'var(--canvas)', color: 'var(--ink)',
                     border: '1.5px solid var(--border)', borderRadius: '9999px',
                     padding: '16px 0', fontSize: '16px', fontWeight: 600,
                     fontFamily: SFT, cursor: 'pointer',

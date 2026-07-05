@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus } from 'lucide-react';
+import { Home, MessageCircle, User, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
 import ConfirmDialog from './ConfirmDialog';
 import api from '../api/axios';
 import { useSosCountdown } from '../lib/useSosCountdown';
@@ -10,9 +11,30 @@ import { useSosCountdown } from '../lib/useSosCountdown';
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 
+// Visual half of the night-mode switch. The row button carries the
+// role="switch" semantics; this is decoration only.
+function SwitchTrack({ on }) {
+  return (
+    <span aria-hidden="true" style={{
+      display: 'inline-flex', alignItems: 'center', flexShrink: 0,
+      width: 40, height: 24, padding: 3, borderRadius: 9999,
+      background: on ? 'var(--blue)' : 'var(--slate-soft)',
+      transition: 'background 160ms cubic-bezier(0.23, 1, 0.32, 1)',
+    }}>
+      <span style={{
+        width: 18, height: 18, borderRadius: '50%', background: 'var(--canvas)',
+        transform: on ? 'translateX(16px)' : 'translateX(0)',
+        transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1)',
+      }} />
+    </span>
+  );
+}
+
 export default function NavBar() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
+  const nightOn = theme === 'dark';
   const { pathname } = useLocation();
   const [sosSent, setSosSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -104,7 +126,7 @@ export default function NavBar() {
         display: 'flex', alignItems: 'center', gap: '8px',
         fontSize: '16px', fontFamily: SF,
         fontWeight: active ? 600 : 500,
-        color: active ? '#4FA3CE' : '#5a6470',
+        color: active ? 'var(--blue)' : 'var(--ink-slate)',
         textDecoration: 'none',
         padding: '10px 16px',
         borderRadius: '10px',
@@ -125,10 +147,10 @@ export default function NavBar() {
       <Link to={to} onClick={() => setMenuOpen(false)} style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '16px 0',
-        borderBottom: '1px solid #f0f0f0',
+        borderBottom: '1px solid var(--hairline)',
         fontSize: '17px', fontFamily: SF,
         fontWeight: active ? 700 : 500,
-        color: active ? '#4FA3CE' : '#1d1d1f',
+        color: active ? 'var(--blue)' : 'var(--ink)',
         textDecoration: 'none',
       }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
@@ -145,7 +167,7 @@ export default function NavBar() {
   return (
     <>
       <nav ref={navRef} style={{
-        background: '#ffffff',
+        background: 'var(--canvas)',
         height: '60px',
         display: 'flex',
         alignItems: 'center',
@@ -187,7 +209,7 @@ export default function NavBar() {
             <Link to="/trust" style={{
               display: 'flex', alignItems: 'center', gap: '7px',
               fontSize: '16px', fontFamily: SF, fontWeight: 600,
-              color: trustActive ? '#fff' : '#9C7A3C',
+              color: trustActive ? '#fff' : 'var(--trust-gold)',
               background: trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.1)',
               border: `1.5px solid ${trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.35)'}`,
               borderRadius: '9999px', padding: '6px 16px',
@@ -216,7 +238,7 @@ export default function NavBar() {
                 fontSize: '16px', fontWeight: 700, fontFamily: SF,
                 padding: '10px 22px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
-                background: sosSent ? '#4FA3CE' : sending ? '#7a2a2a' : '#9b3535',
+                background: sosSent ? 'var(--blue)' : sending ? '#7a2a2a' : '#9b3535',
                 color: '#fff', opacity: sending ? 0.7 : 1,
               }}>{sosCountdown != null ? `Sending in ${sosCountdown} — tap to cancel`
                   : sosSent ? 'Help sent' : sending ? 'Sending…' : 'SOS'}</button>
@@ -240,11 +262,11 @@ export default function NavBar() {
               {accountOpen && (
                 <div role="menu" style={{
                   position: 'absolute', top: '52px', right: 0,
-                  background: '#fff', borderRadius: '14px',
-                  border: '1px solid var(--border)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  background: 'var(--canvas)', borderRadius: '14px',
+                  border: '1px solid var(--border)', boxShadow: 'var(--shadow-menu)',
                   padding: '8px', minWidth: '210px', zIndex: 110,
                 }}>
-                  <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #f0f0f0', marginBottom: '6px' }}>
+                  <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid var(--hairline)', marginBottom: '6px' }}>
                     <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: 0, fontFamily: SF }}>
                       {user?.name || 'Your account'}
                     </p>
@@ -274,6 +296,20 @@ export default function NavBar() {
                       <Siren size={18} strokeWidth={2} aria-hidden="true" />Emergency Contacts
                     </Link>
                   )}
+                  <button role="switch" aria-checked={nightOn} onClick={toggleTheme} style={{
+                    display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
+                    minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                      <Moon size={18} strokeWidth={2} aria-hidden="true" />Night mode
+                    </span>
+                    <SwitchTrack on={nightOn} />
+                  </button>
                   <button role="menuitem" onClick={() => { setAccountOpen(false); setConfirmSignOut(true); }} style={{
                     display: 'flex', width: '100%', alignItems: 'center', gap: '10px',
                     padding: '10px 12px', borderRadius: '10px', background: 'none', border: 'none',
@@ -318,7 +354,7 @@ export default function NavBar() {
                 fontSize: '14px', fontWeight: 700, fontFamily: SF,
                 padding: '7px 16px', minHeight: '40px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
-                background: sosSent ? '#4FA3CE' : '#9b3535',
+                background: sosSent ? 'var(--blue)' : '#9b3535',
                 color: '#fff',
               }}>{sosCountdown != null ? `Cancel · ${sosCountdown}` : sosSent ? 'Sent' : 'SOS'}</button>
             )}
@@ -332,9 +368,9 @@ export default function NavBar() {
                 alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? '#4FA3CE' : '#1d1d1f', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translateY(7px)' : 'none' }} />
-              <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? 'transparent' : '#1d1d1f', borderRadius: 2, transition: 'all 0.2s' }} />
-              <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? '#4FA3CE' : '#1d1d1f', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translateY(-7px)' : 'none' }} />
+              <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? 'var(--blue)' : 'var(--ink)', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translateY(7px)' : 'none' }} />
+              <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? 'transparent' : 'var(--ink)', borderRadius: 2, transition: 'all 0.2s' }} />
+              <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? 'var(--blue)' : 'var(--ink)', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translateY(-7px)' : 'none' }} />
             </button>
           </div>
         )}
@@ -345,13 +381,13 @@ export default function NavBar() {
         <>
           {/* Backdrop */}
           <div onClick={() => setMenuOpen(false)} style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.2)',
+            position: 'fixed', inset: 0, background: 'var(--scrim)',
             zIndex: 98, top: drawerTop,
           }} />
           {/* Drawer */}
           <div style={{
             position: 'fixed', top: drawerTop, left: 0, right: 0,
-            background: '#ffffff', zIndex: 99,
+            background: 'var(--canvas)', zIndex: 99,
             padding: '0 24px 24px',
             borderBottom: '1px solid var(--border)',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
@@ -363,6 +399,19 @@ export default function NavBar() {
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/game" label="Peekaboo" icon={Gamepad2} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
+            <button role="switch" aria-checked={nightOn} onClick={toggleTheme} style={{
+              display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 0', border: 'none',
+              borderBottom: '1px solid var(--hairline)',
+              fontSize: '17px', fontFamily: SF, fontWeight: 500,
+              color: 'var(--ink)', background: 'none',
+              cursor: 'pointer', textAlign: 'left',
+            }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
+                <Moon size={22} strokeWidth={2} aria-hidden="true" />Night mode
+              </span>
+              <SwitchTrack on={nightOn} />
+            </button>
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '16px 0', marginTop: '4px',

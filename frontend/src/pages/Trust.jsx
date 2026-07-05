@@ -6,14 +6,14 @@ import api from '../api/axios';
 
 const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
-const SKY   = '#4FA3CE';
-const BLUE  = '#4FA3CE';
-const TRUST = '#9C7A3C';
+const SKY   = 'var(--blue)';
+const BLUE  = 'var(--blue)';
+const TRUST = 'var(--trust-gold)';
 const BG    = 'var(--surface)';
-const INK   = '#1d1d1f';
-const GREY  = '#7a7a7a';
-const FAINT = '#a0a0a5';
-const EMPTY = '#d8d8de';
+const INK   = 'var(--ink)';
+const GREY  = 'var(--ink-3)';
+const FAINT = 'var(--ink-4)';
+const EMPTY = 'var(--track-empty)';
 
 const TIERS = [
   { name: 'New Member',         min: 0 },
@@ -24,15 +24,15 @@ const TIERS = [
 ];
 
 const TIER_COLORS = {
-  'Community Champion': { bg: '#FFF7E6', color: 'var(--ink-slate)', border: '#FDE68A' },
-  'Highly Trusted':     { bg: BG, color: BLUE, border: '#A8D4EC' },
-  'Reliable':           { bg: BG, color: BLUE, border: '#A8D4EC' },
-  'Getting Started':    { bg: '#F3F4F6', color: 'var(--ink-slate)', border: '#D1D5DB' },
-  'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
+  'Community Champion': { bg: 'var(--gold-wash-2)', color: 'var(--ink-slate)', border: 'var(--gold-line)' },
+  'Highly Trusted':     { bg: BG, color: BLUE, border: 'var(--sky-line-3)' },
+  'Reliable':           { bg: BG, color: BLUE, border: 'var(--sky-line-3)' },
+  'Getting Started':    { bg: 'var(--grey-fill-2)', color: 'var(--ink-slate)', border: 'var(--grey-line-2)' },
+  'New Member':         { bg: 'var(--grey-fill-2)', color: 'var(--grey-text)', border: 'var(--grey-line)' },
 };
 
 const card = {
-  background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+  background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--border)',
 };
 
 /* ── Score: a plain number — it keeps growing, so no bounded ring ─────────── */
@@ -112,7 +112,7 @@ function HelperStack({ people }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: '10px',
-      marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #f0f0f2',
+      marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--hairline-3)',
     }}>
       <div style={{ display: 'flex' }}>
         {shown.map((p, i) => (
@@ -123,7 +123,7 @@ function HelperStack({ people }) {
         {extra > 0 && (
           <div style={{
             width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #fff',
-            background: '#ededf0', marginLeft: '-8px', flexShrink: 0,
+            background: 'var(--grey-fill-4)', marginLeft: '-8px', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: SF, fontSize: '11px', fontWeight: 600, color: GREY,
           }}>+{extra}</div>
@@ -179,8 +179,8 @@ function ProfileGroup({ group }) {
   return (
     <div style={{
       borderRadius: '14px', padding: '14px 16px',
-      background: completed ? BG : '#fafafa',
-      border: `1px solid ${completed ? '#dbe7ef' : '#f0f0f0'}`,
+      background: completed ? BG : 'var(--card-idle)',
+      border: `1px solid ${completed ? 'var(--sky-line-4)' : 'var(--hairline)'}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
         <p style={{ fontFamily: SFD, fontSize: 'var(--text-sm)', fontWeight: 600, color: INK, margin: 0 }}>
@@ -189,7 +189,7 @@ function ProfileGroup({ group }) {
         <span style={{
           fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600,
           color: completed ? '#fff' : FAINT,
-          background: completed ? SKY : '#ededf0',
+          background: completed ? SKY : 'var(--grey-fill-4)',
           borderRadius: '9999px', padding: '3px 10px', whiteSpace: 'nowrap', flexShrink: 0,
         }}>
           {completed ? '+1 point ✓' : `${doneCount}/${itemCount} · +1 point`}
@@ -199,7 +199,7 @@ function ProfileGroup({ group }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
         {items.map(it => (
           <div key={it.key} style={{ display: 'flex', alignItems: 'flex-start', gap: '9px' }}>
-            <span style={{ fontSize: 'var(--text-sm)', lineHeight: '18px', color: it.completed ? BLUE : '#c0c0c8' }}>
+            <span style={{ fontSize: 'var(--text-sm)', lineHeight: '18px', color: it.completed ? BLUE : 'var(--grey-text-2)' }}>
               {it.completed ? '✓' : '○'}
             </span>
             <div style={{ flex: 1 }}>
@@ -268,7 +268,7 @@ function Avatar({ name, photoUrl }) {
   return (
     <div style={{
       width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-      background: 'var(--blue-tint)', border: '1px solid #D8EAF4',
+      background: 'var(--blue-tint)', border: '1px solid var(--sky-line-2)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: SFD, fontSize: '16px', fontWeight: 700, color: 'var(--blue-deep)',
     }}>{initial}</div>
@@ -306,7 +306,7 @@ function CustomerCard({ c }) {
         }} />
       </div>
 
-      <div style={{ borderTop: '1px solid #f0f0f2', paddingTop: '6px' }}>
+      <div style={{ borderTop: '1px solid var(--hairline-3)', paddingTop: '6px' }}>
         <Meter label="Trust stages" earned={c.rooting} max={c.rootingMax} shape="dot" />
         <Meter label="Their review" earned={c.review}  max={c.reviewMax}  shape="star" />
         <Meter label="Your profile" earned={c.profile} max={c.profileMax} shape="dot" />
@@ -356,7 +356,7 @@ export default function Trust() {
         )}
 
         {error && (
-          <div style={{ background: 'var(--red-tint)', border: '1px solid #fecaca', borderRadius: '14px', padding: '16px 20px', fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--red-error)' }}>
+          <div style={{ background: 'var(--red-tint)', border: '1px solid var(--red-line)', borderRadius: '14px', padding: '16px 20px', fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--red-error)' }}>
             {error}
           </div>
         )}

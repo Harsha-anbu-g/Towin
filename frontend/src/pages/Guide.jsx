@@ -6,14 +6,14 @@ import { STEPS } from '../data/guideContent';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
-const SKY = '#4FA3CE';
-const BORDER = '#BFD9EA';
+const SKY = 'var(--blue)';
+const BORDER = 'var(--blue-soft)';
 
 // Simple header shown to logged-out visitors (logged-in users get the NavBar).
 function PublicHeader() {
   return (
     <header style={{
-      background: '#ffffff', height: '72px', display: 'flex', alignItems: 'center',
+      background: 'var(--canvas)', height: '72px', display: 'flex', alignItems: 'center',
       justifyContent: 'space-between', padding: '0 32px', borderBottom: '1px solid var(--border)',
     }}>
       <Link to="/" style={{
@@ -48,7 +48,7 @@ function RoleTab({ role, setRole }) {
         style={{
           flex: 1, padding: '11px 0', fontFamily: SF, fontSize: '16px',
           fontWeight: active ? 700 : 500,
-          color: active ? '#fff' : '#5a6470',
+          color: active ? '#fff' : 'var(--ink-slate)',
           background: active ? SKY : '#fff',
           border: `1px solid ${active ? SKY : 'var(--border)'}`,
           borderRadius: '9999px', cursor: 'pointer', transition: 'all 0.15s',
@@ -138,7 +138,7 @@ export default function Guide() {
 
         {/* Step card */}
         <div style={{
-          background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+          background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--border)',
           padding: '24px 28px',          minHeight: '280px',
         }}>
           {current.render(ctx)}
@@ -152,7 +152,7 @@ export default function Guide() {
             style={{
               padding: '11px 24px', fontFamily: SF, fontSize: '16px', fontWeight: 600,
               borderRadius: '9999px', cursor: step === 0 ? 'default' : 'pointer',
-              background: '#fff', color: step === 0 ? '#c8c8cd' : '#1d1d1f',
+              background: 'var(--canvas)', color: step === 0 ? 'var(--ink-faint)' : 'var(--ink)',
               border: '1px solid var(--border)',
             }}
           >

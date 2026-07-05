@@ -55,7 +55,7 @@ export default function OAuthCallback() {
       {error ? (
         <div style={{ textAlign: 'center', maxWidth: '380px' }}>
           <div style={{
-            background: 'var(--red-tint)', border: '1px solid #fecaca',
+            background: 'var(--red-tint)', border: '1px solid var(--red-line)',
             borderRadius: '14px', padding: '20px 24px',
             fontSize: '16px', color: 'var(--red-error)', marginBottom: '20px',
           }}>
@@ -77,7 +77,7 @@ export default function OAuthCallback() {
         <div style={{ textAlign: 'center', color: 'var(--ink-slate)' }}>
           <div style={{
             width: '40px', height: '40px', borderRadius: '50%',
-            border: '3px solid #BFD9EA', borderTopColor: '#4FA3CE',
+            border: '3px solid var(--blue-soft)', borderTopColor: 'var(--blue)',
             animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

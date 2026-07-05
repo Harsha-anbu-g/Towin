@@ -30,11 +30,11 @@ export default function ResetPassword() {
 
   const wrap = {
     maxWidth: 420, margin: '0 auto', padding: '64px 24px',
-    fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: '#2d3748',
+    fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: 'var(--ink-deep)',
   };
   const input = {
     width: '100%', padding: '12px 14px', fontSize: 17, borderRadius: 10,
-    border: '1px solid #d8dce2', boxSizing: 'border-box', marginBottom: 14,
+    border: '1px solid var(--input-line)', boxSizing: 'border-box', marginBottom: 14,
   };
   const btn = {
     width: '100%', background: 'var(--blue)', color: '#fff', border: 'none',

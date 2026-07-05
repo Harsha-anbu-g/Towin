@@ -28,8 +28,8 @@ export default function VerifyBanner() {
   return (
     <div style={{
       width: '100%',
-      background: '#FBEED9',
-      color: '#7a5b1e',
+      background: 'var(--gold-wash)',
+      color: 'var(--gold-deep)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -46,7 +46,7 @@ export default function VerifyBanner() {
         onClick={resend}
         disabled={sending}
         style={{
-          background: 'none', border: 'none', color: '#7a5b1e',
+          background: 'none', border: 'none', color: 'var(--gold-deep)',
           fontWeight: 700, cursor: sending ? 'default' : 'pointer',
           textDecoration: 'underline', opacity: sending ? 0.6 : 1,
         }}

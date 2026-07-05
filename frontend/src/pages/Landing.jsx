@@ -4,8 +4,8 @@ import { SLIDES } from '../data/landingContent';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
-const SKY = '#4FA3CE';
-const BORDER = '#BFD9EA';
+const SKY = 'var(--blue)';
+const BORDER = 'var(--blue-soft)';
 
 // Progress as a slim "trail" — the guided walk, one segment per step. The bar is
 // thin for calm, but each button pads out to a comfortable tap target (elders).
@@ -27,7 +27,7 @@ function Trail({ count, current, onJump }) {
           >
             <span style={{
               display: 'block', width: here ? '34px' : '18px', height: '4px', borderRadius: '9999px',
-              background: here ? SKY : done ? BORDER : '#dfe6ec',
+              background: here ? SKY : done ? BORDER : 'var(--dot-idle)',
               // GPU-only: animate paint, not layout (width). Emil #7 / Impeccable layout-transition.
               transition: 'background 0.28s cubic-bezier(0.16,1,0.3,1)',
             }} />
@@ -70,7 +70,7 @@ export default function Landing() {
   const isLast = index === total - 1;
 
   return (
-    <div style={{
+    <div className="landing-canvas" style={{
       /* 100% of the app shell's scroll area — not 100svh — so when the beta
          banner is up the Back/Next footer still fits on screen instead of
          being pushed below the fold on phones. */
@@ -78,9 +78,7 @@ export default function Landing() {
       display: 'flex', flexDirection: 'column',
       // Warm paper canvas with a whisper of sky top-right — editorial, not clinical.
       // (User-approved 2026-07-05: warm parchment over near-neutral.)
-      background:
-        'radial-gradient(ellipse at 82% -8%, #E9F2F7 0%, transparent 42%),' +
-        'linear-gradient(168deg, #FAF8F3 0%, #F4F1E9 100%)',
+      // Background gradient lives in .landing-canvas (theme-aware).
     }}>
       {/* Top bar: brand left, escape hatch right */}
       <header className="landing-topbar" style={{
@@ -148,8 +146,8 @@ export default function Landing() {
                 style={{
                   padding: '13px 28px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
                   borderRadius: '9999px', cursor: 'pointer',
-                  background: '#fff', color: '#1d1d1f',
-                  border: '1px solid #e0e0e0',
+                  background: 'var(--canvas)', color: 'var(--ink)',
+                  border: '1px solid var(--hairline-2)',
                 }}
               >
                 Back
@@ -169,8 +167,8 @@ export default function Landing() {
                 style={{
                   padding: '13px 28px', fontFamily: SF, fontSize: '17px', fontWeight: 400,
                   borderRadius: '9999px', cursor: index === 0 ? 'default' : 'pointer',
-                  background: '#fff', color: index === 0 ? '#c8c8cd' : '#1d1d1f',
-                  border: '1px solid #e0e0e0',
+                  background: 'var(--canvas)', color: index === 0 ? 'var(--ink-faint)' : 'var(--ink)',
+                  border: '1px solid var(--hairline-2)',
                 }}
               >
                 Back

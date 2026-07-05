@@ -47,7 +47,7 @@ export default function ConfirmDialog({
 
   if (!open) return null;
 
-  const accent = danger ? '#9b3535' : '#4FA3CE';
+  const accent = danger ? 'var(--red-deep)' : 'var(--blue)';
 
   return (
     <div
@@ -67,7 +67,7 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-title"
         style={{
-          background: '#ffffff', borderRadius: '18px',
+          background: 'var(--canvas)', borderRadius: '18px',
           maxWidth: '380px', width: '100%',
           boxShadow: '0 20px 60px rgba(20,55,80,0.25)',
           fontFamily: SFT, overflow: 'hidden',
@@ -82,7 +82,7 @@ export default function ConfirmDialog({
             {title}
           </h3>
           {message && (
-            <p style={{ margin: 0, fontSize: '16px', color: '#5a6b75', lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: '16px', color: 'var(--ink-slate-2)', lineHeight: 1.5 }}>
               {message}
             </p>
           )}
@@ -96,8 +96,8 @@ export default function ConfirmDialog({
             disabled={loading}
             style={{
               flex: 1, height: '44px',
-              background: '#ffffff', color: 'var(--ink-slate)',
-              border: '1.5px solid #e0e0e0', borderRadius: '9999px',
+              background: 'var(--canvas)', color: 'var(--ink-slate)',
+              border: '1.5px solid var(--hairline-2)', borderRadius: '9999px',
               fontSize: '16px', fontWeight: 600, fontFamily: SFT,
               cursor: loading ? 'not-allowed' : 'pointer',
             }}

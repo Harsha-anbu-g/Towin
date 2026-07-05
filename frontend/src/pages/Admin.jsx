@@ -58,14 +58,14 @@ const actionBtn = (color, bg) => ({
   fontFamily: SFText,
 });
 
-const redBtn = actionBtn('#cc0000', 'rgba(204,0,0,0.08)');
-const greenBtn = actionBtn('#3D8AB0', 'rgba(79,163,206,0.10)');
+const redBtn = actionBtn('var(--red)', 'rgba(204,0,0,0.08)');
+const greenBtn = actionBtn('var(--blue-teal)', 'rgba(79,163,206,0.10)');
 const yellowBtn = actionBtn('#b45309', 'rgba(245,158,11,0.1)');
-const grayBtn = actionBtn('#7a7a7a', 'rgba(160,160,165,0.1)');
+const grayBtn = actionBtn('var(--ink-3)', 'rgba(160,160,165,0.1)');
 
 const roleBadge = (role) => {
-  const colors = { ADMIN: ['#3D8B5A', 'rgba(61,139,90,0.12)'], ELDER: ['#4FA3CE', 'rgba(0,102,204,0.1)'], HELPER: ['#3D8AB0', 'rgba(79,163,206,0.10)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
-  const [c, bg] = colors[role] || ['#7a7a7a', 'rgba(160,160,165,0.1)'];
+  const colors = { ADMIN: ['var(--leaf)', 'rgba(61,139,90,0.12)'], ELDER: ['var(--blue)', 'rgba(0,102,204,0.1)'], HELPER: ['var(--blue-teal)', 'rgba(79,163,206,0.10)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
+  const [c, bg] = colors[role] || ['var(--ink-3)', 'rgba(160,160,165,0.1)'];
   return (
     <span style={{ fontSize: '12px', fontWeight: 600, color: c, background: bg, padding: '3px 8px', borderRadius: '9999px' }}>
       {role}
@@ -77,7 +77,7 @@ const statusBadge = (active) => (
   <span style={{
     fontSize: '12px',
     fontWeight: 600,
-    color: active ? '#3D8AB0' : '#cc0000',
+    color: active ? 'var(--blue-teal)' : 'var(--red)',
     background: active ? 'rgba(79,163,206,0.10)' : 'rgba(204,0,0,0.1)',
     padding: '3px 8px',
     borderRadius: '9999px',
@@ -87,10 +87,10 @@ const statusBadge = (active) => (
 );
 
 const trustColor = (score) => {
-  if (score >= 80) return '#3D8AB0';
-  if (score >= 50) return '#4FA3CE';
+  if (score >= 80) return 'var(--blue-teal)';
+  if (score >= 50) return 'var(--blue)';
   if (score >= 30) return '#f59e0b';
-  return '#cc0000';
+  return 'var(--red)';
 };
 
 const thStyle = {
@@ -117,7 +117,7 @@ const tdStyle = {
 };
 
 const card = {
-  background: '#ffffff',
+  background: 'var(--canvas)',
   borderRadius: '18px',
   border: '1px solid var(--border)',
   overflow: 'hidden',
@@ -146,7 +146,7 @@ function EmptyBlock({ icon: Icon, text }) {
         width: '52px', height: '52px', borderRadius: '50%', background: 'var(--blue-wash)',
         margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <Icon size={22} color="#4FA3CE" strokeWidth={1.8} />
+        <Icon size={22} color="var(--blue)" strokeWidth={1.8} />
       </div>
       <p style={{ fontSize: '15px', color: 'var(--ink-slate)', margin: 0, fontFamily: SFText }}>{text}</p>
     </div>
@@ -160,7 +160,7 @@ function ErrorBlock({ onRetry }) {
         Could not load this. Please try again.
       </p>
       <button onClick={onRetry} style={{
-        background: '#4FA3CE', color: '#ffffff', border: 'none', borderRadius: '9999px',
+        background: 'var(--blue)', color: '#ffffff', border: 'none', borderRadius: '9999px',
         padding: '9px 22px', fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
       }}>
         Try again
@@ -226,7 +226,7 @@ function FeedbackTab() {
       {!loading && !error && rows.length > 0 && (
         <div style={{
           display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '20px',
-          background: '#ffffff', borderRadius: '14px', padding: '16px 20px', border: '1px solid var(--border)',
+          background: 'var(--canvas)', borderRadius: '14px', padding: '16px 20px', border: '1px solid var(--border)',
         }}>
           {RATING_LABELS.map(({ key, label }) => {
             const a = avgRating(rows, key);
@@ -424,7 +424,7 @@ export default function Admin() {
       return (
         <span style={{
           minWidth: '20px', padding: '1px 7px', borderRadius: '9999px', textAlign: 'center',
-          fontSize: '12px', fontWeight: 700, color: '#2E7DA6', background: 'var(--blue-tint)',
+          fontSize: '12px', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)',
         }}>
           {verifications.length}
         </span>
@@ -443,7 +443,7 @@ export default function Admin() {
       ToWin
       <span style={{
         fontSize: '11px', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
-        color: '#2E7DA6', background: 'var(--blue-tint)', borderRadius: '9999px', padding: '3px 9px',
+        color: 'var(--blue-deep)', background: 'var(--blue-tint)', borderRadius: '9999px', padding: '3px 9px',
         fontFamily: SFText,
       }}>
         Admin
@@ -462,8 +462,8 @@ export default function Admin() {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
     width: full ? '100%' : 'auto',
     fontSize: '14px', fontWeight: 500, fontFamily: SFText,
-    color: demoReset === 'failed' ? 'var(--red)' : '#5a6b75',
-    background: '#ffffff', border: '1px solid #DCEBF4',
+    color: demoReset === 'failed' ? 'var(--red)' : 'var(--ink-slate-2)',
+    background: 'var(--canvas)', border: '1px solid var(--sky-line)',
     borderRadius: '9999px', padding: '9px 16px',
     cursor: demoReset === 'working' ? 'wait' : 'pointer',
   });
@@ -481,7 +481,7 @@ export default function Admin() {
           display: 'flex', alignItems: 'center', gap: '11px', width: '100%',
           padding: '11px 14px', borderRadius: '12px', border: 'none',
           background: isActive ? 'var(--blue-tint)' : 'transparent',
-          color: isActive ? '#2E7DA6' : 'var(--ink-2)',
+          color: isActive ? 'var(--blue-deep)' : 'var(--ink-2)',
           fontSize: '15px', fontWeight: isActive ? 700 : 500, fontFamily: SFText,
           cursor: 'pointer', textAlign: 'left',
           transition: 'background 0.15s ease, color 0.15s ease',
@@ -507,9 +507,9 @@ export default function Admin() {
           display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0,
           height: '42px', padding: '0 18px', borderRadius: '9999px',
           fontSize: '15px', fontWeight: isActive ? 700 : 500, fontFamily: SFText,
-          color: isActive ? '#ffffff' : '#1d1d1f',
-          background: isActive ? '#4FA3CE' : '#ffffff',
-          border: isActive ? '1px solid #4FA3CE' : '1px solid var(--border)',
+          color: isActive ? '#ffffff' : 'var(--ink)',
+          background: isActive ? 'var(--blue)' : '#ffffff',
+          border: isActive ? '1px solid var(--blue)' : '1px solid var(--border)',
           boxShadow: isActive ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
           cursor: 'pointer', whiteSpace: 'nowrap',
         }}
@@ -540,7 +540,7 @@ export default function Admin() {
 
       {/* ——— Navigation: sidebar on desktop, top bar + pills on small screens ——— */}
       {narrow ? (
-        <header style={{ background: '#ffffff', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50 }}>
+        <header style={{ background: 'var(--canvas)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '12px 16px' }}>
             {brand}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -554,7 +554,7 @@ export default function Admin() {
                 style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   width: '44px', height: '44px', borderRadius: '9999px',
-                  background: '#ffffff', border: '1px solid #DCEBF4', color: '#5a6b75', cursor: 'pointer',
+                  background: 'var(--canvas)', border: '1px solid var(--sky-line)', color: 'var(--ink-slate-2)', cursor: 'pointer',
                 }}
               >
                 <LogOut size={17} strokeWidth={1.8} />
@@ -567,7 +567,7 @@ export default function Admin() {
         </header>
       ) : (
         <aside style={{
-          width: '236px', flexShrink: 0, background: '#ffffff', borderRight: '1px solid var(--border)',
+          width: '236px', flexShrink: 0, background: 'var(--canvas)', borderRight: '1px solid var(--border)',
           position: 'sticky', top: 0, height: '100svh', overflowY: 'auto',
           display: 'flex', flexDirection: 'column', padding: '22px 14px 18px',
         }}>
@@ -588,7 +588,7 @@ export default function Admin() {
               onClick={() => setConfirmSignOut(true)}
               style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px', width: '100%',
-                fontSize: '14px', fontWeight: 500, fontFamily: SFText, color: '#5a6b75',
+                fontSize: '14px', fontWeight: 500, fontFamily: SFText, color: 'var(--ink-slate-2)',
                 background: 'transparent', border: 'none', borderRadius: '9999px',
                 padding: '9px 16px', cursor: 'pointer',
               }}
@@ -625,8 +625,8 @@ export default function Admin() {
           }}>
             {statsData.map(stat => (
               <div key={stat.label} style={{
-                background: '#ffffff',
-                border: '1px solid #DCEBF4',
+                background: 'var(--canvas)',
+                border: '1px solid var(--sky-line)',
                 borderRadius: '14px',
                 padding: '16px 18px',
               }}>
@@ -654,7 +654,7 @@ export default function Admin() {
                 border: '1.5px solid var(--border)', borderRadius: '9999px',
                 padding: '8px 16px', background: 'var(--surface-pearl)',
               }}>
-                <Search size={16} color="#a0a0a5" strokeWidth={2} style={{ flexShrink: 0 }} />
+                <Search size={16} color="var(--ink-4)" strokeWidth={2} style={{ flexShrink: 0 }} />
                 <SmoothInput
                   value={search}
                   onChange={e => { setSearch(e.target.value); setUserPage(0); }}
@@ -700,7 +700,7 @@ export default function Admin() {
                           justifyContent: 'center',
                           fontSize: '14px',
                           fontWeight: 600,
-                          color: lowTrust ? '#cc0000' : '#4FA3CE',
+                          color: lowTrust ? 'var(--red)' : 'var(--blue)',
                           flexShrink: 0,
                         }}>
                           {u.email?.[0]?.toUpperCase() || '?'}
@@ -774,7 +774,7 @@ export default function Admin() {
                     disabled={clampedPage === 0}
                     style={{
                       background: 'transparent',
-                      color: clampedPage === 0 ? '#c8c8cd' : '#4FA3CE',
+                      color: clampedPage === 0 ? 'var(--ink-faint)' : 'var(--blue)',
                       border: '1.5px solid var(--border)',
                       borderRadius: '9999px',
                       padding: '7px 18px',
@@ -787,7 +787,7 @@ export default function Admin() {
                     onClick={() => setUserPage(p => Math.min(userPageCount - 1, p + 1))}
                     disabled={clampedPage >= userPageCount - 1}
                     style={{
-                      background: clampedPage >= userPageCount - 1 ? 'var(--border)' : '#4FA3CE',
+                      background: clampedPage >= userPageCount - 1 ? 'var(--border)' : 'var(--blue)',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '9999px',
@@ -882,7 +882,7 @@ export default function Admin() {
               <SegmentedTabs
                 segments={[
                   { id: 'all', label: 'All reviews' },
-                  { id: 'safety', label: 'Safety flags', color: '#cc0000', notify: true, count: safetyCount },
+                  { id: 'safety', label: 'Safety flags', color: 'var(--red)', notify: true, count: safetyCount },
                 ]}
                 value={safetyOnly ? 'safety' : 'all'}
                 onChange={id => setSafetyOnly(id === 'safety')}

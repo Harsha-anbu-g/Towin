@@ -9,6 +9,7 @@ import com.towin.common.enums.TrustLevel;
 import com.towin.common.messaging.ConnectionEvent;
 import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
@@ -44,6 +45,7 @@ public class NeedService {
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
+    private final S3Service s3Service;
     private final TrustScoreService trustScoreService;
     private final ConnectionRepository connectionRepository;
     private final Optional<ConnectionEventProducer> connectionEventProducer;
@@ -266,12 +268,17 @@ public class NeedService {
         if (includeApplicants) {
             applications = applicationRepository.findByNeedId(need.getId()).stream()
                     .map(a -> {
-                        String helperName = helperProfileRepository.findByUserId(a.getHelper().getId())
+                        var helperProfile = helperProfileRepository.findByUserId(a.getHelper().getId());
+                        String helperName = helperProfile
                                 .map(p -> p.getName())
                                 .orElse(a.getHelper().getEmail());
+                        String helperPhotoUrl = helperProfile
+                                .map(p -> s3Service.presignedUrl(p.getPhotoUrl()))
+                                .orElse(null);
                         return ApplicantDto.builder()
                                 .helperId(a.getHelper().getId())
                                 .helperName(helperName)
+                                .helperPhotoUrl(helperPhotoUrl)
                                 .message(a.getMessage())
                                 .status(a.getStatus())
                                 .build();

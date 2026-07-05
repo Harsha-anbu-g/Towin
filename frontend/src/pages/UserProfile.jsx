@@ -5,9 +5,9 @@ import api from '../api/axios';
 
 const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
-const SKY  = '#4FA3CE';
-const BLUE = '#3D8AB0';
-const BG   = '#EAF5FB';
+const SKY  = 'var(--blue)';
+const BLUE = 'var(--blue-teal)';
+const BG   = 'var(--blue-wash)';
 
 const initials = (name) =>
   name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
@@ -47,7 +47,7 @@ function Pill({ label }) {
     <span style={{
       fontFamily: SF, fontSize: '14px', fontWeight: 500,
       background: BG, color: BLUE,
-      border: '1px solid #BFD9EA',
+      border: '1px solid var(--blue-soft)',
       borderRadius: '9999px', padding: '4px 12px',
       whiteSpace: 'nowrap',
     }}>
@@ -58,18 +58,18 @@ function Pill({ label }) {
 
 function Stars({ rating }) {
   return (
-    <span style={{ color: '#F5B400', letterSpacing: '-1px', fontSize: '17px' }}>
+    <span style={{ color: 'var(--star-gold)', letterSpacing: '-1px', fontSize: '17px' }}>
       {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
     </span>
   );
 }
 
 const TIER_COLORS = {
-  'Community Champion': { bg: '#FFF7E6', color: '#92400e', border: '#FDE68A' },
+  'Community Champion': { bg: 'var(--gold-wash-2)', color: 'var(--amber-deep)', border: 'var(--gold-line)' },
   'Highly Trusted':     { bg: 'var(--slate-tint)', color: 'var(--ink-slate)', border: 'var(--slate-soft)' },
   'Reliable':           { bg: 'var(--slate-tint)', color: 'var(--ink-slate)', border: 'var(--slate-soft)' },
-  'Getting Started':    { bg: '#F3F4F6', color: 'var(--ink-slate)', border: '#D1D5DB' },
-  'New Member':         { bg: '#F3F4F6', color: '#9ca3af', border: '#E5E7EB' },
+  'Getting Started':    { bg: 'var(--grey-fill-2)', color: 'var(--ink-slate)', border: 'var(--grey-line-2)' },
+  'New Member':         { bg: 'var(--grey-fill-2)', color: 'var(--grey-text)', border: 'var(--grey-line)' },
 };
 
 function ScoreRing({ score }) {
@@ -79,16 +79,16 @@ function ScoreRing({ score }) {
   return (
     <svg width="88" height="88" viewBox="0 0 88 88" style={{ flexShrink: 0 }}>
       <circle cx="44" cy="44" r={r} fill="none" stroke="var(--border)" strokeWidth="7" />
-      <circle cx="44" cy="44" r={r} fill="none" stroke="#5a6470" strokeWidth="7"
+      <circle cx="44" cy="44" r={r} fill="none" stroke="var(--ink-slate)" strokeWidth="7"
         strokeDasharray={`${pct * circ} ${circ}`} strokeLinecap="round"
         transform="rotate(-90 44 44)"
         style={{ transition: 'stroke-dasharray 0.7s ease' }} />
       <text x="44" y="40" textAnchor="middle"
-        style={{ fontFamily: SFD, fontSize: 'var(--text-base)', fontWeight: 600, fill: '#1d1d1f' }}>
+        style={{ fontFamily: SFD, fontSize: 'var(--text-base)', fontWeight: 600, fill: 'var(--ink)' }}>
         {score ?? 0}
       </text>
       <text x="44" y="54" textAnchor="middle"
-        style={{ fontFamily: SF, fontSize: '9px', fill: '#9ca3af' }}>
+        style={{ fontFamily: SF, fontSize: '9px', fill: 'var(--grey-text)' }}>
         pts
       </text>
     </svg>
@@ -98,7 +98,7 @@ function ScoreRing({ score }) {
 function Section({ title, children }) {
   return (
     <div style={{
-      background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+      background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--border)',
       padding: '24px 28px',    }}>
       <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 16px', letterSpacing: '-0.2px' }}>
         {title}
@@ -153,14 +153,14 @@ export default function UserProfile() {
           }}
         >
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
-            <path d="M8.5 1L1.5 8L8.5 15" stroke="#4FA3CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8.5 1L1.5 8L8.5 15" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Back
         </button>
 
         {loading && (
           <div style={{
-            background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+            background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--border)',
             padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '16px', color: 'var(--ink-4)',
           }}>
             Loading profile…
@@ -169,7 +169,7 @@ export default function UserProfile() {
 
         {error && (
           <div style={{
-            background: 'var(--red-tint)', border: '1px solid #fecaca',
+            background: 'var(--red-tint)', border: '1px solid var(--red-line)',
             borderRadius: '14px', padding: '16px 20px',
             fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--red-error)',
           }}>
@@ -182,7 +182,7 @@ export default function UserProfile() {
 
             {/* Hero card */}
             <div style={{
-              background: '#fff', borderRadius: '18px', border: '1px solid var(--border)',
+              background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--border)',
               padding: '32px 28px 28px',              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
             }}>
               <Avatar name={profile.name} photoUrl={profile.photoUrl} size={88} />
@@ -200,12 +200,12 @@ export default function UserProfile() {
               {/* Badges */}
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '16px' }}>
                 {profile.verificationStatus === 'VERIFIED' && (
-                  <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
+                  <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--green-verified)', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
                     ✓ ID Verified
                   </span>
                 )}
                 {profile.phoneVerified && (
-                  <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: '#1a7a3a', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
+                  <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--green-verified)', background: 'rgba(34,160,80,0.10)', border: '1px solid rgba(34,160,80,0.25)', borderRadius: '9999px', padding: '3px 10px' }}>
                     ✓ Phone Verified
                   </span>
                 )}
@@ -231,7 +231,7 @@ export default function UserProfile() {
 
               {/* Meta row */}
               {(profile.city || profile.age || profile.occupation) && (
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', paddingTop: '16px', borderTop: '1px solid #f0f0f0', width: '100%' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', paddingTop: '16px', borderTop: '1px solid var(--hairline)', width: '100%' }}>
                   {profile.city && (
                     <span style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-3)' }}>
                       📍 {profile.city}
@@ -254,7 +254,7 @@ export default function UserProfile() {
             {/* Bio */}
             {profile.bio && (
               <Section title="About">
-                <p style={{ fontFamily: SF, fontSize: '16px', color: '#3a3a3c', lineHeight: 1.65, margin: 0 }}>
+                <p style={{ fontFamily: SF, fontSize: '16px', color: 'var(--ink-soft)', lineHeight: 1.65, margin: 0 }}>
                   {profile.bio}
                 </p>
               </Section>
@@ -303,7 +303,7 @@ export default function UserProfile() {
                   {reviews.map(rv => (
                     <div key={rv.id} style={{
                       paddingBottom: '16px',
-                      borderBottom: '1px solid #f0f0f0',
+                      borderBottom: '1px solid var(--hairline)',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -326,7 +326,7 @@ export default function UserProfile() {
                         </div>
                       )}
                       {rv.comment && (
-                        <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: '#5a5a5a', margin: 0, lineHeight: 1.55 }}>
+                        <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-mid)', margin: 0, lineHeight: 1.55 }}>
                           {rv.comment}
                         </p>
                       )}

@@ -62,7 +62,7 @@ export default function GlassTab({ active, onClick, children }) {
       style={{
         ...baseStyle,
         fontWeight: active ? 700 : 600,
-        color: active ? '#ffffff' : '#5a6470',
+        color: active ? '#ffffff' : 'var(--ink-slate)',
         background: active
           ? 'radial-gradient(125% 85% at 50% -10%, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%), linear-gradient(180deg, #5FB2D8 0%, #3E8AB0 100%)'
           : 'transparent',
@@ -74,7 +74,7 @@ export default function GlassTab({ active, onClick, children }) {
         WebkitBackdropFilter: active ? 'blur(6px) saturate(150%)' : 'none',
         transition: 'background 0.15s, color 0.15s, box-shadow 0.2s',
       }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f0f0f3'; }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--grey-fill-3)'; }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
     >
       {children}

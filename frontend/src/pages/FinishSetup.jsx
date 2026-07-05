@@ -6,8 +6,8 @@ import SmoothInput from '../components/SmoothInput';
 
 const SF = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const SFD = '-apple-system, "SF Pro Display", system-ui, sans-serif';
-const BLUE = '#4FA3CE';
-const BORDER = '#BFD9EA';
+const BLUE = 'var(--blue)';
+const BORDER = 'var(--blue-soft)';
 
 const ROLES = [
   { value: 'ELDER', label: 'Elder', desc: 'Looking for friends or help' },
@@ -87,7 +87,7 @@ export default function FinishSetup() {
     }}>
       <div style={{
         width: '100%', maxWidth: '420px',
-        background: '#ffffff', borderRadius: '20px',
+        background: 'var(--canvas)', borderRadius: '20px',
         padding: '40px 36px',
         border: `1px solid rgba(191,217,234,0.6)`,
         boxShadow: '0 1px 2px rgba(16,42,67,0.04), 0 10px 28px rgba(16,42,67,0.07)',
@@ -125,7 +125,7 @@ export default function FinishSetup() {
 
         {error && (
           <div style={{
-            background: 'var(--red-tint)', border: '1px solid #fecaca',
+            background: 'var(--red-tint)', border: '1px solid var(--red-line)',
             borderRadius: '11px', padding: '12px 16px',
             fontSize: 'var(--text-sm)', color: 'var(--red-error)', marginBottom: '20px',
           }}>
@@ -150,17 +150,17 @@ export default function FinishSetup() {
                     style={{
                       padding: '14px 12px', borderRadius: '11px',
                       border: active ? `2px solid ${BLUE}` : '1.5px solid var(--border)',
-                      background: active ? '#EAF5FB' : '#ffffff',
+                      background: active ? 'var(--blue-wash)' : '#ffffff',
                       cursor: 'pointer', textAlign: 'left',
                       transition: 'all 0.15s',
                     }}>
                     <div style={{
                       fontSize: 'var(--text-sm)', fontWeight: 600,
-                      color: active ? BLUE : '#1d1d1f', marginBottom: '4px',
+                      color: active ? BLUE : 'var(--ink)', marginBottom: '4px',
                     }}>
                       {label}
                     </div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: active ? '#7BB8D6' : '#a0a0a5', lineHeight: 1.3 }}>
+                    <div style={{ fontSize: 'var(--text-xs)', color: active ? 'var(--blue-mid)' : 'var(--ink-4)', lineHeight: 1.3 }}>
                       {desc}
                     </div>
                   </button>
@@ -185,7 +185,7 @@ export default function FinishSetup() {
                 onChange={e => { setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')); setFieldErrors(f => ({ ...f, username: '' })); }}
                 placeholder="your_username"
                 className="field"
-                style={{ borderColor: fieldErrors.username ? '#fca5a5' : undefined, paddingLeft: '28px' }}
+                style={{ borderColor: fieldErrors.username ? 'var(--red-soft)' : undefined, paddingLeft: '28px' }}
               />
             </div>
             {fieldErrors.username && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.username}</p>}
@@ -208,7 +208,7 @@ export default function FinishSetup() {
               onChange={e => { setPhone(e.target.value); setFieldErrors(f => ({ ...f, phone: '' })); }}
               placeholder="+1 416 555 0123"
               className="field"
-              style={{ borderColor: fieldErrors.phone ? '#fca5a5' : undefined }}
+              style={{ borderColor: fieldErrors.phone ? 'var(--red-soft)' : undefined }}
             />
             {fieldErrors.phone && (
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.phone}</p>
@@ -223,7 +223,7 @@ export default function FinishSetup() {
             disabled={loading}
             style={{
               width: '100%', height: '48px',
-              background: loading ? '#7BB8D6' : BLUE,
+              background: loading ? 'var(--blue-mid)' : BLUE,
               color: '#fff', border: 'none', borderRadius: '9999px',
               fontSize: '17px', fontWeight: 400,
               cursor: loading ? 'not-allowed' : 'pointer',

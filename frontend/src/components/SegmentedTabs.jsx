@@ -6,9 +6,9 @@
 // the solid filled section tabs above it. This makes the navigation read as a
 // clear hierarchy (global nav → solid section tabs → these flat sub-filters)
 // instead of three stacked rows competing for the same weight:
-//   strip:     flex row on a hairline rail (#ececef bottom border), 4px gap
+//   strip:     flex row on a hairline rail (var(--rail-line) bottom border), 4px gap
 //   segment:   flex:1, height 44. active = bold accent text + 3px accent
-//              underline; inactive = #7a7a7a, no underline
+//              underline; inactive = var(--ink-3), no underline
 //   badge:     shown ONLY when a segment opts in with notify:true and has
 //              count > 0 — so status tabs (Active, Building Trust, In
 //              Progress, Completed) stay quiet, and only actionable ones
@@ -17,11 +17,11 @@
 
 export default function SegmentedTabs({ segments, value, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid #ececef' }}>
+    <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid var(--rail-line)' }}>
       {segments.map(seg => {
         const active = value === seg.id;
-        const accent = seg.color || '#4FA3CE';
-        const textColor = active ? accent : '#7a7a7a';
+        const accent = seg.color || 'var(--blue)';
+        const textColor = active ? accent : 'var(--ink-3)';
         return (
           <button
             key={seg.id}
@@ -47,7 +47,7 @@ export default function SegmentedTabs({ segments, value, onChange }) {
                 minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
                 borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, lineHeight: 1, flexShrink: 0,
                 color: active ? '#ffffff' : '#9aa4af',
-                background: active ? '#4FA3CE' : '#e6e8ec',
+                background: active ? 'var(--blue)' : 'var(--line-idle)',
               }}>{seg.count}</span>
             )}
           </button>
@@ -60,7 +60,7 @@ export default function SegmentedTabs({ segments, value, onChange }) {
 // Friendly per-segment empty state — shown when the active segment has no cards.
 export function SegmentEmpty({ icon, children }) {
   return (
-    <div style={{ background: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '18px', padding: '40px 24px', textAlign: 'center' }}>
+    <div style={{ background: 'var(--canvas)', border: '1px solid var(--hairline-2)', borderRadius: '18px', padding: '40px 24px', textAlign: 'center' }}>
       <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--blue-wash)', margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {icon}
       </div>

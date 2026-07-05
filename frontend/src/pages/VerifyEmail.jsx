@@ -21,7 +21,7 @@ export default function VerifyEmail() {
 
   const card = {
     maxWidth: 460, margin: '0 auto', padding: '56px 24px', textAlign: 'center',
-    fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: '#2d3748',
+    fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: 'var(--ink-deep)',
   };
   const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' };
 

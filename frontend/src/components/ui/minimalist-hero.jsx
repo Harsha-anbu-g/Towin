@@ -126,7 +126,7 @@ export const MinimalistHero = ({
             style={{
               position: 'absolute', bottom: '0',
               width: '340px', height: '340px', borderRadius: '50%',
-              background: 'radial-gradient(circle, #4FA3CE 0%, #003d7a 100%)',
+              background: 'radial-gradient(circle, var(--blue) 0%, #003d7a 100%)',
               opacity: 0.85,
             }}
           />
