@@ -110,6 +110,11 @@ nominatim:
   base-url: ${NOMINATIM_BASE_URL:https://nominatim.openstreetmap.org}
   user-agent: ${NOMINATIM_USER_AGENT:ToWin/1.0 (agharsha.anbu@gmail.com)}
 
+# Postal-code geocoder (free, no key). OSM/Nominatim can't resolve Canadian
+# postcodes and mislocates bare US zips, so postcode-shaped queries go here first.
+zippopotam:
+  base-url: ${ZIPPOPOTAM_BASE_URL:https://api.zippopotam.us}
+
 # "Ask AI" tortoise help assistant. Uses Groq's free OpenAI-compatible API. The
 # key lives ONLY here (env var) — never in the browser or the repo. Blank key or
 # enabled=false makes the assistant reply with a graceful "not available" message
