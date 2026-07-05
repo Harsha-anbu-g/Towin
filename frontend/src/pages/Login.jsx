@@ -42,18 +42,15 @@ function HeroPanel() {
       }} />
 
       {/* Tagline — centered on the photo */}
-      <span style={{
-        position: 'absolute', top: '46%', left: '50%', transform: 'translate(-50%, -50%)',
-        zIndex: 2, whiteSpace: 'nowrap',
-        background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        border: '1px solid rgba(255,255,255,0.35)', borderRadius: '9999px',
-        padding: '9px 22px', fontSize: 'var(--text-sm)', fontWeight: 600,
-        letterSpacing: '0.4px', color: '#fff',
-        fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+      <p style={{
+        position: 'absolute', bottom: '15%', left: '50%', transform: 'translateX(-50%)',
+        zIndex: 2, whiteSpace: 'nowrap', margin: 0,
+        fontSize: '30px', fontWeight: 400, letterSpacing: '-0.02em', color: '#fff',
+        textShadow: '0 2px 20px rgba(20,55,80,0.55)',
+        fontFamily: 'var(--font-display)',
       }}>
         It takes two To Win.
-      </span>
+      </p>
 
       {/* Turtle logo + wordmark top-left — back to the landing story */}
       <Link to="/" style={{
@@ -61,10 +58,15 @@ function HeroPanel() {
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
-        <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{
-          width: 40, height: 40, objectFit: 'contain',
-          filter: 'brightness(0) invert(1) drop-shadow(0 1px 10px rgba(20,55,80,0.45))',
-        }} />
+        <span style={{
+          width: 42, height: 42, borderRadius: '12px', background: '#ffffff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: '1px solid rgba(20,55,80,0.08)',
+          boxShadow: '0 2px 10px rgba(20,55,80,0.22)',
+          flexShrink: 0,
+        }}>
+          <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+        </span>
         <p style={{
           fontSize: '21px', fontWeight: 600, color: '#ffffff', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
