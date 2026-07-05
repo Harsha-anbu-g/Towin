@@ -94,8 +94,8 @@ app:
     # Event-driven, not a timer: a demo account is reverted to the baseline only
     # after a visitor changes it. This is the quiet period (ms) to wait after the
     # last change before reverting, so an active visitor keeps their changes and
-    # everything resets once they go idle. Default 900000 = 15 minutes.
-    reset-delay-ms: ${APP_DEMO_RESET_DELAY_MS:900000}
+    # everything resets once they go idle. Default 300000 = 5 minutes.
+    reset-delay-ms: ${APP_DEMO_RESET_DELAY_MS:300000}
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}

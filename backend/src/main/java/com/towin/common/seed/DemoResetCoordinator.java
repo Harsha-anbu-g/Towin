@@ -41,8 +41,8 @@ public class DemoResetCoordinator {
     @Value("${app.demo.reset-enabled:true}")
     private boolean resetEnabled;
 
-    // Quiet period after the last demo change before reverting. Default 15 min.
-    @Value("${app.demo.reset-delay-ms:900000}")
+    // Quiet period after the last demo change before reverting. Default 5 min.
+    @Value("${app.demo.reset-delay-ms:300000}")
     private long resetDelayMs;
 
     private ThreadPoolTaskScheduler scheduler;
