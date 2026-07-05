@@ -213,10 +213,13 @@ export default function EmergencyContacts() {
                   border: 'none',
                   borderRadius: '9999px',
                   padding: '8px 20px',
+                  minHeight: '44px',
                   fontSize: 'var(--text-sm)',
                   fontWeight: 600,
                   fontFamily: SFText,
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}
               >
                 + Add Contact

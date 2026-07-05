@@ -331,9 +331,10 @@ export default function Register() {
   };
 
   const eyeBtn = {
-    position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-    background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
-    color: 'var(--ink-3)', display: 'flex',
+    position: 'absolute', right: '2px', top: '50%', transform: 'translateY(-50%)',
+    background: 'none', border: 'none', cursor: 'pointer',
+    minWidth: '44px', minHeight: '44px',
+    color: 'var(--ink-3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
   };
 
   const linkBtn = {

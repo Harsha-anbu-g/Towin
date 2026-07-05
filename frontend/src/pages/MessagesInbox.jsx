@@ -239,7 +239,7 @@ export default function MessagesInbox() {
                               {c.otherUserName || 'User'}
                             </span>
                             {trustLabel && (
-                              <span style={{
+                              <span className="inbox-trust-pill" style={{
                                 fontSize: '12px', fontWeight: 600, fontFamily: SFText,
                                 color: 'var(--blue)', background: 'var(--surface)',
                                 border: '1px solid #e0e0e0', borderRadius: '9999px',

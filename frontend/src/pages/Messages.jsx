@@ -422,7 +422,7 @@ export default function Messages() {
               resize: 'none',
             }}
           />
-          <span style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '4px', paddingLeft: '4px' }}>
+          <span className="chat-kbd-hint" style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '4px', paddingLeft: '4px' }}>
             Enter to send · Shift+Enter for new line
           </span>
         </div>
@@ -431,13 +431,14 @@ export default function Messages() {
           disabled={sending || !text.trim() || loadError === 'trust'}
           title="Send message (Enter)"
           aria-label="Send message"
+          className="chat-send-btn"
           style={{
             background: text.trim() && loadError !== 'trust' ? '#4FA3CE' : '#e0e0e0',
             color: '#fff',
             border: 'none',
             borderRadius: '50%',
-            width: '36px',
-            height: '36px',
+            width: '44px',
+            height: '44px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
