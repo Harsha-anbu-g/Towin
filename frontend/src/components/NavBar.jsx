@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ConfirmDialog from './ConfirmDialog';
 import api from '../api/axios';
+import { useSosCountdown } from '../lib/useSosCountdown';
 
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -91,6 +92,10 @@ export default function NavBar() {
     }
     finally { setSending(false); }
   }
+
+  // ISSUE-002: a stray tap must not alarm contacts — first press arms a short
+  // cancel window, a second press cancels, and only the countdown expiring sends.
+  const { countdown: sosCountdown, press: pressSos } = useSosCountdown(triggerSos);
 
   const NavLink = ({ to, label, icon: Icon }) => {
     const active = pathname === to || pathname.startsWith(to + '/');
@@ -199,16 +204,21 @@ export default function NavBar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <NavLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             {isElder && (
-              <button onClick={triggerSos} disabled={sending}
-                title="Send an urgent alert to all your emergency contacts"
-                aria-label="Send SOS alert to your emergency contacts"
+              <button onClick={pressSos} disabled={sending}
+                title={sosCountdown != null
+                  ? 'Tap again to cancel before it sends'
+                  : 'Send an urgent alert to all your emergency contacts'}
+                aria-label={sosCountdown != null
+                  ? `Cancel SOS — it sends in ${sosCountdown} seconds`
+                  : 'Send SOS alert to your emergency contacts'}
                 style={{
                 fontSize: '16px', fontWeight: 700, fontFamily: SF,
                 padding: '10px 22px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? '#4FA3CE' : sending ? '#7a2a2a' : '#9b3535',
                 color: '#fff', opacity: sending ? 0.7 : 1,
-              }}>{sosSent ? 'Help sent' : sending ? 'Sending…' : 'SOS'}</button>
+              }}>{sosCountdown != null ? `Sending in ${sosCountdown} — tap to cancel`
+                  : sosSent ? 'Help sent' : sending ? 'Sending…' : 'SOS'}</button>
             )}
 
             {/* Account circle — Profile & Log out live here */}
@@ -296,16 +306,20 @@ export default function NavBar() {
               </Link>
             )}
             {isElder && (
-              <button onClick={triggerSos} disabled={sending}
-                title="Send an urgent alert to all your emergency contacts"
-                aria-label="Send SOS alert to your emergency contacts"
+              <button onClick={pressSos} disabled={sending}
+                title={sosCountdown != null
+                  ? 'Tap again to cancel before it sends'
+                  : 'Send an urgent alert to all your emergency contacts'}
+                aria-label={sosCountdown != null
+                  ? `Cancel SOS — it sends in ${sosCountdown} seconds`
+                  : 'Send SOS alert to your emergency contacts'}
                 style={{
                 fontSize: '14px', fontWeight: 700, fontFamily: SF,
                 padding: '7px 16px', minHeight: '40px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? '#4FA3CE' : '#9b3535',
                 color: '#fff',
-              }}>{sosSent ? 'Sent' : 'SOS'}</button>
+              }}>{sosCountdown != null ? `Cancel · ${sosCountdown}` : sosSent ? 'Sent' : 'SOS'}</button>
             )}
             <button
               onClick={() => setMenuOpen(o => !o)}
