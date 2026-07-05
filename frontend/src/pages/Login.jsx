@@ -385,9 +385,10 @@ export default function Login() {
                     onClick={() => setShowPwd(v => !v)}
                     aria-label={showPwd ? 'Hide password' : 'Show password'}
                     style={{
-                      position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-                      background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
-                      color: 'var(--ink-3)', display: 'flex',
+                      position: 'absolute', right: '2px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      minWidth: '44px', minHeight: '44px',
+                      color: 'var(--ink-3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -398,7 +399,7 @@ export default function Login() {
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
                   <Link to="/forgot-password" style={{
                     fontSize: 'var(--text-sm)', color: 'var(--blue)',
-                    textDecoration: 'none',
+                    textDecoration: 'none', display: 'inline-block', padding: '12px 0 12px 12px',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
                     Forgot password?

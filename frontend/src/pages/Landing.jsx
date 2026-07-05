@@ -14,9 +14,11 @@ const BORDER = '#BFD9EA';
 const MotionButton = motion.button;
 const MotionSpan = motion.span;
 
-function ProgressDots({ count, current, onJump }) {
+// Progress as a slim "trail" — the guided walk, one segment per step. The bar is
+// thin for calm, but each button pads out to a comfortable tap target (elders).
+function Trail({ count, current, onJump }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', justifyContent: 'center' }}>
       {Array.from({ length: count }).map((_, i) => {
         const done = i < current;
         const here = i === current;
@@ -24,14 +26,18 @@ function ProgressDots({ count, current, onJump }) {
           <button
             key={i}
             onClick={() => onJump(i)}
-            aria-label={`Go to slide ${i + 1}`}
+            aria-label={`Go to step ${i + 1}`}
             style={{
-              width: here ? '26px' : '11px', height: '11px', borderRadius: '9999px',
-              border: 'none', cursor: 'pointer', padding: 0,
-              background: here ? SKY : done ? BORDER : '#dfe6ec',
-              transition: 'width 0.2s, background 0.2s',
+              border: 'none', background: 'transparent', cursor: 'pointer', padding: '9px 0',
+              display: 'inline-flex', alignItems: 'center',
             }}
-          />
+          >
+            <span style={{
+              display: 'block', width: here ? '34px' : '18px', height: '4px', borderRadius: '9999px',
+              background: here ? SKY : done ? BORDER : '#dfe6ec',
+              transition: 'width 0.28s cubic-bezier(0.16,1,0.3,1), background 0.28s',
+            }} />
+          </button>
         );
       })}
     </div>
@@ -171,12 +177,13 @@ export default function Landing() {
 
       {/* Footer: dots + navigation */}
       <footer className="landing-footer" style={{ padding: '0 40px 36px' }}>
-        <ProgressDots count={total} current={index} onJump={setIndex} />
+        <Trail count={total} current={index} onJump={setIndex} />
         <p style={{
-          fontFamily: SF, fontSize: '14px', color: 'var(--ink-4)',
-          textAlign: 'center', margin: '10px 0 18px',
+          fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)',
+          textAlign: 'center', margin: '6px 0 18px',
+          fontVariantNumeric: 'tabular-nums', letterSpacing: '1px',
         }}>
-          {index + 1} of {total}
+          {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
         </p>
 
         {isLast ? (

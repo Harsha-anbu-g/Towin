@@ -284,7 +284,10 @@ export default function NavBar() {
         {isMobile && (
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
             {unread > 0 && (
-              <Link to="/messages" style={{ textDecoration: 'none' }}>
+              <Link to="/messages" aria-label={`${unread} unread messages`} style={{
+                textDecoration: 'none', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', minWidth: '44px', minHeight: '44px',
+              }}>
                 <span style={{
                   background: 'var(--red-deep)', color: '#fff', fontSize: '12px',
                   fontWeight: 700, fontFamily: SF, borderRadius: '9999px',
@@ -298,7 +301,7 @@ export default function NavBar() {
                 aria-label="Send SOS alert to your emergency contacts"
                 style={{
                 fontSize: '14px', fontWeight: 700, fontFamily: SF,
-                padding: '7px 14px', borderRadius: '9999px', border: 'none',
+                padding: '7px 16px', minHeight: '40px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? '#4FA3CE' : '#9b3535',
                 color: '#fff',
@@ -307,7 +310,12 @@ export default function NavBar() {
             <button
               onClick={() => setMenuOpen(o => !o)}
               aria-label="Menu"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                minWidth: '44px', minHeight: '44px', padding: '8px',
+                display: 'flex', flexDirection: 'column', gap: '5px',
+                alignItems: 'center', justifyContent: 'center',
+              }}
             >
               <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? '#4FA3CE' : '#1d1d1f', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translateY(7px)' : 'none' }} />
               <span style={{ display: 'block', width: 22, height: 2, background: menuOpen ? 'transparent' : '#1d1d1f', borderRadius: 2, transition: 'all 0.2s' }} />

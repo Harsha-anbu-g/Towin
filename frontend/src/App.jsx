@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useEffect } from 'react';
 import { ToastProvider } from './context/ToastContext';
@@ -86,6 +86,24 @@ function DashboardRouter() {
   return <ElderDashboard />;
 }
 
+function ScrollShell({ children }) {
+  const { pathname } = useLocation();
+  // Pages that pin their own bottom UI (landing footer, chat composer, game
+  // board) manage their own space; everywhere else, phones get extra scroll
+  // room at the bottom so the floating helpers (Ask AI / feedback / peekaboo)
+  // never sit on top of the page's last buttons — see .app-scroll-clear.
+  const pinsOwnBottom =
+    pathname === '/' || pathname === '/game' || pathname.startsWith('/messages/');
+  return (
+    <div
+      className={pinsOwnBottom ? 'app-scroll' : 'app-scroll app-scroll-clear'}
+      style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function App() {
   return (
     <ToastProvider>
@@ -98,7 +116,7 @@ function App() {
           <div style={{ display: 'flex', flexDirection: 'column', height: '100svh' }}>
           <BetaBanner />
           <BfCacheGuard />
-          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <ScrollShell>
           <Routes>
             <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
@@ -126,7 +144,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-          </div>
+          </ScrollShell>
           <FeedbackWidget />
           <AskAiAssistant />
           <CookieConsent />

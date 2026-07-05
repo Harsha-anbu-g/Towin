@@ -24,7 +24,7 @@ export default function BetaBanner() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '10px 20px',
+      padding: '10px 48px',
       fontSize: 'var(--text-sm)',
       fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
       position: 'relative',
@@ -38,7 +38,9 @@ export default function BetaBanner() {
           style={{
             background: 'none', border: 'none', color: '#fff',
             fontWeight: 600, cursor: 'pointer', textDecoration: 'underline',
-            fontSize: 'var(--text-sm)', fontFamily: 'inherit', padding: 0,
+            fontSize: 'var(--text-sm)', fontFamily: 'inherit',
+            /* Comfortable tap height without making the banner taller */
+            padding: '12px 4px', margin: '-12px -4px',
           }}
         >
           Give Feedback →
@@ -48,9 +50,11 @@ export default function BetaBanner() {
         onClick={dismiss}
         aria-label="Dismiss beta banner"
         style={{
-          position: 'absolute', right: '16px',
+          position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)',
           background: 'none', border: 'none', color: '#fff',
-          fontSize: 'var(--text-base)', cursor: 'pointer', lineHeight: 1,
+          fontSize: 'var(--text-lg)', cursor: 'pointer', lineHeight: 1,
+          minWidth: '44px', minHeight: '44px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
         ×

@@ -519,7 +519,8 @@ button, a, [role="button"], input, textarea, select, label, summary {
 
 @media (max-width: 640px) {
   .dash-tab-wrap  { padding: 0 12px; }
-  .dash-content   { padding: 16px 12px 80px; }
+  /* Bottom clearance for the floating buttons comes from .app-scroll-clear */
+  .dash-content   { padding: 16px 12px 24px; }
   .profile-edit-grid { grid-template-columns: 1fr; }
 }
 
@@ -683,6 +684,21 @@ img {
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
+/* ── Floating-button clearance (phones) ──────────────────────────────────
+   The Ask AI + feedback FABs stack ~140px tall in the bottom-right corner on
+   phones, sitting on top of whatever a page puts last — Post Help, Sign Out,
+   Cancel, Remove… This spacer lives at the end of the app's scroll container
+   so every page's final buttons can always scroll fully clear of the FABs.
+   Pages that pin their own bottom UI (landing, chat, game) opt out via
+   ScrollShell in App.jsx. */
+@media (max-width: 640px) {
+  .app-scroll-clear::after {
+    content: '';
+    display: block;
+    height: calc(140px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* ── Chat header (Messages) — compact on small screens ─────────────────────
    At phone widths the Back text + 44px avatar + name + trust pill + Report
    button are too much for one row, so the trust pill wraps to 2–3 lines. Trim
@@ -694,6 +710,20 @@ img {
   .chat-header .chat-avatar { width: 38px !important; height: 38px !important; }
   .chat-header .chat-trust-pill { white-space: nowrap; }
   .chat-header .chat-report { padding: 6px 12px !important; }
+
+  /* "Enter to send · Shift+Enter for new line" is keyboard advice — phones
+     have a Send button instead, so the hint is noise there. */
+  .chat-kbd-hint { display: none; }
+  .chat-send-btn { margin-bottom: 6px !important; }
+
+  /* Inbox rows: the trust pill was squeezing names down to "Tom Wa…" —
+     a slightly smaller pill gives the name room to breathe. */
+  .inbox-trust-pill { font-size: 10px !important; padding: 1px 6px !important; }
+
+  /* The landing page's primary Next/Start button lives bottom-right — exactly
+     where the Ask AI helper floats. The helper stays available on every other
+     page (and on desktop); here the primary action wins. */
+  .ask-ai-fab--landing { display: none !important; }
 }
 
 /* ─── Reduced motion ──────────────────────────────────────────────────────

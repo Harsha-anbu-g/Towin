@@ -159,7 +159,7 @@ export default function AskAiAssistant() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Ask AI — the ToWin helper"
-          className="ask-ai-fab"
+          className={pathname === '/' ? 'ask-ai-fab ask-ai-fab--landing' : 'ask-ai-fab'}
           style={{
             position: 'fixed', zIndex: 1000,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
