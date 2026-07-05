@@ -81,8 +81,16 @@ function Body({ children, align = 'left' }) {
 }
 
 // Content column — consistent left-anchored rhythm shared by the text slides.
+// The column shrinks to its content (title 18ch, lead 54ch, cards 600px) and
+// centers itself in the slide, so the text stays left-aligned but the block
+// sits in the middle of a laptop screen instead of hugging the wrapper's left.
 function Slide({ children }) {
-  return <div style={{ textAlign: 'left' }}>{children}</div>;
+  return (
+    <div style={{
+      textAlign: 'left', width: 'fit-content', maxWidth: '100%',
+      marginLeft: 'auto', marginRight: 'auto',
+    }}>{children}</div>
+  );
 }
 
 function MiniCard({ title, badge, stars, compact, children }) {
