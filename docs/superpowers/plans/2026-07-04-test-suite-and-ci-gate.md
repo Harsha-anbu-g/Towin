@@ -100,7 +100,14 @@ SOS, review counted twice, account deleted while connections active, etc.).
 - [x] Frontend test infra + first tests green — Vitest 4 + RTL, **21 tests**
       (utils date parsing, axios session-expiry interceptors, TrustBadge)
 - [x] Pushed; CI green on GitHub
-- [ ] User flipped Railway "Wait for CI" (manual, pending)
+- [x] Railway "Wait for CI" — verified already ON. The deployment trigger
+      (service backend / env production / branch main) has `checkSuites: true`
+      and `validCheckSuites: 1`, i.e. Railway now sees exactly one CI check
+      (our new workflow) and holds deploys in a WAITING state until it passes.
+      It was toggled on before, but had nothing to wait for until CI existed.
+      Verified via the Railway GraphQL API (`project.deploymentTriggers`).
+      Caveat: Railway waits for *all* check suites on the commit, not just
+      ours — fine today (only one), watch if other GitHub apps get added.
 
 ### Bug findings from test-writing (report only, nothing changed)
 
