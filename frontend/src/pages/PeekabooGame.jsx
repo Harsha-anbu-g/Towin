@@ -139,34 +139,41 @@ export default function PeekabooGame() {
           <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', fontWeight: 600, flexShrink: 0 }}>{matchedCount}/{PAIRS}</span>
         </div>
 
+        {/* Why we play — the point isn't winning, it's coming back each day */}
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', textAlign: 'center', lineHeight: 1.6, margin: '0 auto 32px', maxWidth: '400px', fontFamily: SFT }}>
+          A one-minute game for your memory. Win or lose doesn't matter, what counts is playing a little each day. The playing itself is the good part.
+        </p>
+
         {/* Tortoise — single SVG */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <svg width="100%" height="auto" viewBox="0 -28 380 460" style={{ overflow: 'visible', maxWidth: '380px' }}>
 
             {/* Ground shadow */}
-            <ellipse cx="190" cy="416" rx="110" ry="10" fill={GREEN} opacity="0.08" />
+            <ellipse cx="190" cy="416" rx="118" ry="10" fill={GREEN} opacity="0.07" />
 
-            {/* Legs — chunky capsules peeking out diagonally from under the shell */}
-            <ellipse cx="70" cy="52" rx="24" ry="40" fill={GREEN} transform="rotate(-45 70 52)" />
-            <ellipse cx="310" cy="52" rx="24" ry="40" fill={GREEN} transform="rotate(45 310 52)" />
-            <ellipse cx="70" cy="326" rx="24" ry="40" fill={GREEN} transform="rotate(45 70 326)" />
-            <ellipse cx="310" cy="326" rx="24" ry="40" fill={GREEN} transform="rotate(-45 310 326)" />
+            {/* Flippers — organic swimming sweeps instead of rigid capsules */}
+            <path d="M 112 84 C 66 72, 30 48, 40 18 C 74 10, 112 38, 126 72 Z" fill={GREEN} />
+            <path d="M 268 84 C 314 72, 350 48, 340 18 C 306 10, 268 38, 254 72 Z" fill={GREEN} />
+            <path d="M 112 294 C 64 308, 30 334, 42 362 C 76 370, 114 340, 126 306 Z" fill={GREEN} />
+            <path d="M 268 294 C 316 308, 350 334, 338 362 C 304 370, 266 340, 254 306 Z" fill={GREEN} />
 
-            {/* Tail */}
-            <path d="M 172 348 Q 190 410 208 348 Z" fill={GREEN} />
+            {/* Tail — soft rounded nub */}
+            <path d="M 174 348 C 178 378, 202 378, 206 348 C 196 356, 184 356, 174 348 Z" fill={GREEN} />
 
-            {/* Neck + head peeking over the shell */}
+            {/* Neck + head peeking over the shell — calm, zen face */}
             <ellipse cx="190" cy="40" rx="18" ry="28" fill={GREEN} />
             <circle cx="190" cy="8" r="30" fill={GREEN} />
+            {/* open, friendly eyes */}
             <circle cx="178" cy="2" r="5.5" fill="#f0fdf4" />
             <circle cx="202" cy="2" r="5.5" fill="#f0fdf4" />
             <circle cx="178.5" cy="2.5" r="2.6" fill="#1d1d1f" />
             <circle cx="201.5" cy="2.5" r="2.6" fill="#1d1d1f" />
 
-            {/* Shell — vertical oval: dark rim with a lighter plate the cells sit on */}
+            {/* Shell — vertical oval: dark rim, lighter plate, soft top-light + inner rim line */}
             <ellipse cx="190" cy="189" rx="152" ry="174" fill={GREEN} />
             <ellipse cx="190" cy="189" rx="138" ry="160" fill={SHELL} />
-            <ellipse cx="152" cy="116" rx="52" ry="66" fill="#ffffff" opacity="0.04" />
+            <ellipse cx="190" cy="189" rx="130" ry="152" fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.14" />
+            <ellipse cx="150" cy="110" rx="58" ry="72" fill="#ffffff" opacity="0.05" />
 
             {/* Hex cells */}
             {cards.map((card, i) => {
