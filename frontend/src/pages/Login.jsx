@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import SiteFooter from '../components/SiteFooter';
 import SmoothInput from '../components/SmoothInput';
+import { yearsOld } from '../lib/copy';
 
 function HeroPanel() {
   return (
@@ -237,8 +238,10 @@ export default function Login() {
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
               {[
-                { role: 'ELDER', label: 'Try as an Elder', sub: 'Margaret, 72' },
-                { role: 'HELPER', label: 'Try as a Helper', sub: 'Harsha, 23' },
+                // Ages track the demo accounts' seeded birthdates (DemoDataSeeder)
+                // so the chips never drift from what the app itself computes.
+                { role: 'ELDER', label: 'Try as an Elder', sub: `Margaret, ${yearsOld('1953-05-14')}` },
+                { role: 'HELPER', label: 'Try as a Helper', sub: `Harsha, ${yearsOld('2003-03-14')}` },
               ].map(({ role, label, sub }) => (
                 <button
                   key={role}
