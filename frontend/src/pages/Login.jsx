@@ -41,6 +41,20 @@ function HeroPanel() {
           'linear-gradient(to top, rgba(20,55,80,0.62) 0%, rgba(20,55,80,0.30) 45%, rgba(20,55,80,0.05) 100%)',
       }} />
 
+      {/* Tagline — centered on the photo */}
+      <span style={{
+        position: 'absolute', top: '73%', left: '50%', transform: 'translate(-50%, -50%)',
+        zIndex: 2, whiteSpace: 'nowrap',
+        background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        border: '1px solid rgba(255,255,255,0.35)', borderRadius: '9999px',
+        padding: '9px 22px', fontSize: 'var(--text-sm)', fontWeight: 600,
+        letterSpacing: '0.4px', color: '#fff',
+        fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
+      }}>
+        It takes two To Win.
+      </span>
+
       {/* Turtle logo + wordmark top-left — back to the landing story */}
       <Link to="/" style={{
         position: 'absolute', top: '32px', left: '48px', zIndex: 2,
@@ -59,17 +73,7 @@ function HeroPanel() {
 
       {/* Content — pushed below logo */}
       <div style={{ position: 'relative', zIndex: 2, marginTop: '44px' }}>
-        <span style={{
-          display: 'inline-block', marginBottom: '14px',
-          background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.35)', borderRadius: '9999px',
-          padding: '7px 18px', fontSize: 'var(--text-xs)', fontWeight: 600,
-          letterSpacing: '0.4px', color: '#fff',
-          fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-        }}>
-          It takes two To Win.
-        </span>
+        
         <h1 style={{
           fontFamily: 'var(--font-display)',
           fontSize: 'var(--text-3xl)', lineHeight: 1.12, color: '#fff',
