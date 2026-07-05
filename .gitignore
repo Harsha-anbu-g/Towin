@@ -85,3 +85,4 @@ docs/ToWin-Video-*.docx
 # Regenerable dependency-graph export (the tracked copy lives in docs/architecture/)
 docs/architecture/frontend-graph.pdf
 .vercel
+.gstack/
