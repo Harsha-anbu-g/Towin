@@ -17,6 +17,12 @@ const MotionSpan = motion.span;
 const SMOOTH_TYPES = new Set(['text', 'password', 'tel', 'url', 'search']);
 const SPRING = { stiffness: 500, damping: 30, mass: 0.5 };
 
+// Touch devices (phones/tablets): iOS Safari doesn't fire `selectionchange` on
+// inputs, so the custom caret never shows while the native one is hidden and
+// the user types with no visible cursor. Keep the native caret there.
+const COARSE_POINTER =
+  typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
+
 // Firefox masks passwords with a slightly different bullet glyph.
 const PASSWORD_CHAR =
   typeof navigator !== 'undefined' && /firefox|fxios/i.test(navigator.userAgent)
@@ -39,7 +45,7 @@ const SmoothInput = forwardRef(function SmoothInput(
   forwardedRef,
 ) {
   const prefersReducedMotion = useReducedMotion();
-  const smooth = SMOOTH_TYPES.has(type) && !prefersReducedMotion;
+  const smooth = SMOOTH_TYPES.has(type) && !prefersReducedMotion && !COARSE_POINTER;
 
   const [internalValue, setInternalValue] = useState(defaultValue ?? '');
   const [caretHeight, setCaretHeight] = useState(18);
