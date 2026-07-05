@@ -11,6 +11,11 @@
 // stays for "trust" words. Copy is deliberately plain (elder-first).
 
 
+import {
+  Armchair, HandHeart, ShoppingBag, Car, MessageCircle,
+  BadgeCheck, TrendingUp, Star, Link2, Phone, Video, Share2, Coffee,
+} from 'lucide-react';
+
 const SERIF = `'Newsreader', Georgia, 'Times New Roman', serif`;  // headings + tagline, weight 400
 const SANS  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`; // wordmark, labels, UI numerals
 const SF    = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;    // body
@@ -93,13 +98,25 @@ function Slide({ children }) {
   );
 }
 
-function MiniCard({ title, badge, stars, compact, children }) {
+function MiniCard({ title, badge, stars, compact, icon: Icon, iconTint, children }) {
   return (
     <div style={{
       background: '#ffffff', border: `1px solid ${HAIR}`,
       borderRadius: compact ? '14px' : '18px',
       padding: compact ? '12px 16px' : '24px 26px', textAlign: 'left',
     }}>
+      {/* Large cards: a tinted icon chip above the title (role cards, slide 2) */}
+      {Icon && !compact && (
+        <span style={{
+          width: '44px', height: '44px', borderRadius: '50%', marginBottom: '12px',
+          background: iconTint === 'green' ? 'var(--green-tint)' : WASH,
+          border: `1px solid ${iconTint === 'green' ? '#BFE0C9' : SKYLINE}`,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          color: iconTint === 'green' ? '#3D8B5A' : BLUE,
+        }}>
+          <Icon size={21} strokeWidth={2} />
+        </span>
+      )}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         gap: '8px', marginBottom: compact ? '4px' : '8px',
@@ -107,7 +124,10 @@ function MiniCard({ title, badge, stars, compact, children }) {
         <p style={{
           fontFamily: SANS, fontSize: compact ? '15px' : '18px', fontWeight: 600,
           color: INK, margin: 0, letterSpacing: '-0.2px',
+          display: 'inline-flex', alignItems: 'center', gap: '7px',
         }}>
+          {/* Compact cards: a small inline icon before the title (score cards, slide 4) */}
+          {Icon && compact && <Icon size={15} strokeWidth={2.2} style={{ color: SLATE, flexShrink: 0 }} />}
           {title}
         </p>
         {badge && (
@@ -157,6 +177,17 @@ function NoteBox({ children, align = 'center' }) {
   );
 }
 
+// Each ladder stage carries its own icon — the meaning at a glance (elders parse
+// a phone glyph faster than the word). Sequence is shown by the rail itself.
+const STAGE_ICONS = {
+  'Just Connected': Link2,
+  'Messaging': MessageCircle,
+  'Phone Ready': Phone,
+  'Video Ready': Video,
+  'Social Media': Share2,
+  'Ready to Meet': Coffee,
+};
+
 // Vertical trust journey — read top to bottom: the first step sits at the top
 // and the eye walks down the ladder to the goal, "Fully Trusted", at the bottom.
 // Each step is worth +1 (seven steps → +7, matching the Trust Ladder card).
@@ -184,7 +215,7 @@ function StageLadder({ stages }) {
                 {isGoal
                   ? <img src="/logo.png" alt="ToWin" draggable="false"
                       style={{ width: 26, height: 26, objectFit: 'contain', transform: 'rotate(90deg)' }} />
-                  : i + 1}
+                  : (() => { const I = STAGE_ICONS[s]; return I ? <I size={15} strokeWidth={2.2} /> : i + 1; })()}
               </div>
               {!isBottom && (
                 <div style={{ flex: 1, width: '1.5px', minHeight: '10px', background: SKYLINE }} />
@@ -278,10 +309,10 @@ export const SLIDES = [
         <Lead align="center">Everyone on ToWin is one of these two.</Lead>
         <div style={{ height: '24px' }} />
         <CardGrid>
-          <MiniCard title="Elder">
+          <MiniCard title="Elder" icon={Armchair}>
             An older person looking for friendship, company, or help with daily tasks.
           </MiniCard>
-          <MiniCard title="Helper">
+          <MiniCard title="Helper" icon={HandHeart} iconTint="green">
             A younger person who gives time, company, and a hand with everyday things.
           </MiniCard>
         </CardGrid>
@@ -299,6 +330,19 @@ export const SLIDES = [
           Small daily things, like shopping, a ride, or someone to talk to, take
           energy that elders don&apos;t always have.
         </Lead>
+        {/* The three examples from the lead, as scannable chips */}
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', margin: '20px 0 0' }}>
+          {[[ShoppingBag, 'Shopping'], [Car, 'A ride'], [MessageCircle, 'Someone to talk to']].map(([I, label]) => (
+            <span key={label} style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: '#ffffff', border: `1px solid ${HAIR}`, borderRadius: '9999px',
+              padding: '9px 16px', fontFamily: SF, fontSize: '15px', fontWeight: 500, color: SLATE,
+            }}>
+              <I size={16} strokeWidth={2} style={{ color: BLUE }} />
+              {label}
+            </span>
+          ))}
+        </div>
         <div style={{ height: '18px' }} />
         <Body align="center">
           On ToWin, an elder simply asks. Helpers nearby see the request and
@@ -331,13 +375,13 @@ export const SLIDES = [
 
         {/* Right: three score cards + total */}
         <div style={{ flexShrink: 0, width: '288px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
-          <MiniCard title="Profile" badge="+3" compact>
+          <MiniCard title="Profile" badge="+3" compact icon={BadgeCheck}>
             Full profile with ID, phone, and photo, all checked.
           </MiniCard>
-          <MiniCard title="Trust Ladder" badge="+7" compact>
+          <MiniCard title="Trust Ladder" badge="+7" compact icon={TrendingUp}>
             With each new person you climb the same seven steps, points earned as that friendship grows.
           </MiniCard>
-          <MiniCard title="Review" badge="+5" stars compact>
+          <MiniCard title="Review" badge="+5" stars compact icon={Star}>
             Star ratings from the people they have already helped.
           </MiniCard>
           <div style={{
