@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, ShieldCheck, HelpCircle, LogOut, Siren, Plus } from 'lucide-react';
+import { Home, MessageCircle, User, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -202,6 +202,7 @@ export default function NavBar() {
         {/* Desktop right actions */}
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <NavLink to="/game" label="Peekaboo" icon={Gamepad2} />
             <NavLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             {isElder && (
               <button onClick={pressSos} disabled={sending}
@@ -360,6 +361,7 @@ export default function NavBar() {
             <MenuLink to="/profile" label="Profile" icon={User} />
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
+            <MenuLink to="/game" label="Peekaboo" icon={Gamepad2} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
               display: 'block', width: '100%', textAlign: 'left',

@@ -41,11 +41,11 @@ export default function TrustJourney({
   const advanceBtn = (label) => (
     <button onClick={onConfirm} disabled={confirming} style={{
       flexShrink: 0, height: '36px', padding: '0 16px',
-      background: confirming ? '#e0e0e0' : '#4FA3CE',
+      background: confirming ? 'var(--blue-mid)' : '#4FA3CE',
       color: '#fff', border: 'none', borderRadius: '9999px',
       fontSize: '14px', fontWeight: 700, fontFamily: SFT,
       cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
-    }}>{confirming ? '…' : label}</button>
+    }}>{confirming ? 'Confirming…' : label}</button>
   );
 
   let footer;
@@ -61,7 +61,7 @@ export default function TrustJourney({
     else if (isElder && confirmedByMe)        { const next = LEVELS[idx + 1]; message = `You asked to move to ${next?.label || 'the next step'}, waiting for ${otherUserName} to confirm. They'll get a tap on their side.`; }
     else if (!isElder && !confirmedByOther)   { const next = LEVELS[idx + 1]; message = `Waiting for the elder to move to ${next?.label || 'the next step'}.`; }
     else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} is ready to ${current.helperNextAction || 'advance'}. Confirm to move forward together.`; button = advanceBtn('Accept →'); }
-    else                                      { const next = LEVELS[idx + 1]; message = `You accepted — trust is advancing to ${next?.label || 'the next step'}.`; }
+    else                                      { const next = LEVELS[idx + 1]; message = `You accepted, trust is advancing to ${next?.label || 'the next step'}.`; }
     footer = (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #D8EAF4' }}>
         <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
@@ -78,15 +78,15 @@ export default function TrustJourney({
           <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: isTrustWord(current.label) ? trustGold : accent }} />
           <span style={{ fontSize: '16px', fontWeight: 700, color: isTrustWord(current.label) ? trustGold : 'var(--ink)', fontFamily: SF }}>{current.label}</span>
         </div>
-        <span style={{ fontSize: '14px', fontWeight: 700, color: accent, background: accentBg, padding: '3px 10px', borderRadius: '9999px' }}>
-          Stage {idx + 1} of {LEVELS.length} · {pct}%
+        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-slate)', background: '#ffffff', border: '1px solid #D8EAF4', padding: '3px 10px', borderRadius: '9999px' }}>
+          Stage {idx + 1} of {LEVELS.length}{pct < 100 ? ` · ${pct}%` : ''}
         </span>
       </div>
 
       {/* Progress bar — the tortoise rides along it to the current stage */}
       <div style={{ position: 'relative', height: '34px' }}>
         <div style={{ position: 'absolute', left: '17px', right: '17px', top: '50%', transform: 'translateY(-50%)', height: '9px', background: '#E2EEF5', borderRadius: '9999px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, background: barGradient, borderRadius: '9999px', transition: 'width 0.4s ease' }} />
+          <div style={{ height: '100%', width: '100%', background: barGradient, borderRadius: '9999px', transform: `scaleX(${pct / 100})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
         </div>
         <div style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${pct / 100})`, transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: accentBg, border: `2px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 0.4s ease' }} title={current.label}>
           <img src="/tortoise-right.png" alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
@@ -105,7 +105,7 @@ export default function TrustJourney({
               left: `calc((100% - 34px) * ${stagePct} + 17px)`,
               transform: 'translateX(-50%)',
               fontWeight: i === idx ? 700 : 400,
-              color: isTrustWord(level.short) ? trustGold : (i === idx ? accent : '#7a8490'),
+              color: isTrustWord(level.short) ? trustGold : (i === idx ? 'var(--ink)' : '#7a8490'),
               whiteSpace: 'nowrap', fontFamily: SFT,
             }}>
               {level.short}

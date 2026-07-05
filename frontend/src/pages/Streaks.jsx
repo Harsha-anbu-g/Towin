@@ -211,18 +211,19 @@ export default function Streaks() {
                 </p>
                 <p style={{
                   fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink-3)',
-                  fontFamily: SFT, marginBottom: justCheckedIn ? '10px' : '22px',
+                  fontFamily: SFT, marginBottom: '8px',
                 }}>
                   days in a row
                 </p>
-                {justCheckedIn && (
-                  <p style={{
-                    fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)',
-                    fontFamily: SFT, margin: '0 0 18px',
-                  }}>
-                    Your streak is alive — see you tomorrow!
-                  </p>
-                )}
+                {/* Fixed slot, present in both states — checking in must never shift
+                    the layout below (the jump read as broken). */}
+                <p aria-live="polite" style={{
+                  fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--green-deep)',
+                  fontFamily: SFT, margin: '0 0 14px', minHeight: '20px',
+                  opacity: justCheckedIn ? 1 : 0, transition: 'opacity 0.3s ease-out',
+                }}>
+                  Your streak is alive, see you tomorrow!
+                </p>
 
                 {/* Week tracker */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
@@ -325,12 +326,12 @@ export default function Streaks() {
               /* Already checked in — show two options */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{
-                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  background: 'var(--green-tint)', border: '1px solid #BFE0C9',
                   borderRadius: '14px', padding: '14px 20px',
                   textAlign: 'center',
                 }}>
-                  <p style={{ fontSize: '16px', color: 'var(--ink-slate)', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
-                    You have already checked in today.
+                  <p style={{ fontSize: '16px', color: 'var(--green-deep)', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
+                    ✓ You have already checked in today.
                   </p>
                   <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: SFT, margin: '4px 0 0' }}>
                     See you again tomorrow. Keep it going!
@@ -360,8 +361,9 @@ export default function Streaks() {
                 </button>
               </div>
             ) : (
-              /* Not checked in yet — single button */
-              <>
+              /* Not checked in yet: min-height matches the checked-in stack above so
+                 the page holds still when the state swaps. */
+              <div style={{ minHeight: '214px' }}>
                 <button
                   onClick={handleCheckIn}
                   disabled={checkingIn}
@@ -392,7 +394,7 @@ export default function Streaks() {
                     Skip for now, go to dashboard
                   </button>
                 </div>
-              </>
+              </div>
             )
           )}
 

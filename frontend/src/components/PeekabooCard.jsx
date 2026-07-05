@@ -3,45 +3,44 @@ import { Gamepad2 } from 'lucide-react';
 
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
-// Peekaboo used to live in the top nav. It now floats as a friendly button
-// in the bottom-left corner — mirroring the Feedback widget (bottom-right) —
-// so the game stays one tap away without cluttering the bar.
+// Peekaboo lives inline at the end of the dashboard content — a quiet row card
+// (the floating pill cluttered the corners next to the Feedback / Ask AI FABs).
 export default function PeekabooCard() {
   return (
     <Link
       to="/game"
       aria-label="Play Peekaboo"
-      className="peekaboo-fab"
+      className="lift"
       style={{
-        position: 'fixed',
-        zIndex: 999,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        background: 'var(--green-tint)',
-        color: '#3D8B5A',
-        border: '1.5px solid #BFE0C9',
-        borderRadius: '9999px',
-        padding: '12px 20px',
-        fontSize: 'var(--text-sm)',
-        fontWeight: 600,
+        gap: '14px',
+        background: '#ffffff',
+        border: '1px solid var(--border)',
+        borderRadius: '14px',
+        padding: '14px 18px',
         textDecoration: 'none',
         fontFamily: SF,
-        boxShadow: '0 4px 20px rgba(61,139,90,0.18)',
-        transition: 'transform 0.15s, box-shadow 0.15s',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'scale(1.04)';
-        e.currentTarget.style.boxShadow = '0 6px 24px rgba(61,139,90,0.3)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = '0 4px 20px rgba(61,139,90,0.18)';
+        minHeight: '44px',
       }}
     >
-      <Gamepad2 size={15} />
-      <span className="peekaboo-fab-label">Play Peekaboo</span>
+      <span style={{
+        width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+        background: 'var(--green-tint)', border: '1px solid #BFE0C9',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#3D8B5A',
+      }}>
+        <Gamepad2 size={19} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--green-deep)' }}>
+          Play Peekaboo
+        </span>
+        <span style={{ display: 'block', fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginTop: '2px' }}>
+          A one-minute memory game
+        </span>
+      </span>
+      <span aria-hidden style={{ fontSize: '22px', color: 'var(--ink-4)', lineHeight: 1 }}>›</span>
     </Link>
   );
 }

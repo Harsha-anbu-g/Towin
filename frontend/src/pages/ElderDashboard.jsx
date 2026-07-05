@@ -6,7 +6,6 @@ import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import { applicantsLabel } from '../lib/copy';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
-import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
 import LocationPrimer from '../components/LocationPrimer';
@@ -97,6 +96,8 @@ const statusStyle = (status) => {
   };
 };
 
+const fmtPhone = (p) => { const d = (p || '').replace(/\D/g, ''); return d.length === 11 && d.startsWith('1') ? `+1 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}` : p; };
+
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
 // Plain, everyday words for the help categories.
@@ -113,7 +114,7 @@ const catLabel = (c) => CATEGORY[c] || c;
 const NEED_STATUS = {
   OPEN:      { label: 'Looking for Help', color: 'var(--ink-slate)', bg: '#F2F4F7' },
   ASSIGNED:  { label: 'Helper Found',     color: 'var(--blue-deep)', bg: '#E6F2FA' },
-  COMPLETED: { label: 'Completed',        color: '#5E8E72', bg: '#EEF6F0' },
+  COMPLETED: { label: 'Completed',        color: 'var(--green-deep)', bg: 'var(--green-tint)' },
   CANCELLED: { label: 'Cancelled',        color: 'var(--ink-3)', bg: 'var(--surface-2)' },
 };
 
@@ -535,7 +536,7 @@ export default function ElderDashboard() {
                 {initials(name)}
               </div>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
                 <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '3px 0 0' }}>sent you a friend request</p>
                 {conn.requestMessage && (
                   <p style={{ fontSize: '13px', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '4px 0 0' }}>"{conn.requestMessage}"</p>
@@ -550,11 +551,11 @@ export default function ElderDashboard() {
           </div>
           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
             <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-              style={{ flex: 1, height: '36px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
-              {respondingConn === conn.id ? '…' : 'Accept'}
+              style={{ flex: 1, height: '36px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+              {respondingConn === conn.id ? 'Accepting…' : 'Accept'}
             </button>
             <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-              style={{ flex: 1, height: '36px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+              style={{ flex: 1, height: '36px', background: '#fff', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
               Decline
             </button>
           </div>
@@ -566,29 +567,29 @@ export default function ElderDashboard() {
     return (
       <div key={conn.id} style={{
         background: '#ffffff', borderRadius: '18px', padding: '18px 20px',
-        border: '1px solid #e8e8ed',
+        border: '1px solid var(--border)',
         animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
         display: 'flex', alignItems: 'center', gap: '14px',
       }}>
         <div style={{
           width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0,
-          background: '#f4f4f6',
+          background: 'var(--surface-2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '18px', fontWeight: 700, color: '#9aa0a8',
-          border: '2px dashed #d2d2d7',
+          fontSize: '18px', fontWeight: 700, color: 'var(--ink-3)',
+          border: '2px dashed var(--border)',
         }}>
           {initials(name)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
           <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Waiting for {name} to accept — they'll see your request in their Add Friends tab.
           </p>
         </div>
         <span style={{
-          fontSize: '12px', fontWeight: 600, color: '#8a929c',
-          background: 'var(--surface-2)', border: '1px solid #e8e8ed',
+          fontSize: '12px', fontWeight: 600, color: 'var(--ink-slate)',
+          background: 'var(--surface-2)', border: '1px solid var(--border)',
           padding: '6px 14px', borderRadius: '9999px', flexShrink: 0,
         }}>Requested</span>
       </div>
@@ -662,9 +663,6 @@ export default function ElderDashboard() {
 
       <div className="dash-content">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-          <PeekabooCard />
-
           {/* My Helpers tab (landing) */}
           {tab === 'connections' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -713,22 +711,16 @@ export default function ElderDashboard() {
                       {avatar}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
+                          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-lg)', letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
                           {conn.otherUserAge != null && (
                             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>Age {conn.otherUserAge}</span>
                           )}
-                          {conn.currentTrustLevel !== 'TRUSTED' && (
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F2FA', padding: '3px 10px', borderRadius: '9999px' }}>
-                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2E7DA6' }} />
-                              <span style={{ fontSize: '14px', fontWeight: 700, color: '#2E7DA6' }}>{trustLabel(conn.currentTrustLevel)}</span>
-                            </div>
-                          )}
                         </div>
                         {conn.otherUserPhone && (
-                          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <a href={`tel:${conn.otherUserPhone}`} style={{ fontSize: 'var(--text-sm)', color: 'var(--blue-deep)', margin: '2px 0 0', display: 'inline-flex', alignItems: 'center', gap: '7px', textDecoration: 'none', fontWeight: 500, padding: '8px 0', minHeight: '44px' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a6470" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                            {conn.otherUserPhone}
-                          </p>
+                            {fmtPhone(conn.otherUserPhone)}
+                          </a>
                         )}
                       </div>
                     </div>
@@ -743,7 +735,7 @@ export default function ElderDashboard() {
                           </div>
                         ) : (
                           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
@@ -760,7 +752,7 @@ export default function ElderDashboard() {
                                 Reviewed
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: 'var(--red-tint)', color: '#CF6A66', border: '1px solid #F3CDCD', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: 'var(--red-tint)', color: 'var(--red-deep)', border: '1px solid var(--red-soft)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
                         )
                       )}
@@ -781,7 +773,7 @@ export default function ElderDashboard() {
 
                   {/* Review form for helper */}
                   {reviewingConn === conn.id && (
-                    <div style={{ marginTop: '14px', padding: '16px', background: 'var(--surface-pearl)', borderRadius: '12px', border: '1px solid #e8e8ed' }}>
+                    <div style={{ marginTop: '14px', padding: '16px', background: 'var(--surface-pearl)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: '12px' }}>Rate{conn.otherUserName}</p>
                       <div style={{ marginBottom: '12px' }}>
                         <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
@@ -791,7 +783,7 @@ export default function ElderDashboard() {
                           <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
                             fontSize: 'var(--text-xs)', padding: '4px 12px', borderRadius: '9999px', cursor: 'pointer',
                             border: '1px solid', transition: 'all 0.15s',
-                            borderColor: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#d2d2d7',
+                            borderColor: reviewForm.tags.includes(tag) ? '#4FA3CE' : 'var(--border)',
                             background: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#fff',
                             color: reviewForm.tags.includes(tag) ? '#fff' : '#7a7a7a',
                           }}>{tag}</button>
@@ -939,7 +931,7 @@ export default function ElderDashboard() {
                             {helper.skillsOffered?.length > 0 && (
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
                                 {helper.skillsOffered.map(s => (
-                                  <span key={s} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{s}</span>
+                                  <span key={s} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: 'var(--surface-2)', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{s}</span>
                                 ))}
                               </div>
                             )}
@@ -948,12 +940,12 @@ export default function ElderDashboard() {
                             {alreadyConnected ? (
                               <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
                             ) : (alreadyRequested || sent === 'Requested') ? (
-                              <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: '#8a929c' }}>Requested</span>
+                              <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: 'var(--ink-slate)' }}>Requested</span>
                             ) : sent ? (
                               <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: '#5a6470' }}>{sent}</span>
                             ) : (
                               <button onClick={() => connectToHelper(helper.userId)} disabled={connectingTo === helper.userId}
-                                style={{ height: '40px', padding: '0 22px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                                style={{ height: '40px', padding: '0 22px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                                 {connectingTo === helper.userId ? '…' : 'Add Friend'}
                               </button>
                             )}
@@ -1017,10 +1009,10 @@ export default function ElderDashboard() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
+                      <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
                       {need.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '10px 0 0', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{need.description}</p>}
                       <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: '#F2F4F7', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: 'var(--surface-2)', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
                         {need.urgency === 'URGENT' && (
                           <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: 'var(--surface-2)', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />Urgent
@@ -1047,7 +1039,7 @@ export default function ElderDashboard() {
                               </div>
                             </div>
                             <button onClick={() => acceptHelper(need.id, app.helperId)} disabled={accepting === `${need.id}-${app.helperId}`}
-                              style={{ height: '38px', padding: '0 18px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', flexShrink: 0 }}>
+                              style={{ height: '38px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', flexShrink: 0 }}>
                               {accepting === `${need.id}-${app.helperId}` ? '...' : 'Accept'}
                             </button>
                           </div>
@@ -1082,7 +1074,7 @@ export default function ElderDashboard() {
                         </div>
                       )}
                       <button onClick={() => completeNeed(need.id)}
-                        style={{ height: '42px', padding: '0 22px', background: 'var(--green-deep)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
+                        style={{ height: '42px', padding: '0 22px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
                         Mark as Complete
                       </button>
                     </div>
@@ -1098,7 +1090,7 @@ export default function ElderDashboard() {
                               <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
                                 fontSize: '14px', padding: '5px 14px', borderRadius: '9999px',
                                 border: '1px solid', transition: 'all 0.15s',
-                                borderColor: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#d2d2d7',
+                                borderColor: reviewForm.tags.includes(tag) ? '#4FA3CE' : 'var(--border)',
                                 background: reviewForm.tags.includes(tag) ? '#4FA3CE' : '#fff',
                                 color: reviewForm.tags.includes(tag) ? '#fff' : '#7a7a7a', cursor: 'pointer',
                               }}>{tag}</button>
@@ -1225,6 +1217,7 @@ export default function ElderDashboard() {
               </form>
             </div>
           )}
+
         </div>
       </div>
     </div>

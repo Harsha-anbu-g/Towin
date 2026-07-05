@@ -182,7 +182,7 @@ function HeroPanel() {
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
       }}>
-        <img src="/tortoise-logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: '8px' }} />
+        <img src="/tortoise-logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <p style={{
           fontSize: '21px', fontWeight: 600, color: '#ffffff', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',

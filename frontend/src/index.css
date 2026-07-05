@@ -317,9 +317,10 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .btn-primary:hover { opacity: 0.85; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Confirm / save button — green, for positive submit actions */
+/* Confirm / save button — positive submit actions. Blue per the action grammar
+   (blue = actions, green = achieved states); class name kept as a semantic alias. */
 .btn-confirm {
-  background: var(--green-deep);
+  background: var(--blue);
   color: #fff;
   border: none;
   border-radius: var(--radius-pill);
@@ -509,6 +510,10 @@ button, a, [role="button"], input, textarea, select, label, summary {
   .card-actions > button { height: 44px !important; }
 }
 
+/* Tactile press on card action pills — physical feedback on tap (GPU-only). */
+.card-actions > button { transition: transform 0.1s ease-out; }
+.card-actions > button:active { transform: scale(0.97); }
+
 /* ─── Trust ladder stage labels ─── */
 .trust-ladder-stages { font-size: 11px; }
 @media (max-width: 640px) {
@@ -621,14 +626,37 @@ img {
    home-indicator / gesture bar via the safe-area inset. */
 /* The Ask AI helper owns the primary bottom-right slot, so the feedback pill is
    lifted to stack just above it. */
-.feedback-fab {
-  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+/* ── Shared FAB stack ─────────────────────────────────────────────────────
+   One fixed container owns the bottom-right corner; the Feedback and Ask AI
+   pills are static flex children inside it. Alignment and spacing are
+   structural — the pills can never drift apart or overlap again. */
+.fab-stack {
+  position: fixed;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   right: calc(28px + env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  z-index: 999;
+}
+/* Left variant — Give Feedback lives bottom-left near Play Peekaboo. */
+.fab-stack--left {
+  right: auto;
+  left: calc(28px + env(safe-area-inset-left, 0px));
+  align-items: flex-start;
 }
 @media (max-width: 640px) {
+  .fab-stack {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    gap: 10px;
+  }
+  .fab-stack--left {
+    right: auto;
+    left: calc(16px + env(safe-area-inset-left, 0px));
+  }
   .feedback-fab {
-    bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
-    right: calc(16px + env(safe-area-inset-right, 0px)) !important;
     padding: 0 !important;
     width: 52px;
     height: 52px;
@@ -638,10 +666,7 @@ img {
 }
 
 /* ── "Ask AI" tortoise helper — FAB + chat panel, bottom-right (primary) ── */
-.ask-ai-fab {
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-  right: calc(28px + env(safe-area-inset-right, 0px));
-}
+/* .ask-ai-fab position comes from the shared .fab-stack container above. */
 .ask-ai-panel {
   bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   right: calc(24px + env(safe-area-inset-right, 0px));
@@ -650,8 +675,6 @@ img {
 }
 @media (max-width: 640px) {
   .ask-ai-fab {
-    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-    right: calc(16px + env(safe-area-inset-right, 0px));
     padding: 0 !important;
     width: 56px;
     height: 56px;

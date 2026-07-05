@@ -173,7 +173,7 @@ export default function AskAiAssistant() {
           aria-label="Ask AI, the ToWin helper"
           className={pathname === '/' ? 'ask-ai-fab ask-ai-fab--landing' : 'ask-ai-fab'}
           style={{
-            position: 'fixed', zIndex: 1000,
+            
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
             background: 'var(--blue)', color: '#fff', border: 'none',
             borderRadius: '9999px', padding: '12px 20px',

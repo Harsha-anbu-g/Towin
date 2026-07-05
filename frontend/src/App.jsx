@@ -145,8 +145,12 @@ function App() {
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
           </ScrollShell>
-          <FeedbackWidget />
-          <AskAiAssistant />
+          <div className="fab-stack fab-stack--left">
+            <FeedbackWidget />
+          </div>
+          <div className="fab-stack">
+            <AskAiAssistant />
+          </div>
           <CookieConsent />
           </div>
         </BrowserRouter>

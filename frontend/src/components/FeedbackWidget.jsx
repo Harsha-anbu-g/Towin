@@ -20,8 +20,6 @@ export default function FeedbackWidget() {
       aria-label="Give feedback"
       className="feedback-fab"
       style={{
-        position: 'fixed',
-        zIndex: 999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

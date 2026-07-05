@@ -84,15 +84,12 @@ function Body({ children, align = 'left' }) {
   );
 }
 
-// Content column — consistent left-anchored rhythm shared by the text slides.
-// The column shrinks to its content and centers itself in the slide, so the
-// text stays left-aligned but the block sits in the middle of a laptop screen.
+// Content column for the single-message text slides. Centered composition
+// (user-requested): the short manifesto-style slides read best centered, like
+// the cover; the two split slides (trust/rooting) stay left-aligned editorial.
 function Slide({ children }) {
   return (
-    <div style={{
-      textAlign: 'left', width: 'fit-content', maxWidth: '100%',
-      marginLeft: 'auto', marginRight: 'auto',
-    }}>{children}</div>
+    <div style={{ textAlign: 'center', width: '100%' }}>{children}</div>
   );
 }
 
@@ -141,19 +138,20 @@ function MiniCard({ title, badge, stars, compact, children }) {
 function CardGrid({ children }) {
   return (
     <div className="landing-cards" style={{
-      display: 'grid', gap: '14px', maxWidth: '600px', margin: '4px 0 0',
+      display: 'grid', gap: '14px', maxWidth: '600px', margin: '4px auto 0',
       gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
     }}>{children}</div>
   );
 }
 
 // A quiet slab that carries a single important caveat/number below a Lead.
-function NoteBox({ children }) {
+// Centers itself inside centered slides; the split slides pass align="left".
+function NoteBox({ children, align = 'center' }) {
   return (
     <div style={{
       background: '#ffffff', border: `1px solid ${HAIR}`,
       borderRadius: '14px', padding: '16px 20px', maxWidth: '58ch',
-      margin: '0', fontFamily: SF, fontSize: '16px',
+      margin: align === 'center' ? '0 auto' : '0', fontFamily: SF, fontSize: '16px',
       color: SLATE, lineHeight: 1.6, textAlign: 'left',
     }}>{children}</div>
   );
@@ -275,9 +273,9 @@ export const SLIDES = [
     readMs: 2600,
     render: () => (
       <Slide>
-        <Chapter n={2} label="Who it's for" />
-        <Title>Two kinds of people</Title>
-        <Lead>Everyone on ToWin is one of these two.</Lead>
+        <Chapter n={2} label="Who it's for" align="center" />
+        <Title align="center">Two kinds of people</Title>
+        <Lead align="center">Everyone on ToWin is one of these two.</Lead>
         <div style={{ height: '24px' }} />
         <CardGrid>
           <MiniCard title="Elder">
@@ -295,14 +293,14 @@ export const SLIDES = [
     readMs: 2900,
     render: () => (
       <Slide>
-        <Chapter n={3} label="The problem we solve" />
-        <Title>Help is hard to find alone for elder people</Title>
-        <Lead>
+        <Chapter n={3} label="The problem we solve" align="center" />
+        <Title align="center">Help is hard to find alone for elder people</Title>
+        <Lead align="center">
           Small daily things, like shopping, a ride, or someone to talk to, take
           energy that elders don&apos;t always have.
         </Lead>
         <div style={{ height: '18px' }} />
-        <Body>
+        <Body align="center">
           On ToWin, an elder simply asks. Helpers nearby see the request and
           come to help with whatever is needed.
         </Body>
@@ -326,7 +324,7 @@ export const SLIDES = [
             has a <span style={{ color: GOLD, fontWeight: 600 }}>Trust Score</span>, visible to elders before they ever say yes.
           </Lead>
           <div style={{ height: '18px' }} />
-          <NoteBox>
+          <NoteBox align="left">
             Each person you help can earn you a <strong style={{ color: INK }}>maximum of 15 points</strong>, so your score grows with every new connection.
           </NoteBox>
         </div>
@@ -371,7 +369,7 @@ export const SLIDES = [
             through 7 simple stages.
           </Lead>
           <div style={{ height: '18px' }} />
-          <NoteBox>
+          <NoteBox align="left">
             <strong style={{ color: INK }}>Both people must agree to every step.</strong> Nothing personal,
             like a phone number, is shared until trust has grown.
           </NoteBox>
@@ -391,9 +389,9 @@ export const SLIDES = [
     id: 'why',
     render: () => (
       <Slide>
-        <Chapter n={6} label="Why ToWin" />
-        <Title>Both sides win</Title>
-        <Lead>
+        <Chapter n={6} label="Why ToWin" align="center" />
+        <Title align="center">Both sides win</Title>
+        <Lead align="center">
           Today&apos;s elders use phones, shop online, and pay online. Tomorrow
           there will be many more. But the hardest parts of growing older haven&apos;t
           changed: feeling lonely, and not having enough energy for everyday things.
