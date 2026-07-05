@@ -257,6 +257,30 @@ export const STEPS = [
     ),
   },
   {
+    id: 'askai',
+    navLabel: 'Ask AI',
+    render: () => (
+      <>
+        <StepTitle>Ask AI, your tortoise helper</StepTitle>
+        <Lead>
+          Stuck or unsure about something? Tap the round <strong>Ask AI</strong> button
+          in the corner of the screen and ask in your own words.
+        </Lead>
+        <Bullets items={[
+          'Ask how anything on ToWin works, like "How does the Trust Journey work?"',
+          'When you are logged in, ask about your own account, like "What is my trust score?" or "How is my streak going?"',
+          'Not sure what to do next? Ask "What should I do today?" and it will point the way.',
+          'It replies in short, simple words, any time of day.',
+        ]} />
+        <NoteBox>
+          The tortoise only answers questions. It never changes anything on your
+          account, and it never shares your details with anyone else. If it can't
+          help, use the Feedback button and the ToWin team will step in.
+        </NoteBox>
+      </>
+    ),
+  },
+  {
     id: 'feel',
     navLabel: 'The ToWin feel',
     render: () => (

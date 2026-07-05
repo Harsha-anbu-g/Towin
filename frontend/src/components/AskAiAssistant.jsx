@@ -24,8 +24,8 @@ const GREETING = {
 };
 
 const SUGGESTIONS = [
+  'What should I do today?',
   'How does the Trust Journey work?',
-  'How do I post a request for help?',
   'What is my trust score?',
 ];
 
