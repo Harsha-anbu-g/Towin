@@ -43,7 +43,7 @@ function HeroPanel() {
 
       {/* Tagline — centered on the photo */}
       <span style={{
-        position: 'absolute', top: '73%', left: '50%', transform: 'translate(-50%, -50%)',
+        position: 'absolute', top: '62%', left: '50%', transform: 'translate(-50%, -50%)',
         zIndex: 2, whiteSpace: 'nowrap',
         background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
