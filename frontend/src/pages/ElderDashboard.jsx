@@ -4,6 +4,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
+import { applicantsLabel } from '../lib/copy';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import PeekabooCard from '../components/PeekabooCard';
 import BlurFade from '../components/magic/BlurFade';
@@ -1034,7 +1035,7 @@ export default function ElderDashboard() {
                   {need.status === 'OPEN' && need.applications?.length > 0 && (
                     <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '14px', paddingTop: '14px' }}>
                       <p style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 10px' }}>
-                        {need.applications.length} helper{need.applications.length !== 1 ? 's' : ''} want to help
+                        {applicantsLabel(need.applications.length)}
                       </p>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {need.applications.map(app => (
