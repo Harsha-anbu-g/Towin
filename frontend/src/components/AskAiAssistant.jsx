@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Volume2, Square, Mic, MicOff } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 // The tortoise mascot image (served from /public).
@@ -41,12 +42,23 @@ function speakableText(text) {
 
 export default function AskAiAssistant() {
   const { pathname } = useLocation();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([GREETING]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [speakingIdx, setSpeakingIdx] = useState(null);
   const [listening, setListening] = useState(false);
+
+  // ISSUE-003: the widget stays mounted across logout/login, so one person's
+  // conversation would otherwise carry over to the next account on a shared
+  // device. Reset the chat whenever the signed-in user changes.
+  const userId = user?.userId ?? null;
+  useEffect(() => {
+    setMessages([GREETING]);
+    setInput('');
+    setOpen(false);
+  }, [userId]);
 
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
