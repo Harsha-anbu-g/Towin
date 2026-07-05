@@ -2,8 +2,10 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X } from 'lucide-react';
-import TurtleLogo from './TurtleLogo';
 import api from '../api/axios';
+
+// The tortoise mascot image (served from /public).
+const TORTOISE_IMG = '/ai-tortoise.png';
 
 // Bind motion elements to names so lint counts them as used (this flat config
 // doesn't treat <motion.div> member-expressions as a reference).
@@ -117,7 +119,12 @@ export default function AskAiAssistant() {
             e.currentTarget.style.boxShadow = '0 4px 20px rgba(79,163,206,0.45)';
           }}
         >
-          <TurtleLogo size={22} color="#fff" strokeWidth={1.8} />
+          <span style={{
+            width: '30px', height: '30px', flexShrink: 0, borderRadius: '50%',
+            background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <img src={TORTOISE_IMG} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+          </span>
           <span className="ask-ai-fab-label">Ask AI</span>
         </button>
       )}
@@ -151,9 +158,9 @@ export default function AskAiAssistant() {
               <span style={{
                 width: '40px', height: '40px', flexShrink: 0, borderRadius: '50%',
                 background: '#fff', border: '1px solid var(--blue-soft)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
               }}>
-                <TurtleLogo size={24} />
+                <img src={TORTOISE_IMG} alt="" style={{ width: '34px', height: '34px', objectFit: 'contain' }} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: 0, fontFamily: SFD, fontWeight: 700, fontSize: '16px', color: 'var(--ink)' }}>
@@ -263,9 +270,39 @@ function Bubble({ role, content }) {
       fontFamily: SF, fontSize: 'var(--text-md, 16px)', lineHeight: 1.5,
       whiteSpace: 'pre-wrap', wordBreak: 'break-word',
     }}>
-      {content}
+      {isUser ? content : <RichText text={content} />}
     </div>
   );
+}
+
+// Renders the assistant's reply as tidy plain text: turns **bold** into real
+// bold, dash/asterisk lines into bullets, and strips any stray markdown
+// asterisks so users never see raw "**" characters.
+function RichText({ text }) {
+  const lines = String(text ?? '').split('\n');
+  return lines.map((line, i) => {
+    if (line.trim() === '') return <div key={i} style={{ height: '6px' }} />;
+    const isBullet = /^\s*[-*•]\s+/.test(line);
+    if (isBullet) {
+      const body = line.replace(/^\s*[-*•]\s+/, '');
+      return (
+        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+          <span style={{ color: 'var(--blue-deep)', flexShrink: 0 }}>•</span>
+          <span>{renderInline(body)}</span>
+        </div>
+      );
+    }
+    return <div key={i}>{renderInline(line)}</div>;
+  });
+}
+
+function renderInline(str) {
+  // Split on **bold** spans; strip any leftover single asterisks elsewhere.
+  return str.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
+    const bold = /^\*\*([^*]+)\*\*$/.exec(part);
+    if (bold) return <strong key={i}>{bold[1]}</strong>;
+    return <span key={i}>{part.replace(/\*+/g, '')}</span>;
+  });
 }
 
 function TypingDots() {
