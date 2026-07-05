@@ -217,7 +217,7 @@ function HeroPanel() {
           lineHeight: 1.55, margin: '0 0 26px',
           textShadow: '0 1px 12px rgba(20,55,80,0.5)',
         }}>
-          Join thousands of elders and helpers building real, trusted connections every day.
+          Join elders and helpers building real, trusted connections every day.
         </p>
 
         {/* Feature bullets — restyled light to read on the wash */}
