@@ -191,7 +191,8 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "https://facebook.com/davidchen.tw");
         ensureElderProfile(grace, "Grace Liu", 70,
                 "I paint watercolours and like quiet walks in the park.",
-                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist", Gender.FEMALE, null,
+                new String[]{"Painting", "Walking", "Movies"}, "Retired pharmacist", Gender.FEMALE,
+                "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/grace.jpg",
                 "https://facebook.com/graceliu.tw");
         ensureElderProfile(rose, "Rose Martin", 74,
                 "Retired librarian. I love crosswords, reading, and a quiet afternoon with good company.",
@@ -369,13 +370,28 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureNeed(grace, "Light apartment cleaning",
                 "A hand with vacuuming and dusting once a week.",
                 NeedCategory.CLEANING, NeedUrgency.NORMAL, NeedStatus.OPEN);
+        // These two exist so the HELPER demo account (Harsha) has every Browse
+        // Needs segment filled: Applied needs an ACCEPTED offer on an ASSIGNED
+        // need, Completed needs an ACCEPTED offer on a COMPLETED one. Margaret's
+        // needs are off-limits for Harsha (the live walkthrough is recorded on
+        // those two accounts), so Rose and David own them.
+        Need rosePhone = ensureNeed(rose, "Help setting up my new phone",
+                "My son gave me his old phone and I can't make heads or tails of it.",
+                NeedCategory.OTHER, NeedUrgency.NORMAL, NeedStatus.ASSIGNED);
+        Need davidLaptop = ensureNeed(david, "Sort out my slow laptop",
+                "My laptop takes ten minutes to start up. I'd love someone to give it a tune-up.",
+                NeedCategory.OTHER, NeedUrgency.NORMAL, NeedStatus.COMPLETED);
 
         // A pending offer Margaret can accept, and the accepted offer behind the assigned need
         ensureApplication(ride, nina, "Hi Margaret, I drive and would gladly take you on Tuesday.");
         ensureApplication(shopping, priya, "Happy to carry your groceries every Saturday!", ApplicationStatus.ACCEPTED);
         ensureApplication(chess, priya, "I'd love to learn chess while keeping you company!");
+        // Harsha's offers, filling his Applied (pending + accepted) and Completed tabs
+        ensureApplication(chess, james, "I'd love a weekly chess game — fair warning, I play to win!");
+        ensureApplication(rosePhone, james, "Happy to help, Rose! Phones are my thing — we'll have it set up in no time.", ApplicationStatus.ACCEPTED);
+        ensureApplication(davidLaptop, james, "I can definitely speed that up for you, David.", ApplicationStatus.ACCEPTED);
 
-        ensureReview(david, james, null, 4,
+        ensureReview(david, james, davidLaptop, 4,
                 "Very reliable and great company. Always on time.",
                 List.of("Reliable", "Punctual"));
         ensureReview(priya, margaret, null, 5,
