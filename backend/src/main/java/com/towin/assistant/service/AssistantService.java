@@ -4,12 +4,14 @@ import com.towin.assistant.dto.ChatMessage;
 import com.towin.assistant.dto.ChatRequest;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.NeedStatus;
+import com.towin.common.service.TrustScoreService;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.need.repository.NeedRepository;
 import com.towin.profile.dto.ProfileResponse;
 import com.towin.profile.service.ProfileService;
 import com.towin.streak.dto.StreakResponse;
 import com.towin.streak.service.StreakService;
+import com.towin.trust.dto.TrustScoreBreakdownResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,7 @@ public class AssistantService {
     private final StreakService streakService;
     private final ConnectionRepository connectionRepository;
     private final NeedRepository needRepository;
+    private final TrustScoreService trustScoreService;
 
     /** System prompt = tortoise persona/rules + the product knowledge base. Loaded once. */
     private final String basePrompt;
@@ -52,12 +55,14 @@ public class AssistantService {
                             ProfileService profileService,
                             StreakService streakService,
                             ConnectionRepository connectionRepository,
-                            NeedRepository needRepository) {
+                            NeedRepository needRepository,
+                            TrustScoreService trustScoreService) {
         this.groqClient = groqClient;
         this.profileService = profileService;
         this.streakService = streakService;
         this.connectionRepository = connectionRepository;
         this.needRepository = needRepository;
+        this.trustScoreService = trustScoreService;
         this.basePrompt = loadResource("assistant/system-prompt.txt")
                 + "\n\n=== TOWIN KNOWLEDGE BASE ===\n"
                 + loadResource("assistant/knowledge.md");
@@ -143,13 +148,51 @@ public class AssistantService {
             long openRequests = needRepository.countByElderIdAndStatus(userId, NeedStatus.OPEN);
             sb.append("- Open help requests they have posted: ").append(openRequests).append('\n');
 
+            appendProfileGaps(sb, userId);
+
             sb.append("Answer personal questions using ONLY the facts above. If they ask for a "
                     + "personal detail not listed here, say you don't have that detail and point them "
-                    + "to the right page in the app.");
+                    + "to the right page in the app.\n\n"
+                    + "If they ask something like \"what should I do next\" or \"what should I do today\", "
+                    + "give ONE or TWO short, specific, encouraging suggestions built from the facts above "
+                    + "(for example: they haven't checked in today, or a profile item is missing, or a "
+                    + "connection request is waiting for their reply). Do not suggest anything not "
+                    + "supported by these facts.");
             return sb.toString();
         } catch (Exception e) {
             log.warn("Ask AI: could not build personal context for {}: {}", userId, e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Appends unfinished profile items (with the same tips shown on the Trust
+     * page) so the assistant can give real, specific "what should I do next"
+     * coaching instead of generic advice.
+     */
+    private void appendProfileGaps(StringBuilder sb, UUID userId) {
+        try {
+            TrustScoreBreakdownResponse breakdown = trustScoreService.getMyScoreBreakdown(userId);
+            if (breakdown == null || breakdown.getProfile() == null) return;
+
+            List<String> gaps = new ArrayList<>();
+            for (var group : breakdown.getProfile().getGroups()) {
+                if (group.isCompleted()) continue;
+                for (var item : group.getItems()) {
+                    if (!item.isCompleted() && item.getTip() != null) {
+                        gaps.add(item.getLabel() + " — " + item.getTip());
+                    }
+                }
+            }
+
+            if (gaps.isEmpty()) {
+                sb.append("- Profile completeness: fully done, all 3 sections complete.\n");
+            } else {
+                sb.append("- Profile completeness: not finished yet. Missing, in order:\n");
+                for (String gap : gaps) sb.append("  - ").append(gap).append('\n');
+            }
+        } catch (Exception e) {
+            log.warn("Ask AI: could not build profile gaps for {}: {}", userId, e.getMessage());
         }
     }
 

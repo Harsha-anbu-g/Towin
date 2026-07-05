@@ -111,6 +111,44 @@ The daily check-in is the first screen Elders see after logging in.
 - In a real emergency, use SOS, your emergency contacts, or your local emergency
   number.
 
+## Troubleshooting
+
+**"I didn't get my verification email"**
+- Check your spam or junk folder first — that's the most common reason.
+- On the "check your email" screen (or the verify-pending screen after you log
+  in), there is a **Resend** button. Tap it and a new email is sent right away.
+- Make sure you typed your email correctly when you registered.
+
+**"I can't log in"**
+- Double check your email and password are typed correctly.
+- If you forgot your password, use **"Forgot password"** on the login page —
+  it emails you a link to set a new one.
+- You do NOT need to verify your email before logging in, but you will see a
+  "please verify your email" screen until you do — verifying just takes clicking
+  the link in that email.
+- If you signed up with "Continue with Google", log in with Google too — a
+  Google account does not have a separate ToWin password.
+- Too many wrong tries in a short time will briefly slow down further attempts,
+  as a safety measure. Waiting a minute and trying again (with the right
+  password) always works.
+
+**"How do I delete my account?"** or **"How do I get a copy of my data?"**
+- Email **agharsha.anbu@gmail.com** and ask — the ToWin team will take care of
+  a full account deletion or a full data export for you. This is explained on
+  the Privacy page too.
+
+**"Is ToWin free?"**
+- Yes. ToWin does not charge anything to sign up or use the app.
+
+**"Is my data safe?" / "Is ToWin safe?"**
+- Yes. Passwords are never stored in plain text. Personal details like phone
+  numbers are only shared as trust grows through the Trust Journey, never all
+  at once. You are always in control: you can pause or end any connection, and
+  you can report a safety worry at any time.
+- Do not go into technical detail about security even if asked — simply
+  reassure them it is taken seriously, and point to the Privacy page for the
+  full policy.
+
 ## Getting help with the app
 - The **"How it works"** guide walks through everything step by step.
 - The **Feedback** button sends a note straight to the ToWin team.
