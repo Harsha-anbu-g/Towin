@@ -98,7 +98,7 @@ function Slide({ children }) {
   );
 }
 
-function MiniCard({ title, badge, stars, compact, icon: Icon, iconTint, children }) {
+function MiniCard({ title, badge, stars, compact, icon: Icon, children }) {
   return (
     <div style={{
       background: '#ffffff', border: `1px solid ${HAIR}`,
@@ -109,10 +109,10 @@ function MiniCard({ title, badge, stars, compact, icon: Icon, iconTint, children
       {Icon && !compact && (
         <span style={{
           width: '44px', height: '44px', borderRadius: '50%', marginBottom: '12px',
-          background: iconTint === 'green' ? 'var(--green-tint)' : WASH,
-          border: `1px solid ${iconTint === 'green' ? '#BFE0C9' : SKYLINE}`,
+          background: 'var(--surface-2)',
+          border: `1px solid ${HAIR}`,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          color: iconTint === 'green' ? '#3D8B5A' : BLUE,
+          color: SLATE,
         }}>
           <Icon size={21} strokeWidth={2} />
         </span>
@@ -312,7 +312,7 @@ export const SLIDES = [
           <MiniCard title="Elder" icon={Armchair}>
             An older person looking for friendship, company, or help with daily tasks.
           </MiniCard>
-          <MiniCard title="Helper" icon={HandHeart} iconTint="green">
+          <MiniCard title="Helper" icon={HandHeart}>
             A younger person who gives time, company, and a hand with everyday things.
           </MiniCard>
         </CardGrid>
