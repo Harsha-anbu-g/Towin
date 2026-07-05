@@ -71,7 +71,10 @@ export default function Landing() {
 
   return (
     <div style={{
-      height: '100svh', minHeight: 0, overflow: 'hidden',
+      /* 100% of the app shell's scroll area — not 100svh — so when the beta
+         banner is up the Back/Next footer still fits on screen instead of
+         being pushed below the fold on phones. */
+      height: '100%', minHeight: 0, overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
       // Warm paper canvas with a whisper of sky top-right — editorial, not clinical.
       // (User-approved 2026-07-05: warm parchment over near-neutral.)
@@ -153,12 +156,6 @@ export default function Landing() {
               </button>
               <NextButton label="Start" onAdvance={() => navigate('/login')} />
             </div>
-            <Link to="/how-it-works" style={{
-              fontFamily: SF, fontSize: '16px', fontWeight: 600,
-              color: SKY, textDecoration: 'none', padding: '8px 4px',
-            }}>
-              Read the full guide
-            </Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
