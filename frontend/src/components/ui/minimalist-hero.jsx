@@ -79,7 +79,7 @@ export const MinimalistHero = ({
           transition={{ duration: 0.5 }}
           style={{
             padding: '10px 22px', borderRadius: '9999px',
-            background: 'var(--blue)', color: '#fff', border: 'none',
+            background: 'var(--action-fill)', color: 'var(--action-ink)', border: 'none',
             fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer',
             textDecoration: 'none', display: 'inline-block',
             transition: 'background 0.15s',
@@ -111,7 +111,7 @@ export const MinimalistHero = ({
           </p>
           <a href={ctaHref} style={{
             marginTop: '20px', display: 'inline-block', fontSize: 'var(--text-sm)', fontWeight: 600,
-            color: 'var(--blue)', textDecoration: 'underline', textUnderlineOffset: '3px',
+            color: 'var(--blue-deep)', textDecoration: 'underline', textUnderlineOffset: '3px',
           }}>
             {ctaLabel} →
           </a>
@@ -164,7 +164,7 @@ export const MinimalistHero = ({
           }}>
             {overlayText.part1}
             <br />
-            <span style={{ color: 'var(--blue)' }}>{overlayText.part2}</span>
+            <span style={{ color: 'var(--blue-deep)' }}>{overlayText.part2}</span>
           </h1>
         </motion.div>
       </div>

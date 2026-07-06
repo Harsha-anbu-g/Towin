@@ -148,7 +148,7 @@ export default function MessagesInbox() {
               <button
                 onClick={() => navigate('/dashboard')}
                 style={{
-                  background: 'var(--blue)', color: '#fff', border: 'none',
+                  background: 'var(--action-fill)', color: 'var(--action-ink)', border: 'none',
                   borderRadius: '9999px', padding: '10px 22px',
                   fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                 }}
@@ -240,7 +240,7 @@ export default function MessagesInbox() {
                             {trustLabel && (
                               <span className="inbox-trust-pill" style={{
                                 fontSize: '12px', fontWeight: 600, fontFamily: SFText,
-                                color: 'var(--blue)', background: 'var(--surface)',
+                                color: 'var(--blue-deep)', background: 'var(--surface)',
                                 border: '1px solid var(--border)', borderRadius: '9999px',
                                 padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
                                 letterSpacing: '0.1px',
@@ -264,7 +264,7 @@ export default function MessagesInbox() {
                           </p>
                           {c.unreadCount > 0 && (
                             <span style={{
-                              background: 'var(--blue)', color: '#fff',
+                              background: 'var(--action-fill)', color: 'var(--action-ink)',
                               fontSize: '12px', fontWeight: 600, fontFamily: SFText,
                               borderRadius: '9999px', padding: '2px 7px',
                               flexShrink: 0, minWidth: '20px', textAlign: 'center',

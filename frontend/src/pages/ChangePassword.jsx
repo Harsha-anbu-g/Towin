@@ -69,7 +69,7 @@ export default function ChangePassword() {
 
             {done ? (
               <div>
-                <p style={{ fontSize: '16px', color: 'var(--blue)', fontWeight: 600, marginBottom: '20px' }}>
+                <p style={{ fontSize: '16px', color: 'var(--blue-deep)', fontWeight: 600, marginBottom: '20px' }}>
                   ✓ Password changed. You can use your new password next time you sign in.
                 </p>
                 <button onClick={() => navigate('/profile')} className="primary-btn" style={{ fontSize: '16px' }}>

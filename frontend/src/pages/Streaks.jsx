@@ -308,7 +308,7 @@ export default function Streaks() {
                   style={{
                     background: 'none', border: '1.5px solid var(--border)',
                     borderRadius: '9999px', padding: '8px 20px',
-                    fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue)',
+                    fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)',
                     fontFamily: SFT, cursor: 'pointer',
                   }}
                 >

@@ -6,7 +6,7 @@ export default function Privacy() {
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px', fontFamily: 'inherit', color: 'var(--ink-deep)', lineHeight: 1.7 }}>
       <button
         onClick={() => navigate(-1)}
-        style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'var(--text-sm)', marginBottom: 32, padding: 0 }}
+        style={{ background: 'none', border: 'none', color: 'var(--blue-deep)', cursor: 'pointer', fontSize: 'var(--text-sm)', marginBottom: 32, padding: 0 }}
       >
         ← Back
       </button>
@@ -25,7 +25,7 @@ export default function Privacy() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 600, marginBottom: 12 }}>Your rights</h2>
-        <p>You have the right to access, correct, or request deletion of your personal data. You can update your profile at any time from the app. To request a full export of your data or account deletion, email <a href="mailto:agharsha.anbu@gmail.com" style={{ color: 'var(--blue)' }}>agharsha.anbu@gmail.com</a>.</p>
+        <p>You have the right to access, correct, or request deletion of your personal data. You can update your profile at any time from the app. To request a full export of your data or account deletion, email <a href="mailto:agharsha.anbu@gmail.com" style={{ color: 'var(--blue-deep)' }}>agharsha.anbu@gmail.com</a>.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
@@ -35,7 +35,7 @@ export default function Privacy() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 600, marginBottom: 12 }}>Contact</h2>
-        <p>For privacy questions or data requests, contact us at <a href="mailto:agharsha.anbu@gmail.com" style={{ color: 'var(--blue)' }}>agharsha.anbu@gmail.com</a>.</p>
+        <p>For privacy questions or data requests, contact us at <a href="mailto:agharsha.anbu@gmail.com" style={{ color: 'var(--blue-deep)' }}>agharsha.anbu@gmail.com</a>.</p>
       </section>
     </div>
   );

@@ -250,11 +250,11 @@ export default function NavBar() {
                 aria-label="Account menu" aria-haspopup="true" aria-expanded={accountOpen}
                 style={{
                   width: '40px', height: '40px', borderRadius: '50%', border: 'none',
-                  cursor: 'pointer', background: 'var(--blue)', color: '#fff',
+                  cursor: 'pointer', background: 'var(--action-fill)', color: 'var(--action-ink)',
                   fontSize: '16px', fontWeight: 600, fontFamily: SF,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <circle cx="12" cy="8" r="4" />
                   <path d="M12 14c-4.4 0-8 2.7-8 6v2h16v-2c0-3.3-3.6-6-8-6z" />
                 </svg>

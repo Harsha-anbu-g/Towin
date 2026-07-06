@@ -267,6 +267,7 @@ export const SLIDES = [
           display: 'inline-flex', alignItems: 'center', gap: '13px', marginBottom: '24px',
         }}>
           <img
+            className="tortoise-lit"
             src="/tortoise-logo-alpha.png"
             alt="ToWin tortoise logo"
             style={{ width: 62, height: 62, objectFit: 'contain' }}

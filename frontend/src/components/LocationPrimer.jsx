@@ -17,7 +17,7 @@ export default function LocationPrimer({ onEnable, onManual }) {
       <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 6px' }}>
         See people near you
       </p>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: '320px', margin: '0 auto 20px' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', lineHeight: 1.5, maxWidth: '320px', margin: '0 auto 20px' }}>
         Turn on location so we can show elders and helpers close to you. We only use it to show distance — never your exact spot.
       </p>
       <button onClick={onEnable} className="btn-primary" style={{ padding: '12px 28px', fontSize: '16px' }}>

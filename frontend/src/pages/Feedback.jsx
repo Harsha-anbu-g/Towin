@@ -226,14 +226,18 @@ export default function Feedback() {
         {/* ── RIGHT: Creator info (sticky) ── */}
         <div className="fb-left">
           <div className="fb-card">
-            {/* Avatar placeholder with initials */}
+            {/* Creator photo (supplied 2026-07-06 — the asset is canonical, never redraw) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--blue), #2a7da8)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '20px', fontWeight: 600, color: '#fff', fontFamily: SF, flexShrink: 0,
-              }}>H</div>
+              <img
+                src="/founder.jpg"
+                alt="Portrait of Harshavardhan"
+                width="52"
+                height="52"
+                style={{
+                  width: 52, height: 52, borderRadius: '50%', objectFit: 'cover',
+                  border: '1px solid var(--border)', flexShrink: 0,
+                }}
+              />
               <div>
                 <h2 style={{ fontFamily: SF, fontSize: '17px', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
                   Harshavardhan Anbuchezhian Gowri
@@ -242,7 +246,7 @@ export default function Feedback() {
               </div>
             </div>
 
-            <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue)', fontWeight: 600, margin: '0 0 2px' }}>
+            <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue-deep)', fontWeight: 600, margin: '0 0 2px' }}>
               Full-Stack Engineer · Aspiring Entrepreneur · AI-Driven Developer
             </p>
             <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 16px' }}>
@@ -264,7 +268,7 @@ export default function Feedback() {
                   <Icon size={15} color="var(--blue)" style={{ flexShrink: 0 }} />
                   {href ? (
                     <a href={href} target="_blank" rel="noopener noreferrer"
-                      style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue)', textDecoration: 'none' }}>
+                      style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue-deep)', textDecoration: 'none' }}>
                       {label}
                     </a>
                   ) : (

@@ -22,7 +22,7 @@ vi.mock('../api/axios', () => ({
 import api from '../api/axios'
 
 function renderWidget() {
-  return render(<MemoryRouter><AskAiAssistant /></MemoryRouter>)
+  return render(<MemoryRouter initialEntries={['/guide']}><AskAiAssistant /></MemoryRouter>)
 }
 
 describe('AskAiAssistant reset on user switch', () => {
@@ -42,7 +42,7 @@ describe('AskAiAssistant reset on user switch', () => {
     expect(await screen.findByText('Your trust score is 28 points.')).toBeInTheDocument()
 
     mockUser = { userId: 'helper-9' }
-    rerender(<MemoryRouter><AskAiAssistant /></MemoryRouter>)
+    rerender(<MemoryRouter initialEntries={['/guide']}><AskAiAssistant /></MemoryRouter>)
 
     await waitFor(() => {
       expect(screen.queryByText('What is my trust score?', { selector: 'div,p,span' })).not.toBeInTheDocument()
@@ -61,7 +61,7 @@ describe('AskAiAssistant reset on user switch', () => {
     expect(await screen.findByText('Here is how the Trust Journey works.')).toBeInTheDocument()
 
     mockUser = null
-    rerender(<MemoryRouter><AskAiAssistant /></MemoryRouter>)
+    rerender(<MemoryRouter initialEntries={['/guide']}><AskAiAssistant /></MemoryRouter>)
 
     await waitFor(() => {
       expect(screen.queryByText('Here is how the Trust Journey works.')).not.toBeInTheDocument()

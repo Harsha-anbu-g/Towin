@@ -60,8 +60,8 @@ export default function CookieConsent() {
       <button
         onClick={accept}
         style={{
-          background: 'var(--blue)',
-          color: '#fff',
+          background: 'var(--action-fill)',
+          color: 'var(--action-ink)',
           border: 'none',
           borderRadius: 8,
           padding: '8px 18px',

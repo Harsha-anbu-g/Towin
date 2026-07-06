@@ -173,7 +173,7 @@ export default function Messages() {
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          color: 'var(--blue)',
+          color: 'var(--blue-deep)',
           fontSize: '16px',
           fontFamily: SFText,
           fontWeight: 500,

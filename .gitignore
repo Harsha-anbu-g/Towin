@@ -68,6 +68,8 @@ docs/screenshots/*
 # Stray screenshots / diagrams at repo root
 /*.png
 /*.svg
+/*.jpeg
+/*.jpg
 
 # Google OAuth client secret files — never commit these
 client_secret_*.json
@@ -89,3 +91,6 @@ docs/architecture/frontend-graph.pdf
 
 # Claude Code machine-local settings (permissions/hooks for this machine only)
 .claude/settings.local.json
+
+# Impeccable skill hook caches generated next to audited pages (tool output)
+frontend/**/.impeccable/

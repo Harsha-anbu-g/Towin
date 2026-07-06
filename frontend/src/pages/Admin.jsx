@@ -160,7 +160,7 @@ function ErrorBlock({ onRetry }) {
         Could not load this. Please try again.
       </p>
       <button onClick={onRetry} style={{
-        background: 'var(--blue)', color: '#ffffff', border: 'none', borderRadius: '9999px',
+        background: 'var(--action-fill)', color: 'var(--action-ink)', border: 'none', borderRadius: '9999px',
         padding: '9px 22px', fontSize: '14px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
       }}>
         Try again
@@ -232,7 +232,7 @@ function FeedbackTab() {
             const a = avgRating(rows, key);
             return (
               <div key={key} style={{ textAlign: 'center', minWidth: '72px' }}>
-                <div style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue)', fontFamily: SF, fontVariantNumeric: 'tabular-nums' }}>
+                <div style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue-deep)', fontFamily: SF, fontVariantNumeric: 'tabular-nums' }}>
                   {a ?? '—'}
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontFamily: SFText }}>{label}</div>
@@ -820,7 +820,7 @@ export default function Admin() {
                   <td style={tdStyle}>{v.email}</td>
                   <td style={tdStyle}>
                     {v.idDocumentUrl
-                      ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)', fontSize: '14px', fontWeight: 600 }}>View document</a>
+                      ? <a href={v.idDocumentUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--blue-deep)', fontSize: '14px', fontWeight: 600 }}>View document</a>
                       : <span style={{ color: 'var(--ink-4)' }}>—</span>}
                   </td>
                   <td style={tdStyle}>{new Date(v.createdAt).toLocaleDateString()}</td>
@@ -953,7 +953,7 @@ export default function Admin() {
                       <td style={tdStyle}>{c.userAEmail}</td>
                       <td style={tdStyle}>{c.userBEmail}</td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--blue)', fontWeight: 600 }}>{c.trustLevel}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--blue-deep)', fontWeight: 600 }}>{c.trustLevel}</span>
                       </td>
                       <td style={tdStyle}>{c.status}</td>
                       <td style={tdStyle}>{new Date(c.createdAt).toLocaleDateString()}</td>

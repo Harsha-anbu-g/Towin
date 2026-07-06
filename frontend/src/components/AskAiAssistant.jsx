@@ -158,9 +158,10 @@ export default function AskAiAssistant() {
     }
   }, [input, loading, messages]);
 
-  // Hide where it would cover a primary action: the live chat composer and the
-  // feedback form itself.
-  if (pathname.startsWith('/messages/') || pathname === '/feedback') return null;
+  // Hide where it would cover a primary action: the live chat composer, the
+  // feedback form itself, and the landing deck (user request 2026-07-06 —
+  // first-time visitors get the guided walk with nothing floating over it).
+  if (pathname === '/' || pathname.startsWith('/messages/') || pathname === '/feedback') return null;
 
   const onlyGreeting = messages.length === 1;
 
@@ -171,14 +172,15 @@ export default function AskAiAssistant() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Ask AI, the ToWin helper"
-          className={pathname === '/' ? 'ask-ai-fab ask-ai-fab--landing' : 'ask-ai-fab'}
+          className="ask-ai-fab"
           style={{
             
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
             /* Dimmed to the light-blue wash so the helpers stay quiet next to
                the page's real primary actions (user request 2026-07-05). */
             background: 'var(--blue-wash)', color: 'var(--blue-deep)',
-            border: '1px solid var(--blue-soft)',
+            /* Bold border — the one helper allowed to stand out (user request 2026-07-06). */
+            border: '2px solid var(--blue)',
             borderRadius: '9999px', padding: '12px 20px',
             fontSize: 'var(--text-md, 16px)', fontWeight: 600, fontFamily: SF, cursor: 'pointer',
             boxShadow: '0 4px 14px rgba(79,163,206,0.22)',
@@ -195,7 +197,8 @@ export default function AskAiAssistant() {
         >
           <span style={{
             width: '30px', height: '30px', flexShrink: 0, borderRadius: '50%',
-            background: 'var(--tortoise-bed)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'var(--tortoise-bed)', border: '1px solid var(--blue-soft)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <img src={TORTOISE_IMG} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
           </span>
@@ -213,7 +216,7 @@ export default function AskAiAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="ask-ai-panel"
+            className={pathname === '/login' || pathname === '/register' ? 'ask-ai-panel ask-ai-panel--left' : 'ask-ai-panel'}
             style={{
               position: 'fixed', zIndex: 1001,
               display: 'flex', flexDirection: 'column',

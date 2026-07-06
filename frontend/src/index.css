@@ -30,6 +30,15 @@
   --blue-soft:    #BFD9EA;   /* soft borders */
   --blue-tint:    #E6F2FA;   /* light fills */
   --blue-wash:    #EAF5FB;   /* lighter fills */
+  --sky-bar-from: #7FC0E0;   /* trust-ladder bar gradient start (user-locked) */
+
+  /* Filled action controls — the fill that carries button text. The owner's
+     explicit call (2026-07-06): the sky-blue brand fill stays, white text on
+     it included, accepting the 2.8:1 ratio on these fills. Do NOT swap in a
+     darker blue "for contrast" — that was tried and rejected as off-brand.
+     Everything else (labels, links, chips) still meets 4.5:1. */
+  --action-fill: var(--blue);
+  --action-ink:  #ffffff;
 
   /* Neutral slate — avatars & trust badge (retargeted from blue) */
   --slate-tint:   #EEF1F4;   /* neutral light fill */
@@ -376,6 +385,20 @@ button, a, [role="button"], input, textarea, select, label, summary {
   to   { background-position: -200% center; }
 }
 
+/* Dashboard skeleton rows — opacity pulse (previously inline copies that
+   collided with the gradient `shimmer` above under the same name). */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+/* Dashboard card entrance — referenced by both dashboards; transform/opacity
+   only, resolved by the reduced-motion clamp below. */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes pulse-ring {
   0%   { transform: scale(0.9); opacity: 0.7; }
   100% { transform: scale(1.6); opacity: 0; }
@@ -410,6 +433,31 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .bf-6  { animation-delay: 0.40s; }
 .bf-7  { animation-delay: 0.47s; }
 .bf-8  { animation-delay: 0.54s; }
+
+/* Landing deck track: panels sit side by side; scroll progress is mapped onto
+   translateX every frame in Landing.jsx (scrubbed, not stepped — the deck
+   follows the user's own scrolling, so motion speed is theirs, not ours).
+   transform-only (GPU). */
+.landing-track {
+  will-change: transform;
+}
+
+/* Night mode: every landing tortoise keeps a lit face — the dark-green mark
+   alone sinks into the canvas (journey-line marker, top-bar logo, page-1
+   brand lockup). Same bed the Ask AI badge uses; light mode is untouched
+   (the mark reads fine on parchment). */
+:root[data-theme='dark'] .tortoise-lit {
+  background: var(--tortoise-bed);
+  border-radius: 50%;
+}
+
+/* Scroll cue under the deck: a soft slow bob on the chevron. transform-only;
+   the global reduced-motion override freezes it. */
+@keyframes hint-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50%      { transform: translateY(4px); opacity: 1; }
+}
+.hint-bob { animation: hint-bob 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
 
 /* Card hover lift */
 .lift {
@@ -487,8 +535,8 @@ button, a, [role="button"], input, textarea, select, label, summary {
 
 /* Apple pill primary button */
 .btn-primary {
-  background: var(--blue);
-  color: #fff;
+  background: var(--action-fill);
+  color: var(--action-ink);
   border: none;
   border-radius: var(--radius-pill);
   padding: 11px 22px;
@@ -504,8 +552,8 @@ button, a, [role="button"], input, textarea, select, label, summary {
 /* Confirm / save button — positive submit actions. Blue per the action grammar
    (blue = actions, green = achieved states); class name kept as a semantic alias. */
 .btn-confirm {
-  background: var(--blue);
-  color: #fff;
+  background: var(--action-fill);
+  color: var(--action-ink);
   border: none;
   border-radius: var(--radius-pill);
   padding: 11px 22px;
@@ -737,11 +785,11 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .card-actions > button:active { transform: scale(0.97); }
 
 /* ─── Trust ladder stage labels ─── */
-.trust-ladder-stages { font-size: 11px; }
-@media (max-width: 640px) {
-  /* Seven labels collide at phone width — show only the current stage,
-     larger. The bar + "Stage x of 7" pill keep the position context. */
-  .trust-ladder-stages { font-size: 12px; }
+/* 13px is the fine-print floor (--text-xs); below ~900px seven labels at that
+   size collide, so only the current stage shows — the bar + "Stage x of 7"
+   pill keep the position context. */
+.trust-ladder-stages { font-size: 13px; }
+@media (max-width: 900px) {
   .tl-stage:not(.tl-stage-active) { display: none; }
 }
 
@@ -902,6 +950,24 @@ img {
   width: min(384px, calc(100vw - 32px));
   height: min(564px, calc(100dvh - 130px));
 }
+/* Login page: the Ask AI pill docks bottom-left ABOVE Give Feedback — the
+   bottom-right corner belongs to the form column there and the pill was
+   covering the username field on laptop heights. Desktop/tablet only: phones
+   keep the compact circle bottom-right (single-column login, either corner
+   floats over content equally, and the sheet needs both edges). */
+@media (min-width: 641px) {
+  .fab-stack--askai-left {
+    right: auto;
+    left: calc(28px + env(safe-area-inset-left, 0px));
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    align-items: flex-start;
+  }
+  .ask-ai-panel--left {
+    right: auto;
+    left: calc(24px + env(safe-area-inset-left, 0px));
+  }
+}
+
 @media (max-width: 640px) {
   .ask-ai-fab {
     padding: 0 !important;
@@ -979,11 +1045,6 @@ img {
   /* Inbox rows: the trust pill was squeezing names down to "Tom Wa…" —
      a slightly smaller pill gives the name room to breathe. */
   .inbox-trust-pill { font-size: 10px !important; padding: 1px 6px !important; }
-
-  /* The landing page's primary Next/Start button lives bottom-right — exactly
-     where the Ask AI helper floats. The helper stays available on every other
-     page (and on desktop); here the primary action wins. */
-  .ask-ai-fab--landing { display: none !important; }
 }
 
 /* ─── Reduced motion ──────────────────────────────────────────────────────

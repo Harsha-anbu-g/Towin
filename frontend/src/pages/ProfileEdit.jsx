@@ -328,7 +328,7 @@ export default function ProfileEdit() {
             <label htmlFor="photo-upload" style={{
               fontSize: 'var(--text-sm)',
               fontWeight: 600,
-              color: 'var(--blue)',
+              color: 'var(--blue-deep)',
               cursor: 'pointer',
               background: 'rgba(0,102,204,0.08)',
               border: '1px solid rgba(0,102,204,0.2)',
@@ -341,8 +341,8 @@ export default function ProfileEdit() {
             {photoFile && (
               <button onClick={uploadPhoto} disabled={uploadingPhoto} style={{
                 marginLeft: '8px',
-                background: 'var(--blue)',
-                color: '#fff',
+                background: 'var(--action-fill)',
+                color: 'var(--action-ink)',
                 border: 'none',
                 borderRadius: '9999px',
                 padding: '6px 16px',
@@ -354,7 +354,7 @@ export default function ProfileEdit() {
                 {uploadingPhoto ? 'Uploading…' : 'Upload'}
               </button>
             )}
-            {photoMsg && <p style={{ fontSize: '14px', color: 'var(--blue)', marginTop: '6px' }}>{photoMsg}</p>}
+            {photoMsg && <p style={{ fontSize: '14px', color: 'var(--blue-deep)', marginTop: '6px' }}>{photoMsg}</p>}
           </div>
 
           <h1 style={{
@@ -556,8 +556,8 @@ export default function ProfileEdit() {
                     style={{
                       marginTop: '20px',
                       width: '100%',
-                      background: 'var(--blue)',
-                      color: '#ffffff',
+                      background: 'var(--action-fill)',
+                      color: 'var(--action-ink)',
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '14px 0',
@@ -775,7 +775,7 @@ export default function ProfileEdit() {
                       {r.tags?.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {r.tags.map(t => (
-                            <span key={t} style={{ fontSize: '12px', background: 'rgba(0,102,204,0.08)', color: 'var(--blue)', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
+                            <span key={t} style={{ fontSize: '12px', background: 'rgba(0,102,204,0.08)', color: 'var(--blue-deep)', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
                           ))}
                         </div>
                       )}

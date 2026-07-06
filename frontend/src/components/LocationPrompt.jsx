@@ -43,6 +43,7 @@ export default function LocationPrompt({ onResolved }) {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
+          aria-label="Town or postcode"
           placeholder="e.g. Scarborough or M1B 1A1"
           wrapperStyle={{ flex: 1 }}
           style={{ width: '100%', boxSizing: 'border-box', height: '40px', padding: '0 14px', fontSize: '15px', color: 'var(--ink-slate)', border: '1px solid var(--line-idle-2)', borderRadius: '9999px', outline: 'none', fontFamily: 'inherit' }}
@@ -52,17 +53,17 @@ export default function LocationPrompt({ onResolved }) {
         </button>
       </form>
       {status === 'notfound' && (
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--red-mild)', margin: '10px 0 0' }}>
+        <p role="alert" style={{ fontSize: 'var(--text-sm)', color: 'var(--red-error)', margin: '10px 0 0' }}>
           We couldn't find that place — try a postcode.
         </p>
       )}
       {status === 'error' && (
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--red-mild)', margin: '10px 0 0' }}>
+        <p role="alert" style={{ fontSize: 'var(--text-sm)', color: 'var(--red-error)', margin: '10px 0 0' }}>
           Something went wrong. Please try again.
         </p>
       )}
       {city && status === 'idle' && (
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--blue)', margin: '10px 0 0' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--blue-deep)', margin: '10px 0 0' }}>
           Showing people near {city}.
         </p>
       )}

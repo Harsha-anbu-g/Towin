@@ -29,7 +29,7 @@ export default function CheckEmail() {
     fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`, color: 'var(--ink-deep)',
   };
   const primaryBtn = {
-    background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10,
+    background: 'var(--action-fill)', color: 'var(--action-ink)', border: 'none', borderRadius: 10,
     padding: '12px 22px', fontSize: 17, fontWeight: 600, cursor: sending ? 'default' : 'pointer',
     opacity: sending ? 0.6 : 1, width: '100%', marginBottom: 12,
   };
@@ -56,7 +56,7 @@ export default function CheckEmail() {
       <button onClick={resend} disabled={sending} style={primaryBtn}>
         {sending ? 'Sending…' : 'Resend email'}
       </button>
-      <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' }}>
+      <Link to="/login" style={{ color: 'var(--blue-deep)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' }}>
         Back to log in
       </Link>
     </div>

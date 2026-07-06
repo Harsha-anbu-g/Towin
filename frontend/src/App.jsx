@@ -105,6 +105,19 @@ function ScrollShell({ children }) {
   );
 }
 
+// The Ask AI pill keeps its "Ask AI" label everywhere. On /login the
+// bottom-right corner belongs to the form column (the pill was covering the
+// username field on laptop heights), so the helper docks bottom-left above
+// Give Feedback, over the hero photo — never over the login screen.
+function AskAiDock() {
+  const { pathname } = useLocation();
+  return (
+    <div className={pathname === '/login' || pathname === '/register' ? 'fab-stack fab-stack--askai-left' : 'fab-stack'}>
+      <AskAiAssistant />
+    </div>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -150,9 +163,7 @@ function App() {
           <div className="fab-stack fab-stack--left">
             <FeedbackWidget />
           </div>
-          <div className="fab-stack">
-            <AskAiAssistant />
-          </div>
+          <AskAiDock />
           <CookieConsent />
           </div>
         </BrowserRouter>

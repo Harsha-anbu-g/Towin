@@ -208,8 +208,8 @@ export default function EmergencyContacts() {
               <button
                 onClick={() => setShowAddForm(v => !v)}
                 style={{
-                  background: 'var(--blue)',
-                  color: '#ffffff',
+                  background: 'var(--action-fill)',
+                  color: 'var(--action-ink)',
                   border: 'none',
                   borderRadius: '9999px',
                   padding: '8px 20px',
@@ -299,8 +299,8 @@ export default function EmergencyContacts() {
                   <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
                     <a href={`tel:${c.phone}`} style={{
                       flex: 1,
-                      background: 'var(--blue)',
-                      color: '#ffffff',
+                      background: 'var(--action-fill)',
+                      color: 'var(--action-ink)',
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '10px 0',
@@ -398,8 +398,8 @@ export default function EmergencyContacts() {
                     disabled={adding}
                     style={{
                       flex: 1,
-                      background: 'var(--blue)',
-                      color: '#ffffff',
+                      background: 'var(--action-fill)',
+                      color: 'var(--action-ink)',
                       border: 'none',
                       borderRadius: '9999px',
                       padding: '12px 0',

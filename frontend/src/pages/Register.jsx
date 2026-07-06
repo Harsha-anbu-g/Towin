@@ -125,7 +125,7 @@ function LegalModal({ title, sections, onClose }) {
             onClick={onClose}
             style={{
               height: '40px', padding: '0 22px',
-              background: 'var(--blue)', color: '#ffffff',
+              background: 'var(--action-fill)', color: 'var(--action-ink)',
               border: 'none', borderRadius: '9999px',
               fontSize: '14px', fontWeight: 600, cursor: 'pointer',
               fontFamily: 'inherit',
@@ -153,26 +153,29 @@ function HeroPanel() {
         'radial-gradient(ellipse at 80% 85%, var(--blue-soft) 0%, transparent 60%),' +
         'linear-gradient(160deg, var(--blue-wash) 0%, var(--blue-soft) 45%, var(--blue) 100%)',
     }}>
-      {/* Hero photo — elder and younger person walking hand in hand */}
+      {/* Hero photo — bright close-up to pair with Login's handshake:
+          an elder's hand received by a younger open palm (Pexels 14441380).
+          Portrait orientation so the tall panel crop keeps both hands legible. */}
       <img
-        src="/walking.jpg"
-        alt="An elder and younger person walking together hand in hand"
+        src="/held-hand.jpg"
+        alt="An elder's hand resting in a younger person's open hand"
         draggable="false"
         onDragStart={e => e.preventDefault()}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', objectPosition: 'center', zIndex: 0,
+          // Keep both hands centered; trims sleeve (top) and wrist (bottom)
+          objectFit: 'cover', objectPosition: 'center 55%', zIndex: 0,
           userSelect: 'none', WebkitUserDrag: 'none',
-          // walking.jpg is hazier than the Login hero photo; lift it so both
-          // auth pages feel equally vivid under the same readability wash.
-          filter: 'brightness(1.15) saturate(1.45) contrast(1.03)',
         }}
       />
 
-      {/* Soft readability wash — keeps the calm, never harsh black */}
+      {/* Soft readability wash — keeps the calm, never harsh black.
+          Gentle top scrim carries the headline over the light backdrop;
+          the bottom gradient mirrors Login's. */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1,
         background:
+          'linear-gradient(to bottom, rgba(20,55,80,0.55) 0%, rgba(20,55,80,0.30) 34%, transparent 62%),' +
           'linear-gradient(to top, rgba(20,55,80,0.62) 0%, rgba(20,55,80,0.30) 45%, rgba(20,55,80,0.05) 100%)',
       }} />
 
@@ -217,7 +220,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Your community<br />is waiting <span style={{ color: 'var(--trust-gold)' }}>for you</span>.
+          Your community<br />is waiting <span style={{ color: 'var(--trust-gold)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.08em', textShadow: '0 0 7px rgba(255,255,255,0.6), 0 0 2px rgba(255,255,255,0.4)' }}>for you.</span>
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -345,7 +348,7 @@ export default function Register() {
   };
 
   const linkBtn = {
-    color: 'var(--blue)', background: 'none', border: 'none', padding: 0,
+    color: 'var(--blue-deep)', background: 'none', border: 'none', padding: 0,
     cursor: 'pointer', font: 'inherit', textDecoration: 'underline',
   };
 
@@ -395,7 +398,7 @@ export default function Register() {
           }}>
             <span style={{
               position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
-              background: 'var(--blue)', color: '#fff',
+              background: 'var(--action-fill)', color: 'var(--action-ink)',
               fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px',
               padding: '3px 12px', borderRadius: '9999px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -471,7 +474,7 @@ export default function Register() {
               <button type="button" style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
-                background: 'var(--seg-active)', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                background: 'var(--seg-active)', color: 'var(--blue-deep)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}>Create account</button>
             </div>
 
@@ -725,7 +728,7 @@ export default function Register() {
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
           }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/login" style={{ color: 'var(--blue-deep)', fontWeight: 600, textDecoration: 'none' }}>
               Log in
             </Link>
           </p>

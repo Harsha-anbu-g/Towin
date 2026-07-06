@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
@@ -18,17 +16,15 @@ import { parseServerDate } from '../lib/utils';
 function TabBadge({ count }) {
   if (!count) return null;
   return (
-    <span style={{
+    <span aria-hidden="true" style={{
       marginLeft: '8px', verticalAlign: 'middle',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-      background: 'var(--ink-slate)', color: '#fff', fontSize: '14px', fontWeight: 600,
+      background: 'var(--ink-slate)', color: 'var(--canvas)', fontSize: '14px', fontWeight: 600,
       borderRadius: '9999px', lineHeight: 1,
     }}>{count}</span>
   );
 }
-
-const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
 function StarPicker({ value, onChange }) {
   const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -39,9 +35,11 @@ function StarPicker({ value, onChange }) {
           key={n}
           type="button"
           onClick={() => onChange(n)}
+          aria-label={`${n} star${n === 1 ? '' : 's'}`}
+          aria-pressed={n <= value}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: '32px', padding: '0',
+            fontSize: '32px', padding: '6px', lineHeight: 1,
             color: n <= value ? 'var(--star-gold)' : 'var(--border)',
             transition: 'color 0.1s',
             fontFamily: SFT,
@@ -53,13 +51,6 @@ function StarPicker({ value, onChange }) {
     </div>
   );
 }
-
-const COMMUNITY_PHOTOS = [
-  { id: 'photo-1529156069898-49953e39b3ac', label: 'Community' },
-  { id: 'photo-1544005313-94ddf0286df2', label: 'Elder woman' },
-  { id: 'photo-1573497491208-6b1acb260507', label: 'Helping hands' },
-  { id: 'photo-1438761681033-6461ffad8d80', label: 'Community member' },
-];
 
 const TRUST_LEVEL_ORDER = { DISCOVERED: 1, MESSAGING: 2, PHONE_CALL: 3, VIDEO_CALL: 4, VERIFIED: 5, FIRST_MEET: 6, TRUSTED: 7 };
 const STATUS_ORDER = { ACTIVE: 0, PENDING: 1 };
@@ -79,17 +70,6 @@ const sortNeeds = (a, b) => {
     return (a.urgency === 'URGENT' ? 0 : 1) - (b.urgency === 'URGENT' ? 0 : 1);
   }
   return 0;
-};
-
-const statusStyle = (status) => {
-  const map = {
-    ACTIVE:  { bg: 'var(--surface)', color: 'var(--blue)' },
-    PENDING: { bg: 'var(--surface-2)', color: 'var(--ink-slate)' },
-    DECLINED: { bg: 'var(--surface-2)', color: 'var(--ink-slate)' },
-  };
-  const s = map[status] ?? { bg: 'var(--surface-2)', color: 'var(--steel-2)' };
-  return { background: s.bg, color: s.color, fontSize: '12px', fontWeight: 600,
-    padding: '3px 10px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase' };
 };
 
 const fmtPhone = (p) => { const d = (p || '').replace(/\D/g, ''); return d.length === 11 && d.startsWith('1') ? `+1 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}` : p; };
@@ -137,9 +117,9 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
     <div style={{
       background: 'var(--canvas)', borderRadius: '18px', padding: '20px',
       border: '1px solid var(--border)',
-      animation: `fadeSlideUp 0.4s ease ${index * 0.05}s both`,
+      animation: `fadeSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.05}s both`,
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0, lineHeight: 1.3 }}>{need.title}</p>
           {need.description && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '10px 0 0', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{need.description}</p>}
@@ -154,7 +134,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
               {need.distanceKm != null ? `${Math.round(need.distanceKm * 10) / 10} km · ` : ''}Posted by{' '}
               {need.elderId ? (
                 <button onClick={() => onOpenProfile(need.elderId)}
-                  style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--blue)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                  style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--blue-deep)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
                   {need.elderName}
                 </button>
               ) : need.elderName}
@@ -177,7 +157,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
             </>
           ) : (
             <button onClick={() => onApply(need.id)} disabled={applying === need.id}
-              style={{ height: '40px', padding: '0 24px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+              style={{ height: '40px', padding: '0 24px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: applying === need.id ? 'default' : 'pointer' }}>
               {applying === need.id ? 'Sending…' : 'Offer to Help'}
             </button>
           )}
@@ -188,16 +168,16 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
 }
 
 function TabIcon({ id, active }) {
-  const color = active ? '#fff' : 'var(--ink-slate)';
+  // stroke set via style so var(--action-ink) resolves (attributes don't take var()).
   const svgProps = {
     width: 16, height: 16,
     viewBox: '0 0 24 24',
     fill: 'none',
-    stroke: color,
     strokeWidth: '2.1',
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
-    style: { flexShrink: 0 },
+    'aria-hidden': true,
+    style: { flexShrink: 0, stroke: active ? 'var(--action-ink)' : 'var(--ink-slate)' },
   };
   if (id === 'connections') return (
     <svg {...svgProps}>
@@ -255,6 +235,7 @@ export default function HelperDashboard() {
     const p = new URLSearchParams(prev);
     p.set('tab', next);
     p.delete('eseg');
+    p.delete('bseg');
     p.delete('fseg');
     return p;
   }, { replace: true });
@@ -483,9 +464,9 @@ export default function HelperDashboard() {
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');
 
   const RadiusBar = ({ noun = 'people' }) => (
-    <div style={{ background: 'var(--canvas)', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid var(--border)' }}>
+    <div style={{ background: 'var(--canvas)', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
       <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         {locationStatus === 'asking' && 'Getting your location...'}
         {locationStatus === 'granted' && `Showing ${noun} within ${radiusKm} km of you`}
         {locationStatus === 'denied' && `Location unavailable, showing all ${noun}`}
@@ -493,7 +474,8 @@ export default function HelperDashboard() {
       </span>
       {locationStatus === 'granted' && (
         <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
-          style={{ fontSize: '14px', fontWeight: 600, color: 'var(--blue)', background: 'var(--blue-wash)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
+          aria-label="Search distance in kilometres"
+          style={{ fontSize: '14px', fontWeight: 600, color: 'var(--blue-deep)', background: 'var(--canvas)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
           {[5,10,25,50,100].map(v => <option key={v} value={v}>{v} km</option>)}
         </select>
       )}
@@ -520,8 +502,8 @@ export default function HelperDashboard() {
   const eldersDefault = 'active';
   const activeEldersSeg = eldersSeg ?? eldersDefault;
   const elderSegments = [
-    { id: 'active',   label: 'Active',         count: elderCounts.active },
-    { id: 'building', label: 'Building Trust', count: elderCounts.building },
+    { id: 'active',   label: 'Trusted Friends', count: elderCounts.active },
+    { id: 'building', label: 'Building Trust',  count: elderCounts.building },
   ];
   const visibleConnections = [...connections].filter(c => {
     if (activeEldersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
@@ -560,7 +542,7 @@ export default function HelperDashboard() {
         <div key={conn.id} style={{
           background: 'var(--canvas)', borderRadius: '18px', padding: '20px',
           border: '1px solid var(--blue-soft)',
-          animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+          animation: `fadeSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s both`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
@@ -581,14 +563,14 @@ export default function HelperDashboard() {
               </div>
             </div>
             <span style={{
-              fontSize: '11px', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
+              fontSize: 'var(--text-xs)', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
               color: 'var(--blue-deep)', background: 'var(--blue-tint)', border: '1px solid var(--blue-soft)',
               padding: '3px 10px', borderRadius: '9999px', flexShrink: 0,
             }}>New</span>
           </div>
           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
             <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-              style={{ flex: 1, height: '36px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+              style={{ flex: 1, height: '36px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
               {respondingConn === conn.id ? 'Accepting…' : 'Accept'}
             </button>
             <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
@@ -605,14 +587,14 @@ export default function HelperDashboard() {
       <div key={conn.id} style={{
         background: 'var(--canvas)', borderRadius: '18px', padding: '18px 20px',
         border: '1px solid var(--border)',
-        animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+        animation: `fadeSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s both`,
         display: 'flex', alignItems: 'center', gap: '14px',
       }}>
         <div style={{
           width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0,
           background: 'var(--surface-2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '18px', fontWeight: 700, color: 'var(--ink-3)',
+          fontSize: '18px', fontWeight: 700, color: 'var(--ink-slate)',
           border: '2px dashed var(--border)',
         }}>
           {initials(name)}
@@ -644,19 +626,35 @@ export default function HelperDashboard() {
         borderBottom: '1px solid var(--border)',
       }}>
         <div className="dash-tab-wrap">
-          <div className="dash-tab-scroll">
+          <div className="dash-tab-scroll" role="tablist" aria-label="Dashboard sections">
             {tabs.map(([id, label, badge]) => {
               const active = tab === id;
               return (
-                <button key={id} onClick={() => setTab(id)} style={{
+                <button key={id} onClick={() => setTab(id)}
+                  role="tab"
+                  id={`dash-tab-${id}`}
+                  aria-selected={active}
+                  tabIndex={active ? 0 : -1}
+                  aria-label={badge ? `${label}, ${badge} new` : undefined}
+                  onKeyDown={(e) => {
+                    const ids = tabs.map(([tid]) => tid);
+                    const i = ids.indexOf(tab);
+                    let next = null;
+                    if (e.key === 'ArrowRight') next = ids[(i + 1) % ids.length];
+                    else if (e.key === 'ArrowLeft') next = ids[(i - 1 + ids.length) % ids.length];
+                    else if (e.key === 'Home') next = ids[0];
+                    else if (e.key === 'End') next = ids[ids.length - 1];
+                    if (next) { e.preventDefault(); setTab(next); document.getElementById(`dash-tab-${next}`)?.focus(); }
+                  }}
+                  style={{
                   flex: '1 1 auto',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   height: '44px', padding: '0 16px',
                   fontSize: '16px', letterSpacing: '-0.1px',
                   fontWeight: active ? 700 : 600,
-                  color: active ? '#ffffff' : 'var(--ink-slate)',
-                  background: active ? 'var(--blue)' : 'transparent',
-                  border: active ? '1px solid var(--blue)' : '1px solid transparent',
+                  color: active ? 'var(--action-ink)' : 'var(--ink-slate)',
+                  background: active ? 'var(--action-fill)' : 'transparent',
+                  border: active ? '1px solid var(--action-fill)' : '1px solid transparent',
                   borderRadius: '10px',
                   cursor: 'pointer',
                   transition: 'background 0.15s, color 0.15s',
@@ -681,17 +679,15 @@ export default function HelperDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* My Elders tab (landing) */}
           {tab === 'connections' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+            <div role="tabpanel" aria-labelledby="dash-tab-connections" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 My Elders
               </h2>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
-                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'skeleton-pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
                   ))}
-                  <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
                 </div>
               )}
               {!loading && connections.length === 0 && (
@@ -700,14 +696,14 @@ export default function HelperDashboard() {
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
                   <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No connections yet</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Find elders near you and send a friend request to get started.</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Find elders near you and send a friend request to get started.</p>
                   <button onClick={() => { setTab('requests'); setFriendsSeg('find'); }} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
                     Add Friends
                   </button>
                 </div>
               )}
               {!loading && connections.length > 0 && (
-                <SegmentedTabs segments={elderSegments} value={activeEldersSeg} onChange={setEldersSeg} />
+                <SegmentedTabs segments={elderSegments} value={activeEldersSeg} onChange={setEldersSeg} label="My Elders sections" />
               )}
               {!loading && connections.length > 0 && visibleConnections.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
@@ -720,7 +716,7 @@ export default function HelperDashboard() {
                 <div key={conn.id} style={{
                   background: 'var(--canvas)', borderRadius: '18px', padding: '22px',
                   border: '1px solid var(--border)',
-                  animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+                  animation: `fadeSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s both`,
                 }}>
                   {/* Identity row */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -750,7 +746,7 @@ export default function HelperDashboard() {
                           </div>
                         ) : (
                           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
@@ -767,7 +763,7 @@ export default function HelperDashboard() {
                                 Reviewed
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: 'var(--red-tint)', color: 'var(--red-deep)', border: '1px solid var(--red-soft)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: 'none', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
                         )}
 
@@ -779,18 +775,18 @@ export default function HelperDashboard() {
                         {REVIEW_TAGS.map(t => (
                           <button key={t} onClick={() => setReviewForm(f => ({
                             ...f, tags: f.tags.includes(t) ? f.tags.filter(x => x !== t) : [...f.tags, t]
-                          }))} style={{
-                            fontSize: '14px', padding: '5px 14px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
-                            borderColor: reviewForm.tags.includes(t) ? 'var(--blue)' : 'var(--border)',
-                            background: reviewForm.tags.includes(t) ? 'var(--blue)' : 'var(--canvas)',
-                            color: reviewForm.tags.includes(t) ? '#fff' : 'var(--ink-3)',
+                          }))} aria-pressed={reviewForm.tags.includes(t)} style={{
+                            fontSize: '14px', padding: '5px 14px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+                            borderColor: reviewForm.tags.includes(t) ? 'var(--action-fill)' : 'var(--border)',
+                            background: reviewForm.tags.includes(t) ? 'var(--action-fill)' : 'var(--canvas)',
+                            color: reviewForm.tags.includes(t) ? 'var(--action-ink)' : 'var(--ink-slate)',
                           }}>{t}</button>
                         ))}
                       </div>
                       <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
                         placeholder="Any comments? (optional)" rows={2}
                         style={{ width: '100%', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', fontSize: 'var(--text-sm)', outline: 'none', fontFamily: 'inherit' }} />
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--ink-3)', cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--ink-slate)', cursor: 'pointer' }}>
                         <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
                         Report a safety concern
                       </label>
@@ -823,18 +819,17 @@ export default function HelperDashboard() {
 
           {/* Add Friends tab — invites you got, requests you sent, and finding new elders */}
           {tab === 'requests' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <style>{`@keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+            <div role="tabpanel" aria-labelledby="dash-tab-requests" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 Add Friends
               </h2>
-              <SegmentedTabs segments={friendsSegments} value={friendsSeg} onChange={setFriendsSeg} />
+              <SegmentedTabs segments={friendsSegments} value={friendsSeg} onChange={setFriendsSeg} label="Add Friends sections" />
 
               {/* New Invites — friend requests waiting for you to answer */}
               {friendsSeg === 'invites' && (loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
-                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'skeleton-pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
                   ))}
                 </div>
               ) : incomingRequests.length === 0 ? (
@@ -849,7 +844,7 @@ export default function HelperDashboard() {
               {friendsSeg === 'requested' && (loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
-                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'shimmer 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '80px', animation: 'skeleton-pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
                   ))}
                 </div>
               ) : sentRequests.length === 0 ? (
@@ -864,7 +859,7 @@ export default function HelperDashboard() {
 
           {/* Browse Needs tab */}
           {tab === 'browse' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div role="tabpanel" aria-labelledby="dash-tab-browse" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
                 <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px' }}>
                   Offer Help
@@ -874,7 +869,7 @@ export default function HelperDashboard() {
                 </p>
               </div>
 
-              <SegmentedTabs segments={browseSegments} value={browseSeg} onChange={setBrowseSeg} />
+              <SegmentedTabs segments={browseSegments} value={browseSeg} onChange={setBrowseSeg} label="Offer Help sections" />
 
               {/* Distance + location controls only matter for the Available list */}
               {browseSeg === 'available' && <RadiusBar noun="help" />}
@@ -892,7 +887,7 @@ export default function HelperDashboard() {
                     </svg>
                   </div>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No help nearby</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>
                     {locationStatus === 'granted'
                       ? `Nothing within ${radiusKm} km right now. Use the radius selector above to expand your search area.`
                       : 'No open help right now. Check back soon or enable location to filter by distance.'}
@@ -937,9 +932,9 @@ export default function HelperDashboard() {
               {discovering && elders.length === 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
-                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '110px', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '110px', animation: 'skeleton-pulse 1.5s ease-in-out infinite' }} />
                   ))}
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', textAlign: 'center', margin: 0 }}>Looking for elders near you…</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', textAlign: 'center', margin: 0 }}>Looking for elders near you…</p>
                 </div>
               )}
 
@@ -947,7 +942,7 @@ export default function HelperDashboard() {
               {!discovering && discoverError && (
                 <div style={{ background: 'var(--canvas)', borderRadius: '18px', textAlign: 'center', padding: '40px 24px', border: '1px solid var(--red-line)' }}>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Couldn't load elders</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
                   <button onClick={() => loadElders()} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
                     Try Again
                   </button>
@@ -964,7 +959,7 @@ export default function HelperDashboard() {
                   <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                     {locationStatus === 'granted' ? 'No elders found nearby' : 'No elders available right now'}
                   </p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>
                     {locationStatus === 'granted'
                       ? 'Try a larger radius above, or check back later.'
                       : 'New members join often. Please check back soon.'}
@@ -984,7 +979,7 @@ export default function HelperDashboard() {
                   <div key={elder.userId} style={{
                     background: 'var(--canvas)', borderRadius: '18px', padding: '20px',
                     border: '1px solid var(--border)',
-                    animation: `fadeSlideUp 0.4s ease ${i * 0.05}s both`,
+                    animation: `fadeSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s both`,
                   }}>
                     <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                       <Avatar name={elder.name} photoUrl={elder.photoUrl} size={50} />
@@ -996,7 +991,7 @@ export default function HelperDashboard() {
                           )}
                           {(elder.trustScore != null || elder.trustTier) && (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
-                              {elder.trustTier || 'New'}{elder.trustScore != null ? ` · ${elder.trustScore}` : ''}
+                              {elder.trustTier || 'New'}{elder.trustScore != null ? ` · ${elder.trustScore} points` : ''}
                             </span>
                           )}
                         </div>
@@ -1016,15 +1011,15 @@ export default function HelperDashboard() {
                       </div>
                       <div className="card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--blue-tint)', color: 'var(--blue-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
+                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--green-tint)', color: 'var(--green-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
                         ) : requested ? (
                           <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: 'var(--ink-slate)' }}>Requested</span>
                         ) : errorMsg ? (
                           <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: 'var(--ink-slate)' }}>{errorMsg}</span>
                         ) : (
                           <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
-                            style={{ height: '40px', padding: '0 22px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: 'none', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-                            {connectingTo === elder.userId ? '...' : 'Add Friend'}
+                            style={{ height: '40px', padding: '0 22px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                            {connectingTo === elder.userId ? 'Sending…' : 'Add Friend'}
                           </button>
                         )}
                         <button onClick={() => navigate(`/user/${elder.userId}`)}

@@ -85,7 +85,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Connecting generations,<br />building <span style={{ color: 'var(--trust-gold)' }}>trust</span>.
+          Connecting generations,<br />building <span style={{ color: 'var(--trust-gold)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.08em', textShadow: '0 0 7px rgba(255,255,255,0.6), 0 0 2px rgba(255,255,255,0.4)' }}>trust.</span>
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -222,7 +222,7 @@ export default function Login() {
           }}>
             <span style={{
               position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
-              background: 'var(--blue)', color: '#fff',
+              background: 'var(--action-fill)', color: 'var(--action-ink)',
               fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px',
               padding: '3px 12px', borderRadius: '9999px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -295,7 +295,7 @@ export default function Login() {
               <button type="button" style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
-                background: 'var(--seg-active)', color: 'var(--blue)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                background: 'var(--seg-active)', color: 'var(--blue-deep)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}>Log in</button>
               <button type="button" onClick={() => navigate('/register')} style={{
                 flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
@@ -410,7 +410,7 @@ export default function Login() {
                 {/* Forgot password */}
                 <div style={{ textAlign: 'right', marginTop: '6px' }}>
                   <Link to="/forgot-password" style={{
-                    fontSize: 'var(--text-sm)', color: 'var(--blue)',
+                    fontSize: 'var(--text-sm)', color: 'var(--blue-deep)',
                     textDecoration: 'none', display: 'inline-block', padding: '12px 0 12px 12px',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
@@ -446,7 +446,7 @@ export default function Login() {
               marginTop: '20px',
             }}>
               New here?{' '}
-              <Link to="/register" style={{ color: 'var(--blue)', fontWeight: 600, textDecoration: 'none' }}>
+              <Link to="/register" style={{ color: 'var(--blue-deep)', fontWeight: 600, textDecoration: 'none' }}>
                 Create Account
               </Link>
             </p>

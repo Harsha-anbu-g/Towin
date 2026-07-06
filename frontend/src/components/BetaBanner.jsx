@@ -19,8 +19,8 @@ export default function BetaBanner() {
   return (
     <div style={{
       width: '100%',
-      background: 'var(--blue)',
-      color: '#fff',
+      background: 'var(--action-fill)',
+      color: 'var(--action-ink)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

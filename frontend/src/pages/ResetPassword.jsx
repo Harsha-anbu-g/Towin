@@ -37,11 +37,11 @@ export default function ResetPassword() {
     border: '1px solid var(--input-line)', boxSizing: 'border-box', marginBottom: 14,
   };
   const btn = {
-    width: '100%', background: 'var(--blue)', color: '#fff', border: 'none',
+    width: '100%', background: 'var(--action-fill)', color: 'var(--action-ink)', border: 'none',
     borderRadius: 10, padding: '12px', fontSize: 17, fontWeight: 600,
     cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1,
   };
-  const linkStyle = { color: 'var(--blue)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' };
+  const linkStyle = { color: 'var(--blue-deep)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' };
   const labelStyle = { display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: 8 };
 
   if (!token) {
