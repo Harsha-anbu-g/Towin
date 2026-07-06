@@ -42,6 +42,10 @@ jobs:
       - name: Lint (advisory)
         run: npm run lint
         continue-on-error: true
+      # Hard gate: raw hex colors in JSX silently break night mode (theme is
+      # CSS-token driven). Allowlist lives in scripts/check-tokens.mjs.
+      - name: Theme-token check
+        run: npm run check:tokens
       - name: Unit tests
         run: npx vitest run
       - name: Build
