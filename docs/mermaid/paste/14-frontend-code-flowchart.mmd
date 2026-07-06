@@ -1,0 +1,155 @@
+flowchart TB
+    R(("frontend/src"))
+    subgraph n1["api/"]
+        direction TB
+        n2("axios.js")
+    end
+    subgraph n3["assets/"]
+        direction TB
+        n4("hero.png")
+    end
+    subgraph n5["components/"]
+        direction TB
+        subgraph n6["magic/"]
+            direction TB
+            n7("AuroraBackground.jsx")
+            n8("BlurFade.jsx")
+            n7 ~~~ n8
+            n9("ShimmerButton.jsx")
+            n8 ~~~ n9
+        end
+        subgraph n10["ui/"]
+            direction TB
+            n11("Avatar.jsx")
+            n12("label.jsx")
+            n11 ~~~ n12
+            n13("minimalist-hero.jsx")
+            n12 ~~~ n13
+            n14("slider.jsx")
+            n13 ~~~ n14
+            n15("tooltip.jsx")
+            n14 ~~~ n15
+        end
+        n6 ~~~ n10
+        n16("AdminRoute.jsx")
+        n17("AskAiAssistant.jsx")
+        n16 ~~~ n17
+        n18("BetaBanner.jsx")
+        n17 ~~~ n18
+        n19("ConfirmDialog.jsx")
+        n18 ~~~ n19
+        n20("CookieConsent.jsx")
+        n19 ~~~ n20
+        n21("FeedbackWidget.jsx")
+        n20 ~~~ n21
+        n22("GlassTab.jsx")
+        n21 ~~~ n22
+        n23("LocationPrimer.jsx")
+        n22 ~~~ n23
+        n24("LocationPrompt.jsx")
+        n23 ~~~ n24
+        n25("NavBar.jsx")
+        n26("PeekabooCard.jsx")
+        n25 ~~~ n26
+        n27("SegmentedTabs.jsx")
+        n26 ~~~ n27
+        n28("SiteFooter.jsx")
+        n27 ~~~ n28
+        n29("SmoothInput.jsx")
+        n28 ~~~ n29
+        n30("TagInput.jsx")
+        n29 ~~~ n30
+        n31("TrustBadge.jsx")
+        n30 ~~~ n31
+        n32("TrustJourney.jsx")
+        n31 ~~~ n32
+        n33("TurtleLogo.jsx")
+        n32 ~~~ n33
+        n34("VerifyBanner.jsx")
+    end
+    subgraph n35["context/"]
+        direction TB
+        n36("AuthContext.jsx")
+        n37("ThemeContext.jsx")
+        n36 ~~~ n37
+        n38("ToastContext.jsx")
+        n37 ~~~ n38
+    end
+    subgraph n39["data/"]
+        direction TB
+        n40("guideContent.jsx")
+        n41("landingContent.jsx")
+        n40 ~~~ n41
+    end
+    subgraph n42["lib/"]
+        direction TB
+        n43("copy.js")
+        n44("useSeenIds.js")
+        n43 ~~~ n44
+        n45("useSosCountdown.js")
+        n44 ~~~ n45
+        n46("utils.js")
+        n45 ~~~ n46
+    end
+    subgraph n47["pages/"]
+        direction TB
+        n48("Admin.jsx")
+        n49("ChangePassword.jsx")
+        n48 ~~~ n49
+        n50("CheckEmail.jsx")
+        n49 ~~~ n50
+        n51("ElderDashboard.jsx")
+        n50 ~~~ n51
+        n52("EmergencyContacts.jsx")
+        n51 ~~~ n52
+        n53("Feedback.jsx")
+        n52 ~~~ n53
+        n54("FinishSetup.jsx")
+        n53 ~~~ n54
+        n55("ForgotPassword.jsx")
+        n54 ~~~ n55
+        n56("Guide.jsx")
+        n55 ~~~ n56
+        n57("HelperDashboard.jsx")
+        n58("Landing.jsx")
+        n57 ~~~ n58
+        n59("Login.jsx")
+        n58 ~~~ n59
+        n60("Messages.jsx")
+        n59 ~~~ n60
+        n61("MessagesInbox.jsx")
+        n60 ~~~ n61
+        n62("OAuthCallback.jsx")
+        n61 ~~~ n62
+        n63("PeekabooGame.jsx")
+        n62 ~~~ n63
+        n64("Privacy.jsx")
+        n63 ~~~ n64
+        n65("ProfileEdit.jsx")
+        n64 ~~~ n65
+        n66("Register.jsx")
+        n67("ResetPassword.jsx")
+        n66 ~~~ n67
+        n68("Streaks.jsx")
+        n67 ~~~ n68
+        n69("Terms.jsx")
+        n68 ~~~ n69
+        n70("Trust.jsx")
+        n69 ~~~ n70
+        n71("UserProfile.jsx")
+        n70 ~~~ n71
+        n72("VerifyEmail.jsx")
+        n71 ~~~ n72
+        n73("VerifyPending.jsx")
+        n72 ~~~ n73
+    end
+    R --> n1
+    R --> n3
+    R --> n5
+    R --> n35
+    n1 ~~~ n39
+    n3 ~~~ n42
+    n5 ~~~ n47
+    R --> n74("App.jsx")
+    R --> n75("index.css")
+    R --> n76("main.jsx")

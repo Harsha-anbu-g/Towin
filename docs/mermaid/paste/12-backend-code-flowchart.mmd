@@ -1,0 +1,573 @@
+flowchart TB
+    R(("com.towin"))
+    subgraph n1["account/"]
+        direction TB
+        n2("AccountController.java")
+        n3("AccountService.java")
+        n2 ~~~ n3
+    end
+    subgraph n4["admin/"]
+        direction TB
+        subgraph n5["dto/"]
+            direction TB
+            n6("AdminConnectionResponse.java")
+            n7("AdminMessageResponse.java")
+            n6 ~~~ n7
+            n8("AdminNeedResponse.java")
+            n7 ~~~ n8
+            n9("AdminReportResponse.java")
+            n8 ~~~ n9
+            n10("AdminReviewResponse.java")
+            n9 ~~~ n10
+            n11("AdminUserResponse.java")
+            n10 ~~~ n11
+            n12("AdminVerificationResponse.java")
+            n11 ~~~ n12
+        end
+        n13("AdminController.java")
+        n14("AdminService.java")
+        n13 ~~~ n14
+    end
+    subgraph n15["assistant/"]
+        direction TB
+        subgraph n16["controller/"]
+            direction TB
+            n17("AssistantController.java")
+        end
+        subgraph n18["dto/"]
+            direction TB
+            n19("ChatMessage.java")
+            n20("ChatRequest.java")
+            n19 ~~~ n20
+            n21("ChatResponse.java")
+            n20 ~~~ n21
+        end
+        subgraph n22["service/"]
+            direction TB
+            n23("AssistantService.java")
+            n24("GroqClient.java")
+            n23 ~~~ n24
+        end
+        n16 ~~~ n18
+    end
+    subgraph n25["auth/"]
+        direction TB
+        subgraph n26["controller/"]
+            direction TB
+            n27("AuthController.java")
+            n28("OAuthController.java")
+            n27 ~~~ n28
+        end
+        subgraph n29["dto/"]
+            direction TB
+            n30("AuthResponse.java")
+            n31("ChangePasswordRequest.java")
+            n30 ~~~ n31
+            n32("ForgotPasswordRequest.java")
+            n31 ~~~ n32
+            n33("GuestLoginRequest.java")
+            n32 ~~~ n33
+            n34("LoginRequest.java")
+            n33 ~~~ n34
+            n35("OAuthCompleteRequest.java")
+            n34 ~~~ n35
+            n36("OAuthExchangeRequest.java")
+            n35 ~~~ n36
+            n37("OAuthExchangeResponse.java")
+            n36 ~~~ n37
+            n38("PhoneVerifyRequest.java")
+            n37 ~~~ n38
+            n39("RegisterRequest.java")
+            n38 ~~~ n39
+            n40("ResetPasswordRequest.java")
+            n39 ~~~ n40
+            n41("VerifyEmailRequest.java")
+            n40 ~~~ n41
+            n42("VerifyIdResponse.java")
+            n41 ~~~ n42
+        end
+        subgraph n43["oauth/"]
+            direction TB
+            n44("CookieUtils.java")
+            n45("HttpCookieOAuth2AuthorizationRequestRepository.java")
+            n44 ~~~ n45
+            n46("OAuth2FailureHandler.java")
+            n45 ~~~ n46
+            n47("OAuth2SuccessHandler.java")
+            n46 ~~~ n47
+            n48("OneTimeCodeStore.java")
+            n47 ~~~ n48
+        end
+        subgraph n49["security/"]
+            direction TB
+            n50("IpRateLimiter.java")
+            n51("JwtUtil.java")
+            n50 ~~~ n51
+            n52("LoginRateLimiter.java")
+            n51 ~~~ n52
+            n53("OtpRateLimiter.java")
+            n52 ~~~ n53
+            n54("PasswordPolicy.java")
+            n53 ~~~ n54
+        end
+        subgraph n55["service/"]
+            direction TB
+            n56("AuthService.java")
+            n57("OAuthService.java")
+            n56 ~~~ n57
+        end
+        n26 ~~~ n29
+        n43 ~~~ n49
+    end
+    subgraph n58["common/"]
+        direction TB
+        subgraph n59["config/"]
+            direction TB
+            n60("KafkaConfig.java")
+            n61("OpenApiConfig.java")
+            n60 ~~~ n61
+            n62("RedisConfig.java")
+            n61 ~~~ n62
+            n63("S3Config.java")
+            n62 ~~~ n63
+            n64("SchedulingConfig.java")
+            n63 ~~~ n64
+            n65("WebSocketConfig.java")
+            n64 ~~~ n65
+            n66("WebSocketSecurityConfig.java")
+            n65 ~~~ n66
+        end
+        subgraph n67["converter/"]
+            direction TB
+            n68("TrustLevelConverter.java")
+        end
+        subgraph n69["dto/"]
+            direction TB
+            n70("ErrorResponse.java")
+        end
+        subgraph n71["entity/"]
+            direction TB
+            n72("PendingRegistration.java")
+            n73("User.java")
+            n72 ~~~ n73
+        end
+        subgraph n74["enums/"]
+            direction TB
+            n75("ApplicationStatus.java")
+            n76("BackgroundCheckStatus.java")
+            n75 ~~~ n76
+            n77("ConnectionStatus.java")
+            n76 ~~~ n77
+            n78("ConnectionType.java")
+            n77 ~~~ n78
+            n79("Gender.java")
+            n78 ~~~ n79
+            n80("LookingForType.java")
+            n79 ~~~ n80
+            n81("MessageType.java")
+            n80 ~~~ n81
+            n82("NeedCategory.java")
+            n81 ~~~ n82
+            n83("NeedSchedule.java")
+            n82 ~~~ n83
+            n84("NeedStatus.java")
+            n83 ~~~ n84
+            n85("NeedUrgency.java")
+            n84 ~~~ n85
+            n86("TrustLevel.java")
+            n85 ~~~ n86
+            n87("UserRole.java")
+            n86 ~~~ n87
+            n88("VerificationStatus.java")
+            n87 ~~~ n88
+        end
+        subgraph n89["exception/"]
+            direction TB
+            n90("GlobalExceptionHandler.java")
+            n91("RateLimitException.java")
+            n90 ~~~ n91
+        end
+        subgraph n92["messaging/"]
+            direction TB
+            n93("ConnectionEvent.java")
+            n94("ConnectionEventConsumer.java")
+            n93 ~~~ n94
+            n95("ConnectionEventProducer.java")
+            n94 ~~~ n95
+        end
+        subgraph n96["repository/"]
+            direction TB
+            n97("PendingRegistrationRepository.java")
+            n98("UserRepository.java")
+            n97 ~~~ n98
+        end
+        subgraph n99["security/"]
+            direction TB
+            n100("JwtAuthFilter.java")
+            n101("SecurityConfig.java")
+            n100 ~~~ n101
+        end
+        subgraph n102["seed/"]
+            direction TB
+            n103("AdminSeeder.java")
+            n104("DemoActivityInterceptor.java")
+            n103 ~~~ n104
+            n105("DemoDataSeeder.java")
+            n104 ~~~ n105
+            n106("DemoResetCoordinator.java")
+            n105 ~~~ n106
+            n107("DemoWebConfig.java")
+            n106 ~~~ n107
+        end
+        subgraph n108["service/"]
+            direction TB
+            n109("EmailService.java")
+            n110("PostHogService.java")
+            n109 ~~~ n110
+            n111("S3Service.java")
+            n110 ~~~ n111
+            n112("TrustScoreService.java")
+            n111 ~~~ n112
+        end
+        n59 ~~~ n67
+        n69 ~~~ n71
+        n74 ~~~ n89
+        n92 ~~~ n96
+        n99 ~~~ n102
+    end
+    subgraph n113["connection/"]
+        direction TB
+        subgraph n114["controller/"]
+            direction TB
+            n115("ConnectionController.java")
+        end
+        subgraph n116["dto/"]
+            direction TB
+            n117("ConnectionRequest.java")
+            n118("ConnectionResponse.java")
+            n117 ~~~ n118
+            n119("RespondToConnectionRequest.java")
+            n118 ~~~ n119
+        end
+        subgraph n120["entity/"]
+            direction TB
+            n121("Connection.java")
+        end
+        subgraph n122["repository/"]
+            direction TB
+            n123("ConnectionRepository.java")
+        end
+        subgraph n124["service/"]
+            direction TB
+            n125("ConnectionService.java")
+        end
+        n114 ~~~ n116
+        n120 ~~~ n122
+    end
+    subgraph n126["discovery/"]
+        direction TB
+        subgraph n127["controller/"]
+            direction TB
+            n128("DiscoveryController.java")
+        end
+        subgraph n129["dto/"]
+            direction TB
+            n130("DiscoveredUserResponse.java")
+            n131("DiscoveryFilter.java")
+            n130 ~~~ n131
+        end
+        subgraph n132["service/"]
+            direction TB
+            n133("DiscoveryService.java")
+        end
+        n127 ~~~ n129
+    end
+    subgraph n134["emergency/"]
+        direction TB
+        subgraph n135["controller/"]
+            direction TB
+            n136("EmergencyController.java")
+        end
+        subgraph n137["dto/"]
+            direction TB
+            n138("EmergencyContactRequest.java")
+            n139("EmergencyContactResponse.java")
+            n138 ~~~ n139
+        end
+        subgraph n140["entity/"]
+            direction TB
+            n141("EmergencyContact.java")
+        end
+        subgraph n142["repository/"]
+            direction TB
+            n143("EmergencyContactRepository.java")
+        end
+        subgraph n144["service/"]
+            direction TB
+            n145("EmergencyContactService.java")
+            n146("InactivityCheckService.java")
+            n145 ~~~ n146
+            n147("SosService.java")
+            n146 ~~~ n147
+        end
+        n135 ~~~ n137
+        n140 ~~~ n142
+    end
+    subgraph n148["feedback/"]
+        direction TB
+        subgraph n149["controller/"]
+            direction TB
+            n150("FeedbackController.java")
+        end
+        subgraph n151["dto/"]
+            direction TB
+            n152("FeedbackRequest.java")
+            n153("FeedbackResponse.java")
+            n152 ~~~ n153
+        end
+        subgraph n154["entity/"]
+            direction TB
+            n155("Feedback.java")
+        end
+        subgraph n156["repository/"]
+            direction TB
+            n157("FeedbackRepository.java")
+        end
+        subgraph n158["service/"]
+            direction TB
+            n159("FeedbackService.java")
+        end
+        n149 ~~~ n151
+        n154 ~~~ n156
+    end
+    subgraph n160["geocoding/"]
+        direction TB
+        subgraph n161["dto/"]
+            direction TB
+            n162("GeoResult.java")
+        end
+        n163("GeocodingController.java")
+        n164("GeocodingService.java")
+        n163 ~~~ n164
+    end
+    subgraph n165["messaging/"]
+        direction TB
+        subgraph n166["controller/"]
+            direction TB
+            n167("MessageController.java")
+        end
+        subgraph n168["dto/"]
+            direction TB
+            n169("MessageRequest.java")
+            n170("MessageResponse.java")
+            n169 ~~~ n170
+        end
+        subgraph n171["entity/"]
+            direction TB
+            n172("Message.java")
+        end
+        subgraph n173["repository/"]
+            direction TB
+            n174("MessageRepository.java")
+        end
+        subgraph n175["service/"]
+            direction TB
+            n176("MessageService.java")
+        end
+        n166 ~~~ n168
+        n171 ~~~ n173
+    end
+    subgraph n177["need/"]
+        direction TB
+        subgraph n178["controller/"]
+            direction TB
+            n179("NeedController.java")
+        end
+        subgraph n180["dto/"]
+            direction TB
+            n181("ApplicantDto.java")
+            n182("ApplyRequest.java")
+            n181 ~~~ n182
+            n183("NeedRequest.java")
+            n182 ~~~ n183
+            n184("NeedResponse.java")
+            n183 ~~~ n184
+        end
+        subgraph n185["entity/"]
+            direction TB
+            n186("Need.java")
+            n187("NeedApplication.java")
+            n186 ~~~ n187
+        end
+        subgraph n188["repository/"]
+            direction TB
+            n189("NeedApplicationRepository.java")
+            n190("NeedRepository.java")
+            n189 ~~~ n190
+        end
+        subgraph n191["service/"]
+            direction TB
+            n192("NeedService.java")
+        end
+        n178 ~~~ n180
+        n185 ~~~ n188
+    end
+    subgraph n193["profile/"]
+        direction TB
+        subgraph n194["controller/"]
+            direction TB
+            n195("ProfileController.java")
+        end
+        subgraph n196["dto/"]
+            direction TB
+            n197("ElderProfileRequest.java")
+            n198("HelperProfileRequest.java")
+            n197 ~~~ n198
+            n199("PhoneUpdateRequest.java")
+            n198 ~~~ n199
+            n200("ProfileResponse.java")
+            n199 ~~~ n200
+        end
+        subgraph n201["entity/"]
+            direction TB
+            n202("ElderProfile.java")
+            n203("HelperProfile.java")
+            n202 ~~~ n203
+        end
+        subgraph n204["repository/"]
+            direction TB
+            n205("ElderProfileRepository.java")
+            n206("HelperProfileRepository.java")
+            n205 ~~~ n206
+        end
+        subgraph n207["service/"]
+            direction TB
+            n208("ProfileService.java")
+        end
+        n194 ~~~ n196
+        n201 ~~~ n204
+    end
+    subgraph n209["report/"]
+        direction TB
+        subgraph n210["controller/"]
+            direction TB
+            n211("ReportController.java")
+        end
+        subgraph n212["dto/"]
+            direction TB
+            n213("ReportRequest.java")
+        end
+        subgraph n214["entity/"]
+            direction TB
+            n215("Report.java")
+        end
+        subgraph n216["repository/"]
+            direction TB
+            n217("ReportRepository.java")
+        end
+        subgraph n218["service/"]
+            direction TB
+            n219("ReportService.java")
+        end
+        n210 ~~~ n212
+        n214 ~~~ n216
+    end
+    subgraph n220["review/"]
+        direction TB
+        subgraph n221["controller/"]
+            direction TB
+            n222("ReviewController.java")
+        end
+        subgraph n223["dto/"]
+            direction TB
+            n224("ReviewRequest.java")
+            n225("ReviewResponse.java")
+            n224 ~~~ n225
+        end
+        subgraph n226["entity/"]
+            direction TB
+            n227("Review.java")
+        end
+        subgraph n228["repository/"]
+            direction TB
+            n229("ReviewRepository.java")
+        end
+        subgraph n230["service/"]
+            direction TB
+            n231("ReviewService.java")
+        end
+        n221 ~~~ n223
+        n226 ~~~ n228
+    end
+    subgraph n232["streak/"]
+        direction TB
+        subgraph n233["controller/"]
+            direction TB
+            n234("StreakController.java")
+        end
+        subgraph n235["dto/"]
+            direction TB
+            n236("StreakResponse.java")
+        end
+        subgraph n237["entity/"]
+            direction TB
+            n238("UserStreak.java")
+        end
+        subgraph n239["repository/"]
+            direction TB
+            n240("UserStreakRepository.java")
+        end
+        subgraph n241["service/"]
+            direction TB
+            n242("StreakService.java")
+        end
+        n233 ~~~ n235
+        n237 ~~~ n239
+    end
+    subgraph n243["trust/"]
+        direction TB
+        subgraph n244["controller/"]
+            direction TB
+            n245("TrustController.java")
+        end
+        subgraph n246["dto/"]
+            direction TB
+            n247("TrustActionRequest.java")
+            n248("TrustScoreBreakdownResponse.java")
+            n247 ~~~ n248
+            n249("TrustStatusResponse.java")
+            n248 ~~~ n249
+        end
+        subgraph n250["entity/"]
+            direction TB
+            n251("TrustProgressionLog.java")
+        end
+        subgraph n252["repository/"]
+            direction TB
+            n253("TrustProgressionLogRepository.java")
+        end
+        subgraph n254["service/"]
+            direction TB
+            n255("TrustService.java")
+        end
+        n244 ~~~ n246
+        n250 ~~~ n252
+    end
+    R --> n1
+    R --> n4
+    R --> n15
+    R --> n25
+    R --> n58
+    n1 ~~~ n113
+    n4 ~~~ n126
+    n15 ~~~ n134
+    n25 ~~~ n148
+    n58 ~~~ n160
+    n113 ~~~ n165
+    n126 ~~~ n177
+    n134 ~~~ n193
+    n148 ~~~ n209
+    n160 ~~~ n220
+    n165 ~~~ n232
+    n177 ~~~ n243
+    R --> n256("ToWinApplication.java")
