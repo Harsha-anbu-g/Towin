@@ -153,29 +153,27 @@ function HeroPanel() {
         'radial-gradient(ellipse at 80% 85%, var(--blue-soft) 0%, transparent 60%),' +
         'linear-gradient(160deg, var(--blue-wash) 0%, var(--blue-soft) 45%, var(--blue) 100%)',
     }}>
-      {/* Hero photo — bright close-up to pair with Login's handshake:
-          an elder's hand received by a younger open palm (Pexels 14441380).
-          Portrait orientation so the tall panel crop keeps both hands legible. */}
+      {/* Hero photo — user-supplied image extended to a tall canvas (sky up,
+          grass down; the people untouched) so it spans the full column like
+          Login's photo and scrolls with the page. Source: walking-sky.jpg */}
       <img
-        src="/held-hand.jpg"
-        alt="An elder's hand resting in a younger person's open hand"
+        src="/walking-sky-tall.jpg"
+        alt="An elder and a younger man walking together hand in hand under a blue sky"
         draggable="false"
         onDragStart={e => e.preventDefault()}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
-          // Keep both hands centered; trims sleeve (top) and wrist (bottom)
-          objectFit: 'cover', objectPosition: 'center 55%', zIndex: 0,
+          // Anchor to the top: on short columns the spare grass at the
+          // bottom of the tall canvas is what gets trimmed
+          objectFit: 'cover', objectPosition: 'center top', zIndex: 0,
           userSelect: 'none', WebkitUserDrag: 'none',
         }}
       />
 
-      {/* Soft readability wash — keeps the calm, never harsh black.
-          Gentle top scrim carries the headline over the light backdrop;
-          the bottom gradient mirrors Login's. */}
+      {/* Soft readability wash — identical to Login's, same brightness */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1,
         background:
-          'linear-gradient(to bottom, rgba(20,55,80,0.55) 0%, rgba(20,55,80,0.30) 34%, transparent 62%),' +
           'linear-gradient(to top, rgba(20,55,80,0.62) 0%, rgba(20,55,80,0.30) 45%, rgba(20,55,80,0.05) 100%)',
       }} />
 
@@ -220,7 +218,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Your community<br />is waiting <span style={{ color: 'var(--trust-gold)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.08em', textShadow: '0 0 7px rgba(255,255,255,0.6), 0 0 2px rgba(255,255,255,0.4)' }}>for you.</span>
+          Your community<br />is waiting for you.
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
