@@ -524,7 +524,7 @@ export default function Register() {
                       style={{
                         padding: '14px 12px', borderRadius: '11px',
                         border: active ? '2px solid var(--blue)' : '1.5px solid var(--border)',
-                        background: active ? 'var(--blue-wash)' : '#ffffff',
+                        background: active ? 'var(--blue-wash)' : 'var(--canvas)',
                         cursor: 'pointer', textAlign: 'left',
                         transition: 'all 0.15s',
                       }}>

@@ -4,7 +4,19 @@ Visual system for ToWin ("editorial tech journal on warm paper"). Source of trut
 
 ## Theme
 
-Light, warm, editorial. Warm parchment canvas with white cards; elevation via hairline borders and surface contrast — **no drop shadows** on cards. A whisper of sky in page-level gradients. Never dark canvas.
+Light, warm, editorial. Warm parchment canvas with white cards; elevation via hairline borders and surface contrast — **no drop shadows** on cards. A whisper of sky in page-level gradients. Never dark canvas **by default**.
+
+**Night mode (added 2026-07-05, user-requested):** an opt-in dark theme behind the NavBar
+account-menu / drawer toggle ("Night mode"), persisted in `localStorage("towin-theme")`,
+applied as `[data-theme="dark"]` on `<html>` (pre-paint script in `frontend/index.html`,
+owned by `src/context/ThemeContext.jsx` after mount). Light stays the only default; the OS
+preference is never followed (elder predictability). The night palette is the same warm
+cast — charcoal `#201f1d` page, `#2a2927` cards (cards stay *lighter* than the page:
+elevation grammar preserved), warm hairlines, ink ramp inverted at ≥4.5:1. Brand hues are
+untouched; text-role hues (deep blue, trust gold, achieved green, semantic reds) lighten
+only as far as contrast on dark requires, inside the same families. Full spec:
+`docs/superpowers/specs/2026-07-05-night-mode-design.md`; tokens: the `[data-theme="dark"]`
+block in `frontend/src/index.css`.
 
 ## Color
 

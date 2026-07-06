@@ -118,6 +118,7 @@
   --grey-fill-3:  #f0f0f3;   /* segmented-control track */
   --grey-line:    #e5e7eb;   /* neutral chip border */
   --star-gold:    #f5b400;   /* rating stars — stays lit in both themes */
+  --tortoise-bed: #ffffff;   /* light circle behind the tortoise PNG — light in BOTH themes */
   --seg-active:   #ffffff;   /* active chip on a segmented-control track */
   --btn-disabled: #94a3b8;   /* disabled filled-button grey */
   --shadow-menu:  0 8px 24px rgba(0,0,0,0.12);   /* dropdowns / drawers */
@@ -234,6 +235,7 @@
   --grey-fill-2:  #2e2d2b;
   --grey-fill-3:  #2e2d2b;
   --grey-line:    #3a3833;
+  --tortoise-bed: #f2efe9;   /* warm pearl — the mascot keeps a lit face at night */
   --seg-active:   #403e3a;   /* lighter than the track — same elevation grammar */
   --btn-disabled: #55534f;
   --shadow-menu:  0 8px 24px rgba(0, 0, 0, 0.5);

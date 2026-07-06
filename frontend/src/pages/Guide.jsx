@@ -49,7 +49,7 @@ function RoleTab({ role, setRole }) {
           flex: 1, padding: '11px 0', fontFamily: SF, fontSize: '16px',
           fontWeight: active ? 700 : 500,
           color: active ? '#fff' : 'var(--ink-slate)',
-          background: active ? SKY : '#fff',
+          background: active ? SKY : 'var(--canvas)',
           border: `1px solid ${active ? SKY : 'var(--border)'}`,
           borderRadius: '9999px', cursor: 'pointer', transition: 'all 0.15s',
         }}

@@ -782,7 +782,7 @@ export default function HelperDashboard() {
                           }))} style={{
                             fontSize: '14px', padding: '5px 14px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
                             borderColor: reviewForm.tags.includes(t) ? 'var(--blue)' : 'var(--border)',
-                            background: reviewForm.tags.includes(t) ? 'var(--blue)' : '#fff',
+                            background: reviewForm.tags.includes(t) ? 'var(--blue)' : 'var(--canvas)',
                             color: reviewForm.tags.includes(t) ? '#fff' : 'var(--ink-3)',
                           }}>{t}</button>
                         ))}

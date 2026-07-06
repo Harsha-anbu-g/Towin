@@ -95,7 +95,7 @@ export default function Feedback() {
       <style>{`
         .fb-shell { display: grid; grid-template-columns: 1fr 360px; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 48px 32px; align-items: start; }
         .fb-left { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
-        .fb-card { background: #fff; border-radius: 18px; border: 1px solid var(--border); padding: 28px 28px; }
+        .fb-card { background: var(--canvas); border-radius: 18px; border: 1px solid var(--border); padding: 28px 28px; }
         .fb-portfolio { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
         .fb-portfolio:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(156,122,60,0.18); border-color: var(--trust-gold); }
         .fb-brand { display: flex; align-items: center; gap: 10px; padding: 24px 20px 0; }

@@ -40,4 +40,4 @@ Calm · Patient · Trustworthy. The tortoise is the brand: slow and steady, one 
 - Elderly-first: body text ≥16px (18px base), tap targets ≥44px, high contrast (body ≥4.5:1), clear field boundaries (no borderless inputs), filled primary buttons.
 - `prefers-reduced-motion` honored everywhere (near-instant resolve, content never hidden).
 - Keyboard: visible `:focus-visible` ring on all interactive elements; errors announced to screen readers (`role="alert"`).
-- No dark mode for core surfaces; no light-grey-on-white body text.
+- Light is the only default; night mode is strictly opt-in (NavBar toggle, never OS-driven) and must hold the same contrast bar. No light-grey-on-white body text.

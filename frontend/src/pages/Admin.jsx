@@ -508,7 +508,7 @@ export default function Admin() {
           height: '42px', padding: '0 18px', borderRadius: '9999px',
           fontSize: '15px', fontWeight: isActive ? 700 : 500, fontFamily: SFText,
           color: isActive ? '#ffffff' : 'var(--ink)',
-          background: isActive ? 'var(--blue)' : '#ffffff',
+          background: isActive ? 'var(--blue)' : 'var(--canvas)',
           border: isActive ? '1px solid var(--blue)' : '1px solid var(--border)',
           boxShadow: isActive ? '0 2px 12px rgba(79,163,206,0.18)' : 'none',
           cursor: 'pointer', whiteSpace: 'nowrap',

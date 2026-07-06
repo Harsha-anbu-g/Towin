@@ -195,7 +195,7 @@ export default function AskAiAssistant() {
         >
           <span style={{
             width: '30px', height: '30px', flexShrink: 0, borderRadius: '50%',
-            background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'var(--tortoise-bed)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <img src={TORTOISE_IMG} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
           </span>
@@ -231,7 +231,7 @@ export default function AskAiAssistant() {
             }}>
               <span style={{
                 width: '40px', height: '40px', flexShrink: 0, borderRadius: '50%',
-                background: 'var(--canvas)', border: '1px solid var(--blue-soft)',
+                background: 'var(--tortoise-bed)', border: '1px solid var(--blue-soft)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
               }}>
                 <img src={TORTOISE_IMG} alt="" style={{ width: '34px', height: '34px', objectFit: 'contain' }} />
@@ -376,7 +376,7 @@ function Bubble({ role, content, speaking, onSpeak }) {
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             marginTop: '8px', padding: '5px 12px', cursor: 'pointer',
-            background: speaking ? 'var(--blue)' : '#fff',
+            background: speaking ? 'var(--blue)' : 'var(--canvas)',
             color: speaking ? '#fff' : 'var(--blue-deep)',
             border: '1px solid var(--blue-soft)', borderRadius: '9999px',
             fontFamily: SF, fontSize: 'var(--text-xs, 13px)', fontWeight: 600,

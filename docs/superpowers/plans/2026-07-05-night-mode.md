@@ -25,9 +25,9 @@ toggle. Inline JSX hexes migrate to `var(--token)` per the role-based mapping ta
 
 **Files:** Modify `frontend/src/index.css` (token block ~L19–100, plus targeted rule overrides)
 
-- [ ] Add `color-scheme: light` to `:root`; append the `[data-theme="dark"]` block with every
+- [x] Add `color-scheme: light` to `:root`; append the `[data-theme="dark"]` block with every
       override from the spec table, plus `color-scheme: dark`.
-- [ ] Mint alias tokens (same light value, dark override) for recurring literals:
+- [x] Mint alias tokens (same light value, dark override) for recurring literals:
       `--hairline #f0f0f0 → #33312d`, `--hairline-2 #e0e0e0 → #3a3833`,
       `--sky-line #dcebf4 → rgba(79,163,206,.30)`, `--sky-line-2 #d8eaf4 → rgba(79,163,206,.26)`,
       `--sky-ghost #f4fafd → rgba(79,163,206,.07)`, `--green-wash #f0fdf4 → rgba(61,139,90,.12)`,
@@ -36,10 +36,10 @@ toggle. Inline JSX hexes migrate to `var(--token)` per the role-based mapping ta
       `--gold-deep #7a5b1e → #d4b478`, `--grey-fill #f5f5f7 → #2e2d2b`,
       `--grey-fill-2 #f3f4f6 → #2e2d2b`, `--grey-line #e5e7eb → #3a3833`,
       `--star-gold #f5b400 → #f5b400` (stars stay lit), `--btn-disabled #94a3b8 → #55534f`.
-- [ ] Night overrides for stylesheet literals: `::selection`, `.auth-form` gradient,
+- [x] Night overrides for stylesheet literals: `::selection`, `.auth-form` gradient,
       `.register-title` color → `var(--ink)`, `.shimmer-btn`/`.primary-btn` disabled grey →
       `var(--btn-disabled)`, `.lift:hover` shadow, `.ghost-btn:hover` background.
-- [ ] `.streaks-tortoise` helper class: `mix-blend-mode: multiply` in light,
+- [x] `.streaks-tortoise` helper class: `mix-blend-mode: multiply` in light,
       `normal` + `filter: brightness(1.05)` under dark (Streaks.jsx swaps its inline
       `mixBlendMode` for this class).
 
@@ -48,30 +48,30 @@ toggle. Inline JSX hexes migrate to `var(--token)` per the role-based mapping ta
 **Files:** Modify `frontend/index.html`; Create `frontend/src/context/ThemeContext.jsx`;
 Modify `frontend/src/App.jsx` (wrap providers); Test `frontend/src/context/ThemeContext.test.jsx`
 
-- [ ] `index.html` head, before the stylesheet links:
+- [x] `index.html` head, before the stylesheet links:
       ```html
       <script>
         try { if (localStorage.getItem('towin-theme') === 'dark')
           document.documentElement.dataset.theme = 'dark'; } catch (e) {}
       </script>
       ```
-- [ ] `ThemeContext.jsx`: `ThemeProvider` + `useTheme()` → `{ theme, toggleTheme }`.
+- [x] `ThemeContext.jsx`: `ThemeProvider` + `useTheme()` → `{ theme, toggleTheme }`.
       Reads initial value from `document.documentElement.dataset.theme`; writes
       `dataset.theme`, `localStorage`, and syncs `<meta name="theme-color">`
       (`#4FA3CE` light / `#201f1d` dark).
-- [ ] Write failing test first: default light; toggle sets `data-theme="dark"` + persists;
+- [x] Write failing test first: default light; toggle sets `data-theme="dark"` + persists;
       re-mount restores dark. Run `npx vitest run src/context/ThemeContext.test.jsx` → fails
       (no module) → implement → passes.
-- [ ] Wrap app in `<ThemeProvider>` in `App.jsx`.
+- [x] Wrap app in `<ThemeProvider>` in `App.jsx`.
 
 ### Task 3: NavBar toggle + NavBar migration
 
 **Files:** Modify `frontend/src/components/NavBar.jsx`
 
-- [ ] Account dropdown row above "Log out": Moon icon + "Night mode" + switch
+- [x] Account dropdown row above "Log out": Moon icon + "Night mode" + switch
       (`role="switch"`, `aria-checked`, 44px min target, knob = `transform` 160ms ease-out,
       no bounce). Same row in the mobile drawer.
-- [ ] Migrate NavBar inline hexes per the mapping table (nav `#ffffff → var(--canvas)`,
+- [x] Migrate NavBar inline hexes per the mapping table (nav `#ffffff → var(--canvas)`,
       drawer bg, `#f0f0f0 → var(--hairline)`, `#5a6470 → var(--ink-slate)`,
       `#1d1d1f → var(--ink)`, `#4FA3CE → var(--blue)`, trust-gold pill → `var(--trust-gold)`
       + wash tokens; white-on-filled stays `#fff`).
@@ -95,26 +95,26 @@ Modify `frontend/src/App.jsx` (wrap providers); Test `frontend/src/context/Theme
 | `rgba(0,0,0,…)` scrims/shadows | keep |
 | one-off decorative hexes | judge in place; if theme-dependent, nearest role token |
 
-- [ ] **Batch A (shared):** ConfirmDialog, SegmentedTabs, GlassTab, TrustBadge, TrustJourney,
+- [x] **Batch A (shared):** ConfirmDialog, SegmentedTabs, GlassTab, TrustBadge, TrustJourney,
       SiteFooter, BetaBanner, FeedbackWidget, AskAiAssistant, VerifyBanner, SmoothInput,
       TagInput, CookieConsent, LocationPrimer, LocationPrompt, PeekabooCard, TurtleLogo,
       components/ui + components/magic
-- [ ] **Batch B (core pages):** ElderDashboard, HelperDashboard, Streaks (+ blend-mode class
+- [x] **Batch B (core pages):** ElderDashboard, HelperDashboard, Streaks (+ blend-mode class
       swap), Trust, Messages, MessagesInbox
-- [ ] **Batch C (auth/public):** Landing, Login, Register, FinishSetup, OAuthCallback,
+- [x] **Batch C (auth/public):** Landing, Login, Register, FinishSetup, OAuthCallback,
       VerifyEmail, VerifyPending, CheckEmail, ForgotPassword, ResetPassword, Guide, Privacy,
       Terms, Feedback
-- [ ] **Batch D (rest):** ProfileEdit, ChangePassword, EmergencyContacts, UserProfile, Admin,
+- [x] **Batch D (rest):** ProfileEdit, ChangePassword, EmergencyContacts, UserProfile, Admin,
       PeekabooGame
-- [ ] After each batch: `grep -cE '#[0-9a-fA-F]{3,8}' <files>` — remaining hits are only
+- [x] After each batch: `grep -cE '#[0-9a-fA-F]{3,8}' <files>` — remaining hits are only
       whitelisted literals (white-on-filled, scrims, brand-fixed).
 
 ## Chunk 3: Verification
 
-- [ ] `npm run test:run` — full suite green.
-- [ ] `npm run build` — clean.
-- [ ] Playwright against `npm run dev`: Login, Register, Landing, Streaks, Elder dashboard,
+- [x] `npm run test:run` — full suite green.
+- [x] `npm run build` — clean.
+- [x] Playwright against `npm run dev`: Login, Register, Landing, Streaks, Elder dashboard,
       Trust, Messages, ProfileEdit in **both** themes; screenshot review for unreadable
       text / stray light patches / broken blend modes. Light mode must look unchanged.
-- [ ] Update `DESIGN.md` (theme section: night-mode amendment + token table pointer).
-- [ ] Present on localhost for user review. **Do not commit or push until approval.**
+- [x] Update `DESIGN.md` (theme section: night-mode amendment + token table pointer).
+- [x] Present on localhost for user review. **Do not commit or push until approval.**

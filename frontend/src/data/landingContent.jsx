@@ -24,10 +24,10 @@ const INK   = 'var(--ink)';
 const SLATE = 'var(--ink-slate)';
 const FAINT = 'var(--ink-4)';
 const HAIR  = 'var(--border)';   // warm hairline for structural card borders
-const BLUE  = '#3D8AB0';         // interactive/semantic only
-const SKY   = '#4FA3CE';
-const WASH  = '#EAF5FB';         // sky wash — trust chips only
-const SKYLINE = '#BFD9EA';       // sky hairline — trust chips only
+const BLUE  = 'var(--blue-teal)';         // interactive/semantic only
+const SKY   = 'var(--blue)';
+const WASH  = 'var(--blue-wash)';         // sky wash — trust chips only
+const SKYLINE = 'var(--blue-soft)';       // sky hairline — trust chips only
 const GOLD  = 'var(--trust-gold)';
 
 // ── Presentational helpers ───────────────────────────────────────────────
@@ -101,7 +101,7 @@ function Slide({ children }) {
 function MiniCard({ title, badge, stars, compact, icon: Icon, children }) {
   return (
     <div style={{
-      background: '#ffffff', border: `1px solid ${HAIR}`,
+      background: 'var(--canvas)', border: `1px solid ${HAIR}`,
       borderRadius: compact ? '14px' : '18px',
       padding: compact ? '12px 16px' : '24px 26px', textAlign: 'left',
     }}>
@@ -169,7 +169,7 @@ function CardGrid({ children }) {
 function NoteBox({ children, align = 'center' }) {
   return (
     <div style={{
-      background: '#ffffff', border: `1px solid ${HAIR}`,
+      background: 'var(--canvas)', border: `1px solid ${HAIR}`,
       borderRadius: '14px', padding: '16px 20px', maxWidth: '58ch',
       margin: align === 'center' ? '0 auto' : '0', fontFamily: SF, fontSize: '16px',
       color: SLATE, lineHeight: 1.6, textAlign: 'left',
@@ -206,7 +206,7 @@ function StageLadder({ stages }) {
             <div style={{ width: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
               <div style={{
                 width: `${size}px`, height: `${size}px`, borderRadius: '50%',
-                background: isGoal ? '#ffffff' : WASH,
+                background: isGoal ? 'var(--canvas)' : WASH,
                 border: isGoal ? `1px solid ${SKYLINE}` : `1.5px solid ${SKYLINE}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: SANS, fontSize: '15px', fontWeight: 700,
@@ -335,7 +335,7 @@ export const SLIDES = [
           {[[ShoppingBag, 'Shopping'], [Car, 'A ride'], [MessageCircle, 'Someone to talk to']].map(([I, label]) => (
             <span key={label} style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: '#ffffff', border: `1px solid ${HAIR}`, borderRadius: '9999px',
+              background: 'var(--canvas)', border: `1px solid ${HAIR}`, borderRadius: '9999px',
               padding: '9px 16px', fontFamily: SF, fontSize: '15px', fontWeight: 500, color: SLATE,
             }}>
               <I size={16} strokeWidth={2} style={{ color: BLUE }} />
@@ -386,7 +386,7 @@ export const SLIDES = [
           </MiniCard>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            background: '#ffffff', border: `1px solid ${HAIR}`, borderRadius: '12px', padding: '10px 14px',
+            background: 'var(--canvas)', border: `1px solid ${HAIR}`, borderRadius: '12px', padding: '10px 14px',
           }}>
             <span style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 500, color: SLATE }}>3 + 7 + 5 =</span>
             <span style={{ fontFamily: SERIF, fontSize: '24px', fontWeight: 400, color: GOLD }}>15</span>

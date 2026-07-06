@@ -3,10 +3,10 @@
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
-const SKY = '#4FA3CE';
-const BLUE = '#3D8AB0';
-const WASH = '#EAF5FB';
-const BORDER = '#BFD9EA';
+const SKY = 'var(--blue)';
+const BLUE = 'var(--blue-teal)';
+const WASH = 'var(--blue-wash)';
+const BORDER = 'var(--blue-soft)';
 
 // ── Presentational helpers ───────────────────────────────────────────────
 
@@ -88,7 +88,7 @@ function CardGrid({ children }) {
 function NoteBox({ children }) {
   return (
     <div style={{
-      marginTop: '18px', background: 'var(--surface-pearl)', border: '1px solid #e8e8ed',
+      marginTop: '18px', background: 'var(--surface-pearl)', border: '1px solid var(--avatar-grey)',
       borderRadius: '14px', padding: '14px 16px',
       fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)', lineHeight: 1.6,
     }}>{children}</div>

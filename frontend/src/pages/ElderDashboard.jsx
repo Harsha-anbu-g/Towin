@@ -773,7 +773,7 @@ export default function ElderDashboard() {
                             fontSize: 'var(--text-xs)', padding: '4px 12px', borderRadius: '9999px', cursor: 'pointer',
                             border: '1px solid', transition: 'all 0.15s',
                             borderColor: reviewForm.tags.includes(tag) ? 'var(--blue)' : 'var(--border)',
-                            background: reviewForm.tags.includes(tag) ? 'var(--blue)' : '#fff',
+                            background: reviewForm.tags.includes(tag) ? 'var(--blue)' : 'var(--canvas)',
                             color: reviewForm.tags.includes(tag) ? '#fff' : 'var(--ink-3)',
                           }}>{tag}</button>
                         ))}
@@ -1098,7 +1098,7 @@ export default function ElderDashboard() {
                                 fontSize: '14px', padding: '5px 14px', borderRadius: '9999px',
                                 border: '1px solid', transition: 'all 0.15s',
                                 borderColor: reviewForm.tags.includes(tag) ? 'var(--blue)' : 'var(--border)',
-                                background: reviewForm.tags.includes(tag) ? 'var(--blue)' : '#fff',
+                                background: reviewForm.tags.includes(tag) ? 'var(--blue)' : 'var(--canvas)',
                                 color: reviewForm.tags.includes(tag) ? '#fff' : 'var(--ink-3)', cursor: 'pointer',
                               }}>{tag}</button>
                             ))}
@@ -1175,7 +1175,7 @@ export default function ElderDashboard() {
                       return (
                         <button type="button" key={key} role="radio" aria-checked={selected}
                           onClick={() => setNeedForm(f => ({ ...f, category: key }))}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${selected ? 'var(--blue)' : 'var(--border)'}`, background: selected ? 'var(--blue-wash)' : '#fff', borderRadius: '12px', padding: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${selected ? 'var(--blue)' : 'var(--border)'}`, background: selected ? 'var(--blue-wash)' : 'var(--canvas)', borderRadius: '12px', padding: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>
                           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: selected ? 'var(--ink)' : 'var(--ink-slate-dark)' }}>{catLabel(key)}</span>
                         </button>
                       );
@@ -1197,7 +1197,7 @@ export default function ElderDashboard() {
                       return (
                         <button type="button" key={key} role="radio" aria-checked={selected}
                           onClick={() => setNeedForm(f => ({ ...f, urgency: key }))}
-                          style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '9px', border: `2px solid ${selected ? 'var(--blue)' : 'var(--border)'}`, background: selected ? 'var(--blue-wash)' : '#fff', borderRadius: '12px', padding: '13px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '9px', border: `2px solid ${selected ? 'var(--blue)' : 'var(--border)'}`, background: selected ? 'var(--blue-wash)' : 'var(--canvas)', borderRadius: '12px', padding: '13px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
                           <span aria-hidden style={{ width: '20px', height: '20px', borderRadius: '50%', border: selected ? '6px solid var(--blue)' : '2px solid var(--ring-idle)', background: 'var(--canvas)', boxSizing: 'border-box', flexShrink: 0 }} />
                           <span style={{ fontSize: 'var(--text-sm)', fontWeight: selected ? 700 : 600, color: selected ? 'var(--ink)' : 'var(--ink-slate-dark)' }}>{label}</span>
                         </button>

@@ -231,7 +231,7 @@ export default function Streaks() {
                       <div className="streak-dot" style={{
                         width: '34px', height: '34px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: d.done ? SKY : '#fff',
+                        background: d.done ? SKY : 'var(--canvas)',
                         border: d.done ? 'none' : d.today ? `2px solid ${SKY}` : '1px solid var(--line-idle)',
                         opacity: d.future ? 0.6 : 1,
                       }}>
