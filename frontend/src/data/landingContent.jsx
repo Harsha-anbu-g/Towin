@@ -177,6 +177,56 @@ function NoteBox({ children, align = 'center' }) {
   );
 }
 
+// The exchange as a small table: what one column has, the other column needs,
+// so the mirrored structure carries the emphasis and no word in the copy has
+// to shout (replaces the old bolded NoteBox sentences on slide 6). All cells
+// live in ONE grid — the two columns share rows, so the hairlines (drawn by a
+// 1px gap over a hairline background) align across the center divider like
+// real table rules. Cell placement comes from the .landing-exchange
+// grid-template-areas in index.css, which restacks the sides as two complete
+// mini-tables below 640px.
+function ExchangeBoard({ sides }) {
+  return (
+    <div className="landing-exchange" style={{
+      display: 'grid', gap: '1px', background: HAIR,
+      border: `1px solid ${HAIR}`, borderRadius: '14px', overflow: 'hidden',
+      maxWidth: '620px', margin: '0 auto', textAlign: 'left',
+    }}>
+      {sides.map(({ role, icon, have, need }, i) => {
+        const Icon = icon;
+        const col = i === 0 ? 'e' : 'h';
+        return [
+          // Header cell — centered and tinted, like a table head
+          <p key={`${role}-head`} style={{
+            gridArea: `${col}-head`, background: 'var(--surface-2)',
+            fontFamily: SANS, fontSize: '17px', fontWeight: 600, color: INK,
+            margin: 0, padding: '10px 22px', letterSpacing: '-0.2px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          }}>
+            <Icon size={16} strokeWidth={2.1} style={{ color: SLATE, flexShrink: 0 }} />
+            {role}
+          </p>,
+          ...[['have', 'Have', have], ['need', 'Need', need]].map(([area, label, text]) => (
+            <div key={`${role}-${area}`} style={{
+              gridArea: `${col}-${area}`, background: 'var(--canvas)',
+              display: 'flex', gap: '10px', padding: '10px 22px',
+            }}>
+              <span style={{
+                fontFamily: SANS, fontSize: '13px', fontWeight: 700, color: SLATE,
+                letterSpacing: '1.2px', textTransform: 'uppercase',
+                width: '52px', flexShrink: 0, paddingTop: '2px',
+              }}>{label}</span>
+              <span style={{ fontFamily: SF, fontSize: '16px', color: 'var(--ink-2)', lineHeight: 1.5 }}>
+                {text}
+              </span>
+            </div>
+          )),
+        ];
+      })}
+    </div>
+  );
+}
+
 // Each ladder stage carries its own icon — the meaning at a glance (elders parse
 // a phone glyph faster than the word). Sequence is shown by the rail itself.
 const STAGE_ICONS = {
@@ -441,12 +491,28 @@ export const SLIDES = [
           there will be many more. But the hardest parts of growing older haven&apos;t
           changed: feeling lonely, and not having enough energy for everyday things.
         </Lead>
-        <div style={{ height: '18px' }} />
-        <NoteBox>
-          Elders have <strong style={{ color: INK }}>time and money</strong>, but need energy and company.{' '}
-          Helpers have <strong style={{ color: INK }}>energy and time</strong>, but need money and care.{' '}
-          <strong style={{ color: INK }}>ToWin is where they meet and share, and both win.</strong>
-        </NoteBox>
+        <div style={{ height: '14px' }} />
+        {/* Read across: each side's Have answers the other side's Need. */}
+        <ExchangeBoard sides={[
+          {
+            role: 'Elders', icon: Armchair,
+            have: 'Time, money, and life lessons to share',
+            need: 'Energy and company',
+          },
+          {
+            role: 'Helpers', icon: HandHeart,
+            have: 'Energy, time, and good company',
+            need: 'Money, care, and life advice',
+          },
+        ]} />
+        {/* The payoff line, set like the tagline: serif 400, italic emphasis. */}
+        <p style={{
+          fontFamily: SERIF, fontSize: '22px', fontWeight: 400, color: INK,
+          letterSpacing: '-0.01em', lineHeight: 1.4, textAlign: 'center',
+          maxWidth: '54ch', margin: '16px auto 0', textWrap: 'balance',
+        }}>
+          ToWin is where they meet and share, and&nbsp;<span style={{ fontStyle: 'italic' }}>both</span>&nbsp;win.
+        </p>
       </Slide>
     ),
   },

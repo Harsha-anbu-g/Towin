@@ -813,7 +813,10 @@ button, a, [role="button"], input, textarea, select, label, summary {
    column scrolling on its own — so the hero column always stretches to the
    full page length and the photo extends with it (never pinned/cropped to a
    fixed viewport height). Both columns are flex siblings, so they stay the
-   same height automatically: no white gap below either one. */
+   same height automatically: no white gap below either one.
+   Register's form is ~2 viewports tall, so its photo asset is a tall
+   extended canvas (walking-sky-tall.jpg, ~1:2.7) built from the original
+   walking-sky.jpg — the picture scrolls with the page, same as Login. */
 .auth-shell { min-height: 100%; display: flex; }
 .auth-hero  { flex: 0 0 50%; }
 .auth-form  {
@@ -867,7 +870,22 @@ img {
 }
 
 /* ── Landing story slides ─────────────────────────────────────────────── */
+/* Exchange table (slide 6): the two role columns share grid rows so the
+   hairlines align across the center divider like real table rules; below
+   640px the sides stack as two complete mini-tables (header, have, need). */
+.landing-exchange {
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "e-head h-head"
+    "e-have h-have"
+    "e-need h-need";
+}
+
 @media (max-width: 640px) {
+  .landing-exchange {
+    grid-template-columns: 1fr;
+    grid-template-areas: "e-head" "e-have" "e-need" "h-head" "h-have" "h-need";
+  }
   .landing-topbar { padding: 14px 18px !important; }
   .landing-main   { padding: 16px 20px !important; }
   .landing-footer { padding: 0 20px 28px !important; }
