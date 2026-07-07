@@ -823,8 +823,9 @@ export default function ProfileEdit() {
                   </div>
                 )}
 
-                {/* Change Password — only for accounts that sign in with a password */}
-                {profileData && profileData.authProvider !== 'GOOGLE' && (
+                {/* Change Password when a password exists; Set a Password for
+                    Google-only accounts so they can also sign in with a password */}
+                {profileData && profileData.hasPassword !== undefined && (
                   <button
                     type="button"
                     onClick={() => navigate('/profile/change-password')}
@@ -842,7 +843,7 @@ export default function ProfileEdit() {
                       marginBottom: '10px',
                     }}
                   >
-                    Change Password
+                    {profileData.hasPassword ? 'Change Password' : 'Set a Password'}
                   </button>
                 )}
 

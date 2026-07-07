@@ -63,10 +63,10 @@ public class SecurityConfig {
                 )
             )
             .authorizeHttpRequests(auth -> auth
-                // Self-service password change requires a valid session — must sit
+                // Self-service password change/set requires a valid session — must sit
                 // before the broad /api/auth/** permitAll. (resend/forgot/reset are
                 // public by email, so they fall under the permitAll below.)
-                .requestMatchers("/api/auth/change-password").authenticated()
+                .requestMatchers("/api/auth/change-password", "/api/auth/set-password").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()

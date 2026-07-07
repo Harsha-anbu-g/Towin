@@ -54,6 +54,17 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/set-password")
+    public ResponseEntity<Void> setPassword(
+            Authentication auth,
+            @Valid @RequestBody SetPasswordRequest request,
+            HttpServletRequest http) {
+        ipRateLimiter.check(http);
+        UUID userId = UUID.fromString(auth.getName());
+        authService.setPassword(userId, request.getNewPassword());
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/verify-id")
     public ResponseEntity<VerifyIdResponse> verifyId(
             Authentication auth,

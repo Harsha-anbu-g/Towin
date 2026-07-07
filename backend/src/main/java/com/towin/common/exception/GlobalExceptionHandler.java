@@ -50,6 +50,7 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Please choose a stronger password",            "Please choose a stronger password — that one is too common or easy to guess.");
         SAFE_MESSAGES.put("Password must be at least 8 characters",       "Password must be at least 8 characters.");
         SAFE_MESSAGES.put("This account uses Google sign-in",             "This account uses Google sign-in, so it has no password to change.");
+        SAFE_MESSAGES.put("This account already has a password",          "This account already has a password. Use Change Password instead.");
         // Connection flow
         SAFE_MESSAGES.put("A connection already exists",                  "You already have a pending or active connection with this person.");
         SAFE_MESSAGES.put("Cannot send a connection request to yourself", "You can't send a friend request to yourself.");

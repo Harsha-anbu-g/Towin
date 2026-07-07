@@ -134,6 +134,37 @@ class AuthServiceTest {
         assertThat(response.getToken()).isEqualTo("mock-token");
     }
 
+    @Test
+    void shouldSetFirstPasswordOnGoogleOnlyAccount() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().email("g@email.com").passwordHash(null).role(UserRole.HELPER).build();
+        user.setId(userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newpassword1")).thenReturn("hashed-new");
+
+        authService.setPassword(userId, "newpassword1");
+
+        assertThat(user.getPasswordHash()).isEqualTo("hashed-new");
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void shouldRefuseSetPasswordWhenOneAlreadyExists() {
+        // Replacing an existing password must go through change-password,
+        // which verifies the current one first.
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().email("g@email.com").passwordHash("existing").role(UserRole.HELPER).build();
+        user.setId(userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> authService.setPassword(userId, "newpassword1"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("already has a password");
+        verify(userRepository, never()).save(any());
+    }
+
     private RegisterRequest registerRequest() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("testuser");

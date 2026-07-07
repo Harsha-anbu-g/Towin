@@ -156,6 +156,7 @@ public class ProfileService {
                 // Default name from the linked Google account; overridden below once a profile exists
                 .name(user.getFullName())
                 .authProvider(user.getAuthProvider())
+                .hasPassword(user.getPasswordHash() != null)
                 .role(user.getRole().name())
                 .trustScore(score)
                 .trustTier(TrustScoreService.tierFor(score))

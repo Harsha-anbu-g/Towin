@@ -240,6 +240,25 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    /**
+     * First-time password for a Google-only account, so it can also sign in with
+     * username + password. Refuses if a password already exists — changing one
+     * must go through changePassword, which verifies the current password.
+     */
+    @Transactional
+    public void setPassword(UUID userId, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getPasswordHash() != null) {
+            throw new IllegalArgumentException("This account already has a password. Use Change Password instead.");
+        }
+        passwordPolicy.validate(newPassword, user.getUsername(), user.getEmail());
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     private User resolveUser(String identifier) {
         if (identifier.contains("@")) {
             return userRepository.findByEmail(identifier).orElse(null);

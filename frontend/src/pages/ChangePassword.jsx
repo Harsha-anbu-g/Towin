@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
@@ -21,6 +21,16 @@ export default function ChangePassword() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
   const [done, setDone] = useState(false);
+  // null while loading; false = Google-only account setting its first password
+  const [hasPassword, setHasPassword] = useState(null);
+
+  useEffect(() => {
+    api.get('/profile/me')
+      .then(r => setHasPassword(r.data.hasPassword !== false))
+      .catch(() => setHasPassword(true));
+  }, []);
+
+  const settingFirst = hasPassword === false;
 
   async function submit(e) {
     e.preventDefault(); setMsg('');
@@ -28,12 +38,15 @@ export default function ChangePassword() {
     if (pw.next !== pw.confirm) { setMsg('New passwords do not match.'); return; }
     setSaving(true);
     try {
-      await api.post('/auth/change-password', { currentPassword: pw.current, newPassword: pw.next });
+      if (settingFirst) {
+        await api.post('/auth/set-password', { newPassword: pw.next });
+      } else {
+        await api.post('/auth/change-password', { currentPassword: pw.current, newPassword: pw.next });
+      }
       setDone(true);
-      setMsg('Password changed.');
       setPw({ current: '', next: '', confirm: '' });
     } catch (err) {
-      setMsg(err?.response?.data?.message || 'Could not change password.');
+      setMsg(err?.response?.data?.message || (settingFirst ? 'Could not set password.' : 'Could not change password.'));
     } finally { setSaving(false); }
   }
 
@@ -58,19 +71,24 @@ export default function ChangePassword() {
           Back to profile
         </button>
 
+        {hasPassword !== null && (
         <BlurFade delay={1}>
           <div style={{ background: 'var(--canvas)', borderRadius: '18px', padding: '28px', border: '1px solid var(--border)' }}>
             <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
-              Change Password
+              {settingFirst ? 'Set a Password' : 'Change Password'}
             </p>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '22px' }}>
-              Enter your current password, then choose a new one.
+              {settingFirst
+                ? 'Choose a password so you can also sign in with your username. Signing in with Google will keep working.'
+                : 'Enter your current password, then choose a new one.'}
             </p>
 
             {done ? (
               <div>
                 <p style={{ fontSize: '16px', color: 'var(--blue-deep)', fontWeight: 600, marginBottom: '20px' }}>
-                  ✓ Password changed. You can use your new password next time you sign in.
+                  {settingFirst
+                    ? '✓ Password set. Next time you can sign in with your username and password, or with Google.'
+                    : '✓ Password changed. You can use your new password next time you sign in.'}
                 </p>
                 <button onClick={() => navigate('/profile')} className="primary-btn" style={{ fontSize: '16px' }}>
                   Back to profile
@@ -78,12 +96,14 @@ export default function ChangePassword() {
               </div>
             ) : (
               <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={labelStyle}>Current password</label>
-                  <SmoothInput type="password" autoComplete="current-password" value={pw.current}
-                    onChange={e => setPw(p => ({ ...p, current: e.target.value }))}
-                    placeholder="Your current password" className="field" required style={inputStyle} />
-                </div>
+                {!settingFirst && (
+                  <div>
+                    <label style={labelStyle}>Current password</label>
+                    <SmoothInput type="password" autoComplete="current-password" value={pw.current}
+                      onChange={e => setPw(p => ({ ...p, current: e.target.value }))}
+                      placeholder="Your current password" className="field" required style={inputStyle} />
+                  </div>
+                )}
                 <div>
                   <label style={labelStyle}>New password</label>
                   <SmoothInput type="password" autoComplete="new-password" value={pw.next}
@@ -102,12 +122,13 @@ export default function ChangePassword() {
                   </p>
                 )}
                 <button type="submit" disabled={saving} className="primary-btn" style={{ fontSize: '16px', marginTop: '4px' }}>
-                  {saving ? 'Saving…' : 'Change password'}
+                  {saving ? 'Saving…' : settingFirst ? 'Set password' : 'Change password'}
                 </button>
               </form>
             )}
           </div>
         </BlurFade>
+        )}
       </div>
     </div>
   );

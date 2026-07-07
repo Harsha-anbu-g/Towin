@@ -11,6 +11,8 @@ public class ProfileResponse {
     private String username;
     private String email;
     private String authProvider;
+    // Whether the account can sign in with a password (false = Google-only so far)
+    private boolean hasPassword;
     private String name;
     private Integer age;
     private String photoUrl;
