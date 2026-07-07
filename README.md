@@ -127,9 +127,51 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
 ToWin/
 ├── backend/      Spring Boot API (auth, trust, needs, messaging, streaks…)
 ├── frontend/     React + Vite SPA
-├── docs/         Deployment runbook, specs, screenshots
+├── docs/         Deployment runbook, specs, screenshots, architecture diagrams
 └── docker-compose.yml
 ```
+
+---
+
+## 🗺 Architecture
+
+Every diagram below is generated from the **real ToWin code** — controllers, entities, enums, and deploy setup. The full set (14 diagrams, plus editable Mermaid sources you can drop straight into [mermaid.live](https://mermaid.live)) lives in **[docs/mermaid/](docs/mermaid/)**. Click any image to open it full-size.
+
+### The big picture
+
+How the pieces fit together — the Vercel frontend, the Railway backend, PostgreSQL, AWS S3, Brevo email, and Google OAuth.
+
+![C4 context diagram](docs/mermaid/architecture/08-c4-big-picture.png)
+
+### Data model
+
+The core tables — User, Need, Connection, Message, Trust — and how they relate.
+
+![Entity-relationship diagram](docs/mermaid/architecture/04-er-database.png)
+
+### Request flows
+
+How a request travels: React page → Axios → JWT filter → controller slice → PostgreSQL.
+
+![Request flowchart](docs/mermaid/architecture/01-flowchart.png)
+
+Logging in — `POST /api/auth/login`, step by step.
+
+![Login sequence diagram](docs/mermaid/architecture/02-sequence-login.png)
+
+Applying to a need — an elder posts, a helper applies, accepting one starts a connection.
+
+![Apply-to-need sequence diagram](docs/mermaid/architecture/03-sequence-apply-need.png)
+
+### Code maps
+
+Every class in the backend, grouped by slice — auth, trust, needs, messaging, and more.
+
+![Backend code map](docs/mermaid/architecture/11-backend-code.png)
+
+Every module in the frontend — pages, components, context, and hooks.
+
+![Frontend code map](docs/mermaid/architecture/13-frontend-code.png)
 
 ---
 
