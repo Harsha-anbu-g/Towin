@@ -472,7 +472,7 @@ export default function ElderDashboard() {
   const helpersDefault = 'active';
   const activeHelpersSeg = helpersSeg ?? helpersDefault;
   const helperSegments = [
-    { id: 'active',   label: 'Trusted Friends', count: helperCounts.active },
+    { id: 'active',   label: 'Trusted Helpers', count: helperCounts.active },
     { id: 'building', label: 'Building Trust',  count: helperCounts.building },
   ];
   const activeConnections = connections.filter(c => c.status === 'ACTIVE');

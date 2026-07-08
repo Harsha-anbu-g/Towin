@@ -502,8 +502,8 @@ export default function HelperDashboard() {
   const eldersDefault = 'active';
   const activeEldersSeg = eldersSeg ?? eldersDefault;
   const elderSegments = [
-    { id: 'active',   label: 'Trusted Friends', count: elderCounts.active },
-    { id: 'building', label: 'Building Trust',  count: elderCounts.building },
+    { id: 'active',   label: 'Trusted Elders', count: elderCounts.active },
+    { id: 'building', label: 'Building Trust', count: elderCounts.building },
   ];
   const visibleConnections = [...connections].filter(c => {
     if (activeEldersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
