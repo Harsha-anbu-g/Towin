@@ -80,6 +80,87 @@ function TortoiseTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
   );
 }
 
+// Phone view: the SAME journey line, stood upright on the right edge. It stays
+// put (position:fixed) while the story scrolls top-to-bottom, so the tortoise
+// walking DOWN mirrors the reader's own downward scroll — no sideways trickery.
+// The walked line + tortoise track the finger through refs (no transitions);
+// the dots stay discrete, tappable stops for elders.
+function MobileTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
+  return (
+    <div style={{
+      position: 'fixed', top: '50%', right: 'max(6px, env(safe-area-inset-right))',
+      transform: 'translateY(-50%)', height: 'min(60vh, 420px)', width: '34px',
+      zIndex: 6, pointerEvents: 'none',
+    }}>
+      <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+        {/* the full path */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, left: 'calc(50% - 1px)', width: '2px',
+          borderRadius: '9999px', background: 'var(--dot-idle)',
+        }} />
+        {/* the part already walked — scaleY from the top, grows downward as you
+            scroll (line stays centered via a static left, so the transform is
+            free for scaleY). */}
+        <div ref={walkedRef} style={{
+          position: 'absolute', top: 0, bottom: 0, left: 'calc(50% - 1px)', width: '2px',
+          borderRadius: '9999px', background: SKY,
+          transform: 'scaleY(0)', transformOrigin: 'top center', willChange: 'transform',
+        }} />
+        {/* stops along the path */}
+        {Array.from({ length: count }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => onJump(i)}
+            aria-label={`Go to page ${i + 1}`}
+            aria-current={i === current ? 'step' : undefined}
+            style={{
+              position: 'absolute', top: `${(i / (count - 1)) * 100}%`, left: '50%',
+              transform: 'translate(-50%, -50%)', pointerEvents: 'auto',
+              border: 'none', background: 'transparent', cursor: 'pointer',
+              // 44px-tall tap target (elders); the 8px dot sits centered on the line.
+              padding: '18px 13px', display: 'inline-flex',
+            }}
+          >
+            <span style={{
+              display: 'block', width: '8px', height: '8px', borderRadius: '50%',
+              background: 'var(--dot-idle)',
+              opacity: i === current ? 0 : 1,
+              transition: 'opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+            }} />
+          </button>
+        ))}
+        {/* the tortoise — walking DOWN the line (head faces the way it travels).
+            The mover spans the full height, centered on the line via left:50%
+            + the img's -16px offset, so translateY(%) is free to place it. */}
+        <div ref={tortoiseRef} style={{
+          position: 'absolute', top: 0, left: '50%', height: '100%', width: 0,
+          transform: 'translateY(0)', pointerEvents: 'none', willChange: 'transform',
+        }}>
+          <img
+            className="tortoise-lit"
+            src="/tortoise-logo-alpha.png"
+            alt=""
+            style={{
+              position: 'absolute', top: '-16px', left: '-16px',
+              width: '32px', height: '32px', objectFit: 'contain',
+              // Head-up mark rotated to point down the trail (direction of travel).
+              transform: 'rotate(180deg)',
+            }}
+          />
+        </div>
+        {/* page counter, tucked just under the rail */}
+        <p style={{
+          position: 'absolute', bottom: '-28px', left: '50%', transform: 'translateX(-50%)',
+          margin: 0, fontFamily: SF, fontSize: '11px', fontWeight: 600, color: 'var(--ink-4)',
+          fontVariantNumeric: 'tabular-nums', letterSpacing: '0.5px', whiteSpace: 'nowrap',
+        }}>
+          {String(current + 1).padStart(2, '0')}/{String(count).padStart(2, '0')}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function StartButton({ onStart }) {
   return (
     <button
@@ -108,10 +189,17 @@ export default function Landing() {
   const [index, setIndex] = useState(0);
   const isLast = index === total - 1;
 
+  // Phones get a plain vertical layout (scroll down = go down) with the journey
+  // line stood upright on the side; laptops keep the sideways scrubbed deck.
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(max-width: 640px)').matches,
+  );
+
   const scrollerRef = useRef(null);
   const trackRef = useRef(null);
   const walkedRef = useRef(null);
   const tortoiseRef = useRef(null);
+  const sectionsRef = useRef([]);
   const rafPending = useRef(false);
 
   // Map scroll progress (0..1 over the runway) onto the deck + tortoise.
@@ -120,9 +208,28 @@ export default function Landing() {
   const paint = () => {
     rafPending.current = false;
     const sc = scrollerRef.current;
-    if (!sc || !trackRef.current) return;
+    if (!sc) return;
     const range = sc.scrollHeight - sc.clientHeight;
     const p = range > 0 ? Math.min(1, Math.max(0, sc.scrollTop / range)) : 0;
+
+    // Phone: vertical scroll drives the upright rail. The walked line grows
+    // downward (scaleY) and the tortoise walks down (translateY). The active
+    // dot is the slide whose top has passed the viewport middle.
+    if (isMobile) {
+      if (walkedRef.current) walkedRef.current.style.transform = `scaleY(${p})`;
+      if (tortoiseRef.current) tortoiseRef.current.style.transform = `translateY(${p * 100}%)`;
+      const mid = sc.scrollTop + sc.clientHeight / 2;
+      let active = 0;
+      for (let i = 0; i < sectionsRef.current.length; i++) {
+        const el = sectionsRef.current[i];
+        if (el && el.offsetTop <= mid) active = i;
+      }
+      setIndex(active);
+      return;
+    }
+
+    // Laptop: the sideways scrubbed deck (unchanged).
+    if (!trackRef.current) return;
     trackRef.current.style.transform = `translateX(${-p * (total - 1) * 100}%)`;
     if (walkedRef.current) walkedRef.current.style.transform = `scaleX(${p})`;
     if (tortoiseRef.current) tortoiseRef.current.style.transform = `translateX(${p * 100}%)`;
@@ -145,8 +252,15 @@ export default function Landing() {
   const go = (i) => {
     const sc = scrollerRef.current;
     if (!sc) return;
-    const range = sc.scrollHeight - sc.clientHeight;
     const target = Math.max(0, Math.min(total - 1, i));
+    // Phone: jump to the slide's real offset (slides are variable height, so a
+    // proportional guess would miss). Laptop: proportional along the runway.
+    if (isMobile) {
+      const el = sectionsRef.current[target];
+      if (el) sc.scrollTo({ top: el.offsetTop, behavior: scrollBehavior() });
+      return;
+    }
+    const range = sc.scrollHeight - sc.clientHeight;
     sc.scrollTo({ top: (target / (total - 1)) * range, behavior: scrollBehavior() });
   };
 
@@ -170,6 +284,97 @@ export default function Landing() {
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Track the phone/laptop breakpoint and repaint once the layout swaps (the
+  // scroll container is rebuilt, so its refs and metrics all change).
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  useEffect(() => {
+    paint();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]);
+
+  // ── Phone: plain top-to-bottom story, journey line stood upright on the side ──
+  if (isMobile) {
+    return (
+      <div
+        className="landing-canvas landing-mobile"
+        ref={scrollerRef}
+        onScroll={onScroll}
+        style={{
+          position: 'relative',
+          height: '100%', minHeight: 0,
+          overflowY: 'auto', overflowX: 'hidden',
+          // Plain, natural top-to-bottom scroll — NO snap. Snap yanked the first
+          // slide's start to the top on load (hiding the brand + Log in) and made
+          // the read-down feel grabby; a story you read straight down shouldn't
+          // fight the finger, least of all for older readers.
+        }}
+      >
+        {/* Brand bar — sits at the top of the first screen and scrolls away */}
+        <header className="landing-topbar" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px',
+        }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '9px',
+            fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: 'var(--ink)',
+            letterSpacing: '-0.374px',
+          }}>
+            <img
+              className="tortoise-lit"
+              src="/tortoise-logo-alpha.png"
+              alt=""
+              style={{ width: 32, height: 32, objectFit: 'contain' }}
+            />
+            ToWin
+          </span>
+          <Link to="/login" style={{
+            fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
+            textDecoration: 'none', padding: '12px 4px',
+          }}>
+            Log in
+          </Link>
+        </header>
+
+        {/* The map — stays put on the right edge while the story scrolls */}
+        <MobileTrail
+          count={total}
+          current={index}
+          onJump={go}
+          walkedRef={walkedRef}
+          tortoiseRef={tortoiseRef}
+        />
+
+        {/* The story — one screen per slide, read straight down. The right pad
+            keeps the copy clear of the map rail. */}
+        {SLIDES.map((s, i) => (
+          <section
+            key={s.id}
+            ref={(el) => { sectionsRef.current[i] = el; }}
+            style={{
+              minHeight: '100%', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              padding: '40px 46px 40px 22px',
+            }}
+          >
+            <div className="bf" style={{ width: '100%', maxWidth: s.wide ? '880px' : '760px' }}>
+              {s.render()}
+            </div>
+            {i === total - 1 && (
+              <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
+                <StartButton onStart={() => navigate('/login')} />
+              </div>
+            )}
+          </section>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div

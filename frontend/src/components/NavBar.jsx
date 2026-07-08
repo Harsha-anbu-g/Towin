@@ -330,18 +330,29 @@ export default function NavBar() {
         {/* Mobile right — unread badge + SOS + hamburger */}
         {isMobile && (
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {unread > 0 && (
-              <Link to="/messages" aria-label={`${unread} unread messages`} style={{
-                textDecoration: 'none', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', minWidth: '44px', minHeight: '44px',
-              }}>
+            {/* Messages — always a one-tap icon on mobile (not just when there's
+                an unread badge); the count rides on top when there is one. */}
+            <Link
+              to="/messages"
+              aria-label={unread > 0 ? `Messages, ${unread} unread` : 'Messages'}
+              style={{
+                position: 'relative', textDecoration: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                minWidth: '44px', minHeight: '44px',
+                color: pathname.startsWith('/messages') ? 'var(--blue)' : 'var(--ink)',
+              }}
+            >
+              <MessageCircle size={24} strokeWidth={2} aria-hidden="true" />
+              {unread > 0 && (
                 <span style={{
-                  background: 'var(--red-deep)', color: '#fff', fontSize: '12px',
+                  position: 'absolute', top: '6px', right: '4px',
+                  background: 'var(--red-deep)', color: '#fff', fontSize: '10px',
                   fontWeight: 700, fontFamily: SF, borderRadius: '9999px',
-                  padding: '3px 8px',
-                }}>{unread}</span>
-              </Link>
-            )}
+                  padding: '1px 5px', minWidth: '16px', textAlign: 'center',
+                  lineHeight: 1.5, pointerEvents: 'none',
+                }}>{unread > 99 ? '99+' : unread}</span>
+              )}
+            </Link>
             {isElder && (
               <button onClick={pressSos} disabled={sending}
                 title={sosCountdown != null
