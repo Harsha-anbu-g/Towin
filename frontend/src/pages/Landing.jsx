@@ -130,10 +130,12 @@ function MobileTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
           </button>
         ))}
         {/* the tortoise — walking DOWN the line (head faces the way it travels).
-            The mover spans the full height, centered on the line via left:50%
-            + the img's -16px offset, so translateY(%) is free to place it. */}
+            The mover spans the rail's full height, so translateY(%) — relative to
+            its own height — lands it on each stop. It must also span the rail's
+            WIDTH: a zero-width mover collapses the tortoise to 0px, because
+            Tailwind's preflight img rule (max-width:100%) resolves against it. */}
         <div ref={tortoiseRef} style={{
-          position: 'absolute', top: 0, left: '50%', height: '100%', width: 0,
+          position: 'absolute', top: 0, left: 0, right: 0, height: '100%',
           transform: 'translateY(0)', pointerEvents: 'none', willChange: 'transform',
         }}>
           <img
@@ -141,8 +143,8 @@ function MobileTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
             src="/tortoise-logo-alpha.png"
             alt=""
             style={{
-              position: 'absolute', top: '-16px', left: '-16px',
-              width: '32px', height: '32px', objectFit: 'contain',
+              position: 'absolute', top: '-16px', left: '50%', marginLeft: '-16px',
+              width: '32px', height: '32px', maxWidth: 'none', objectFit: 'contain',
               // Head-up mark rotated to point down the trail (direction of travel).
               transform: 'rotate(180deg)',
             }}
