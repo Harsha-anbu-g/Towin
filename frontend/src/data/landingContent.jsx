@@ -15,6 +15,7 @@ import {
   Armchair, HandHeart, ShoppingBag, Car, MessageCircle,
   BadgeCheck, TrendingUp, Star, Link2, Phone, Video, Share2, Coffee,
 } from 'lucide-react';
+import { IntroBrandLockup } from '../components/TortoiseMark';
 
 const SERIF = `'Newsreader', Georgia, 'Times New Roman', serif`;  // headings + tagline, weight 400
 const SANS  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`; // wordmark, labels, UI numerals
@@ -312,21 +313,20 @@ export const SLIDES = [
       <div style={{ textAlign: 'center' }}>
         <Chapter n={1} label="Welcome" align="center" />
 
-        {/* Brand lockup — the mark and wordmark read as one unit (wordmark stays sans) */}
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '13px', marginBottom: '24px',
-        }}>
-          <img
-            className="tortoise-lit"
-            src="/tortoise-logo-alpha.png"
-            alt="ToWin tortoise logo"
-            style={{ width: 62, height: 62, objectFit: 'contain' }}
-          />
-          <span style={{
+        {/* Brand lockup — the mark and wordmark read as one unit (wordmark stays sans).
+            On the first landing view of a session it plays the intro: the mark
+            draws itself in, then "ToWin" wipes in from the left. Nothing else on
+            the page moves. Every later view renders it finished and still. */}
+        <IntroBrandLockup
+          gap={13}
+          wrapStyle={{
+            display: 'inline-flex', alignItems: 'center', marginBottom: '24px',
+          }}
+          wordStyle={{
             fontFamily: SANS, fontSize: '28px', fontWeight: 600, color: INK,
             letterSpacing: '-0.6px',
-          }}>ToWin</span>
-        </div>
+          }}
+        />
 
         {/* The tagline is the hero line — serif at 400, "two" set in italic */}
         <h1 className="landing-title" style={{
