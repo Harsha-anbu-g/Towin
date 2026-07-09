@@ -109,11 +109,13 @@ export default function TrustJourney({
           and inert so it never reads as a draggable slider handle. */}
       <div role="img" aria-label={barAria} style={{ position: 'relative', height: '34px' }}>
         <div aria-hidden="true" style={{ position: 'absolute', left: '17px', right: '17px', top: '50%', transform: 'translateY(-50%)', height: '9px', background: 'var(--sky-hairline)', borderRadius: '9999px', overflow: 'hidden' }}>
-          {/* Elder's half — the LIGHT in-progress fill, reaches the step's
-              midpoint while we wait on the helper. Sits UNDER the earned fill,
-              so it only shows in the stretch the elder has claimed but the
-              helper hasn't yet completed. Light = not yet earned. */}
-          <div style={{ position: 'absolute', inset: 0, background: 'var(--blue-soft)', borderRadius: '9999px', transform: `scaleX(${fillFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          {/* Elder's half — the LIGHT in-progress fill (light sky blue, clearly
+              visible against the pale track — --blue-soft was too faint and read
+              as empty). Reaches the step's midpoint while we wait on the helper.
+              Sits UNDER the earned fill, so it only shows in the stretch the
+              elder has claimed but the helper hasn't yet completed.
+              Light = not yet earned. */}
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--sky-bar-from)', borderRadius: '9999px', transform: `scaleX(${fillFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
           {/* Earned fill — the DARKER solid blue up to the last fully-completed
               rung. Darker = trust actually built; the elder's pending half
               stays lighter until the helper completes it. */}
