@@ -168,7 +168,7 @@ export default function Feedback() {
                 <div className="fb-3col">
                   <div>
                     <label style={labelStyle}>Name <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
-                    <SmoothInput plain style={inputStyle} value={form.name}
+                    <SmoothInput style={inputStyle} value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name" />
                   </div>
                   <div>

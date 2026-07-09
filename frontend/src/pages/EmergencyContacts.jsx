@@ -364,7 +364,7 @@ export default function EmergencyContacts() {
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Name
                     </label>
-                    <SmoothInput {...f('name')} plain className="field" placeholder="Contact name" required />
+                    <SmoothInput {...f('name')} className="field" placeholder="Contact name" required />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
@@ -378,7 +378,7 @@ export default function EmergencyContacts() {
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                       Relationship
                     </label>
-                    <SmoothInput {...f('relationship')} plain className="field" placeholder="Daughter, Doctor…" />
+                    <SmoothInput {...f('relationship')} className="field" placeholder="Daughter, Doctor…" />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>

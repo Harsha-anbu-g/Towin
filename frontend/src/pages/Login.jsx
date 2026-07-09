@@ -366,7 +366,6 @@ export default function Login() {
                 </label>
                 <SmoothInput
                   id="login-identifier"
-                  plain
                   type="text" required autoComplete="username"
                   className="field"
                   value={form.identifier}

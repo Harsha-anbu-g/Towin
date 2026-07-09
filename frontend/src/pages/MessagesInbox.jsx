@@ -170,7 +170,6 @@ export default function MessagesInbox() {
                   </svg>
                 </span>
                 <SmoothInput
-                  plain
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Search conversations"

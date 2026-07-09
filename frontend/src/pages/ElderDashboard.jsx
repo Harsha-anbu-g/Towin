@@ -1148,7 +1148,7 @@ export default function ElderDashboard() {
               <form onSubmit={postNeed} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <label htmlFor="need-title" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What do you need help with?</label>
-                  <SmoothInput id="need-title" plain value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
+                  <SmoothInput id="need-title" value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
                     placeholder="e.g. Help with grocery shopping" required
                     style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid var(--border)', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none' }}
                     onFocus={focusIn} onBlur={focusOut} />
@@ -1178,7 +1178,7 @@ export default function ElderDashboard() {
                     })}
                   </div>
                   {needForm.category === 'OTHER' && (
-                    <SmoothInput id="need-category-other" plain value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
+                    <SmoothInput id="need-category-other" value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
                       placeholder="Please tell us what kind of help" required autoFocus
                       style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid var(--border)', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none', marginTop: '4px' }}
                       onFocus={focusIn} onBlur={focusOut} />
