@@ -331,7 +331,7 @@ export const SLIDES = [
 
         {/* The tagline is the hero line — serif at 400, "two" set in italic */}
         <h1 className="landing-title" style={{
-          fontFamily: SERIF, fontSize: '60px', fontWeight: 400, color: INK,
+          fontFamily: SERIF, fontSize: '52px', fontWeight: 400, color: INK,
           letterSpacing: '-0.02em', lineHeight: 1.05, margin: '0 auto 20px',
           maxWidth: '14ch',
         }}>
