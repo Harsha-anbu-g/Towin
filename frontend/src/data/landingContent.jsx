@@ -318,8 +318,8 @@ export const SLIDES = [
             centred, then "ToWin" wipes in from the left and pushes it into place.
             Nothing else on the page moves; reduced-motion renders it finished. */}
         <IntroBrandLockup
-          size={104}
-          gap={18}
+          size={82}
+          gap={6}
           wrapStyle={{
             display: 'inline-flex', alignItems: 'center', marginBottom: '28px',
           }}

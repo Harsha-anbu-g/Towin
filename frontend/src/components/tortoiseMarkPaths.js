@@ -4,7 +4,10 @@
 // -> cubic Bezier (STEP=18, kept coarse enough for a smooth stroke-dashoffset draw).
 // Verified vs the artwork: mean edge error 1.26px on a 1254px canvas.
 
-export const VIEWBOX = '0 0 1254 1254';
+// Tight square window around the mark (paths span x:259-991, y:218-1049 with
+// stroke) so the SVG carries no baked-in padding — the lockup gap is then only
+// the real gap. Paths keep their original 0-1254 coordinates.
+export const VIEWBOX = '187 196 876 876';
 export const STROKE = 27;
 
 // drawn in sequence with stroke-dashoffset
