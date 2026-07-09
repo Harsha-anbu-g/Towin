@@ -48,11 +48,10 @@ docs/architecture/towin-openapi.yaml
 # Local dev assets / reference images (not part of the app)
 assets/
 
-# Personal notes / local-only working files (kept local, not published)
+# Local-only working files (kept local, not published)
 notes/
 tasks/
 memory/
-OVERNIGHT_REPORT.md
 
 # Dev/verification screenshots — only the curated README set is tracked
 docs/screenshots/*
@@ -74,16 +73,8 @@ docs/screenshots/*
 # Google OAuth client secret files — never commit these
 client_secret_*.json
 
-# Security scan reports & personal study/marketing docs — kept local, never published
-*-security-scan-*.md
-*-AUDIT-REPORT.md
-owasp-top-10-towin.*
-q-and-a-interview.*
-linkedin-video-scripts.*
-docs/SECURITY-AUDIT.md
-docs/SECURITY-REPORT.md
-docs/video-scripts/
-docs/ToWin-Video-*.docx
+# Local working files — kept out of the repo
+/private/
 # Regenerable dependency-graph export (the tracked copy lives in docs/architecture/)
 docs/architecture/frontend-graph.pdf
 .vercel
@@ -93,7 +84,7 @@ docs/architecture/frontend-graph.pdf
 .claude/settings.local.json
 
 # Impeccable skill hook caches generated next to audited pages (tool output)
-frontend/**/.impeccable/
+**/.impeccable/
 
 # Design/AI tooling & internal build docs — kept local, not part of the public repo
 .claude/skills/
