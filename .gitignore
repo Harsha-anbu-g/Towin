@@ -94,3 +94,11 @@ docs/architecture/frontend-graph.pdf
 
 # Impeccable skill hook caches generated next to audited pages (tool output)
 frontend/**/.impeccable/
+
+# Design/AI tooling & internal build docs — kept local, not part of the public repo
+.claude/skills/
+.agents/skills/
+.github/skills/
+skills-lock.json
+docs/superpowers/
+/CLAUDE.md
