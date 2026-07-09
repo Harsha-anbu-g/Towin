@@ -487,26 +487,31 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .tortoise-mark.logo-mark--intro {
   transform: translateX(var(--intro-shift, 0px));   /* centred over the lockup */
 }
+/* "ToWin" is hidden behind its own clipped edge and slides in — a wipe done with
+   transform (GPU) not clip-path (repaint). The outer span reserves the text's
+   width; the inner is translated out of it to the left. */
 .logo-wordmark {
-  clip-path: inset(0 100% 0 0);      /* "ToWin" hidden until the push */
-  opacity: 0;
+  display: inline-block;
+  overflow: hidden;
+}
+.logo-wordmark .logo-wordmark-inner {
+  display: inline-block;
+  transform: translateX(-101%);
 }
 
 @keyframes intro-draw { to { stroke-dashoffset: 0; } }
 @keyframes intro-pop  { to { opacity: 1; transform: scale(1); } }
 @keyframes intro-recenter { to { transform: translateX(0); } }
-@keyframes intro-wordmark {
-  from { clip-path: inset(0 100% 0 0); opacity: 0; }
-  to   { clip-path: inset(0 0 0 0);    opacity: 1; }
-}
+@keyframes intro-wordmark { to { transform: translateX(0); } }
 
 /* RUNNING (.is-running, added a frame later): the beats fire. */
 
 /* 0.0–1.2s  the shell, from the cleft at top centre, clockwise, back to it.
-   Isolated to its own layer so its repaints don't touch the rest of the page. */
+   The mark's own transform (logo-mark--intro) isolates it to its own layer, so
+   these stroke repaints stay in a ~104px box and never touch the rest of the
+   page. (No will-change: SVG stroke can't be composited, so it just wastes VRAM.) */
 .tortoise-mark.is-running .tm-shell {
   animation: intro-draw 1200ms var(--ease-draw) forwards;
-  will-change: stroke-dashoffset;
 }
 /* 1.2–1.5s  the head rises out of the shell, both halves together */
 .tortoise-mark.is-running .tm-head-l,
@@ -533,8 +538,8 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .tortoise-mark.logo-mark--intro.is-running {
   animation: intro-recenter 460ms var(--ease-arrive) 2650ms forwards;
 }
-.logo-wordmark.is-writing {
-  animation: intro-wordmark 460ms var(--ease-arrive) 2650ms both;
+.logo-wordmark.is-writing .logo-wordmark-inner {
+  animation: intro-wordmark 460ms var(--ease-arrive) 2650ms forwards;
 }
 
 /* Scroll cue under the deck: a soft slow bob on the chevron. transform-only;

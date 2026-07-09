@@ -84,14 +84,28 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, m
     setShift((gap + wordRef.current.getBoundingClientRect().width) / 2);
   }, [play, gap]);
 
-  // Hold the beats until the page has painted once. The landing deck's initial
-  // layout/paint is the heaviest main-thread moment; starting the draw into it
-  // is what made it stutter. Two rAFs guarantee a clean first frame, then run.
+  // Hold the beats until the main thread is IDLE — not a fixed couple of frames.
+  // The landing deck (6 slides + images) does its heaviest layout/paint right
+  // after mount; starting the stroke-draw into that contention is what made it
+  // stutter. requestIdleCallback runs the draw only once that work has drained
+  // (700ms hard cap so it never waits too long); one rAF then aligns it to a
+  // frame boundary before the beats start.
   useEffect(() => {
     if (!play) return undefined;
-    let f2 = 0;
-    const f1 = requestAnimationFrame(() => { f2 = requestAnimationFrame(() => setRunning(true)); });
-    return () => { cancelAnimationFrame(f1); cancelAnimationFrame(f2); };
+    let idleId = 0;
+    let timId = 0;
+    let raf = 0;
+    const begin = () => { raf = requestAnimationFrame(() => setRunning(true)); };
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(begin, { timeout: 700 });
+    } else {
+      timId = window.setTimeout(begin, 250);
+    }
+    return () => {
+      if (idleId && window.cancelIdleCallback) window.cancelIdleCallback(idleId);
+      if (timId) clearTimeout(timId);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, [play]);
 
   return (
@@ -104,12 +118,14 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, m
         title="ToWin tortoise logo"
         style={{ objectFit: 'contain', ...(play ? { '--intro-shift': `${shift}px` } : null) }}
       />
+      {/* The wipe is done with overflow + a translated inner span (transform,
+          GPU-composited) rather than clip-path (which repaints every frame). */}
       <span
         ref={wordRef}
         className={play ? `logo-wordmark${running ? ' is-writing' : ''}` : undefined}
         style={wordStyle}
       >
-        ToWin
+        <span className="logo-wordmark-inner">ToWin</span>
       </span>
     </div>
   );

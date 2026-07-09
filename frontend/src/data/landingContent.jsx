@@ -324,8 +324,8 @@ export const SLIDES = [
             display: 'inline-flex', alignItems: 'center', marginBottom: '28px',
           }}
           wordStyle={{
-            fontFamily: SANS, fontSize: '46px', fontWeight: 600, color: INK,
-            letterSpacing: '-1px',
+            fontFamily: SANS, fontSize: '36px', fontWeight: 600, color: INK,
+            letterSpacing: '-0.8px',
           }}
         />
 
