@@ -46,7 +46,7 @@ Shows how `frontend/src` modules import each other (pages → components / conte
 `api/axios.js`). Regenerate any time from `frontend/`:
 
 ```bash
-npm run graph          # visual flow chart  -> docs/architecture/frontend-deps.mmd  (Mermaid)
+npm run graph          # visual flow chart  -> docs/architecture/frontend-deps.mmd  (diagram source)
 npm run graph:report   # interactive report -> docs/architecture/frontend-deps.html
 ```
 
@@ -59,9 +59,9 @@ npm run graph:report   # interactive report -> docs/architecture/frontend-deps.h
 - **`frontend-deps.svg`** — the same flow chart as a plain image. Opens in a browser and
   renders on GitHub, but it's ~9600px wide, so you'll be zooming a lot — the viewer above
   is nicer.
-- **`frontend-deps.mmd`** — the Mermaid source. In VS Code it only renders with the
-  **"Markdown Preview Mermaid Support"** extension; otherwise paste it into
-  https://mermaid.live. GitHub renders it too.
+- **`frontend-deps.mmd`** — the editable diagram source. In VS Code it only renders with a
+  Markdown diagram-preview extension; otherwise paste it into an online diagram editor.
+  GitHub renders it too.
 - **`frontend-deps.html`** — an interactive dependency matrix *(local only — gitignored)*.
 
 > ⚠️ **`.html` / `.svg` won't render inside the VS Code editor** — double-clicking

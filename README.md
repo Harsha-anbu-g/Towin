@@ -135,43 +135,43 @@ ToWin/
 
 ## 🗺 Architecture
 
-Every diagram below is generated from the **real ToWin code** — controllers, entities, enums, and deploy setup. The full set (14 diagrams, plus editable Mermaid sources you can drop straight into [mermaid.live](https://mermaid.live)) lives in **[docs/mermaid/](docs/mermaid/)**. Click any image to open it full-size.
+Every diagram below is generated from the **real ToWin code** — controllers, entities, enums, and deploy setup. Prefer to explore hands-on? **[Open the live architecture viewer →](https://portfolioharsha.vercel.app/architecture.html)** — scroll to zoom, drag to pan. The full set (14 diagrams, plus editable sources) lives in **[docs/diagrams/](docs/diagrams/)**. Click any image to open it full-size.
 
 ### The big picture
 
 How the pieces fit together — the Vercel frontend, the Railway backend, PostgreSQL, AWS S3, Brevo email, and Google OAuth.
 
-![C4 context diagram](docs/mermaid/architecture/08-c4-big-picture.png)
+![C4 context diagram](docs/diagrams/architecture/08-c4-big-picture.png)
 
 ### Data model
 
 The core tables — User, Need, Connection, Message, Trust — and how they relate.
 
-![Entity-relationship diagram](docs/mermaid/architecture/04-er-database.png)
+![Entity-relationship diagram](docs/diagrams/architecture/04-er-database.png)
 
 ### Request flows
 
 How a request travels: React page → Axios → JWT filter → controller slice → PostgreSQL.
 
-![Request flowchart](docs/mermaid/architecture/01-flowchart.png)
+![Request flowchart](docs/diagrams/architecture/01-flowchart.png)
 
 Logging in — `POST /api/auth/login`, step by step.
 
-![Login sequence diagram](docs/mermaid/architecture/02-sequence-login.png)
+![Login sequence diagram](docs/diagrams/architecture/02-sequence-login.png)
 
 Applying to a need — an elder posts, a helper applies, accepting one starts a connection.
 
-![Apply-to-need sequence diagram](docs/mermaid/architecture/03-sequence-apply-need.png)
+![Apply-to-need sequence diagram](docs/diagrams/architecture/03-sequence-apply-need.png)
 
 ### Code maps
 
 Every class in the backend, grouped by slice — auth, trust, needs, messaging, and more.
 
-![Backend code map](docs/mermaid/architecture/11-backend-code.png)
+![Backend code map](docs/diagrams/architecture/11-backend-code.png)
 
 Every module in the frontend — pages, components, context, and hooks.
 
-![Frontend code map](docs/mermaid/architecture/13-frontend-code.png)
+![Frontend code map](docs/diagrams/architecture/13-frontend-code.png)
 
 ---
 

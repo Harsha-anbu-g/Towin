@@ -34,7 +34,7 @@ build/
 graphify-out/
 docs-generated/
 # dependency-cruiser interactive report (regenerable via `npm run graph:report`);
-# the small Mermaid snapshot (.mmd) is kept as a viewable, GitHub-renderable diagram.
+# the small diagram snapshot (.mmd) is kept as a viewable, GitHub-renderable diagram.
 docs/architecture/frontend-deps.html
 # Offline API docs / OpenAPI spec — expose the full API surface, so kept local
 # only (regenerate with docs/architecture/build-offline-api-docs.sh)

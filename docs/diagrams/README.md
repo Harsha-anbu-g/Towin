@@ -1,4 +1,4 @@
-# Mermaid diagrams — learn by reading your own app
+# Architecture diagrams — learn by reading your own app
 
 Five diagram types, each drawn from the **real ToWin code** (controllers, entities,
 enums, deploy setup). Learn the syntax here, then edit and re-render.
@@ -14,13 +14,13 @@ enums, deploy setup). Learn the syntax here, then edit and re-render.
 
 ## How to view
 
-- **GitHub** — just open the file; GitHub renders ```mermaid blocks automatically.
-- **VS Code** — install **"Markdown Preview Mermaid Support"**, open a file, press `⌘⇧V`.
-- **mermaid.live** — use the **[paste/](paste/)** folder. Each `.mmd` file there is one
-  diagram, pure code, nothing else: open it, select all (`⌘A`), copy, then in
-  mermaid.live clear the code panel (`⌘A` → delete) and paste.
+- **GitHub** — just open any file; GitHub renders the diagram blocks automatically.
+- **VS Code** — install a Markdown diagram-preview extension, open a file, press `⌘⇧V`.
+- **Online editor** — use the **[paste/](paste/)** folder. Each `.mmd` file there is one
+  diagram, pure code, nothing else: open it, select all (`⌘A`), copy, then paste it into
+  your diagram editor's code panel.
 
-> ⚠️ Don't paste these `.md` files into mermaid.live — the headings and text around
+> ⚠️ Don't paste these `.md` files into the online editor — the headings and text around
 > the code blocks are a syntax error to it. That's what `paste/` is for.
 
 ## Learning order
