@@ -656,6 +656,7 @@ export default function Admin() {
               }}>
                 <Search size={16} color="var(--ink-4)" strokeWidth={2} style={{ flexShrink: 0 }} />
                 <SmoothInput
+                  plain
                   value={search}
                   onChange={e => { setSearch(e.target.value); setUserPage(0); }}
                   placeholder="Search by email or username…"

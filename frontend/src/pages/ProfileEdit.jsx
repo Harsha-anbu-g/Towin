@@ -394,7 +394,7 @@ export default function ProfileEdit() {
                 <Divider />
                 <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column' }}>
                   <FieldRow label="Full Name">
-                    <SmoothInput {...f('name')} placeholder="Your name" required style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('name')} plain placeholder="Your name" required style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Age">
@@ -502,7 +502,7 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Occupation">
-                    <SmoothInput {...f('occupation')} placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('occupation')} plain placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Sex">
@@ -515,16 +515,17 @@ export default function ProfileEdit() {
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Facebook URL">
-                    <SmoothInput {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('facebookUrl')} plain placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Instagram URL">
-                    <SmoothInput {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    <SmoothInput {...f('instagramUrl')} plain placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
                   <FieldRow label="Location">
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <SmoothInput
+                        plain
                         value={locationQuery}
                         onChange={e => { setLocationQuery(e.target.value); setLocationSaved(false); }}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveLocation(); } }}
@@ -709,7 +710,7 @@ export default function ProfileEdit() {
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Name</label>
-                            <SmoothInput {...emF('name')} className="field" placeholder="Contact name" required />
+                            <SmoothInput {...emF('name')} plain className="field" placeholder="Contact name" required />
                           </div>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Phone</label>
@@ -719,7 +720,7 @@ export default function ProfileEdit() {
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Relationship</label>
-                            <SmoothInput {...emF('relationship')} className="field" placeholder="Daughter, Doctor…" />
+                            <SmoothInput {...emF('relationship')} plain className="field" placeholder="Daughter, Doctor…" />
                           </div>
                           <div>
                             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Alert after (days)</label>

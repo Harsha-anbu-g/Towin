@@ -40,12 +40,17 @@ const SmoothInput = forwardRef(function SmoothInput(
     onChange,
     onBlur,
     caretColor = 'var(--blue)',
+    plain = false, // opt out of the spring caret; use the browser's native one.
     ...props
   },
   forwardedRef,
 ) {
   const prefersReducedMotion = useReducedMotion();
-  const smooth = SMOOTH_TYPES.has(type) && !prefersReducedMotion && !COARSE_POINTER;
+  // Free-text fields that can overflow (the caret has to re-derive the input's
+  // own horizontal scroll and diverges from it) opt out with `plain` and keep
+  // the native, blinking caret that always tracks perfectly.
+  const smooth =
+    !plain && SMOOTH_TYPES.has(type) && !prefersReducedMotion && !COARSE_POINTER;
 
   const [internalValue, setInternalValue] = useState(defaultValue ?? '');
   const [caretHeight, setCaretHeight] = useState(18);
@@ -200,9 +205,10 @@ const SmoothInput = forwardRef(function SmoothInput(
     if (smooth) scheduleCaretUpdate();
   };
 
-  // Native passthrough — identical markup to a plain <input>.
+  // Native passthrough — the browser's own caret. Used for `plain`, reduced
+  // motion, touch, and input types that don't support text selection.
   if (!smooth) {
-    return (
+    const nativeInput = (
       <input
         {...props}
         ref={setRefs}
@@ -214,6 +220,13 @@ const SmoothInput = forwardRef(function SmoothInput(
         onChange={onChange}
         onBlur={onBlur}
       />
+    );
+    // Mirror the smooth path's wrapper when the caller styled one (e.g. flex:1
+    // in a row) so layout is identical whichever caret is rendered.
+    return wrapperStyle ? (
+      <span style={{ display: 'block', width: '100%', ...wrapperStyle }}>{nativeInput}</span>
+    ) : (
+      nativeInput
     );
   }
 

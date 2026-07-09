@@ -40,6 +40,7 @@ export default function LocationPrompt({ onResolved }) {
       </p>
       <form onSubmit={submit} style={{ display: 'flex', gap: '8px' }}>
         <SmoothInput
+          plain
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
