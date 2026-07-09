@@ -25,8 +25,27 @@ export default function TrustJourney({
 }) {
   const idx = LEVEL_IDX[currentTrustLevel] ?? 0;
   const current = LEVELS[idx];
-  const pct = Math.round((idx / (LEVELS.length - 1)) * 100);
-  const isTrusted = idx === LEVELS.length - 1;
+  const denom = LEVELS.length - 1;
+  const isTrusted = idx === denom;
+
+  // Each step is a two-party handshake shown on the bar itself: the elder
+  // initiates (fills the FIRST half of the step) and the helper accepts (fills
+  // the SECOND half, landing on the next rung). One side confirmed but not both
+  // === the elder has started this step and we're waiting on the helper. The
+  // backend resets both flags the instant both confirm, so at most one is ever
+  // true here — the bar sits at a rung, half-past a rung, or on the next rung.
+  const pendingHalf = !isTrusted && (confirmedByMe || confirmedByOther);
+  const baseFrac = idx / denom;                                 // solid: rung reached
+  const fillFrac = baseFrac + (pendingHalf ? 0.5 / denom : 0);  // + the elder's half
+  const midFrac  = isTrusted ? baseFrac : (idx + 0.5) / denom;  // this step's midpoint
+  const pct = Math.round(fillFrac * 100);
+
+  const nextLabel = LEVELS[idx + 1]?.label || 'the next step';
+  const barAria = isTrusted
+    ? 'Trust ladder: fully trusted — the top of the ladder'
+    : pendingHalf
+      ? `Trust ladder: stage ${idx + 1} of ${LEVELS.length}, ${current.label}; move to ${nextLabel} started, waiting for the other person to accept`
+      : `Trust ladder: stage ${idx + 1} of ${LEVELS.length}, ${current.label}`;
 
   const accent       = 'var(--blue-deep)';
   const accentBg     = 'var(--blue-tint)';
@@ -89,11 +108,23 @@ export default function TrustJourney({
       {/* Progress bar — the tortoise rides along it to the current stage.
           Announced as one progress image; the tortoise marker is decorative
           and inert so it never reads as a draggable slider handle. */}
-      <div role="img" aria-label={`Trust ladder: stage ${idx + 1} of ${LEVELS.length}, ${current.label}`} style={{ position: 'relative', height: '34px' }}>
+      <div role="img" aria-label={barAria} style={{ position: 'relative', height: '34px' }}>
         <div aria-hidden="true" style={{ position: 'absolute', left: '17px', right: '17px', top: '50%', transform: 'translateY(-50%)', height: '9px', background: 'var(--sky-hairline)', borderRadius: '9999px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: '100%', background: barGradient, borderRadius: '9999px', transform: `scaleX(${pct / 100})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          {/* Elder's half — the lighter "in-progress" fill, reaches the step's
+              midpoint while we wait on the helper. Sits UNDER the solid fill,
+              so it only shows in the stretch the elder has claimed but the
+              helper hasn't yet completed. */}
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--blue-soft)', borderRadius: '9999px', transform: `scaleX(${fillFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          {/* Earned fill — solid gradient up to the last fully-completed rung. */}
+          <div style={{ position: 'absolute', inset: 0, background: barGradient, borderRadius: '9999px', transform: `scaleX(${baseFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
         </div>
-        <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${pct / 100})`, transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: accentBg, border: `2px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: 'none' }}>
+        {/* Active-step tick — the halfway checkpoint of the step in play. The
+            elder fills up to it; the tortoise rests on it while awaiting the
+            helper. Hidden at the top of the ladder (no next step). */}
+        {!isTrusted && (
+          <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${midFrac} + 17px)`, transform: 'translate(-50%, -50%)', width: '2px', height: '13px', borderRadius: '9999px', background: 'var(--blue-mid)', opacity: 0.55, transition: 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+        )}
+        <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${fillFrac})`, transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: accentBg, border: `2px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: 'none' }}>
           <img src="/tortoise-right.png" alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
         </div>
       </div>
