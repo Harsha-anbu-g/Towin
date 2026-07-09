@@ -311,38 +311,18 @@ export default function Landing() {
           position: 'relative',
           height: '100%', minHeight: 0,
           overflowY: 'auto', overflowX: 'hidden',
-          // Plain, natural top-to-bottom scroll — NO snap. Snap yanked the first
-          // slide's start to the top on load (hiding the brand + Log in) and made
-          // the read-down feel grabby; a story you read straight down shouldn't
-          // fight the finger, least of all for older readers.
+          // Vertical slide deck: each swipe down comes to rest on the next whole
+          // slide, one at a time (scroll-snap-stop: always on each panel), the
+          // same page-by-page feel the laptop deck has — just downward.
+          //
+          // The two problems an earlier snap attempt hit are fixed structurally,
+          // not by dropping snap: (1) the brand bar + Log in now live INSIDE
+          // slide 1, so scrollTop 0 is itself a snap start and the header is
+          // never yanked off on load; (2) snap only settles on release — mid-
+          // swipe the finger keeps full control.
+          scrollSnapType: 'y mandatory',
         }}
       >
-        {/* Brand bar — sits at the top of the first screen and scrolls away */}
-        <header className="landing-topbar" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px',
-        }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '9px',
-            fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: 'var(--ink)',
-            letterSpacing: '-0.374px',
-          }}>
-            <img
-              className="tortoise-lit"
-              src="/tortoise-logo-alpha.png"
-              alt=""
-              style={{ width: 32, height: 32, objectFit: 'contain' }}
-            />
-            ToWin
-          </span>
-          <Link to="/login" style={{
-            fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
-            textDecoration: 'none', padding: '12px 4px',
-          }}>
-            Log in
-          </Link>
-        </header>
-
         {/* The map — stays put on the right edge while the story scrolls */}
         <MobileTrail
           count={total}
@@ -352,26 +332,62 @@ export default function Landing() {
           tortoiseRef={tortoiseRef}
         />
 
-        {/* The story — one screen per slide, read straight down. The right pad
-            keeps the copy clear of the map rail. */}
+        {/* The story — one whole screen per slide, read straight down; each one
+            snaps to rest so a swipe down lands on the next. The right pad keeps
+            the copy clear of the map rail. */}
         {SLIDES.map((s, i) => (
           <section
             key={s.id}
             ref={(el) => { sectionsRef.current[i] = el; }}
             style={{
               minHeight: '100%', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              padding: '40px 46px 40px 22px',
+              // Come to rest on this slide, one at a time — never fling past one.
+              scrollSnapAlign: 'start', scrollSnapStop: 'always',
             }}
           >
-            <div className="bf" style={{ width: '100%', maxWidth: s.wide ? '880px' : '760px' }}>
-              {s.render()}
-            </div>
-            {i === total - 1 && (
-              <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
-                <StartButton onStart={() => navigate('/login')} />
-              </div>
+            {/* Brand bar rides at the top of slide 1 (and scrolls away with it),
+                so scrollTop 0 is a snap start and the header is never yanked off
+                on load. */}
+            {i === 0 && (
+              <header className="landing-topbar" style={{
+                flex: '0 0 auto', display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between', padding: '16px 20px',
+              }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '9px',
+                  fontFamily: SFD, fontSize: '20px', fontWeight: 600, color: 'var(--ink)',
+                  letterSpacing: '-0.374px',
+                }}>
+                  <img
+                    className="tortoise-lit"
+                    src="/tortoise-logo-alpha.png"
+                    alt=""
+                    style={{ width: 32, height: 32, objectFit: 'contain' }}
+                  />
+                  ToWin
+                </span>
+                <Link to="/login" style={{
+                  fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
+                  textDecoration: 'none', padding: '12px 4px',
+                }}>
+                  Log in
+                </Link>
+              </header>
             )}
+            <div style={{
+              flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              padding: '40px 46px 40px 22px',
+            }}>
+              <div className="bf" style={{ width: '100%', maxWidth: s.wide ? '880px' : '760px' }}>
+                {s.render()}
+              </div>
+              {i === total - 1 && (
+                <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
+                  <StartButton onStart={() => navigate('/login')} />
+                </div>
+              )}
+            </div>
           </section>
         ))}
       </div>
