@@ -470,8 +470,10 @@ button, a, [role="button"], input, textarea, select, label, summary {
   --ease-arrive: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* The parts start hidden; the beats below reveal them. Scoped to .is-drawing,
-   so a static mark (every subsequent view) is unaffected. */
+/* PRIMED (from mount, .is-drawing): the parts start hidden and the tortoise is
+   shifted right so it draws centred. This holds — with NO animation — for the
+   one frame we wait past the page's first paint, so nothing flashes and the
+   draw doesn't stutter into the landing deck's initial layout. */
 .tortoise-mark.is-drawing .tm-draw {
   stroke-dasharray: 1 1;            /* pathLength=1 => "1" is the whole path */
   stroke-dashoffset: 1;
@@ -482,53 +484,57 @@ button, a, [role="button"], input, textarea, select, label, summary {
   transform-box: fill-box;
   transform-origin: center;
 }
+.tortoise-mark.logo-mark--intro {
+  transform: translateX(var(--intro-shift, 0px));   /* centred over the lockup */
+}
+.logo-wordmark {
+  clip-path: inset(0 100% 0 0);      /* "ToWin" hidden until the push */
+  opacity: 0;
+}
 
 @keyframes intro-draw { to { stroke-dashoffset: 0; } }
 @keyframes intro-pop  { to { opacity: 1; transform: scale(1); } }
-
-/* While the tortoise draws it sits centred over the whole lockup (shifted right
-   by --intro-shift, set in JS = half the gap+wordmark width). At 2.65s it slides
-   back left into place as "ToWin" arrives — the wordmark reads as pushing it. */
-.tortoise-mark.logo-mark--intro {
-  transform: translateX(var(--intro-shift, 0px));
-  animation: intro-recenter 460ms var(--ease-arrive) 2650ms forwards;
-}
 @keyframes intro-recenter { to { transform: translateX(0); } }
-
-/* 2.65s  as the tortoise slides left, "ToWin" wipes in from the left to fill the
-   space it vacates. `both` fill keeps it hidden through the whole draw, so it
-   only appears once the mark is finished. */
-.logo-wordmark.is-writing {
-  animation: intro-wordmark 460ms var(--ease-arrive) 2650ms both;
-}
 @keyframes intro-wordmark {
   from { clip-path: inset(0 100% 0 0); opacity: 0; }
   to   { clip-path: inset(0 0 0 0);    opacity: 1; }
 }
 
-/* 0.0–1.2s  the shell, from the cleft at top centre, clockwise, back to it */
-.tortoise-mark.is-drawing .tm-shell {
+/* RUNNING (.is-running, added a frame later): the beats fire. */
+
+/* 0.0–1.2s  the shell, from the cleft at top centre, clockwise, back to it.
+   Isolated to its own layer so its repaints don't touch the rest of the page. */
+.tortoise-mark.is-running .tm-shell {
   animation: intro-draw 1200ms var(--ease-draw) forwards;
+  will-change: stroke-dashoffset;
 }
 /* 1.2–1.5s  the head rises out of the shell, both halves together */
-.tortoise-mark.is-drawing .tm-head-l,
-.tortoise-mark.is-drawing .tm-head-r {
+.tortoise-mark.is-running .tm-head-l,
+.tortoise-mark.is-running .tm-head-r {
   animation: intro-draw 300ms var(--ease-draw) 1200ms forwards;
 }
 /* 1.5–2.0s  legs: top pair, then bottom pair */
-.tortoise-mark.is-drawing .tm-leg-tl,
-.tortoise-mark.is-drawing .tm-leg-tr {
+.tortoise-mark.is-running .tm-leg-tl,
+.tortoise-mark.is-running .tm-leg-tr {
   animation: intro-draw 300ms var(--ease-arrive) 1500ms forwards;
 }
-.tortoise-mark.is-drawing .tm-leg-bl,
-.tortoise-mark.is-drawing .tm-leg-br {
+.tortoise-mark.is-running .tm-leg-bl,
+.tortoise-mark.is-running .tm-leg-br {
   animation: intro-draw 300ms var(--ease-arrive) 1650ms forwards;
 }
 /* 2.0–2.6s  the seven segments: centre hexagon, then clockwise from the top.
    70ms stagger sits inside the 30–80ms window the standards call for. */
-.tortoise-mark.is-drawing .tm-cell {
+.tortoise-mark.is-running .tm-cell {
   animation: intro-pop 200ms var(--ease-arrive) forwards;
   animation-delay: calc(2000ms + var(--i) * 70ms);
+}
+/* 2.65s  the mark slides left into place as "ToWin" wipes in to fill the space
+   it vacates — the wordmark reads as pushing it aside. */
+.tortoise-mark.logo-mark--intro.is-running {
+  animation: intro-recenter 460ms var(--ease-arrive) 2650ms forwards;
+}
+.logo-wordmark.is-writing {
+  animation: intro-wordmark 460ms var(--ease-arrive) 2650ms both;
 }
 
 /* Scroll cue under the deck: a soft slow bob on the chevron. transform-only;

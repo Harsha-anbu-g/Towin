@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DRAW, CELLS, VIEWBOX, STROKE } from './tortoiseMarkPaths';
 import { useLogoIntro } from './useLogoIntro';
 
@@ -13,16 +13,23 @@ import { useLogoIntro } from './useLogoIntro';
  * the shell outline, the two head halves, four legs, then the seven shell
  * segments (centre hexagon, then clockwise from the top).
  *
- * `animated` only tags the root with a class — LogoIntro's stylesheet drives
- * the timing, so a static mark costs nothing.
+ * `animated` primes the hidden state (paths ready to draw); `running` triggers
+ * the beats. They are split so the reveal can be held one frame past the page's
+ * first paint — see IntroBrandLockup — which stops the draw from stuttering
+ * while the landing deck is still doing its initial layout. The CSS in index.css
+ * drives all the timing, so a static mark costs nothing.
  */
-export default function TortoiseMark({ size = 160, animated = false, title, className = '', ...rest }) {
+export default function TortoiseMark({
+  size = 160, animated = false, running = false, title, className = '', ...rest
+}) {
+  const cls = ['tortoise-mark', animated && 'is-drawing', running && 'is-running', className]
+    .filter(Boolean).join(' ');
   return (
     <svg
       viewBox={VIEWBOX}
       width={size}
       height={size}
-      className={`tortoise-mark${animated ? ' is-drawing' : ''}${className ? ` ${className}` : ''}`}
+      className={cls}
       role={title ? 'img' : 'presentation'}
       aria-label={title}
       aria-hidden={title ? undefined : 'true'}
@@ -62,19 +69,30 @@ export default function TortoiseMark({ size = 160, animated = false, title, clas
  * both render finished and static. Styling comes from the caller so the content
  * file stays the source of truth for the brand type.
  */
-export function IntroBrandLockup({ wrapStyle, wordStyle, size = 62, gap = 13, markClassName = 'tortoise-lit' }) {
+export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, markClassName = 'tortoise-lit' }) {
   const play = useLogoIntro();
   const wordRef = useRef(null);
   const [shift, setShift] = useState(0);
+  const [running, setRunning] = useState(false);
 
   // While it draws, the tortoise sits centred over the whole lockup; when
   // "ToWin" arrives it slides back left into place, so the wordmark reads as
   // pushing it aside. The slide distance is half of (gap + wordmark width) —
-  // measured, so it stays exact whatever the rendered text width is.
+  // measured, so it stays exact at any mark size or rendered text width.
   useLayoutEffect(() => {
     if (!play || !wordRef.current) return;
     setShift((gap + wordRef.current.getBoundingClientRect().width) / 2);
   }, [play, gap]);
+
+  // Hold the beats until the page has painted once. The landing deck's initial
+  // layout/paint is the heaviest main-thread moment; starting the draw into it
+  // is what made it stutter. Two rAFs guarantee a clean first frame, then run.
+  useEffect(() => {
+    if (!play) return undefined;
+    let f2 = 0;
+    const f1 = requestAnimationFrame(() => { f2 = requestAnimationFrame(() => setRunning(true)); });
+    return () => { cancelAnimationFrame(f1); cancelAnimationFrame(f2); };
+  }, [play]);
 
   return (
     <div style={{ ...wrapStyle, gap: `${gap}px` }}>
@@ -82,10 +100,15 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 62, gap = 13, ma
         className={`${markClassName}${play ? ' logo-mark--intro' : ''}`}
         size={size}
         animated={play}
+        running={running}
         title="ToWin tortoise logo"
         style={{ objectFit: 'contain', ...(play ? { '--intro-shift': `${shift}px` } : null) }}
       />
-      <span ref={wordRef} className={play ? 'logo-wordmark is-writing' : undefined} style={wordStyle}>
+      <span
+        ref={wordRef}
+        className={play ? `logo-wordmark${running ? ' is-writing' : ''}` : undefined}
+        style={wordStyle}
+      >
         ToWin
       </span>
     </div>

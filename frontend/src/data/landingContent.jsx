@@ -314,17 +314,18 @@ export const SLIDES = [
         <Chapter n={1} label="Welcome" align="center" />
 
         {/* Brand lockup — the mark and wordmark read as one unit (wordmark stays sans).
-            On the first landing view of a session it plays the intro: the mark
-            draws itself in, then "ToWin" wipes in from the left. Nothing else on
-            the page moves. Every later view renders it finished and still. */}
+            On every landing view it plays the intro: the tortoise draws itself in
+            centred, then "ToWin" wipes in from the left and pushes it into place.
+            Nothing else on the page moves; reduced-motion renders it finished. */}
         <IntroBrandLockup
-          gap={13}
+          size={104}
+          gap={18}
           wrapStyle={{
-            display: 'inline-flex', alignItems: 'center', marginBottom: '24px',
+            display: 'inline-flex', alignItems: 'center', marginBottom: '28px',
           }}
           wordStyle={{
-            fontFamily: SANS, fontSize: '28px', fontWeight: 600, color: INK,
-            letterSpacing: '-0.6px',
+            fontFamily: SANS, fontSize: '46px', fontWeight: 600, color: INK,
+            letterSpacing: '-1px',
           }}
         />
 
