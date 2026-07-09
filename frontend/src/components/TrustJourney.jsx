@@ -50,7 +50,6 @@ export default function TrustJourney({
   const accent       = 'var(--blue-deep)';
   const accentBg     = 'var(--blue-tint)';
   const accentBorder = 'var(--blue-soft)';
-  const barGradient  = 'linear-gradient(90deg,var(--sky-bar-from),var(--blue))';
   // Brand rule: any UI text containing the word "trust" reads in the golden
   // family. The 19px heading keeps --trust-gold (large-text contrast); the
   // small 13px stage label uses --gold-deep, the palette's own small-text
@@ -110,15 +109,15 @@ export default function TrustJourney({
           and inert so it never reads as a draggable slider handle. */}
       <div role="img" aria-label={barAria} style={{ position: 'relative', height: '34px' }}>
         <div aria-hidden="true" style={{ position: 'absolute', left: '17px', right: '17px', top: '50%', transform: 'translateY(-50%)', height: '9px', background: 'var(--sky-hairline)', borderRadius: '9999px', overflow: 'hidden' }}>
-          {/* Elder's half — a clearly-filled deep blue (her part is done). Kept
-              distinct from both the earned gradient and the empty track so a
-              half-step reads unmistakably as "elder in, helper to go". Reaches
-              the step's midpoint while we wait on the helper, and sits UNDER the
-              solid fill, so it only shows in the stretch the elder has claimed
-              but the helper hasn't yet completed. */}
-          <div style={{ position: 'absolute', inset: 0, background: 'var(--blue-deep)', borderRadius: '9999px', transform: `scaleX(${fillFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
-          {/* Earned fill — solid gradient up to the last fully-completed rung. */}
-          <div style={{ position: 'absolute', inset: 0, background: barGradient, borderRadius: '9999px', transform: `scaleX(${baseFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          {/* Elder's half — the LIGHT in-progress fill, reaches the step's
+              midpoint while we wait on the helper. Sits UNDER the earned fill,
+              so it only shows in the stretch the elder has claimed but the
+              helper hasn't yet completed. Light = not yet earned. */}
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--blue-soft)', borderRadius: '9999px', transform: `scaleX(${fillFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          {/* Earned fill — the DARKER solid blue up to the last fully-completed
+              rung. Darker = trust actually built; the elder's pending half
+              stays lighter until the helper completes it. */}
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--blue-deep)', borderRadius: '9999px', transform: `scaleX(${baseFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
         </div>
         {/* Active-step tick — the halfway checkpoint of the step in play. The
             elder fills up to it; the tortoise rests on it while awaiting the
