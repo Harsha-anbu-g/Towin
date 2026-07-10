@@ -470,7 +470,12 @@ export default function Landing() {
     if (!sc) return undefined;
     const QUIET_MS = 150; // this much silence between deltas ends a gesture
     const INTENT = 0.12; // fraction of a page that reads as "meant to turn"
+    const TAIL_PEAK = 15; // a flick: some delta in the gesture got this big…
+    const TAIL_IN = 3; // …so deltas this small mean momentum has decayed
+    const WAKE = 10; // a tail delta this big is really a new swipe
     let owning = false; // between the first sideways delta and snap hand-back
+    let draining = false; // settling while the old flick's tail still trickles
+    let peak = 0; // biggest sideways delta of the current gesture
     let startPage = 0;
     let lastT = 0;
     let quietT = 0;
@@ -510,27 +515,64 @@ export default function Landing() {
     const onWheel = (e) => {
       if (e.ctrlKey) return; // pinch-zoom arrives as ctrl+wheel
       const sideways = Math.abs(e.deltaX) > Math.abs(e.deltaY);
-      if (!owning && !sideways) return; // plain vertical: fully native, snap on
+      if (!owning && !draining && !sideways) return; // plain vertical: fully native
+      // deltaMode: 0 = pixels (trackpads, most wheels), 1 = lines (Firefox
+      // wheels), 2 = pages.
+      const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? sc.clientHeight : 1;
+      const dx = e.deltaX * unit;
+      const adx = Math.abs(dx);
+      const fresh = e.timeStamp - lastT > QUIET_MS; // real quiet = new gesture
+      lastT = e.timeStamp;
+      // A settling flick's momentum tail keeps trickling in. Feeding it back
+      // in (or even just waiting it out) is what read as the deck pausing
+      // dead between two pages — so swallow it. Only a real new push, or a
+      // fresh gesture after true quiet, takes the deck back.
+      if (draining) {
+        if (!fresh && (!sideways || adx < WAKE)) {
+          if (sideways) e.preventDefault();
+          return;
+        }
+        draining = false;
+        peak = 0;
+        if (owning) startPage = Math.round(pagesAt());
+      }
+      if (!owning && !sideways) return; // vertical after the tail: native
       if (!owning) {
         // A sideways gesture begins: take over until the deck is back on a
         // page with snap restored.
         owning = true;
+        peak = 0;
         clearTimeout(restoreT);
         sc.removeEventListener('scrollend', restoreSnap);
         sc.style.scrollSnapType = 'none';
         startPage = Math.round(pagesAt());
-      } else if (e.timeStamp - lastT > QUIET_MS) {
+      } else if (fresh) {
         // New gesture arriving while the last settle still rides: re-base so
         // "moved" measures this gesture, not the whole chain.
         startPage = Math.round(pagesAt());
+        peak = 0;
       }
-      lastT = e.timeStamp;
       if (sideways) {
         e.preventDefault();
-        // deltaMode: 0 = pixels (trackpads, most wheels), 1 = lines (Firefox
-        // wheels), 2 = pages.
-        const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? sc.clientHeight : 1;
-        sc.scrollTop += e.deltaX * unit;
+        peak = Math.max(peak, adx);
+        if (peak >= TAIL_PEAK && adx <= TAIL_IN) {
+          // The flick has decayed to a crawl — settle NOW. Waiting for the
+          // tail to truly end reads as a dead pause mid-way between pages.
+          draining = true;
+          clearTimeout(quietT);
+          quietT = 0;
+          settle();
+          return;
+        }
+        // scroll-snap-stop: always, by hand — the rule the vertical deck
+        // gets from CSS: one gesture moves AT MOST one page, however hard
+        // the flick. The deck rides the finger but pins at the neighboring
+        // page's doorstep; the next swipe re-bases and takes the next page.
+        const range = sc.scrollHeight - sc.clientHeight;
+        const pageH = total > 1 ? range / (total - 1) : range;
+        const lo = Math.max(0, (startPage - 1) * pageH);
+        const hi = Math.min(range, (startPage + 1) * pageH);
+        sc.scrollTop = Math.min(hi, Math.max(lo, sc.scrollTop + dx));
       }
       // Vertical deltas mid-gesture scroll natively (snap is off either way);
       // every delta holds the settle until the whole gesture goes quiet.
