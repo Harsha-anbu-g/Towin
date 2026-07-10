@@ -34,7 +34,7 @@ export default function TagInput({ value = [], onChange, placeholder = 'Type and
         display: 'flex',
         flexWrap: 'wrap',
         gap: '6px',
-        padding: '10px 12px',
+        padding: '2px 12px',
         border: '1.5px solid var(--hairline-2)',
         borderRadius: '12px',
         background: 'var(--canvas)',
@@ -67,11 +67,16 @@ export default function TagInput({ value = [], onChange, placeholder = 'Type and
               border: 'none',
               cursor: 'pointer',
               color: 'var(--blue-deep)',
+              // 32x32 hit area; negative margins keep the chip visually compact
+              width: '32px',
+              height: '32px',
+              margin: '-8px -10px -8px -4px',
               padding: '0',
               lineHeight: 1,
               fontSize: '16px',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               opacity: 0.7,
             }}
             aria-label={`Remove ${tag}`}
@@ -94,6 +99,7 @@ export default function TagInput({ value = [], onChange, placeholder = 'Type and
           color: 'var(--ink)',
           minWidth: '120px',
           flex: 1,
+          minHeight: '44px',
           padding: '2px 0',
           fontFamily: 'inherit',
         }}

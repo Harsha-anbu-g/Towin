@@ -347,7 +347,9 @@ export default function Register() {
   };
 
   const linkBtn = {
-    color: 'var(--blue-deep)', background: 'none', border: 'none', padding: 0,
+    color: 'var(--blue-deep)', background: 'none', border: 'none',
+    // 44px-tall hit area without changing the visual inline-link look
+    padding: '12px 0', margin: '-12px 0',
     cursor: 'pointer', font: 'inherit', textDecoration: 'underline',
   };
 
@@ -679,14 +681,14 @@ export default function Register() {
 
               {/* Terms checkbox */}
               <label style={{
-                display: 'flex', alignItems: 'flex-start', gap: '10px',
-                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '10px',
+                cursor: 'pointer', minHeight: '44px',
               }}>
                 <input
                   type="checkbox"
                   checked={agreed}
                   onChange={e => setAgreed(e.target.checked)}
-                  style={{ marginTop: '2px', accentColor: 'var(--blue)', flexShrink: 0 }}
+                  style={{ width: '22px', height: '22px', accentColor: 'var(--blue)', flexShrink: 0 }}
                 />
                 <span style={{
                   fontSize: '14px', color: 'var(--ink-3)', lineHeight: 1.5,

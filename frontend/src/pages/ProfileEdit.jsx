@@ -617,6 +617,7 @@ export default function ProfileEdit() {
                             flexShrink: 0, background: 'transparent', color: 'var(--red-deep)',
                             border: '1.5px solid var(--border)', borderRadius: '9999px',
                             padding: '6px 14px', fontSize: '14px', fontWeight: 600,
+                            minHeight: '44px',
                             fontFamily: 'inherit', cursor: 'pointer',
                           }}>
                             Remove
