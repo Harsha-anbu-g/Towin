@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
+import com.towin.common.seed.DemoDataSeeder;
 import com.towin.discovery.dto.DiscoveredUserResponse;
 import com.towin.discovery.dto.DiscoveryFilter;
 import com.towin.profile.entity.ElderProfile;
@@ -37,19 +38,21 @@ public class DiscoveryService {
         double lat = resolvedLat(filter, requester);
         double lng = resolvedLng(filter, requester);
 
-        return elderProfileRepository.findAllActiveWithLocation(requestingUserId)
+        List<Map.Entry<ElderProfile, Double>> ranked = elderProfileRepository.findAllActiveWithLocation(requestingUserId)
                 .stream()
-                .filter(p -> p.getUser().getId() != requestingUserId)
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .filter(p -> matchesInterest(filter, p.getInterests()))
-                .map(p -> {
-                    double dist = haversineKm(lat, lng,
-                            p.getUser().getLocationLat().doubleValue(),
-                            p.getUser().getLocationLng().doubleValue());
-                    return Map.entry(p, dist);
-                })
+                .map(p -> Map.entry(p, haversineKm(lat, lng,
+                        p.getUser().getLocationLat().doubleValue(),
+                        p.getUser().getLocationLng().doubleValue())))
+                .sorted(Comparator.comparingDouble(Map.Entry::getValue))
+                .collect(Collectors.toList());
+
+        List<Map.Entry<ElderProfile, Double>> withinRadius = ranked.stream()
                 .filter(e -> e.getValue() <= filter.getRadiusKm())
-                .sorted(Comparator.comparingDouble(e -> e.getValue()))
+                .collect(Collectors.toList());
+
+        return visibleFor(withinRadius, ranked, requester).stream()
                 .skip((long) filter.getPage() * filter.getSize())
                 .limit(filter.getSize())
                 .map(e -> toElderResponse(e.getKey(), e.getValue()))
@@ -63,7 +66,7 @@ public class DiscoveryService {
         Double lng = resolvedLngOptional(filter, requester);
         boolean hasLocation = lat != null && lng != null;
 
-        return helperProfileRepository.findAllActiveWithLocation(requestingUserId)
+        List<Map.Entry<HelperProfile, Double>> ranked = helperProfileRepository.findAllActiveWithLocation(requestingUserId)
                 .stream()
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .map(p -> {
@@ -75,8 +78,14 @@ public class DiscoveryService {
                             : 0.0;
                     return Map.entry(p, dist);
                 })
+                .sorted(Comparator.comparingDouble(Map.Entry::getValue))
+                .collect(Collectors.toList());
+
+        List<Map.Entry<HelperProfile, Double>> withinRadius = ranked.stream()
                 .filter(e -> !hasLocation || e.getValue() <= filter.getRadiusKm())
-                .sorted(Comparator.comparingDouble(e -> e.getValue()))
+                .collect(Collectors.toList());
+
+        return visibleFor(withinRadius, ranked, requester).stream()
                 .skip((long) filter.getPage() * filter.getSize())
                 .limit(filter.getSize())
                 .map(e -> toHelperResponse(e.getKey(), e.getValue()))
@@ -116,6 +125,20 @@ public class DiscoveryService {
                 .trustTier(TrustScoreService.tierFor(score))
                 .distanceKm(Math.round(distanceKm * 10.0) / 10.0)
                 .build();
+    }
+
+    /**
+     * Sample/demo accounts must never show an empty list — a barren demo looks broken.
+     * When nobody is within the requested radius, fall back to the nearest people
+     * (radius ignored) so there's always something to explore. Real accounts stay strict.
+     */
+    private <T> List<Map.Entry<T, Double>> visibleFor(List<Map.Entry<T, Double>> withinRadius,
+                                                      List<Map.Entry<T, Double>> ranked, User requester) {
+        return (withinRadius.isEmpty() && isDemoAccount(requester)) ? ranked : withinRadius;
+    }
+
+    private boolean isDemoAccount(User user) {
+        return user.getEmail() != null && DemoDataSeeder.DEMO_EMAILS.contains(user.getEmail());
     }
 
     private boolean matchesLanguage(DiscoveryFilter filter, String[] languages) {

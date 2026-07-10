@@ -9,11 +9,14 @@
     <meta name="description" content="ToWin connects elders with trusted younger helpers nearby — for friendship, help with daily tasks, and good company. Trust grows one step at a time. It takes two To Win." />
     <meta name="theme-color" content="#4FA3CE" />
 
-    <!-- Apply the saved night-mode choice before first paint so a dark-mode
-         user never sees a white flash. ThemeContext owns it after mount. -->
+    <!-- Apply the saved night-mode choice before first paint so a signed-in
+         dark-mode user never sees a white flash. Night mode is members-only, so
+         we only apply it when a login token is present — the landing, login and
+         create-account pages (signed out) always stay light. ThemeContext owns
+         it after mount. -->
     <script>
       try {
-        if (localStorage.getItem('towin-theme') === 'dark') {
+        if (localStorage.getItem('token') && localStorage.getItem('towin-theme') === 'dark') {
           document.documentElement.dataset.theme = 'dark';
           document.querySelector('meta[name="theme-color"]').setAttribute('content', '#201f1d');
         }

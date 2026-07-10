@@ -162,8 +162,9 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', DEMO[role]);
       login(data.token);
+      // Everyone lands on the daily check-in first — elder and helper alike.
       navigate(
-        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard',
+        data.role === 'ADMIN' ? '/admin' : '/streaks',
         { replace: true }
       );
     } catch (err) {
@@ -189,10 +190,9 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token);
+      // Everyone lands on the daily check-in first — elder and helper alike.
       navigate(
-        data.role === 'ADMIN' ? '/admin' :
-        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' :
-        '/dashboard',
+        data.role === 'ADMIN' ? '/admin' : '/streaks',
         { replace: true }
       );
     } catch (err) {

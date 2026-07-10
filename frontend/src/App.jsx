@@ -140,9 +140,9 @@ function AskAiDock() {
 
 function App() {
   return (
+    <AuthProvider>
     <ThemeProvider>
     <ToastProvider>
-      <AuthProvider>
         <BrowserRouter>
           {/* App shell: the beta banner takes its own height and the routed
               content fills whatever viewport space is left. Without this, any
@@ -188,9 +188,9 @@ function App() {
           <CookieConsent />
           </div>
         </BrowserRouter>
-      </AuthProvider>
     </ToastProvider>
     </ThemeProvider>
+    </AuthProvider>
   );
 }
 

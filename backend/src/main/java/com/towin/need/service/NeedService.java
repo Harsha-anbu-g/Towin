@@ -9,6 +9,7 @@ import com.towin.common.enums.TrustLevel;
 import com.towin.common.messaging.ConnectionEvent;
 import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.seed.DemoDataSeeder;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
@@ -89,15 +90,22 @@ public class NeedService {
         double helperLat = lat != null ? lat : (helper.getLocationLat() != null ? helper.getLocationLat().doubleValue() : 0);
         double helperLng = lng != null ? lng : (helper.getLocationLng() != null ? helper.getLocationLng().doubleValue() : 0);
 
-        return needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)
+        List<Object[]> ranked = needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)
                 .stream()
-                .map(n -> {
-                    double dist = haversineKm(helperLat, helperLng,
-                            n.getLocationLat().doubleValue(), n.getLocationLng().doubleValue());
-                    return new Object[]{n, dist};
-                })
-                .filter(pair -> (double) pair[1] <= radiusKm)
+                .map(n -> new Object[]{n, haversineKm(helperLat, helperLng,
+                        n.getLocationLat().doubleValue(), n.getLocationLng().doubleValue())})
                 .sorted((a, b) -> Double.compare((double) a[1], (double) b[1]))
+                .collect(Collectors.toList());
+
+        List<Object[]> withinRadius = ranked.stream()
+                .filter(pair -> (double) pair[1] <= radiusKm)
+                .collect(Collectors.toList());
+
+        // Sample/demo accounts must never show an empty list — if nothing is within the
+        // radius, fall back to the nearest open needs so the demo always has something.
+        List<Object[]> visible = (withinRadius.isEmpty() && isDemoAccount(helper)) ? ranked : withinRadius;
+
+        return visible.stream()
                 .skip((long) page * size)
                 .limit(size)
                 .map(pair -> {
@@ -244,6 +252,10 @@ public class NeedService {
                 .ifPresent(a -> trustScoreService.recalculate(a.getHelper().getId()));
 
         return response;
+    }
+
+    private boolean isDemoAccount(User user) {
+        return user.getEmail() != null && DemoDataSeeder.DEMO_EMAILS.contains(user.getEmail());
     }
 
     private Map<UUID, ApplicationStatus> helperApplicationMap(UUID helperId) {

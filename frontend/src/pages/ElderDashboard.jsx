@@ -7,6 +7,7 @@ import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
 import LocationPrimer from '../components/LocationPrimer';
+import LocationBlocked from '../components/LocationBlocked';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
@@ -299,7 +300,7 @@ export default function ElderDashboard() {
     if (!navigator.permissions?.query) { setLocationStatus('primer'); return; }
     navigator.permissions.query({ name: 'geolocation' }).then(p => {
       if (p.state === 'granted') requestLocation();
-      else if (p.state === 'denied') { setLocationStatus('denied'); loadHelpers(); }
+      else if (p.state === 'denied') { setLocationStatus('blocked'); loadHelpers(); }
       else setLocationStatus('primer');
     }).catch(() => setLocationStatus('primer'));
   }
@@ -315,9 +316,16 @@ export default function ElderDashboard() {
         api.put('/profile/location', { locationLat: loc.lat, locationLng: loc.lng }).catch(() => {});
         loadHelpers(loc);
       },
-      () => setLocationStatus('denied'),
-      // Don't hang on an unanswered permission prompt — fall back to showing all helpers
-      { timeout: 8000, maximumAge: 300000 }
+      err => {
+        // err.code: 1 = PERMISSION_DENIED (blocked), 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT.
+        // A blocked permission is a setting the user must change — say so, don't
+        // silently drop to the type-your-town box; other failures fall back to manual.
+        console.warn('Geolocation failed:', err.code, err.message);
+        setLocationStatus(err.code === 1 ? 'blocked' : 'denied');
+        loadHelpers();
+      },
+      // Prefer the GPS chip and give a cold fix time before falling back
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   }
 
@@ -846,6 +854,7 @@ export default function ElderDashboard() {
                       {locationStatus === 'asking' && 'Getting your location…'}
                       {locationStatus === 'granted' && `Showing helpers within ${radiusKm} km of you`}
                       {locationStatus === 'denied' && 'Location unavailable, showing all helpers'}
+                      {locationStatus === 'blocked' && 'Location is turned off for this site'}
                       {locationStatus === 'idle' && 'Detecting location…'}
                     </span>
                     {locationStatus === 'granted' && (
@@ -862,6 +871,9 @@ export default function ElderDashboard() {
                       onEnable={requestLocation}
                       onManual={() => { setLocationStatus('denied'); loadHelpers(); }}
                     />
+                  )}
+                  {locationStatus === 'blocked' && (
+                    <LocationBlocked onRetry={requestLocation} onManual={() => setLocationStatus('denied')} />
                   )}
                   {locationStatus === 'denied' && (
                     <LocationPrompt onResolved={(loc) => {

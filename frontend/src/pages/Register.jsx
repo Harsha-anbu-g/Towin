@@ -324,8 +324,9 @@ export default function Register() {
     try {
       const { data } = await api.post('/auth/login', DEMO[role]);
       login(data.token);
+      // Everyone lands on the daily check-in first — elder and helper alike.
       navigate(
-        (data.role === 'ELDER' || data.role === 'BOTH') ? '/streaks' : '/dashboard',
+        data.role === 'ADMIN' ? '/admin' : '/streaks',
         { replace: true }
       );
     } catch (err) {
