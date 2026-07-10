@@ -1,3 +1,7 @@
+# Committed ignore list — generic boilerplate only.
+# Machine-local, tooling, and personal working-file ignores live in
+# .git/info/exclude, which stays on this computer and is never pushed.
+
 # Maven
 target/
 *.class
@@ -12,85 +16,24 @@ target/
 .DS_Store
 Thumbs.db
 
-# Env
+# Env / secrets — never commit these
 .env
 *.local
-
-# Test secrets — these should never be committed with real values
-# backend/src/test/resources/application-secret.properties
+client_secret_*.json
+# Test secrets — never commit real values into test resource files
 
 # Logs
 *.log
 logs/
 
-# Node (for future frontend)
+# Node
 node_modules/
 dist/
 build/
 *.csv
 
-# Generated / tool output (not source)
-.playwright-mcp/
-graphify-out/
-docs-generated/
-# dependency-cruiser interactive report (regenerable via `npm run graph:report`);
-# the small diagram snapshot (.mmd) is kept as a viewable, GitHub-renderable diagram.
-docs/architecture/frontend-deps.html
-# Offline API docs / OpenAPI spec — expose the full API surface, so kept local
-# only (regenerate with docs/architecture/build-offline-api-docs.sh)
-docs/architecture/towin-api-docs.html
-docs/architecture/towin-openapi.json
-docs/architecture/towin-openapi.yaml
-
-# Archived local working files (dev screenshots, tool output) — kept local, never published
-.artifacts/
-
-# Local dev assets / reference images (not part of the app)
-assets/
-
-# Local-only working files (kept local, not published)
-notes/
-tasks/
-memory/
-
-# Dev/verification screenshots — only the curated README set is tracked
-docs/screenshots/*
-!docs/screenshots/Streak.png
-!docs/screenshots/admin.png
-!docs/screenshots/aws.png
-!docs/screenshots/elder-dashboard.png
-!docs/screenshots/helper-dashboard.png
-!docs/screenshots/how-it-works.png
-!docs/screenshots/messages.png
-!docs/screenshots/trust.png
-
-# Stray screenshots / diagrams at repo root
+# Stray images / diagrams dropped at the repo root
 /*.png
 /*.svg
 /*.jpeg
 /*.jpg
-
-# Google OAuth client secret files — never commit these
-client_secret_*.json
-
-# Local working files — kept out of the repo
-/private/
-# Regenerable dependency-graph export (the tracked copy lives in docs/architecture/)
-docs/architecture/frontend-graph.pdf
-.vercel
-.gstack/
-
-# Claude Code machine-local settings (permissions/hooks for this machine only)
-.claude/settings.local.json
-
-# Impeccable skill hook caches generated next to audited pages (tool output)
-**/.impeccable/
-
-# Design/AI tooling & internal build docs — kept local, not part of the public repo
-.claude/skills/
-.agents/skills/
-.github/skills/
-.github/hooks/
-skills-lock.json
-docs/superpowers/
-/CLAUDE.md

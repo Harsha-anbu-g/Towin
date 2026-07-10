@@ -133,38 +133,6 @@ ToWin/
 
 ---
 
-## 🚀 Run it locally
-
-Prerequisites: **Java 21**, **Node 22**, and **PostgreSQL 15+** running on `localhost:5432`
-(a native install is the tested path — the app defaults to an in-memory cache and
-in-process events locally, so Docker/Redis/Kafka are optional).
-
-```bash
-# 1. Database — the backend expects a database named `towin`
-createdb towin
-
-# 2. Environment — copy the example and adjust if your Postgres user differs
-cp .env.example .env
-
-# 3. Backend — http://localhost:8080 (Flyway migrates the schema on first boot).
-#    Spring doesn't read .env by itself, so load it into the shell first —
-#    JWT_SECRET has no default and the backend won't start without it.
-cd backend
-set -a; source ../.env; set +a
-./mvnw spring-boot:run
-
-# 4. Frontend — http://localhost:5173 (new terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-Open http://localhost:5173 and use **Try as an Elder** / **Try as a Helper** on the
-sign-in page — no account needed. Tests: `./mvnw test` (backend) and
-`npx vitest run` (frontend).
-
----
-
 ## 🗺 Architecture
 
 Every diagram below is generated from the **real ToWin code** — controllers, entities, enums, and deploy setup. Prefer to explore hands-on? **[Open the live architecture viewer →](https://portfolioharsha.vercel.app/architecture.html)** — scroll to zoom, drag to pan. The full set (14 diagrams, plus editable sources) lives in **[docs/diagrams/](docs/diagrams/)**. Click any image to open it full-size.
