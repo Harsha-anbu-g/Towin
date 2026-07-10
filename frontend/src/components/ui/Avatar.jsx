@@ -12,7 +12,9 @@ export default function Avatar({ name, photoUrl, size = 48, borderRadius = '50%'
       <img
         src={photoUrl}
         alt=""
-        style={{ ...base, objectFit: 'cover' }}
+        // Tinted while the photo streams in (S3 presigned URLs can be slow) —
+        // an avatar should never flash as an empty white circle.
+        style={{ ...base, objectFit: 'cover', background: 'var(--slate-tint)' }}
         onError={() => setImgFailed(true)}
       />
     );
