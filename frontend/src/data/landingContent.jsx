@@ -269,6 +269,7 @@ function StageLadder({ stages }) {
               }}>
                 {isGoal
                   ? <img src="/logo.png" alt="ToWin" draggable="false"
+                      loading="lazy" decoding="async"
                       style={{ width: 26, height: 26, objectFit: 'contain', transform: 'rotate(90deg)' }} />
                   : (() => { const I = STAGE_ICONS[s]; return I ? <I size={15} strokeWidth={2.2} /> : i + 1; })()}
               </div>

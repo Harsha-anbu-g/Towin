@@ -233,6 +233,8 @@ export default function Feedback() {
                 alt="Portrait of Harshavardhan"
                 width="52"
                 height="52"
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: 52, height: 52, borderRadius: '50%', objectFit: 'cover',
                   border: '1px solid var(--border)', flexShrink: 0,

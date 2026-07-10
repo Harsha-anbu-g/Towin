@@ -5,8 +5,9 @@ import { Send, X, Volume2, Square, Mic, MicOff } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import api from '../api/axios';
 
-// The tortoise mascot image (served from /public).
-const TORTOISE_IMG = '/ai-tortoise.png';
+// The tortoise mascot image (served from /public). The 256px variant — the
+// launcher/avatar renders at 24-34px, so the ~950KB original is never needed here.
+const TORTOISE_IMG = '/ai-tortoise-small.png';
 
 // Bind motion elements to names so lint counts them as used (this flat config
 // doesn't treat <motion.div> member-expressions as a reference).
