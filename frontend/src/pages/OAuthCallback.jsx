@@ -24,9 +24,9 @@ export default function OAuthCallback() {
         if (data.status === 'READY') {
           login(data.token);
           const role = JSON.parse(atob(data.token.split('.')[1])).role;
+          // Everyone lands on the daily check-in first — elder and helper alike.
           navigate(
-            role === 'ADMIN' ? '/admin' :
-            (role === 'ELDER' || role === 'BOTH') ? '/streaks' : '/dashboard',
+            role === 'ADMIN' ? '/admin' : '/streaks',
             { replace: true }
           );
         } else if (data.status === 'NEEDS_ONBOARDING') {
