@@ -8,8 +8,6 @@ import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import SmoothInput from '../components/SmoothInput';
 
-const unsplash = (id, w, h) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
-
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 

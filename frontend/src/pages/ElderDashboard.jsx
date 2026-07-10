@@ -151,7 +151,6 @@ export default function ElderDashboard() {
   const { user } = useAuth();
   const seenConn = useSeenIds(user?.userId, 'connections');
   const seenApplicants = useSeenIds(user?.userId, 'applicants');
-  const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
   // Which tab/section is open lives in the URL (?tab=…&hseg=…&nseg=…) so a full
@@ -211,17 +210,16 @@ export default function ElderDashboard() {
 
   async function loadConnections(silent = false) {
     if (!silent) setLoading(true);
-    try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
+    try { const r = await api.get('/connections'); setConnections(r.data); } catch { /* transient load error — keep last list, spinner clears below */ }
     finally { if (!silent) setLoading(false); }
   }
   async function loadNeeds(silent = false) {
     if (!silent) setLoading(true);
-    try { const res = await api.get('/needs/mine'); setMyNeeds(res.data.content ?? []); } catch {}
+    try { const res = await api.get('/needs/mine'); setMyNeeds(res.data.content ?? []); } catch { /* transient load error — keep last list, spinner clears below */ }
     finally { if (!silent) setLoading(false); }
   }
 
   useEffect(() => {
-    api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
     loadConnections();
     loadNeeds();
     initLocation();
@@ -436,8 +434,6 @@ export default function ElderDashboard() {
     finally { setSubmittingReview(false); }
   }
 
-  const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
-  const trustLabel = (l) => TRUST_LABELS[l] || l;
   // Only ACTIVE connections count as "Connected" — a pending request must not
   // show the Connected badge in Find New Helpers.
   const connectedHelperIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));

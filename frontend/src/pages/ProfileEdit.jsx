@@ -137,8 +137,6 @@ export default function ProfileEdit() {
     onChange: e => setForm(p => ({ ...p, [key]: e.target.value })),
     className: 'field',
   });
-  const toArr = (val) => val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
-
   async function savePhone() {
     try {
       const digits = newPhone.replace(/\s|-/g, '');

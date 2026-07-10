@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const NavLink = ({ href, children }) => (
@@ -15,15 +15,18 @@ const NavLink = ({ href, children }) => (
   </a>
 );
 
-const SocialIcon = ({ href, icon: Icon }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer"
-    style={{ color: 'rgba(255,255,255,0.5)', transition: 'color 0.15s', display: 'flex' }}
-    onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
-  >
-    <Icon size={18} />
-  </a>
-);
+const SocialIcon = (props) => {
+  const Icon = props.icon;
+  return (
+    <a href={props.href} target="_blank" rel="noopener noreferrer"
+      style={{ color: 'rgba(255,255,255,0.5)', transition: 'color 0.15s', display: 'flex' }}
+      onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+    >
+      <Icon size={18} />
+    </a>
+  );
+};
 
 export const MinimalistHero = ({
   logoText,
@@ -58,7 +61,7 @@ export const MinimalistHero = ({
       {/* Header */}
       <header style={{ zIndex: 10, width: '100%', maxWidth: '1100px', margin: '0 auto',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
@@ -66,13 +69,13 @@ export const MinimalistHero = ({
             letterSpacing: '0.05em', fontFamily: "-apple-system, 'SF Pro Display', system-ui, sans-serif" }}
         >
           {logoText}
-        </motion.div>
+        </Motion.div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
           {navLinks.map(link => (
             <NavLink key={link.label} href={link.href}>{link.label}</NavLink>
           ))}
         </div>
-        <motion.a
+        <Motion.a
           href={ctaHref}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -84,12 +87,11 @@ export const MinimalistHero = ({
             textDecoration: 'none', display: 'inline-block',
             transition: 'background 0.15s',
           }}
-          onHoverStart={e => {}}
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
         >
           {ctaLabel}
-        </motion.a>
+        </Motion.a>
       </header>
 
       {/* Main content */}
@@ -100,7 +102,7 @@ export const MinimalistHero = ({
         paddingTop: '40px',
       }}>
         {/* Left text */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
@@ -115,11 +117,11 @@ export const MinimalistHero = ({
           }}>
             {ctaLabel} →
           </a>
-        </motion.div>
+        </Motion.div>
 
         {/* Center: circle + image */}
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', height: '420px' }}>
-          <motion.div
+          <Motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
@@ -130,7 +132,7 @@ export const MinimalistHero = ({
               opacity: 0.85,
             }}
           />
-          <motion.img
+          <Motion.img
             src={imageSrc}
             alt={imageAlt}
             style={{
@@ -150,7 +152,7 @@ export const MinimalistHero = ({
         </div>
 
         {/* Right: large overlay text */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.0 }}
@@ -166,13 +168,13 @@ export const MinimalistHero = ({
             <br />
             <span style={{ color: 'var(--blue-deep)' }}>{overlayText.part2}</span>
           </h1>
-        </motion.div>
+        </Motion.div>
       </div>
 
       {/* Footer */}
       <footer style={{ zIndex: 10, width: '100%', maxWidth: '1100px', margin: '0 auto',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '24px' }}>
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1.2 }}
@@ -181,15 +183,15 @@ export const MinimalistHero = ({
           {socialLinks.map((link, i) => (
             <SocialIcon key={i} href={link.href} icon={link.icon} />
           ))}
-        </motion.div>
-        <motion.div
+        </Motion.div>
+        <Motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1.3 }}
           style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}
         >
           {locationText}
-        </motion.div>
+        </Motion.div>
       </footer>
     </div>
   );

@@ -29,7 +29,7 @@ export function useSeenIds(userId, category) {
       }
       if (!changed) return prev; // no change → no re-render, avoids effect loops
       const arr = [...next].slice(-300); // cap so storage can't grow unbounded
-      try { localStorage.setItem(storageKey, JSON.stringify(arr)); } catch {}
+      try { localStorage.setItem(storageKey, JSON.stringify(arr)); } catch { /* storage full/blocked — seen-state just won't persist */ }
       return new Set(arr);
     });
   }, [storageKey]);

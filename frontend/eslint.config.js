@@ -45,7 +45,15 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // Core ESLint can't see JSX *element* usage (that needs eslint-plugin-react's
+      // jsx-uses-vars), so Capitalized bindings rendered only as <Foo /> would be
+      // flagged. Ignore the ^[A-Z_] convention in all three binding positions —
+      // variables, params ({ icon: Icon }), and array destructuring ([I, label]).
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^[A-Z_]',
+        argsIgnorePattern: '^[A-Z_]',
+        destructuredArrayIgnorePattern: '^[A-Z_]',
+      }],
     },
   },
   {

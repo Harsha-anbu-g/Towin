@@ -54,7 +54,7 @@ function ScoreRing({ score }) {
 }
 
 /* ── A row of filled/empty marks (stars or dots) with an x / max count ────── */
-function Meter({ label, earned, max, shape, hint }) {
+function Meter({ label, earned, max, shape }) {
   const marks = [];
   for (let i = 0; i < max; i++) {
     const on = i < earned;

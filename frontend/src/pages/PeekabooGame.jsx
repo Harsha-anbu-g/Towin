@@ -1,7 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
-import api from '../api/axios';
 
 const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -51,7 +50,6 @@ export default function PeekabooGame() {
   const [locked, setLocked]     = useState(false);
   const [timeLeft, setTimeLeft] = useState(TIME);
   const [phase, setPhase]       = useState('playing');
-  const checkedIn = useRef(false);
 
   // Check-in happens on the Streaks page before entering the game
 

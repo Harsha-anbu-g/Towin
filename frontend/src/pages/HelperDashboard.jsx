@@ -214,7 +214,6 @@ export default function HelperDashboard() {
   const { user } = useAuth();
   const seenConn = useSeenIds(user?.userId, 'connections');
   const seenNeeds = useSeenIds(user?.userId, 'needs');
-  const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState([]);
   const [needs, setNeeds] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
@@ -270,14 +269,14 @@ export default function HelperDashboard() {
         ? await api.get(`/needs/nearby?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`)
         : await api.get('/needs/open');
       setNeeds(res.data);
-    } catch {}
+    } catch { /* transient load error — keep last list */ }
   }
   async function loadMyApplications() {
-    try { const r = await api.get('/needs/applications'); setMyApplications(r.data); } catch {}
+    try { const r = await api.get('/needs/applications'); setMyApplications(r.data); } catch { /* transient load error — keep last list */ }
   }
   async function loadConnections(silent = false) {
     if (!silent) setLoading(true);
-    try { const r = await api.get('/connections'); setConnections(r.data); } catch {}
+    try { const r = await api.get('/connections'); setConnections(r.data); } catch { /* transient load error — keep last list, spinner clears below */ }
     finally { if (!silent) setLoading(false); }
   }
   async function loadElders(loc) {
@@ -326,7 +325,6 @@ export default function HelperDashboard() {
   }
 
   useEffect(() => {
-    api.get('/profile/me').then(r => setProfile(r.data)).catch(() => {});
     loadConnections();
     initLocation();
   }, []);
@@ -403,7 +401,7 @@ export default function HelperDashboard() {
       toast.success('Trust level confirmed!');
       await loadConnections();
     }
-    catch (err) { toast.error('Could not advance trust level. Try again.'); }
+    catch { toast.error('Could not advance trust level. Try again.'); }
     finally { setConfirmingTrust(null); }
   }
 
@@ -421,8 +419,6 @@ export default function HelperDashboard() {
     finally { setSubmittingReview(false); }
   }
 
-  const TRUST_LABELS = { DISCOVERED: 'Just Connected', MESSAGING: 'Messaging', PHONE_CALL: 'Phone Ready', VIDEO_CALL: 'Video Ready', VERIFIED: 'Verified', FIRST_MEET: 'Ready to Meet', TRUSTED: 'Fully Trusted' };
-  const trustLabel = (l) => TRUST_LABELS[l] || l;
   // Only ACTIVE connections count as "Connected" — a pending request must not
   // show the Connected badge in Discover.
   const connectedElderIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
@@ -460,8 +456,6 @@ export default function HelperDashboard() {
     ['browse', 'Offer Help', browseBadge],
     ['requests', 'Add Friends', requestsBadge],
   ];
-
-  const activeConnections = connections.filter(c => c.status === 'ACTIVE');
 
   const RadiusBar = ({ noun = 'people' }) => (
     <div style={{ background: 'var(--canvas)', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
