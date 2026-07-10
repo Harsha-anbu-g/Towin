@@ -126,7 +126,7 @@ export default function NavBar() {
         display: 'flex', alignItems: 'center', gap: '8px',
         fontSize: '16px', fontFamily: SF,
         fontWeight: active ? 600 : 500,
-        color: active ? 'var(--blue)' : 'var(--ink-slate)',
+        color: active ? 'var(--blue-deep)' : 'var(--ink-slate)',
         textDecoration: 'none',
         padding: '10px 16px',
         minHeight: '44px', // elderly-first tap-target floor
@@ -151,7 +151,7 @@ export default function NavBar() {
         borderBottom: '1px solid var(--hairline)',
         fontSize: '17px', fontFamily: SF,
         fontWeight: active ? 700 : 500,
-        color: active ? 'var(--blue)' : 'var(--ink)',
+        color: active ? 'var(--blue-deep)' : 'var(--ink)',
         textDecoration: 'none',
       }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
@@ -344,7 +344,7 @@ export default function NavBar() {
                 position: 'relative', textDecoration: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 minWidth: '44px', minHeight: '44px',
-                color: pathname.startsWith('/messages') ? 'var(--blue)' : 'var(--ink)',
+                color: pathname.startsWith('/messages') ? 'var(--blue-deep)' : 'var(--ink)',
               }}
             >
               <MessageCircle size={24} strokeWidth={2} aria-hidden="true" />

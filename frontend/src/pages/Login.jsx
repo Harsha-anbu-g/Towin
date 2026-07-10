@@ -273,7 +273,7 @@ export default function Login() {
                   onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = 'var(--blue)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--blue-soft)'; }}
                 >
-                  <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
+                  <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)' }}>
                     {guestLoading === role ? 'Opening…' : label}
                   </span>
                   <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>
@@ -456,7 +456,7 @@ export default function Login() {
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: 'transparent', color: 'var(--blue-teal)', textDecoration: 'none',
+              background: 'transparent', color: 'var(--blue-deep)', textDecoration: 'none',
               borderRadius: '9999px', padding: '11px 24px',
               fontSize: 'var(--text-sm)', fontWeight: 500,
               border: '1px solid var(--border)',

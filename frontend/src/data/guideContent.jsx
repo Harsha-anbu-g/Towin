@@ -67,7 +67,7 @@ function MiniCard({ title, children }) {
       background: WASH, border: `1px solid ${BORDER}`, borderRadius: '14px',
       padding: '16px 18px',
     }}>
-      <p style={{ fontFamily: SFD, fontSize: 'var(--text-sm)', fontWeight: 600, color: BLUE, margin: '0 0 5px' }}>
+      <p style={{ fontFamily: SFD, fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)', margin: '0 0 5px' }}>
         {title}
       </p>
       <p style={{ fontFamily: SF, fontSize: '14px', color: 'var(--ink-slate)', lineHeight: 1.55, margin: 0 }}>
