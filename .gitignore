@@ -90,6 +90,7 @@ docs/architecture/frontend-graph.pdf
 .claude/skills/
 .agents/skills/
 .github/skills/
+.github/hooks/
 skills-lock.json
 docs/superpowers/
 /CLAUDE.md

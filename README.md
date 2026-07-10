@@ -113,7 +113,7 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
 | **Real-time** | Spring WebSocket · STOMP · SockJS |
 | **Cloud & Storage** | AWS S3 |
 | **Async & Caching** | Apache Kafka · Redis · Caffeine |
-| **Integrations** | Twilio |
+| **Integrations** | Brevo (email) · Twilio (SMS) |
 | **DevOps & CI/CD** | Docker · Docker Compose · Maven · Vercel · Railway · GitHub |
 | **Testing & Quality** | JUnit 5 · Mockito · SonarQube · Snyk |
 
@@ -248,7 +248,6 @@ ToWin was reviewed against the **OWASP Top 10 (2021)** and scanned with **SonarQ
 ## 📚 More docs
 
 - **[Deployment runbook](docs/DEPLOYMENT.md)** — hosting, env vars, dump/restore, recovery
-- **[Specs & plans](docs/superpowers/)**
 - **[Business pitch](docs/ToWin-Business-Pitch.docx)** · **[Technical doc](docs/ToWin-Technical-Documentation.docx)**
 
 <div align="center">
