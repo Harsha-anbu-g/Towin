@@ -285,12 +285,12 @@ export default function ProfileEdit() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)' }}>
       <NavBar />
 
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 24px 80px' }}>
+      <div className="pe-shell" style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 24px 80px' }}>
 
         {/* Identity */}
         <BlurFade delay={1}>
-          <section style={{ ...card, marginBottom: '20px' }}>
-            <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <section className="pe-card" style={{ ...card, marginBottom: '20px' }}>
+            <div className="pe-idhead" style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
               <Avatar name={form.name} photoUrl={localPhotoPreview || profileData?.photoUrl} size={84} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <h1 style={{ fontSize: 'var(--text-xl)', lineHeight: 1.2, margin: 0, overflowWrap: 'anywhere' }}>
@@ -303,7 +303,7 @@ export default function ProfileEdit() {
                   <input type="file" accept="image/*" id="photo-upload" onChange={handlePhotoSelect}
                     style={{ display: 'none' }} />
                   <label htmlFor="photo-upload" className="ghost-btn"
-                    style={{ fontSize: 'var(--text-sm)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', minHeight: '44px', boxSizing: 'border-box' }}>
+                    style={{ fontSize: 'var(--text-sm)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', minHeight: '44px', boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
                     {photoFile ? photoFile.name.slice(0, 14) + '…' : 'Change photo'}
                   </label>
                   {photoFile && (
@@ -316,7 +316,7 @@ export default function ProfileEdit() {
                 </div>
               </div>
               {profileData && (profileData.trustScore != null || profileData.trustTier) && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <div className="pe-idtrust" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                     <span aria-hidden className="star-lit">★</span>
                     {profileData.trustScore ?? 0} points
@@ -333,7 +333,7 @@ export default function ProfileEdit() {
           {/* LEFT: Personal info form */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <BlurFade delay={2}>
-              <div style={card}>
+              <div className="pe-card" style={card}>
                 {sectionHeader('Personal Information')}
                 <Divider />
                 <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column' }}>
@@ -522,7 +522,7 @@ export default function ProfileEdit() {
 
             {/* Verification card */}
             <BlurFade delay={4}>
-              <div style={card}>
+              <div className="pe-card" style={card}>
                 {sectionHeader('Verification')}
 
                 {/* Phone */}
@@ -586,7 +586,7 @@ export default function ProfileEdit() {
             {/* Emergency Contacts — elders only. Managed inline, right inside Profile. */}
             {isElder && (
               <BlurFade delay={4}>
-                <div style={card}>
+                <div className="pe-card" style={card}>
                   <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 6px' }}>
                     Emergency Contacts
                     <span style={{ fontSize: '16px', color: 'var(--ink-4)', marginLeft: '8px' }}>
@@ -679,7 +679,7 @@ export default function ProfileEdit() {
 
             {/* Reviews received */}
             <BlurFade delay={4}>
-              <div style={card}>
+              <div className="pe-card" style={card}>
                 <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 16px' }}>
                   Reviews Received {reviews.length > 0 && (
                     <span style={{ fontSize: '16px', color: 'var(--ink-4)' }}>({reviews.length})</span>
@@ -717,7 +717,7 @@ export default function ProfileEdit() {
 
             {/* Account */}
             <BlurFade delay={5}>
-              <div style={{
+              <div className="pe-card" style={{
                 background: 'var(--canvas)',
                 borderRadius: '18px',
                 padding: '20px 24px',

@@ -875,6 +875,18 @@ button, a, [role="button"], input, textarea, select, label, summary {
   .profile-edit-grid { grid-template-columns: 1fr; }
 }
 
+/* ─── ProfileEdit — mobile comfort ───
+   The page shell and card padding are inline styles, so these phone overrides
+   use !important (the same pattern as .two-col-grid above) to reclaim the wide
+   gutters. The identity header stacks: avatar + name stay on top, and the trust
+   badge drops to its own row so it never squeezes the name or the photo button. */
+@media (max-width: 640px) {
+  .pe-shell   { padding: 22px 14px 64px !important; }
+  .pe-card    { padding: 20px 18px !important; }
+  .pe-idhead  { align-items: flex-start !important; gap: 16px !important; }
+  .pe-idtrust { flex-basis: 100%; margin-top: 2px; }
+}
+
 /* ─── Auth pages (Login / Register) responsive shell ─── */
 /* The shell is at least one viewport tall but grows with the form. The whole
    page scrolls (in the app's outer scroll container) rather than the right
