@@ -568,6 +568,16 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .ghost-btn:hover, .btn-ghost:hover { border-color: var(--blue); color: var(--blue); background: rgba(37,99,235,0.04); }
 [data-theme="dark"] .ghost-btn:hover, [data-theme="dark"] .btn-ghost:hover { background: rgba(79,163,206,0.10); }
 
+/* Lit rating stars (US-004): trust-gold in light (3.99:1 — meets the 3:1 graphics
+   bar on white); stays bright star-gold in dark, where #f5b400 passes. */
+.star-lit { color: var(--trust-gold); }
+[data-theme="dark"] .star-lit { color: var(--star-gold); }
+
+/* Active nav Trust chip text (US-004): white on light's deep gold, near-black on
+   dark's pale gold — theme must come from CSS, not JS, so both stay in sync. */
+.trust-chip-active { color: #fff; }
+[data-theme="dark"] .trust-chip-active { color: #1d1d1f; }
+
 /* Primary button (non-shimmer) */
 .primary-btn {
   background: var(--blue);

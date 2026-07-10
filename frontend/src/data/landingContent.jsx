@@ -30,6 +30,7 @@ const SKY   = 'var(--blue)';
 const WASH  = 'var(--blue-wash)';         // sky wash — trust chips only
 const SKYLINE = 'var(--blue-soft)';       // sky hairline — trust chips only
 const GOLD  = 'var(--trust-gold)';
+const GOLD_TEXT = 'var(--gold-deep)';     // small (sub-19px-bold) gold text — AA on washes
 
 // ── Presentational helpers ───────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ function MiniCard({ title, badge, stars, compact, icon: Icon, children }) {
         </p>
         {badge && (
           <span style={{
-            fontFamily: SANS, fontSize: 'var(--text-xs)', fontWeight: 700, color: GOLD,
+            fontFamily: SANS, fontSize: 'var(--text-xs)', fontWeight: 700, color: GOLD_TEXT,
             background: WASH, border: `1px solid ${SKYLINE}`, borderRadius: '9999px',
             padding: '2px 10px', whiteSpace: 'nowrap', flexShrink: 0,
           }}>{badge}</span>
@@ -293,7 +294,7 @@ function StageLadder({ stages }) {
                 fontFamily: SANS, fontSize: 'var(--text-xs)', fontWeight: 700, color: SLATE,
                 background: WASH, border: `1px solid ${SKYLINE}`, borderRadius: '9999px',
                 padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
-              }}><span style={{ color: GOLD }}>+1</span> trust score</span>
+              }}><span style={{ color: GOLD_TEXT }}>+1</span> trust score</span>
             </div>
           </div>
         );

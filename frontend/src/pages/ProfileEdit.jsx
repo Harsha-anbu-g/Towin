@@ -31,7 +31,7 @@ function computeAge(dobStr) {
 
 function Stars({ rating }) {
   return (
-    <span style={{ color: STAR_GOLD, letterSpacing: '-2px', fontSize: '16px' }}>
+    <span className="star-lit" style={{ letterSpacing: '-2px', fontSize: '16px' }}>
       {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
     </span>
   );
@@ -318,7 +318,7 @@ export default function ProfileEdit() {
               {profileData && (profileData.trustScore != null || profileData.trustTier) && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                    <span aria-hidden style={{ color: STAR_GOLD }}>★</span>
+                    <span aria-hidden className="star-lit">★</span>
                     {profileData.trustScore ?? 0} points
                   </span>
                   <TrustBadge tier={profileData.trustTier} />

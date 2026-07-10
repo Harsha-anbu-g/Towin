@@ -210,12 +210,14 @@ export default function NavBar() {
               )}
             </div>
             <div style={{ width: '1px', height: '22px', background: 'var(--border)', margin: '0 8px' }} />
-            <Link to="/trust" style={{
+            <Link to="/trust" className={trustActive ? 'trust-chip-active' : undefined} style={{
               display: 'flex', alignItems: 'center', gap: '7px',
               fontSize: '16px', fontFamily: SF, fontWeight: 600,
-              color: trustActive ? '#fff' : 'var(--trust-gold)',
-              background: trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.1)',
-              border: `1.5px solid ${trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.35)'}`,
+              /* US-004: gold-deep chip — AA text in both states/themes;
+                 active text color lives in .trust-chip-active (CSS themes it) */
+              color: trustActive ? undefined : 'var(--gold-deep)',
+              background: trustActive ? 'var(--gold-deep)' : 'var(--gold-wash)',
+              border: `1.5px solid ${trustActive ? 'var(--gold-deep)' : 'var(--gold-line)'}`,
               borderRadius: '9999px', padding: '6px 16px',
               minHeight: '44px', // elderly-first tap-target floor
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
