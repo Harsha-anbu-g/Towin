@@ -532,11 +532,11 @@ export default function ElderDashboard() {
           </div>
           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
             <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
-              style={{ flex: 1, height: '36px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+              style={{ flex: 1, height: '44px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
               {respondingConn === conn.id ? 'Accepting…' : 'Accept'}
             </button>
             <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
-              style={{ flex: 1, height: '36px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+              style={{ flex: 1, height: '44px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
               Decline
             </button>
           </div>
@@ -726,29 +726,29 @@ export default function ElderDashboard() {
                         endingConn === conn.id ? (
                           <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this helper'}?</span>
-                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '36px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
-                            <button onClick={() => setEndingConn(null)} style={{ height: '36px', padding: '0 16px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
+                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '44px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
+                            <button onClick={() => setEndingConn(null)} style={{ height: '44px', padding: '0 16px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
                           </div>
                         ) : (
                           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '36px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+                            <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '44px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                               Message
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '36px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
-                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '36px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                              <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="#F4C95E" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>
                             )}
                             {reviewedConns.has(conn.id) && (
-                              <span style={{ height: '36px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--green-deep)', fontWeight: 600 }}>
+                              <span style={{ height: '44px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--green-deep)', fontWeight: 600 }}>
                                 <svg width="13" height="10" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="var(--green-deep)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                 Reviewed
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '36px', padding: '0 14px', background: 'none', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '44px', padding: '0 14px', background: 'none', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
                           </div>
                         )
                       )}
@@ -949,7 +949,7 @@ export default function ElderDashboard() {
                               </button>
                             )}
                             <button onClick={() => navigate(`/user/${helper.userId}`)}
-                              style={{ height: '36px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
+                              style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
                               View Profile
                             </button>
                           </div>

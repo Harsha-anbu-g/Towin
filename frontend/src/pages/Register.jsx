@@ -124,7 +124,7 @@ function LegalModal({ title, sections, onClose }) {
           <button
             onClick={onClose}
             style={{
-              height: '40px', padding: '0 22px',
+              height: '44px', padding: '0 22px',
               background: 'var(--action-fill)', color: 'var(--action-ink)',
               border: 'none', borderRadius: '9999px',
               fontSize: '14px', fontWeight: 600, cursor: 'pointer',
@@ -182,6 +182,7 @@ function HeroPanel() {
         position: 'absolute', top: '32px', left: '48px', zIndex: 2,
         display: 'flex', alignItems: 'center', gap: '10px',
         textDecoration: 'none',
+        minHeight: '44px', // elderly-first tap-target floor
       }}>
         <span style={{
           width: 42, height: 42, borderRadius: '12px', background: '#ffffff',
@@ -465,12 +466,12 @@ export default function Register() {
             {/* Log in / Create account switcher */}
             <div style={{ display: 'flex', gap: '6px', background: 'var(--surface-2)', borderRadius: '9999px', padding: '5px', marginBottom: '24px' }}>
               <button type="button" onClick={() => navigate('/login')} style={{
-                flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+                flex: 1, height: '44px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 background: 'transparent', color: 'var(--ink-3)',
               }}>Log in</button>
               <button type="button" style={{
-                flex: 1, height: '40px', border: 'none', borderRadius: '9999px',
+                flex: 1, height: '44px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
                 background: 'var(--seg-active)', color: 'var(--blue-deep)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}>Create account</button>

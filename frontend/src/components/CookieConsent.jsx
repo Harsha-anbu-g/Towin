@@ -65,6 +65,7 @@ export default function CookieConsent() {
           border: 'none',
           borderRadius: 8,
           padding: '8px 18px',
+          minHeight: '44px', // elderly-first tap-target floor
           fontSize: 'var(--text-sm)',
           fontWeight: 600,
           cursor: 'pointer',

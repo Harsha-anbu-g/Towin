@@ -129,6 +129,7 @@ export default function NavBar() {
         color: active ? 'var(--blue)' : 'var(--ink-slate)',
         textDecoration: 'none',
         padding: '10px 16px',
+        minHeight: '44px', // elderly-first tap-target floor
         borderRadius: '10px',
         background: active ? 'rgba(79,163,206,0.08)' : 'transparent',
         transition: 'color 0.12s, background 0.12s',
@@ -183,6 +184,7 @@ export default function NavBar() {
           letterSpacing: '-0.374px', color: 'var(--green-deep)',
           textDecoration: 'none', flexShrink: 0,
           display: 'inline-flex', alignItems: 'center', gap: '8px',
+          minHeight: '44px', // elderly-first tap-target floor
           marginRight: isMobile ? 0 : '32px',
         }}>
           <img src="/logo.png" alt="ToWin logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
@@ -213,6 +215,7 @@ export default function NavBar() {
               background: trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.1)',
               border: `1.5px solid ${trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.35)'}`,
               borderRadius: '9999px', padding: '6px 16px',
+              minHeight: '44px', // elderly-first tap-target floor
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
             }}>
               <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
@@ -236,7 +239,7 @@ export default function NavBar() {
                   : 'Send SOS alert to your emergency contacts'}
                 style={{
                 fontSize: '16px', fontWeight: 700, fontFamily: SF,
-                padding: '10px 22px', borderRadius: '9999px', border: 'none',
+                padding: '10px 22px', minHeight: '44px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? 'var(--blue)' : sending ? '#7a2a2a' : '#9b3535',
                 color: '#fff', opacity: sending ? 0.7 : 1,
@@ -249,7 +252,7 @@ export default function NavBar() {
               <button onClick={() => setAccountOpen(o => !o)}
                 aria-label="Account menu" aria-haspopup="true" aria-expanded={accountOpen}
                 style={{
-                  width: '40px', height: '40px', borderRadius: '50%', border: 'none',
+                  width: '44px', height: '44px', borderRadius: '50%', border: 'none',
                   cursor: 'pointer', background: 'var(--action-fill)', color: 'var(--action-ink)',
                   fontSize: '16px', fontWeight: 600, fontFamily: SF,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

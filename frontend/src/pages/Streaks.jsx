@@ -386,7 +386,8 @@ export default function Streaks() {
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       fontSize: '16px', color: 'var(--ink-3)', fontFamily: SFT,
-                      textDecoration: 'underline', padding: '8px',
+                      textDecoration: 'underline', padding: '10px 8px',
+                      minHeight: '44px', // elderly-first tap-target floor
                     }}
                   >
                     Skip for now, go to dashboard
