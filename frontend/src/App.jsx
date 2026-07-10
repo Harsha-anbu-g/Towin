@@ -35,6 +35,25 @@ import FinishSetup from './pages/FinishSetup';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 
+// First tab stop on every page (WCAG 2.4.1). The NavBar renders inside each
+// page, so a fixed anchor can't work; instead focus jumps to the page's first
+// landmark/heading — past the banner, nav and floating helpers.
+function SkipLink() {
+  const handleSkip = (e) => {
+    e.preventDefault();
+    const target = document.querySelector('main, [role="main"], h1, h2');
+    if (!target) return;
+    target.setAttribute('tabindex', '-1');
+    target.focus();
+    target.scrollIntoView({ block: 'start' });
+  };
+  return (
+    <a href="#main" className="skip-link" onClick={handleSkip}>
+      Skip to main content
+    </a>
+  );
+}
+
 function BfCacheGuard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -130,6 +149,7 @@ function App() {
               100svh page sits *below* the banner and its bottom is pushed
               off-screen by the banner's height. */}
           <div style={{ display: 'flex', flexDirection: 'column', height: '100svh' }}>
+          <SkipLink />
           <BetaBanner />
           <BfCacheGuard />
           <ScrollShell>

@@ -270,7 +270,7 @@ export default function ProfileEdit() {
   }
 
   const verBadge = (ok, pts) => ok
-    ? <span style={{ fontSize: '12px', background: 'rgba(34,160,80,0.10)', color: 'var(--green-verified)', border: '1px solid rgba(34,160,80,0.25)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
+    ? <span style={{ fontSize: '13px', background: 'rgba(34,160,80,0.10)', color: 'var(--green-verified)', border: '1px solid rgba(34,160,80,0.25)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Verified · +{pts} pts</span>
     : null;
 
   const card = {
@@ -597,7 +597,7 @@ export default function ProfileEdit() {
                     </div>
                     {profileData?.phoneVerified
                       ? verBadge(true, 10)
-                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid var(--border)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not verified</span>
+                      : <span style={{ fontSize: '13px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid var(--border)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not verified</span>
                     }
                   </div>
 
@@ -631,8 +631,8 @@ export default function ProfileEdit() {
                     {profileData?.verificationStatus === 'VERIFIED'
                       ? verBadge(true, 20)
                       : profileData?.verificationStatus === 'PENDING'
-                      ? <span style={{ fontSize: '12px', background: SKY_TINT, color: SKY, border: `1px solid ${SKY_BORDER}`, padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Under review</span>
-                      : <span style={{ fontSize: '12px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid var(--border)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not submitted</span>
+                      ? <span style={{ fontSize: '13px', background: SKY_TINT, color: SKY, border: `1px solid ${SKY_BORDER}`, padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Under review</span>
+                      : <span style={{ fontSize: '13px', background: 'rgba(160,160,165,0.1)', color: 'var(--ink-4)', border: '1px solid var(--border)', padding: '2px 10px', borderRadius: '9999px', fontWeight: 600 }}>Not submitted</span>
                     }
                   </div>
                   {(profileData?.verificationStatus === 'NONE' || !profileData?.verificationStatus) && (
@@ -776,7 +776,7 @@ export default function ProfileEdit() {
                       {r.tags?.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {r.tags.map(t => (
-                            <span key={t} style={{ fontSize: '12px', background: 'rgba(0,102,204,0.08)', color: 'var(--blue-deep)', border: '1px solid rgba(0,102,204,0.15)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
+                            <span key={t} style={{ fontSize: '13px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--sky-line)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>{t}</span>
                           ))}
                         </div>
                       )}
@@ -803,7 +803,7 @@ export default function ProfileEdit() {
                 {/* Username */}
                 {profileData?.username && (
                   <div style={{ marginBottom: '10px', padding: '10px 14px', background: 'var(--surface)', borderRadius: '10px' }}>
-                    <p style={{ fontSize: '12px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 2px' }}>Username</p>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 2px' }}>Username</p>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0 }}>@{profileData.username}</p>
                   </div>
                 )}
@@ -818,7 +818,7 @@ export default function ProfileEdit() {
                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                     </svg>
                     <div>
-                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 1px' }}>Linked Google Account</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blue-deep)', textTransform: 'uppercase', letterSpacing: '0.4px', margin: '0 0 1px' }}>Linked Google Account</p>
                       <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0 }}>{profileData.email}</p>
                     </div>
                   </div>

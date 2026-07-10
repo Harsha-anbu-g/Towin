@@ -349,7 +349,7 @@ export default function Messages() {
                       <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: 'var(--ink-slate)', fontFamily: SF }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '13px', fontWeight: 700, color: 'var(--ink-slate)', fontFamily: SF }}>
                       {initials(otherName)}
                     </div>
                   )
@@ -363,7 +363,7 @@ export default function Messages() {
                 }}>
                   <p style={{ fontSize: '16px', lineHeight: 1.45, fontFamily: SFText }}>{m.content}</p>
                   <p style={{
-                    fontSize: '12px',
+                    fontSize: '13px',
                     marginTop: '4px',
                     color: isMe ? 'rgba(255,255,255,0.6)' : 'var(--ink-4)',
                   }}>
@@ -425,7 +425,7 @@ export default function Messages() {
               resize: 'none',
             }}
           />
-          <span className="chat-kbd-hint" style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '4px', paddingLeft: '4px' }}>
+          <span className="chat-kbd-hint" style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', paddingLeft: '4px' }}>
             Enter to send · Shift+Enter for new line
           </span>
         </div>

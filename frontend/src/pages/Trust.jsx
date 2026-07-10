@@ -98,7 +98,7 @@ function MiniAvatar({ name, photoUrl }) {
     <div style={{
       ...ring, background: 'var(--blue-tint)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: SFD, fontSize: '12px', fontWeight: 700, color: 'var(--blue-deep)',
+      fontFamily: SFD, fontSize: '13px', fontWeight: 700, color: 'var(--blue-deep)',
     }}>{initial}</div>
   );
 }
@@ -125,7 +125,7 @@ function HelperStack({ people }) {
             width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #fff',
             background: 'var(--grey-fill-4)', marginLeft: '-8px', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: SF, fontSize: '11px', fontWeight: 600, color: GREY,
+            fontFamily: SF, fontSize: '13px', fontWeight: 600, color: GREY,
           }}>+{extra}</div>
         )}
       </div>
@@ -207,7 +207,7 @@ function ProfileGroup({ group }) {
                 {it.label}
               </span>
               {!it.completed && it.tip && (
-                <p style={{ fontFamily: SF, fontSize: '12px', color: FAINT, margin: '1px 0 0', lineHeight: 1.4 }}>
+                <p style={{ fontFamily: SF, fontSize: '13px', color: FAINT, margin: '1px 0 0', lineHeight: 1.4 }}>
                   {it.tip}
                 </p>
               )}
@@ -293,7 +293,7 @@ function CustomerCard({ c }) {
           <div style={{ fontFamily: SFD, fontSize: 'var(--text-base)', fontWeight: 700, color: INK, lineHeight: 1 }}>
             {c.total}<span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', color: FAINT, fontWeight: 400 }}> / {c.totalMax}</span>
           </div>
-          <div style={{ fontFamily: SF, fontSize: '12px', color: FAINT, marginTop: '2px' }}>points</div>
+          <div style={{ fontFamily: SF, fontSize: '13px', color: FAINT, marginTop: '2px' }}>points</div>
         </div>
       </div>
 

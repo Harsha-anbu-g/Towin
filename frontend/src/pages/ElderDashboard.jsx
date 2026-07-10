@@ -569,7 +569,7 @@ export default function ElderDashboard() {
           </p>
         </div>
         <span style={{
-          fontSize: '12px', fontWeight: 600, color: 'var(--ink-slate)',
+          fontSize: '13px', fontWeight: 600, color: 'var(--ink-slate)',
           background: 'var(--surface-2)', border: '1px solid var(--border)',
           padding: '6px 14px', borderRadius: '9999px', flexShrink: 0,
         }}>Requested</span>
@@ -603,7 +603,7 @@ export default function ElderDashboard() {
 
       {/* ── Sticky tab bar — always visible when scrolling ── */}
       <div style={{
-        position: 'sticky', top: '60px', zIndex: 50,
+        position: 'sticky', top: '60px', zIndex: 'var(--z-sticky)',
         background: 'var(--canvas)',
         borderBottom: '1px solid var(--border)',
       }}>
@@ -738,7 +738,7 @@ export default function ElderDashboard() {
                             <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
                               <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="#F4C95E" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg width="13" height="13" viewBox="0 0 24 24" style={{ fill: 'var(--star-gold)' }} stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                 Review
                               </button>
                             )}
@@ -1019,7 +1019,7 @@ export default function ElderDashboard() {
                         )}
                       </div>
                     </div>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: ns.color, background: ns.bg, padding: '5px 11px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 }}>{ns.label}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: ns.color, background: ns.bg, padding: '5px 11px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 }}>{ns.label}</span>
                   </div>
 
                   {need.status === 'OPEN' && need.applications?.length > 0 && (

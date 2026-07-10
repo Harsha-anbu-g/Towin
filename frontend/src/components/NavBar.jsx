@@ -175,7 +175,7 @@ export default function NavBar() {
         padding: '0 20px',
         position: 'sticky',
         top: 0,
-        zIndex: 100,
+        zIndex: 'var(--z-nav)',
         borderBottom: '1px solid var(--border)',
       }}>
         {/* Brand */}
@@ -199,10 +199,12 @@ export default function NavBar() {
               <NavLink to="/messages" label="Messages" icon={MessageCircle} />
               {unread > 0 && (
                 <span style={{
-                  position: 'absolute', top: '6px', right: '6px',
+                  /* hangs off the pill's corner — at the 13px floor the badge
+                     covered the end of the "Messages" label when inset */
+                  position: 'absolute', top: '-2px', right: '-4px',
                   background: 'var(--red-deep)', color: '#fff',
-                  fontSize: '10px', fontWeight: 700, fontFamily: SF,
-                  borderRadius: '9999px', padding: '1px 5px',
+                  fontSize: '13px', fontWeight: 700, fontFamily: SF,
+                  borderRadius: '9999px', padding: '1px 6px',
                   minWidth: '16px', textAlign: 'center', pointerEvents: 'none',
                 }}>{unread > 99 ? '99+' : unread}</span>
               )}
@@ -267,7 +269,7 @@ export default function NavBar() {
                   position: 'absolute', top: '52px', right: 0,
                   background: 'var(--canvas)', borderRadius: '14px',
                   border: '1px solid var(--border)', boxShadow: 'var(--shadow-menu)',
-                  padding: '8px', minWidth: '210px', zIndex: 110,
+                  padding: '8px', minWidth: '210px', zIndex: 'var(--z-menu)',
                 }}>
                   <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid var(--hairline)', marginBottom: '6px' }}>
                     <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: 0, fontFamily: SF }}>
@@ -349,7 +351,7 @@ export default function NavBar() {
               {unread > 0 && (
                 <span style={{
                   position: 'absolute', top: '6px', right: '4px',
-                  background: 'var(--red-deep)', color: '#fff', fontSize: '10px',
+                  background: 'var(--red-deep)', color: '#fff', fontSize: '13px',
                   fontWeight: 700, fontFamily: SF, borderRadius: '9999px',
                   padding: '1px 5px', minWidth: '16px', textAlign: 'center',
                   lineHeight: 1.5, pointerEvents: 'none',
@@ -396,12 +398,12 @@ export default function NavBar() {
           {/* Backdrop */}
           <div onClick={() => setMenuOpen(false)} style={{
             position: 'fixed', inset: 0, background: 'var(--scrim)',
-            zIndex: 98, top: drawerTop,
+            zIndex: 'var(--z-scrim)', top: drawerTop,
           }} />
           {/* Drawer */}
           <div style={{
             position: 'fixed', top: drawerTop, left: 0, right: 0,
-            background: 'var(--canvas)', zIndex: 99,
+            background: 'var(--canvas)', zIndex: 'var(--z-drawer)',
             padding: '0 24px 24px',
             borderBottom: '1px solid var(--border)',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',

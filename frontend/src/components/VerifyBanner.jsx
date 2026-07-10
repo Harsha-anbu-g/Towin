@@ -39,7 +39,7 @@ export default function VerifyBanner() {
       fontSize: 'var(--text-sm)',
       fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
       boxSizing: 'border-box',
-      zIndex: 1000,
+      zIndex: 'var(--z-banner)',
     }}>
       <span>Please verify your email to unlock posting, messaging, and connections.</span>
       <button

@@ -60,14 +60,14 @@ const actionBtn = (color, bg) => ({
 
 const redBtn = actionBtn('var(--red)', 'rgba(204,0,0,0.08)');
 const greenBtn = actionBtn('var(--blue-teal)', 'rgba(79,163,206,0.10)');
-const yellowBtn = actionBtn('#b45309', 'rgba(245,158,11,0.1)');
+const yellowBtn = actionBtn('var(--amber)', 'var(--amber-wash)');
 const grayBtn = actionBtn('var(--ink-3)', 'rgba(160,160,165,0.1)');
 
 const roleBadge = (role) => {
-  const colors = { ADMIN: ['var(--leaf)', 'rgba(61,139,90,0.12)'], ELDER: ['var(--blue)', 'rgba(0,102,204,0.1)'], HELPER: ['var(--blue-teal)', 'rgba(79,163,206,0.10)'], BOTH: ['#f59e0b', 'rgba(245,158,11,0.1)'] };
+  const colors = { ADMIN: ['var(--leaf)', 'rgba(61,139,90,0.12)'], ELDER: ['var(--blue-deep)', 'var(--blue-tint)'], HELPER: ['var(--blue-teal)', 'var(--blue-wash)'], BOTH: ['var(--amber-deep)', 'var(--amber-wash)'] };
   const [c, bg] = colors[role] || ['var(--ink-3)', 'rgba(160,160,165,0.1)'];
   return (
-    <span style={{ fontSize: '12px', fontWeight: 600, color: c, background: bg, padding: '3px 8px', borderRadius: '9999px' }}>
+    <span style={{ fontSize: '13px', fontWeight: 600, color: c, background: bg, padding: '3px 8px', borderRadius: '9999px' }}>
       {role}
     </span>
   );
@@ -75,7 +75,7 @@ const roleBadge = (role) => {
 
 const statusBadge = (active) => (
   <span style={{
-    fontSize: '12px',
+    fontSize: '13px',
     fontWeight: 600,
     color: active ? 'var(--blue-teal)' : 'var(--red)',
     background: active ? 'rgba(79,163,206,0.10)' : 'rgba(204,0,0,0.1)',
@@ -89,14 +89,14 @@ const statusBadge = (active) => (
 const trustColor = (score) => {
   if (score >= 80) return 'var(--blue-teal)';
   if (score >= 50) return 'var(--blue)';
-  if (score >= 30) return '#f59e0b';
+  if (score >= 30) return 'var(--amber)';
   return 'var(--red)';
 };
 
 const thStyle = {
   padding: '12px 16px',
   textAlign: 'left',
-  fontSize: '12px',
+  fontSize: '13px',
   fontWeight: 600,
   color: 'var(--ink-4)',
   textTransform: 'uppercase',
@@ -235,7 +235,7 @@ function FeedbackTab() {
                 <div style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue-deep)', fontFamily: SF, fontVariantNumeric: 'tabular-nums' }}>
                   {a ?? '—'}
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontFamily: SFText }}>{label}</div>
+                <div style={{ fontSize: '13px', color: 'var(--ink-3)', fontFamily: SFText }}>{label}</div>
               </div>
             );
           })}
@@ -263,7 +263,7 @@ function FeedbackTab() {
               <td style={tdStyle}>{r.phone ?? '—'}</td>
               {RATING_LABELS.map(({ key }) => (
                 <td key={key} style={{ ...tdStyle, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
-                  {r[key] != null ? <>{r[key]} <span style={{ color: '#f59e0b' }}>★</span></> : '—'}
+                  {r[key] != null ? <>{r[key]} <span style={{ color: 'var(--star-gold)' }}>★</span></> : '—'}
                 </td>
               ))}
               <td style={{ ...tdStyle, maxWidth: '240px' }}>{r.message}</td>
@@ -414,7 +414,7 @@ export default function Admin() {
       return (
         <span style={{
           minWidth: '20px', padding: '1px 7px', borderRadius: '9999px', textAlign: 'center',
-          fontSize: '12px', fontWeight: 700, color: '#ffffff', background: 'var(--red)',
+          fontSize: '13px', fontWeight: 700, color: '#ffffff', background: 'var(--red)',
         }}>
           {reports.length}
         </span>
@@ -424,7 +424,7 @@ export default function Admin() {
       return (
         <span style={{
           minWidth: '20px', padding: '1px 7px', borderRadius: '9999px', textAlign: 'center',
-          fontSize: '12px', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)',
+          fontSize: '13px', fontWeight: 700, color: 'var(--blue-deep)', background: 'var(--blue-tint)',
         }}>
           {verifications.length}
         </span>
@@ -442,7 +442,7 @@ export default function Admin() {
       <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain' }} />
       ToWin
       <span style={{
-        fontSize: '11px', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
+        fontSize: '13px', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
         color: 'var(--blue-deep)', background: 'var(--blue-tint)', borderRadius: '9999px', padding: '3px 9px',
         fontFamily: SFText,
       }}>
@@ -517,7 +517,7 @@ export default function Admin() {
         {item.label}
         {item.id === 'Reports' && reports.length > 0 && (
           <span style={{
-            fontSize: '12px', fontWeight: 700, color: '#ffffff', background: 'var(--red)',
+            fontSize: '13px', fontWeight: 700, color: '#ffffff', background: 'var(--red)',
             borderRadius: '9999px', padding: '1px 7px',
           }}>
             {reports.length}
@@ -540,7 +540,7 @@ export default function Admin() {
 
       {/* ——— Navigation: sidebar on desktop, top bar + pills on small screens ——— */}
       {narrow ? (
-        <header style={{ background: 'var(--canvas)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50 }}>
+        <header style={{ background: 'var(--canvas)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 'var(--z-sticky)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '12px 16px' }}>
             {brand}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -713,7 +713,7 @@ export default function Admin() {
                             <span
                               title="Click to copy username"
                               onClick={() => navigator.clipboard?.writeText(u.username)}
-                              style={{ fontSize: '12px', color: 'var(--ink-4)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+                              style={{ fontSize: '13px', color: 'var(--ink-4)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>
                               @{u.username}
                             </span>
                           )}
@@ -907,7 +907,7 @@ export default function Admin() {
                   <tr key={r.id} style={r.safetyConcern ? { background: 'rgba(204,0,0,0.03)' } : undefined}>
                     <td style={tdStyle}>{r.reviewerEmail}</td>
                     <td style={tdStyle}>{r.revieweeEmail}</td>
-                    <td style={tdStyle}><span style={{ color: '#f59e0b' }}>{'★'.repeat(r.rating)}</span></td>
+                    <td style={tdStyle}><span style={{ color: 'var(--star-gold)' }}>{'★'.repeat(r.rating)}</span></td>
                     <td style={tdStyle}>{r.tags?.join(', ')}</td>
                     <td style={tdStyle}>
                       {r.safetyConcern

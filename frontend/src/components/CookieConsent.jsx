@@ -47,7 +47,7 @@ export default function CookieConsent() {
         alignItems: 'center',
         gap: 12,
         boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
-        zIndex: 1000,
+        zIndex: 'var(--z-banner)',
         fontSize: 'var(--text-sm)',
         lineHeight: 1.5,
       }}

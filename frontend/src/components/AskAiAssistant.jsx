@@ -218,7 +218,7 @@ export default function AskAiAssistant() {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className={pathname === '/login' || pathname === '/register' ? 'ask-ai-panel ask-ai-panel--left' : 'ask-ai-panel'}
             style={{
-              position: 'fixed', zIndex: 1001,
+              position: 'fixed', zIndex: 'var(--z-panel)',
               display: 'flex', flexDirection: 'column',
               background: 'var(--canvas)', borderRadius: '20px',
               border: '1px solid var(--blue-soft)',

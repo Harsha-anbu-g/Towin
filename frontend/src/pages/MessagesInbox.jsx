@@ -229,7 +229,10 @@ export default function MessagesInbox() {
                       <Avatar name={c.otherUserName} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          {/* flexWrap: on narrow screens the trust pill drops under the
+                              name instead of squeezing it — keeps the pill at the 13px
+                              floor without truncating names. */}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px 8px', minWidth: 0, flexWrap: 'wrap' }}>
                             <span style={{
                               fontSize: '16px', fontWeight: c.unreadCount > 0 ? 700 : 600,
                               color: 'var(--ink)', fontFamily: SF,
@@ -239,7 +242,7 @@ export default function MessagesInbox() {
                             </span>
                             {trustLabel && (
                               <span className="inbox-trust-pill" style={{
-                                fontSize: '12px', fontWeight: 600, fontFamily: SFText,
+                                fontSize: '13px', fontWeight: 600, fontFamily: SFText,
                                 color: 'var(--blue-deep)', background: 'var(--surface)',
                                 border: '1px solid var(--border)', borderRadius: '9999px',
                                 padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
@@ -265,7 +268,7 @@ export default function MessagesInbox() {
                           {c.unreadCount > 0 && (
                             <span style={{
                               background: 'var(--action-fill)', color: 'var(--action-ink)',
-                              fontSize: '12px', fontWeight: 600, fontFamily: SFText,
+                              fontSize: '13px', fontWeight: 600, fontFamily: SFText,
                               borderRadius: '9999px', padding: '2px 7px',
                               flexShrink: 0, minWidth: '20px', textAlign: 'center',
                             }}>

@@ -54,7 +54,7 @@ export default function ConfirmDialog({
       onClick={() => { if (!loading) onCancel?.(); }}
       role="presentation"
       style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
+        position: 'fixed', inset: 0, zIndex: 'var(--z-modal)',
         background: 'rgba(20,55,80,0.45)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '24px',

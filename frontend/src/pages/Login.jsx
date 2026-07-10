@@ -224,7 +224,7 @@ export default function Login() {
             <span style={{
               position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
               background: 'var(--action-fill)', color: 'var(--action-ink)',
-              fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px',
+              fontSize: '13px', fontWeight: 700, letterSpacing: '0.8px',
               padding: '3px 12px', borderRadius: '9999px',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               textTransform: 'uppercase',
@@ -276,7 +276,7 @@ export default function Login() {
                   <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
                     {guestLoading === role ? 'Opening…' : label}
                   </span>
-                  <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-3)', marginTop: '2px' }}>
+                  <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>
                     {sub}
                   </span>
                 </button>

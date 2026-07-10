@@ -58,13 +58,16 @@ function Chapter({ n, label, align = 'left' }) {
 
 function Title({ children, align = 'left' }) {
   return (
-    <h1 className="landing-title" style={{
+    // h2, not h1 — the tagline on slide 1 is the page's single h1; every
+    // other slide title is a section heading. Sizing is inline, so the
+    // rendered look is unchanged.
+    <h2 className="landing-title" style={{
       fontFamily: SERIF, fontSize: '46px', fontWeight: 400, color: INK,
       letterSpacing: '-0.02em', lineHeight: 1.1, textAlign: align,
       margin: '0 0 16px', maxWidth: '20ch',
       marginLeft: align === 'center' ? 'auto' : 0,
       marginRight: align === 'center' ? 'auto' : 0,
-    }}>{children}</h1>
+    }}>{children}</h2>
   );
 }
 

@@ -28,7 +28,7 @@ export default function BetaBanner() {
       fontSize: 'var(--text-sm)',
       fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
       position: 'relative',
-      zIndex: 1000,
+      zIndex: 'var(--z-banner)',
       boxSizing: 'border-box',
     }}>
       <span>
