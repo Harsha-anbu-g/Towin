@@ -682,9 +682,9 @@ export default function HelperDashboard() {
           {/* My Elders tab (landing) */}
           {tab === 'connections' && (
             <div role="tabpanel" aria-labelledby="dash-tab-connections" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 My Elders
-              </h2>
+              </h1>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
@@ -822,9 +822,9 @@ export default function HelperDashboard() {
           {/* Add Friends tab — invites you got, requests you sent, and finding new elders */}
           {tab === 'requests' && (
             <div role="tabpanel" aria-labelledby="dash-tab-requests" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 Add Friends
-              </h2>
+              </h1>
               <SegmentedTabs segments={friendsSegments} value={friendsSeg} onChange={setFriendsSeg} label="Add Friends sections" />
 
               {/* New Invites — friend requests waiting for you to answer */}
@@ -863,9 +863,9 @@ export default function HelperDashboard() {
           {tab === 'browse' && (
             <div role="tabpanel" aria-labelledby="dash-tab-browse" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px' }}>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px' }}>
                   Offer Help
-                </h2>
+                </h1>
                 <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
                   Elders nearby who could use a hand. Offer to help with one tap.
                 </p>

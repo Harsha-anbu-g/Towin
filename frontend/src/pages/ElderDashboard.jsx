@@ -663,9 +663,9 @@ export default function ElderDashboard() {
           {/* My Helpers tab (landing) */}
           {tab === 'connections' && (
             <div role="tabpanel" aria-labelledby="dash-tab-connections" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 My Helpers
-              </h2>
+              </h1>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[1,2].map(i => (
@@ -807,9 +807,9 @@ export default function ElderDashboard() {
           {/* Add Friends tab */}
           {tab === 'friends' && (
             <div role="tabpanel" aria-labelledby="dash-tab-friends" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
                 Add Friends
-              </h2>
+              </h1>
               <SegmentedTabs segments={friendsSegments} value={activeFriendsSeg} onChange={setFriendsSeg} label="Add Friends sections" />
 
               {/* New Invites */}
@@ -966,9 +966,9 @@ export default function ElderDashboard() {
           {tab === 'needs' && (
             <div role="tabpanel" aria-labelledby="dash-tab-needs" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>
                   Posted Help
-                </h2>
+                </h1>
               </div>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1140,9 +1140,9 @@ export default function ElderDashboard() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 Back
               </button>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.02em', margin: '0 0 6px' }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.02em', margin: '0 0 6px' }}>
                 Ask for Help
-              </h2>
+              </h1>
               <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: '0 0 24px' }}>
                 Tell us what you need. Helpers near you will offer to assist — it only takes a minute.
               </p>

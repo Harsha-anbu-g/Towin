@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 
-const SKY_TINT = 'rgba(79,163,206,0.12)';
-const SKY_BORDER = 'rgba(79,163,206,0.28)';
+const SKY_TINT = 'var(--blue-tint)';
+const SKY_BORDER = 'var(--blue-soft)';
 
 export default function TagInput({ value = [], onChange, placeholder = 'Type and press Enter…', style }) {
   const [inputVal, setInputVal] = useState('');
