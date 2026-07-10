@@ -130,7 +130,7 @@ function HelperStack({ people }) {
         )}
       </div>
       <span style={{ fontFamily: SF, fontSize: '13px', color: GREY, lineHeight: 1.4 }}>
-        <strong style={{ color: INK }}>{n}</strong> {n === 1 ? 'person' : 'people'} helped you reach this
+        {n} {n === 1 ? 'person' : 'people'} helped you reach this
       </span>
     </div>
   );
@@ -163,7 +163,7 @@ function ScoreSummary({ data }) {
           </h2>
           <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.55 }}>
             {next
-              ? <>You're <strong style={{ color: INK }}>{toNext}</strong> {toNext === 1 ? 'point' : 'points'} away from <strong style={{ color: INK }}>{next.name}</strong>. Every person you help fully adds up to <strong style={{ color: INK }}>15</strong> points.</>
+              ? <>You're {toNext} {toNext === 1 ? 'point' : 'points'} away from {next.name}. Every person you help fully adds up to 15 points.</>
               : <>You've reached the top tier. Keep helping — every person still adds up to 15 points.</>}
           </p>
           <HelperStack people={people} />
@@ -342,10 +342,8 @@ export default function Trust() {
             Your <span style={{ color: TRUST }}>Trust</span> Score
           </h1>
           <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: 0, lineHeight: 1.5 }}>
-            Each person you help can earn you up to <strong style={{ color: INK }}>15</strong> points:
-            {' '}<strong style={{ color: INK }}>7</strong> for growing trust together,
-            {' '}<strong style={{ color: INK }}>5</strong> from their review, and
-            {' '}<strong style={{ color: INK }}>3</strong> for your profile.
+            Each person you help can earn you up to 15 points:
+            7 for growing trust together, 5 from their review, and 3 for your profile.
           </p>
         </div>
 
