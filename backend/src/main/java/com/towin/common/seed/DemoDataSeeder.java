@@ -86,20 +86,20 @@ public class DemoDataSeeder implements ApplicationRunner {
             ELDER_DEMO_EMAIL, HELPER_DEMO_EMAIL,
             "demo.priya@towin.app", "demo.tom@towin.app", "demo.david@towin.app",
             "demo.grace@towin.app", "demo.nina@towin.app", "demo.rose@towin.app",
-            "demo.helen@towin.app", "demo.arthur@towin.app", "demo.sofia@towin.app");
+            "demo.helen@towin.app", "demo.arthur@towin.app", "demo.sofia@towin.app",
+            "demo.lakshmi@towin.app", "demo.karthik@towin.app",
+            "demo.meena@towin.app", "demo.arjun@towin.app");
 
-    // All demo personas (elders and helpers) are pinned to Montreal, Canada so
+    // Most demo personas (elders and helpers) are pinned to Montreal, Canada so
     // they cluster together and "near me" discovery matches across both roles.
-    private static final BigDecimal ELDER_LAT  = new BigDecimal("45.5019");
-    private static final BigDecimal ELDER_LNG  = new BigDecimal("-73.5674");
-    private static final String     ELDER_CITY = "Montreal";
-    private static final BigDecimal HELPER_LAT  = ELDER_LAT;
-    private static final BigDecimal HELPER_LNG  = ELDER_LNG;
-    private static final String     HELPER_CITY = ELDER_CITY;
+    // A smaller cluster lives in Tamil Nadu, India — Chennai, Coimbatore and
+    // Salem — so discovery has people to find there too.
+    private record CityPin(BigDecimal lat, BigDecimal lng, String city) {}
 
-    private BigDecimal baseLat(UserRole role)  { return role == UserRole.ELDER ? ELDER_LAT  : HELPER_LAT;  }
-    private BigDecimal baseLng(UserRole role)  { return role == UserRole.ELDER ? ELDER_LNG  : HELPER_LNG;  }
-    private String     baseCity(UserRole role) { return role == UserRole.ELDER ? ELDER_CITY : HELPER_CITY; }
+    private static final CityPin MONTREAL   = new CityPin(new BigDecimal("45.5019"), new BigDecimal("-73.5674"), "Montreal");
+    private static final CityPin CHENNAI    = new CityPin(new BigDecimal("13.0827"), new BigDecimal("80.2707"),  "Chennai");
+    private static final CityPin COIMBATORE = new CityPin(new BigDecimal("11.0168"), new BigDecimal("76.9558"),  "Coimbatore");
+    private static final CityPin SALEM      = new CityPin(new BigDecimal("11.6643"), new BigDecimal("78.1460"),  "Salem");
 
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
@@ -171,7 +171,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         User arthur   = ensureUser("demo.arthur@towin.app","+14165550110", UserRole.ELDER,  "DemoArthur!2026");
         User sofia    = ensureUser("demo.sofia@towin.app", "+14165550111", UserRole.HELPER, "DemoSofia!2026");
 
-        List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur, sofia);
+        // Tamil Nadu cluster — Chennai has both roles so "near me" matches there;
+        // Coimbatore and Salem each hold one persona.
+        User lakshmi  = ensureUser("demo.lakshmi@towin.app", "+919840001112", UserRole.ELDER,  "DemoLakshmi!2026", CHENNAI);
+        User karthik  = ensureUser("demo.karthik@towin.app", "+919840001113", UserRole.HELPER, "DemoKarthik!2026", CHENNAI);
+        User meena    = ensureUser("demo.meena@towin.app",   "+919442001114", UserRole.ELDER,  "DemoMeena!2026",   COIMBATORE);
+        User arjun    = ensureUser("demo.arjun@towin.app",   "+919442001115", UserRole.HELPER, "DemoArjun!2026",   SALEM);
+
+        List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur, sofia,
+                lakshmi, karthik, meena, arjun);
 
         // Clear anything visitors left on the public demo accounts so the rest of
         // this method re-seeds a clean, minimal showcase (one of each type).
@@ -207,6 +215,14 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Former history teacher. I love chess, documentaries, and sharing a good meal.",
                 new String[]{"Chess", "Cooking", "Reading"}, "Retired teacher", Gender.MALE, null,
                 "https://facebook.com/arthurmiles.tw");
+        ensureElderProfile(lakshmi, "Lakshmi Raman", 70,
+                "Retired schoolteacher in Chennai. I love Carnatic music, cooking, and my morning walk on the beach.",
+                new String[]{"Music", "Cooking", "Walking"}, "Retired teacher", Gender.FEMALE, null,
+                null, new String[]{"Tamil", "English"});
+        ensureElderProfile(meena, "Meena Krishnan", 73,
+                "Retired bank clerk in Coimbatore. I enjoy my garden, temple visits, and sharing my recipes.",
+                new String[]{"Gardening", "Cooking", "Reading"}, "Retired bank clerk", Gender.FEMALE, null,
+                null, new String[]{"Tamil", "English"});
 
         ensureHelperProfile(james, "Harsha", 23,
                 "I love to play chess and helping with anything tech.",
@@ -241,6 +257,18 @@ public class DemoDataSeeder implements ApplicationRunner {
                 Gender.FEMALE, "Community Volunteer", null,
                 "https://facebook.com/sofia.helper.tw", null,
                 new String[]{"English", "Spanish"});
+        ensureHelperProfile(karthik, "Karthik Subramanian", 24,
+                "Engineering student in Chennai. Happy to help with phones, errands, or a chat over filter coffee.",
+                new String[]{"Technology", "Errands", "Companionship"}, new String[]{"Cricket", "Chess"},
+                Gender.MALE, "Engineering Student", null,
+                null, null,
+                new String[]{"Tamil", "English"});
+        ensureHelperProfile(arjun, "Arjun Devaraj", 26,
+                "Delivery rider in Salem — I know every street. Glad to help with rides, errands, and heavy bags.",
+                new String[]{"Transportation", "Errands"}, new String[]{"Cycling", "Movies"},
+                Gender.MALE, "Delivery Rider", null,
+                null, null,
+                new String[]{"Tamil", "English"});
 
         // Connections cover every state a viewer can act on:
         //  • TRUSTED   — top of the ladder (Grace ↔ Harsha, Margaret ↔ Tom)
@@ -370,6 +398,14 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureNeed(grace, "Light apartment cleaning",
                 "A hand with vacuuming and dusting once a week.",
                 NeedCategory.CLEANING, NeedUrgency.NORMAL, NeedStatus.OPEN);
+        // Tamil Nadu cluster: one open request per elder city, so a helper
+        // browsing near Chennai or Coimbatore finds something right away.
+        ensureNeed(lakshmi, "Help with video calls to my son",
+                "My son lives in Singapore and I'd love help learning video calls on my phone.",
+                NeedCategory.OTHER, NeedUrgency.NORMAL, NeedStatus.OPEN);
+        ensureNeed(meena, "Company for my evening walk",
+                "I walk near the race course every evening and would enjoy some company.",
+                NeedCategory.COMPANIONSHIP, NeedUrgency.NORMAL, NeedStatus.OPEN);
         // These two exist so the HELPER demo account (Harsha) has every Browse
         // Needs segment filled: Applied needs an ACCEPTED offer on an ASSIGNED
         // need, Completed needs an ACCEPTED offer on a COMPLETED one. Margaret's
@@ -496,13 +532,17 @@ public class DemoDataSeeder implements ApplicationRunner {
     }
 
     private User ensureUser(String email, String phone, UserRole role, String rawPassword) {
+        return ensureUser(email, phone, role, rawPassword, MONTREAL);
+    }
+
+    private User ensureUser(String email, String phone, UserRole role, String rawPassword, CityPin home) {
         Optional<User> existing = userRepository.findByEmail(email);
         if (existing.isPresent()) {
             User u = existing.get();
             boolean dirty = false;
-            // Demo accounts must be discoverable: pin them to the demo cluster if unset
+            // Demo accounts must be discoverable: pin them to their home cluster if unset
             if (u.getLocationLat() == null || u.getLocationLng() == null) {
-                u.setLocationLat(baseLat(role)); u.setLocationLng(baseLng(role)); dirty = true;
+                u.setLocationLat(home.lat()); u.setLocationLng(home.lng()); dirty = true;
             }
             if (u.getVerificationStatus() != VerificationStatus.VERIFIED) {
                 u.setVerificationStatus(VerificationStatus.VERIFIED); dirty = true;
@@ -511,9 +551,9 @@ public class DemoDataSeeder implements ApplicationRunner {
             // Full reset: snap account settings a visitor may have changed (their
             // location, date of birth, city, phone, verification) back to baseline.
             if (resetEnabled) {
-                u.setLocationLat(baseLat(role).add(jitter(email)));
-                u.setLocationLng(baseLng(role).add(jitter(email + "lng")));
-                u.setCity(baseCity(role));
+                u.setLocationLat(home.lat().add(jitter(email)));
+                u.setLocationLng(home.lng().add(jitter(email + "lng")));
+                u.setCity(home.city());
                 u.setDateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(2003, 3, 14));
                 u.setVerificationStatus(VerificationStatus.VERIFIED);
                 u.setPhoneVerified(true);
@@ -542,9 +582,9 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .role(role)
                 .verificationStatus(VerificationStatus.VERIFIED)
                 .emailVerified(true)
-                .locationLat(baseLat(role).add(jitter(email)))
-                .locationLng(baseLng(role).add(jitter(email + "lng")))
-                .city(baseCity(role))
+                .locationLat(home.lat().add(jitter(email)))
+                .locationLng(home.lng().add(jitter(email + "lng")))
+                .city(home.city())
                 .isActive(true)
                 .dateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(2003, 3, 14))
                 .build();
@@ -583,6 +623,13 @@ public class DemoDataSeeder implements ApplicationRunner {
     private void ensureElderProfile(User user, String name, int age, String bio,
                                     String[] interests, String occupation, Gender gender, String photoUrl,
                                     String facebookUrl) {
+        ensureElderProfile(user, name, age, bio, interests, occupation, gender, photoUrl,
+                facebookUrl, new String[]{"English"});
+    }
+
+    private void ensureElderProfile(User user, String name, int age, String bio,
+                                    String[] interests, String occupation, Gender gender, String photoUrl,
+                                    String facebookUrl, String[] languages) {
         ElderProfile p = elderProfileRepository.findByUserId(user.getId()).orElse(null);
         if (p != null && !resetEnabled) return;
         if (p == null) p = ElderProfile.builder().user(user).build();
@@ -590,7 +637,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setAge(age);
         p.setBio(bio);
         p.setInterests(interests);
-        p.setLanguages(new String[]{"English"});
+        p.setLanguages(languages);
         p.setOccupation(occupation);
         p.setLookingFor(LookingForType.BOTH);
         p.setGender(gender);
