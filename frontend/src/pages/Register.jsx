@@ -540,7 +540,7 @@ export default function Register() {
                       </div>
                       <div style={{
                         fontSize: 'var(--text-xs)', lineHeight: 1.3,
-                        color: active ? 'var(--blue-mid)' : 'var(--ink-4)',
+                        color: active ? 'var(--ink-slate)' : 'var(--ink-4)',
                         fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                       }}>
                         {desc}
