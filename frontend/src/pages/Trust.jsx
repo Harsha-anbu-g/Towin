@@ -298,10 +298,13 @@ function CustomerCard({ c }) {
         </div>
       </div>
 
-      <div style={{ height: '6px', borderRadius: '9999px', background: 'var(--border)', marginBottom: '8px', overflow: 'hidden' }}>
+      {/* Two-tone bar (matches the dashboard ladder): the light-blue track is the
+          "still to earn" strip, the deep-blue fill is the "earned" strip — so the
+          remaining portion stays visible instead of vanishing into the card. */}
+      <div style={{ height: '6px', borderRadius: '9999px', background: 'var(--sky-bar-from)', marginBottom: '8px', overflow: 'hidden' }}>
         {/* GPU-only fill: scaleX instead of width so the reveal never thrashes layout */}
         <div style={{
-          height: '100%', width: '100%', background: SKY, borderRadius: '9999px',
+          height: '100%', width: '100%', background: 'var(--blue-deep)', borderRadius: '9999px',
           transform: `scaleX(${c.total / c.totalMax})`, transformOrigin: 'left center',
           transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         }} />
