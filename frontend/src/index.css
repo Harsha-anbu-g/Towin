@@ -274,6 +274,9 @@
   --sky-line-3:     rgba(79, 163, 206, 0.45);
   --sky-line-4:     rgba(79, 163, 206, 0.30);
   --sky-hairline:   rgba(79, 163, 206, 0.22);
+  --sky-bar-from:   rgba(126, 192, 228, 0.55);  /* ladder waiting-half: earned fill is the BRIGHT
+                                                   blue at night, so the pending half dims instead
+                                                   of lightens (light value collides with #7ec0e4) */
   --grey-line-2:    #3f3d38;
   --grey-text:      #949089;
   --grey-text-2:    #6f6c66;
@@ -510,6 +513,23 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .logo-wordmark.is-writing .logo-wordmark-inner {
   animation: intro-wordmark 460ms var(--ease-arrive) 2650ms forwards;
 }
+
+/* Arrival at the last stop of the landing journey line: the stop blooms green
+   (green = achieved — the tortoise finished the walk) and the Start button
+   rises in just after, so the bloom leads and the action follows. Both are
+   transform/opacity only; the global reduced-motion override collapses them
+   to their final frame (no bloom, button simply present). */
+@keyframes arrive-bloom {
+  from { transform: scale(0.5); opacity: 0.8; }
+  to   { transform: scale(1.9); opacity: 0; }
+}
+.arrive-bloom { animation: arrive-bloom 600ms var(--ease-arrive) forwards; }
+
+@keyframes start-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.start-rise { animation: start-rise 240ms var(--ease-arrive) 150ms both; }
 
 /* Scroll cue under the deck: a soft slow bob on the chevron. transform-only;
    the global reduced-motion override freezes it. */

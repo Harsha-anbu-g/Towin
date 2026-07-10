@@ -1,10 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SLIDES } from '../data/landingContent';
+import TortoiseMark from '../components/TortoiseMark';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SKY = 'var(--blue)';
+
+// The trail tortoise's walk cycle moves ONLY the legs — the body glides level.
+// Diagonal pairs swing in antiphase (a tortoise's actual gait), each leg
+// pivoting around the point where it meets the shell. The head-up mark's
+// attachment corners, per leg, with the pair each belongs to as a sign.
+const TRAIL_LEGS = [
+  ['.tm-leg-tl', 'bottom right', 1],
+  ['.tm-leg-br', 'top left', 1],
+  ['.tm-leg-tr', 'bottom left', -1],
+  ['.tm-leg-bl', 'top right', -1],
+];
 
 // The deck is SCRUBBED, not stepped. A tall invisible runway (one viewport per
 // page) gives the browser real native scrolling — momentum, stop-anywhere,
@@ -16,7 +28,7 @@ const SKY = 'var(--blue)';
 // tortoise walking along it as you scroll. The walked line and the tortoise
 // are driven per-frame through refs (no transitions — they track the finger);
 // the dots are discrete state (nearest page) and stay tappable for elders.
-function TortoiseTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
+function TortoiseTrail({ count, current, arrived, onJump, walkedRef, tortoiseRef, flipRef }) {
   return (
     <div style={{ position: 'relative', maxWidth: '720px', margin: '0 auto', height: '56px' }}>
       {/* the full path */}
@@ -56,25 +68,34 @@ function TortoiseTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
           }} />
         </button>
       ))}
+      {/* Arrival: the last stop blooms green — the journey's "achieved" moment
+          (green = achieved). Remounts, and so replays, on each arrival. */}
+      {arrived && (
+        <span aria-hidden="true" className="arrive-bloom" style={{
+          position: 'absolute', left: 'calc(100% - 14px)', bottom: '4px',
+          width: '28px', height: '28px', borderRadius: '50%',
+          border: '2px solid var(--green-deep)', pointerEvents: 'none',
+        }} />
+      )}
       {/* the tortoise — walking ON the line (the trail runs through it, like a
-          marker on a map). The mover spans the whole line, so translateX(%) —
-          which is relative to the mover's own width — lands exactly on each
-          stop. */}
+          marker on a map). Three layers, one job each: the mover spans the whole
+          line so translateX(%) — relative to its own width — lands exactly on
+          each stop (per-frame); the flipper turns the head-up mark to face the
+          direction of travel (rare writes, so its short transition reads as the
+          tortoise turning around); the mark itself is the traced vector
+          (TortoiseMark), whose leg paths the walk cycle moves (per-frame). */}
       <div ref={tortoiseRef} style={{
         position: 'absolute', left: 0, right: 0, bottom: '18px', height: 0,
         pointerEvents: 'none', willChange: 'transform',
       }}>
-        <img
-          className="tortoise-lit"
-          src="/tortoise-logo-alpha.png"
-          alt=""
-          style={{
-            position: 'absolute', left: '-16px', bottom: '-16px',
-            width: '32px', height: '32px', objectFit: 'contain',
-            // The mark is drawn head-up; face the head along the direction of travel.
-            transform: 'rotate(90deg)',
-          }}
-        />
+        <div ref={flipRef} style={{
+          position: 'absolute', left: '-16px', bottom: '-16px',
+          width: '32px', height: '32px',
+          transform: 'rotate(90deg)',
+          transition: 'transform 240ms cubic-bezier(0.23, 1, 0.32, 1)',
+        }}>
+          <TortoiseMark size={32} className="tortoise-lit" />
+        </div>
       </div>
     </div>
   );
@@ -85,7 +106,7 @@ function TortoiseTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
 // walking DOWN mirrors the reader's own downward scroll — no sideways trickery.
 // The walked line + tortoise track the finger through refs (no transitions);
 // the dots stay discrete, tappable stops for elders.
-function MobileTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
+function MobileTrail({ count, current, arrived, onJump, walkedRef, tortoiseRef, flipRef }) {
   return (
     <div style={{
       position: 'fixed', top: '50%', right: 'max(6px, env(safe-area-inset-right))',
@@ -129,31 +150,38 @@ function MobileTrail({ count, current, onJump, walkedRef, tortoiseRef }) {
             }} />
           </button>
         ))}
-        {/* the tortoise — walking DOWN the line (head faces the way it travels).
-            The mover spans the rail's full height, so translateY(%) — relative to
-            its own height — lands it on each stop. It must also span the rail's
-            WIDTH: a zero-width mover collapses the tortoise to 0px, because
-            Tailwind's preflight img rule (max-width:100%) resolves against it. */}
+        {/* Arrival: the last stop blooms green — the journey's "achieved"
+            moment. Remounts, and so replays, on each arrival. */}
+        {arrived && (
+          <span aria-hidden="true" className="arrive-bloom" style={{
+            position: 'absolute', left: 'calc(50% - 14px)', top: 'calc(100% - 14px)',
+            width: '28px', height: '28px', borderRadius: '50%',
+            border: '2px solid var(--green-deep)', pointerEvents: 'none',
+          }} />
+        )}
+        {/* the tortoise — walking DOWN the line. Same three layers as the
+            laptop trail: the mover spans the rail's full height, so
+            translateY(%) — relative to its own height — lands it on each stop
+            (per-frame); the flipper turns the head to face the direction of
+            travel; the mark is the traced vector (TortoiseMark), whose leg
+            paths the walk cycle moves (per-frame). */}
         <div ref={tortoiseRef} style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: '100%',
           transform: 'translateY(0)', pointerEvents: 'none', willChange: 'transform',
         }}>
-          <img
-            className="tortoise-lit"
-            src="/tortoise-logo-alpha.png"
-            alt=""
-            style={{
-              position: 'absolute', top: '-16px', left: '50%', marginLeft: '-16px',
-              width: '32px', height: '32px', maxWidth: 'none', objectFit: 'contain',
-              // Head-up mark rotated to point down the trail (direction of travel).
-              transform: 'rotate(180deg)',
-            }}
-          />
+          <div ref={flipRef} style={{
+            position: 'absolute', top: '-16px', left: '50%', marginLeft: '-16px',
+            width: '32px', height: '32px',
+            transform: 'rotate(180deg)',
+            transition: 'transform 240ms cubic-bezier(0.23, 1, 0.32, 1)',
+          }}>
+            <TortoiseMark size={32} className="tortoise-lit" />
+          </div>
         </div>
         {/* page counter, tucked just under the rail */}
         <p style={{
           position: 'absolute', bottom: '-28px', left: '50%', transform: 'translateX(-50%)',
-          margin: 0, fontFamily: SF, fontSize: '11px', fontWeight: 600, color: 'var(--ink-4)',
+          margin: 0, fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)',
           fontVariantNumeric: 'tabular-nums', letterSpacing: '0.5px', whiteSpace: 'nowrap',
         }}>
           {String(current + 1).padStart(2, '0')}/{String(count).padStart(2, '0')}
@@ -190,6 +218,9 @@ export default function Landing() {
   // index = nearest page; drives the dots, counter, inert, and the Start swap.
   const [index, setIndex] = useState(0);
   const isLast = index === total - 1;
+  // arrived = the tortoise is actually standing on the last stop (index flips
+  // at the halfway point, too early for an arrival moment).
+  const [arrived, setArrived] = useState(false);
 
   // Phones get a plain vertical layout (scroll down = go down) with the journey
   // line stood upright on the side; laptops keep the sideways scrubbed deck.
@@ -201,8 +232,61 @@ export default function Landing() {
   const trackRef = useRef(null);
   const walkedRef = useRef(null);
   const tortoiseRef = useRef(null);
+  const flipRef = useRef(null);
   const sectionsRef = useRef([]);
   const rafPending = useRef(false);
+
+  // The walk itself: step phase advances with distance traveled, amplitude
+  // decays back to still once the scrolling stops, and facing follows the
+  // direction of travel. All of it lives outside React and is written straight
+  // to styles. Reduced-motion visitors keep the original steady glide.
+  const walk = useRef({
+    primed: false, lastP: 0, phase: 0, amp: 0, raf: 0, dir: 1, legs: null,
+    reduced: typeof window !== 'undefined'
+      && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+  });
+
+  // The trail mark's leg paths, found once and re-found after the trail is
+  // rebuilt (layout swap). Pivots are set here so each leg swings from its
+  // shell attachment, not its middle.
+  const getLegs = () => {
+    const w = walk.current;
+    if (w.legs && w.legs[0].el.isConnected) return w.legs;
+    const root = flipRef.current;
+    if (!root) return null;
+    const legs = TRAIL_LEGS.map(([sel, origin, sign]) => {
+      const el = root.querySelector(sel);
+      if (el) {
+        el.style.transformBox = 'fill-box';
+        el.style.transformOrigin = origin;
+      }
+      return el ? { el, sign } : null;
+    }).filter(Boolean);
+    w.legs = legs.length ? legs : null;
+    return w.legs;
+  };
+
+  // Its own little rAF loop: writes the leg swing every frame and decays the
+  // amplitude, so the legs always come to rest in their drawn position no
+  // matter where the finger stops. Scroll paints reset amp to 1, so the loop
+  // idles itself out ~250ms after the last movement.
+  const waddleTick = () => {
+    const w = walk.current;
+    const legs = getLegs();
+    if (!legs) { w.amp = 0; w.raf = 0; return; }
+    w.amp *= 0.82;
+    if (w.amp < 0.04) {
+      w.amp = 0;
+      w.raf = 0;
+      legs.forEach(({ el }) => { el.style.transform = 'rotate(0deg)'; });
+      return;
+    }
+    const deg = Math.sin(w.phase * Math.PI * 2) * 16 * w.amp;
+    legs.forEach(({ el, sign }) => {
+      el.style.transform = `rotate(${(deg * sign).toFixed(2)}deg)`;
+    });
+    w.raf = requestAnimationFrame(waddleTick);
+  };
 
   // Map scroll progress (0..1 over the runway) onto the deck + tortoise.
   // Direct per-frame style writes — no transitions in the way — so the deck
@@ -213,6 +297,29 @@ export default function Landing() {
     if (!sc) return;
     const range = sc.scrollHeight - sc.clientHeight;
     const p = range > 0 ? Math.min(1, Math.max(0, sc.scrollTop / range)) : 0;
+
+    // The walk: any movement advances the waddle phase (capped per frame so a
+    // big fling can't alias into jitter) and turns the head to face the way
+    // it's going. The first paint only primes lastP, so a restored scroll
+    // position doesn't fake a step.
+    const w = walk.current;
+    if (!w.primed) { w.primed = true; w.lastP = p; }
+    setArrived(p >= 0.985);
+    const dp = p - w.lastP;
+    w.lastP = p;
+    if (!w.reduced && Math.abs(dp) > 0.00005) {
+      // ~3 waddle cycles per page walked
+      w.phase += Math.min(0.12, Math.abs(dp) * (total - 1) * 3);
+      w.amp = 1;
+      const dir = dp > 0 ? 1 : -1;
+      if (dir !== w.dir && flipRef.current) {
+        w.dir = dir;
+        flipRef.current.style.transform = isMobile
+          ? (dir === 1 ? 'rotate(180deg)' : 'rotate(0deg)')
+          : (dir === 1 ? 'rotate(90deg)' : 'rotate(-90deg)');
+      }
+      if (!w.raf) w.raf = requestAnimationFrame(waddleTick);
+    }
 
     // Phone: vertical scroll drives the upright rail. The walked line grows
     // downward (scaleY) and the tortoise walks down (translateY). The active
@@ -283,7 +390,11 @@ export default function Landing() {
       sc.scrollBy({ top: (fwd ? 1 : -1) * sc.clientHeight, behavior: scrollBehavior() });
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const w = walk.current;
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (w.raf) cancelAnimationFrame(w.raf);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -296,7 +407,57 @@ export default function Landing() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
   useEffect(() => {
+    // The trail is rebuilt on a layout swap (fresh flipper with its default
+    // facing, new scroll metrics), so re-prime the walk instead of carrying
+    // stale direction/position across.
+    const w = walk.current;
+    w.primed = false;
+    w.dir = 1;
+    w.amp = 0;
+    w.legs = null;
     paint();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]);
+
+  // Laptop: a sideways gesture (trackpad swipe, tilt wheel, Shift+wheel on
+  // Windows) turns the deck one whole page — the map reads horizontal, so
+  // sideways input is a natural ask. The turn rides the same smooth native
+  // scroll the map stops use, so the deck and tortoise scrub through the
+  // pages and always come to rest ON a page — no half-way states. One page
+  // per gesture: once it turns, the rest of the swipe (momentum included) is
+  // swallowed until the deltas go quiet. Vertical scrolling stays fully
+  // native and snap is never touched. Native listener: React registers
+  // wheel as passive, so preventDefault would be ignored through onWheel.
+  useEffect(() => {
+    if (isMobile) return undefined;
+    const sc = scrollerRef.current;
+    if (!sc) return undefined;
+    const QUIET_MS = 220; // this much silence between deltas ends a gesture
+    const COMMIT_PX = 90; // sideways travel needed before the page turns
+    let acc = 0;
+    let lastT = 0;
+    let turned = false;
+    const onWheel = (e) => {
+      if (e.ctrlKey) return; // pinch-zoom arrives as ctrl+wheel
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // vertical stays native
+      e.preventDefault(); // sideways has no native home here — we own it
+      if (e.timeStamp - lastT > QUIET_MS) { acc = 0; turned = false; }
+      lastT = e.timeStamp;
+      if (turned) return; // one page per gesture; momentum is swallowed
+      // deltaMode: 0 = pixels (trackpads, most wheels), 1 = lines (Firefox
+      // wheels), 2 = pages.
+      const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? sc.clientHeight : 1;
+      acc += e.deltaX * unit;
+      if (Math.abs(acc) < COMMIT_PX) return;
+      turned = true;
+      const range = sc.scrollHeight - sc.clientHeight;
+      if (range <= 0) return;
+      const cur = Math.round((sc.scrollTop / range) * (total - 1));
+      const target = Math.max(0, Math.min(total - 1, cur + (acc > 0 ? 1 : -1)));
+      sc.scrollTo({ top: (target / (total - 1)) * range, behavior: scrollBehavior() });
+    };
+    sc.addEventListener('wheel', onWheel, { passive: false });
+    return () => sc.removeEventListener('wheel', onWheel);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
 
@@ -327,9 +488,11 @@ export default function Landing() {
         <MobileTrail
           count={total}
           current={index}
+          arrived={arrived}
           onJump={go}
           walkedRef={walkedRef}
           tortoiseRef={tortoiseRef}
+          flipRef={flipRef}
         />
 
         {/* The story — one whole screen per slide, read straight down; each one
@@ -383,7 +546,12 @@ export default function Landing() {
                 {s.render()}
               </div>
               {i === total - 1 && (
-                <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
+                <div
+                  // The rise plays when the reader arrives (class toggles on),
+                  // just after the trail's green bloom — bloom leads, action follows.
+                  className={index === total - 1 ? 'start-rise' : undefined}
+                  style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}
+                >
                   <StartButton onStart={() => navigate('/login')} />
                 </div>
               )}
@@ -500,9 +668,11 @@ export default function Landing() {
             <TortoiseTrail
               count={total}
               current={index}
+              arrived={arrived}
               onJump={go}
               walkedRef={walkedRef}
               tortoiseRef={tortoiseRef}
+              flipRef={flipRef}
             />
             <p style={{
               fontFamily: SF, fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)',
@@ -513,7 +683,9 @@ export default function Landing() {
             </p>
 
             {isLast ? (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
+              // Mounts on arrival, so the rise plays just after the trail's
+              // green bloom — bloom leads, action follows.
+              <div className="start-rise" style={{ display: 'flex', justifyContent: 'center' }}>
                 <StartButton onStart={() => navigate('/login')} />
               </div>
             ) : (
