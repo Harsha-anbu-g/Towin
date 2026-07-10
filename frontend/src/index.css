@@ -578,6 +578,12 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .trust-chip-active { color: #fff; }
 [data-theme="dark"] .trust-chip-active { color: #1d1d1f; }
 
+/* Destructive TEXT (US-012): --red-deep passes as text in light (#9b3535) but its
+   dark value (#b45050) is a fill shade — only 2.91:1 on the dark card. Dark-theme
+   red TEXT uses the existing semantic --red-error (5.2:1). Fills keep --red-deep. */
+.danger-text { color: var(--red-deep); }
+[data-theme="dark"] .danger-text { color: var(--red-error); }
+
 /* Primary button (non-shimmer) */
 .primary-btn {
   background: var(--blue);

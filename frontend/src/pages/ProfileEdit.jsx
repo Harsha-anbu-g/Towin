@@ -613,8 +613,8 @@ export default function ProfileEdit() {
                               {c.relationship ? `${c.relationship} · ` : ''}{c.phone}
                             </p>
                           </div>
-                          <button type="button" onClick={() => setEmPendingRemove(c)} style={{
-                            flexShrink: 0, background: 'transparent', color: 'var(--red-deep)',
+                          <button type="button" onClick={() => setEmPendingRemove(c)} className="danger-text" style={{
+                            flexShrink: 0, background: 'transparent',
                             border: '1.5px solid var(--border)', borderRadius: '9999px',
                             padding: '6px 14px', fontSize: '14px', fontWeight: 600,
                             minHeight: '44px',
@@ -628,7 +628,7 @@ export default function ProfileEdit() {
                   )}
 
                   {emMsg && (
-                    <p style={{ fontSize: '14px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? 'var(--blue-teal)' : 'var(--red-deep)' }}>
+                    <p className={emMsg.includes('added') ? undefined : 'danger-text'} style={{ fontSize: '14px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? 'var(--blue-teal)' : undefined }}>
                       {emMsg}
                     </p>
                   )}
