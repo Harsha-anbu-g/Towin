@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -211,10 +211,10 @@ function FeedbackTab() {
   const [error, setError] = useState(false);
 
   function load() {
-    setLoading(true);
-    setError(false);
+    // No sync resets here: initial state is already loading=true/error=false,
+    // and setting state synchronously from the mount effect cascades renders.
     api.get('/admin/feedback')
-      .then(({ data }) => setRows(data))
+      .then(({ data }) => { setRows(data); setError(false); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }
@@ -298,7 +298,6 @@ export default function Admin() {
   // One loading/error pair for whatever view is on screen.
   const [busy, setBusy] = useState(true);
   const [failed, setFailed] = useState(false);
-  const booted = useRef(false);
 
   useEffect(() => {
     const onResize = () => setNarrow(window.innerWidth <= 1024);
@@ -328,13 +327,6 @@ export default function Admin() {
     })();
   }, []);
 
-  useEffect(() => {
-    if (!booted.current) { booted.current = true; return; }
-    fetchTab(tab);
-  }, [tab]);
-  useEffect(() => { if (tab === 'Reviews') fetchReviews(); }, [safetyOnly]);
-  useEffect(() => { if (tab === 'Data') fetchDataTab(dataTab); }, [dataTab]);
-
   async function guarded(hasRows, work) {
     setFailed(false);
     if (!hasRows) setBusy(true);
@@ -346,6 +338,19 @@ export default function Admin() {
     setBusy(false);
   }
 
+  function fetchReviews(safety = safetyOnly) {
+    return guarded(false, async () => {
+      const r = await api.get(`/admin/reviews?safetyOnly=${safety}`);
+      setReviews(r.data);
+    });
+  }
+
+  function fetchDataTab(dt) {
+    if (dt === 'Connections') return guarded(connections.length > 0, async () => { const r = await api.get('/admin/connections'); setConnections(r.data); });
+    if (dt === 'Needs') return guarded(needs.length > 0, async () => { const r = await api.get('/admin/needs'); setNeeds(r.data); });
+    if (dt === 'Messages') return guarded(messages.length > 0, async () => { const r = await api.get('/admin/messages'); setMessages(r.data); });
+  }
+
   function fetchTab(t) {
     if (t === 'Users') return guarded(users.length > 0, async () => { const r = await api.get('/admin/users'); setUsers(r.data); });
     if (t === 'Verifications') return guarded(verifications.length > 0, async () => { const r = await api.get('/admin/verifications'); setVerifications(r.data); });
@@ -355,17 +360,12 @@ export default function Admin() {
     if (t === 'Feedback') { setBusy(false); setFailed(false); }
   }
 
-  function fetchReviews() {
-    return guarded(false, async () => {
-      const r = await api.get(`/admin/reviews?safetyOnly=${safetyOnly}`);
-      setReviews(r.data);
-    });
-  }
-
-  function fetchDataTab(dt) {
-    if (dt === 'Connections') return guarded(connections.length > 0, async () => { const r = await api.get('/admin/connections'); setConnections(r.data); });
-    if (dt === 'Needs') return guarded(needs.length > 0, async () => { const r = await api.get('/admin/needs'); setNeeds(r.data); });
-    if (dt === 'Messages') return guarded(messages.length > 0, async () => { const r = await api.get('/admin/messages'); setMessages(r.data); });
+  // Tab and filter changes fetch from their click handlers (switchTab and the
+  // segmented controls below) rather than effects: state is set where the
+  // user acts, and mount data comes from the Promise.all effect above.
+  function switchTab(t) {
+    setTab(t);
+    fetchTab(t);
   }
 
   // Puts the demo accounts back to their seeded baseline (removes any
@@ -474,7 +474,7 @@ export default function Admin() {
     return (
       <button
         key={item.id}
-        onClick={() => setTab(item.id)}
+        onClick={() => switchTab(item.id)}
         aria-current={isActive ? 'page' : undefined}
         className="admin-nav-item"
         style={{
@@ -501,7 +501,7 @@ export default function Admin() {
     return (
       <button
         key={item.id}
-        onClick={() => setTab(item.id)}
+        onClick={() => switchTab(item.id)}
         aria-current={isActive ? 'page' : undefined}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0,
@@ -885,7 +885,11 @@ export default function Admin() {
                   { id: 'safety', label: 'Safety flags', color: 'var(--red)', notify: true, count: safetyCount },
                 ]}
                 value={safetyOnly ? 'safety' : 'all'}
-                onChange={id => setSafetyOnly(id === 'safety')}
+                onChange={id => {
+                  const safety = id === 'safety';
+                  setSafetyOnly(safety);
+                  fetchReviews(safety); // state is stale until commit — pass the new value
+                }}
               />
             </div>
             <div style={card}>
@@ -932,7 +936,7 @@ export default function Admin() {
               <SegmentedTabs
                 segments={DATA_TABS.map(dt => ({ id: dt, label: dt }))}
                 value={dataTab}
-                onChange={setDataTab}
+                onChange={dt => { setDataTab(dt); fetchDataTab(dt); }}
               />
             </div>
 

@@ -6,14 +6,16 @@ import api from '../api/axios';
 // confirms it with the backend, and shows the result. No auth required.
 export default function VerifyEmail() {
   const [params] = useSearchParams();
-  const [state, setState] = useState('verifying'); // verifying | success | error
+  // A missing token is known at mount — derive the initial state instead of
+  // setting state synchronously inside the effect.
+  const [state, setState] = useState(() => params.get('token') ? 'verifying' : 'error'); // verifying | success | error
   const ran = useRef(false);
 
   useEffect(() => {
     if (ran.current) return; // guard against React 18 double-invoke in dev
     ran.current = true;
     const token = params.get('token');
-    if (!token) { setState('error'); return; }
+    if (!token) return; // error already derived above
     api.post('/auth/verify-email', { token })
       .then(() => setState('success'))
       .catch(() => setState('error'));

@@ -7,16 +7,17 @@ export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  // A missing code / provider error is known at mount — derive it as the
+  // initial state instead of setting state synchronously inside the effect.
+  const [error, setError] = useState(() =>
+    (searchParams.get('error') || !searchParams.get('code'))
+      ? 'Could not connect with Google. Please try again.'
+      : ''
+  );
 
   useEffect(() => {
     const code = searchParams.get('code');
-    const err = searchParams.get('error');
-
-    if (err || !code) {
-      setError('Could not connect with Google. Please try again.');
-      return;
-    }
+    if (searchParams.get('error') || !code) return; // error already derived above
 
     api.post('/auth/oauth/exchange', { code })
       .then(({ data }) => {

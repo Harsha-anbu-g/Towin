@@ -39,29 +39,32 @@ function PublicHeader() {
   );
 }
 
+// Hoisted out of RoleTab: components defined during a render are re-created
+// on every render (react-hooks/static-components), losing DOM state.
+function RoleTabButton({ value, label, role, setRole }) {
+  const active = role === value;
+  return (
+    <button
+      onClick={() => setRole(value)}
+      style={{
+        flex: 1, padding: '11px 0', fontFamily: SF, fontSize: '16px',
+        fontWeight: active ? 700 : 500,
+        color: active ? '#fff' : 'var(--ink-slate)',
+        background: active ? SKY : 'var(--canvas)',
+        border: `1px solid ${active ? SKY : 'var(--border)'}`,
+        borderRadius: '9999px', cursor: 'pointer', transition: 'all 0.15s',
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 function RoleTab({ role, setRole }) {
-  const Tab = ({ value, label }) => {
-    const active = role === value;
-    return (
-      <button
-        onClick={() => setRole(value)}
-        style={{
-          flex: 1, padding: '11px 0', fontFamily: SF, fontSize: '16px',
-          fontWeight: active ? 700 : 500,
-          color: active ? '#fff' : 'var(--ink-slate)',
-          background: active ? SKY : 'var(--canvas)',
-          border: `1px solid ${active ? SKY : 'var(--border)'}`,
-          borderRadius: '9999px', cursor: 'pointer', transition: 'all 0.15s',
-        }}
-      >
-        {label}
-      </button>
-    );
-  };
   return (
     <div style={{ display: 'flex', gap: '10px', marginBottom: '22px' }}>
-      <Tab value="ELDER" label="I'm an Elder" />
-      <Tab value="HELPER" label="I'm a Helper" />
+      <RoleTabButton value="ELDER" label="I'm an Elder" role={role} setRole={setRole} />
+      <RoleTabButton value="HELPER" label="I'm a Helper" role={role} setRole={setRole} />
     </div>
   );
 }

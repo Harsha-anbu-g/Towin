@@ -49,20 +49,19 @@ export default function PeekabooGame() {
   const [selected, setSelected] = useState([]);
   const [locked, setLocked]     = useState(false);
   const [timeLeft, setTimeLeft] = useState(TIME);
-  const [phase, setPhase]       = useState('playing');
 
   // Check-in happens on the Streaks page before entering the game
 
+  // Derived, never synced: lost when the clock runs out, won when every pair
+  // is matched. Computing this during render replaces the two
+  // setState-in-effect calls the hooks rules flag.
+  const phase = timeLeft <= 0 ? 'lost' : cards.every(c => c.matched) ? 'won' : 'playing';
+
   useEffect(() => {
     if (phase !== 'playing') return;
-    if (timeLeft <= 0) { setPhase('lost'); return; }
     const t = setTimeout(() => setTimeLeft(n => n - 1), 1000);
     return () => clearTimeout(t);
   }, [timeLeft, phase]);
-
-  useEffect(() => {
-    if (phase === 'playing' && cards.every(c => c.matched)) setPhase('won');
-  }, [cards, phase]);
 
   function flip(idx) {
     if (locked || phase !== 'playing') return;

@@ -6,7 +6,9 @@ export function useSosCountdown(send, seconds = 5) {
   const [countdown, setCountdown] = useState(null);
   const timerRef = useRef(null);
   const sendRef = useRef(send);
-  sendRef.current = send;
+  // Latest-ref pattern: refs must not be written during render, so keep the
+  // freshest `send` via an effect that runs after every render.
+  useEffect(() => { sendRef.current = send; });
 
   const clear = () => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
