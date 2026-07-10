@@ -8,6 +8,7 @@ const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SKY   = 'var(--blue)';
 const BLUE  = 'var(--blue)';
+const BLUE_DEEP = 'var(--blue-deep)';
 const TRUST = 'var(--trust-gold)';
 const BG    = 'var(--surface)';
 const INK   = 'var(--ink)';
@@ -25,8 +26,8 @@ const TIERS = [
 
 const TIER_COLORS = {
   'Community Champion': { bg: 'var(--gold-wash-2)', color: 'var(--ink-slate)', border: 'var(--gold-line)' },
-  'Highly Trusted':     { bg: BG, color: BLUE, border: 'var(--sky-line-3)' },
-  'Reliable':           { bg: BG, color: BLUE, border: 'var(--sky-line-3)' },
+  'Highly Trusted':     { bg: BG, color: BLUE_DEEP, border: 'var(--sky-line-3)' },
+  'Reliable':           { bg: BG, color: BLUE_DEEP, border: 'var(--sky-line-3)' },
   'Getting Started':    { bg: 'var(--grey-fill-2)', color: 'var(--ink-slate)', border: 'var(--grey-line-2)' },
   'New Member':         { bg: 'var(--grey-fill-2)', color: 'var(--grey-text)', border: 'var(--grey-line)' },
 };
@@ -60,7 +61,7 @@ function Meter({ label, earned, max, shape }) {
     const on = i < earned;
     if (shape === 'star') {
       marks.push(
-        <span key={i} style={{ fontSize: '16px', lineHeight: 1, color: on ? SKY : EMPTY }}>★</span>
+        <span key={i} style={{ fontSize: '16px', lineHeight: 1, color: on ? BLUE_DEEP : EMPTY }}>★</span>
       );
     } else {
       marks.push(
@@ -76,11 +77,11 @@ function Meter({ label, earned, max, shape }) {
       <span style={{ fontFamily: SF, fontSize: '14px', color: GREY, width: '92px', flexShrink: 0 }}>
         {label}
       </span>
-      <span style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: 1, flexWrap: 'wrap' }}>
+      <span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: 1, flexWrap: 'wrap' }}>
         {marks}
       </span>
-      <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: earned > 0 ? INK : FAINT, flexShrink: 0 }}>
-        {earned}<span style={{ color: FAINT, fontWeight: 400 }}>/{max}</span>
+      <span aria-label={`${earned} of ${max}`} style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: earned > 0 ? INK : FAINT, flexShrink: 0 }}>
+        {earned}<span aria-hidden="true" style={{ color: FAINT, fontWeight: 400 }}>/{max}</span>
       </span>
     </div>
   );
@@ -199,11 +200,11 @@ function ProfileGroup({ group }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
         {items.map(it => (
           <div key={it.key} style={{ display: 'flex', alignItems: 'flex-start', gap: '9px' }}>
-            <span style={{ fontSize: 'var(--text-sm)', lineHeight: '18px', color: it.completed ? BLUE : 'var(--grey-text-2)' }}>
+            <span style={{ fontSize: 'var(--text-sm)', lineHeight: '18px', color: it.completed ? BLUE_DEEP : 'var(--grey-text-2)' }}>
               {it.completed ? '✓' : '○'}
             </span>
             <div style={{ flex: 1 }}>
-              <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: it.completed ? 600 : 500, color: it.completed ? BLUE : INK }}>
+              <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: it.completed ? 600 : 500, color: it.completed ? BLUE_DEEP : INK }}>
                 {it.label}
               </span>
               {!it.completed && it.tip && (

@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef, useState } from 'react';
+
 const SF    = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT   = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
@@ -14,6 +16,12 @@ const LEVELS = [
 
 const LEVEL_IDX = Object.fromEntries(LEVELS.map((l, i) => [l.key, i]));
 
+/* Knob geometry: the tortoise knob is 34px wide, so markers travel across
+   (trackWidth - 34)px and the bar itself is inset 17px (half a knob) each side. */
+const KNOB = 34;
+/* Motion rule: under 300ms, custom curve, transform-only (GPU). */
+const MOVE_TRANSITION = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+
 export default function TrustJourney({
   currentTrustLevel = 'DISCOVERED',
   confirmedByMe = false,
@@ -23,6 +31,21 @@ export default function TrustJourney({
   onConfirm,
   confirming = false,
 }) {
+  // Measure the bar's width so the tick/knob can be positioned with
+  // transform: translateX(<px>) (GPU) instead of animating 'left' (layout).
+  const trackRef = useRef(null);
+  const [trackW, setTrackW] = useState(0);
+  useLayoutEffect(() => {
+    const el = trackRef.current;
+    if (!el) return undefined;
+    const measure = () => setTrackW(el.offsetWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const travel = Math.max(trackW - KNOB, 0); // px the knob center can travel
+
   const idx = LEVEL_IDX[currentTrustLevel] ?? 0;
   const current = LEVELS[idx];
   const denom = LEVELS.length - 1;
@@ -107,7 +130,7 @@ export default function TrustJourney({
       {/* Progress bar — the tortoise rides along it to the current stage.
           Announced as one progress image; the tortoise marker is decorative
           and inert so it never reads as a draggable slider handle. */}
-      <div role="img" aria-label={barAria} style={{ position: 'relative', height: '34px' }}>
+      <div ref={trackRef} role="img" aria-label={barAria} style={{ position: 'relative', height: '34px' }}>
         <div aria-hidden="true" style={{ position: 'absolute', left: '17px', right: '17px', top: '50%', transform: 'translateY(-50%)', height: '9px', background: 'var(--sky-hairline)', borderRadius: '9999px', overflow: 'hidden' }}>
           {/* Elder's half — the LIGHT in-progress fill (light sky blue, clearly
               visible against the pale track — --blue-soft was too faint and read
@@ -115,19 +138,19 @@ export default function TrustJourney({
               Sits UNDER the earned fill, so it only shows in the stretch the
               elder has claimed but the helper hasn't yet completed.
               Light = not yet earned. */}
-          <div style={{ position: 'absolute', inset: 0, background: 'var(--sky-bar-from)', borderRadius: '9999px', transform: `scaleX(${fillFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--sky-bar-from)', borderRadius: '9999px', transform: `scaleX(${fillFrac})`, transformOrigin: 'left center', transition: MOVE_TRANSITION }} />
           {/* Earned fill — the DARKER solid blue up to the last fully-completed
               rung. Darker = trust actually built; the elder's pending half
               stays lighter until the helper completes it. */}
-          <div style={{ position: 'absolute', inset: 0, background: 'var(--blue-deep)', borderRadius: '9999px', transform: `scaleX(${baseFrac})`, transformOrigin: 'left center', transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--blue-deep)', borderRadius: '9999px', transform: `scaleX(${baseFrac})`, transformOrigin: 'left center', transition: MOVE_TRANSITION }} />
         </div>
         {/* Active-step tick — the halfway checkpoint of the step in play. The
             elder fills up to it; the tortoise rests on it while awaiting the
             helper. Hidden at the top of the ladder (no next step). */}
         {!isTrusted && (
-          <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${midFrac} + 17px)`, transform: 'translate(-50%, -50%)', width: '2px', height: '13px', borderRadius: '9999px', background: 'var(--blue-mid)', opacity: 0.55, transition: 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }} />
+          <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: `${KNOB / 2}px`, transform: `translateX(${travel * midFrac}px) translate(-50%, -50%)`, width: '2px', height: '13px', borderRadius: '9999px', background: 'var(--blue-mid)', opacity: 0.55, transition: MOVE_TRANSITION }} />
         )}
-        <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: `calc((100% - 34px) * ${fillFrac})`, transform: 'translateY(-50%)', width: '34px', height: '34px', borderRadius: '50%', background: accentBg, border: `2px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: 'none' }}>
+        <div aria-hidden="true" style={{ position: 'absolute', top: '50%', left: 0, transform: `translateX(${travel * fillFrac}px) translateY(-50%)`, width: `${KNOB}px`, height: `${KNOB}px`, borderRadius: '50%', background: accentBg, border: `2px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: MOVE_TRANSITION, pointerEvents: 'none' }}>
           <img src="/tortoise-right.png" alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
         </div>
       </div>

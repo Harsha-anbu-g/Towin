@@ -44,7 +44,7 @@ function VerifiedChip({ label }) {
 
 function Stars({ rating }) {
   return (
-    <span aria-label={`${rating} out of 5 stars`} style={{ color: 'var(--star-gold)', letterSpacing: '-1px', fontSize: '16px' }}>
+    <span aria-label={`${rating} out of 5 stars`} className="star-lit" style={{ letterSpacing: '-1px', fontSize: '16px' }}>
       {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
     </span>
   );
@@ -195,7 +195,7 @@ export default function UserProfile() {
                   {hasTrust && (
                     <>
                       <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <span aria-hidden style={{ color: 'var(--star-gold)' }}>★</span>
+                        <span aria-hidden className="star-lit">★</span>
                         {profile.trustScore ?? 0} points
                       </span>
                       <TrustBadge tier={profile.trustTier} />

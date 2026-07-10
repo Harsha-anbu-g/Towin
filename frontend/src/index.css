@@ -274,6 +274,9 @@
   --sky-line-3:     rgba(79, 163, 206, 0.45);
   --sky-line-4:     rgba(79, 163, 206, 0.30);
   --sky-hairline:   rgba(79, 163, 206, 0.22);
+  --sky-bar-from:   rgba(126, 192, 228, 0.55);  /* ladder waiting-half: earned fill is the BRIGHT
+                                                   blue at night, so the pending half dims instead
+                                                   of lightens (light value collides with #7ec0e4) */
   --grey-line-2:    #3f3d38;
   --grey-text:      #949089;
   --grey-text-2:    #6f6c66;
@@ -511,6 +514,23 @@ button, a, [role="button"], input, textarea, select, label, summary {
   animation: intro-wordmark 460ms var(--ease-arrive) 2650ms forwards;
 }
 
+/* Arrival at the last stop of the landing journey line: the stop blooms green
+   (green = achieved — the tortoise finished the walk) and the Start button
+   rises in just after, so the bloom leads and the action follows. Both are
+   transform/opacity only; the global reduced-motion override collapses them
+   to their final frame (no bloom, button simply present). */
+@keyframes arrive-bloom {
+  from { transform: scale(0.5); opacity: 0.8; }
+  to   { transform: scale(1.9); opacity: 0; }
+}
+.arrive-bloom { animation: arrive-bloom 600ms var(--ease-arrive) forwards; }
+
+@keyframes start-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.start-rise { animation: start-rise 240ms var(--ease-arrive) 150ms both; }
+
 /* Scroll cue under the deck: a soft slow bob on the chevron. transform-only;
    the global reduced-motion override freezes it. */
 @keyframes hint-bob {
@@ -547,6 +567,22 @@ button, a, [role="button"], input, textarea, select, label, summary {
 }
 .ghost-btn:hover, .btn-ghost:hover { border-color: var(--blue); color: var(--blue); background: rgba(37,99,235,0.04); }
 [data-theme="dark"] .ghost-btn:hover, [data-theme="dark"] .btn-ghost:hover { background: rgba(79,163,206,0.10); }
+
+/* Lit rating stars (US-004): trust-gold in light (3.99:1 — meets the 3:1 graphics
+   bar on white); stays bright star-gold in dark, where #f5b400 passes. */
+.star-lit { color: var(--trust-gold); }
+[data-theme="dark"] .star-lit { color: var(--star-gold); }
+
+/* Active nav Trust chip text (US-004): white on light's deep gold, near-black on
+   dark's pale gold — theme must come from CSS, not JS, so both stay in sync. */
+.trust-chip-active { color: #fff; }
+[data-theme="dark"] .trust-chip-active { color: #1d1d1f; }
+
+/* Destructive TEXT (US-012): --red-deep passes as text in light (#9b3535) but its
+   dark value (#b45050) is a fill shade — only 2.91:1 on the dark card. Dark-theme
+   red TEXT uses the existing semantic --red-error (5.2:1). Fills keep --red-deep. */
+.danger-text { color: var(--red-deep); }
+[data-theme="dark"] .danger-text { color: var(--red-error); }
 
 /* Primary button (non-shimmer) */
 .primary-btn {

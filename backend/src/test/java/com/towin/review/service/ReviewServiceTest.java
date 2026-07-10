@@ -1,6 +1,8 @@
 package com.towin.review.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.TrustLevel;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
@@ -83,9 +85,18 @@ class ReviewServiceTest {
         when(reviewRepository.save(any())).thenAnswer(i -> i.getArgument(0));
     }
 
+    /** An ACTIVE connection at the top of the trust ladder — the only kind that
+     *  may carry a review without a shared need. */
     private void connected() {
+        connectedAt(ConnectionStatus.ACTIVE, TrustLevel.TRUSTED);
+    }
+
+    private void connectedAt(ConnectionStatus status, TrustLevel level) {
         when(connectionRepository.findBetweenUsers(reviewerId, revieweeId))
-                .thenReturn(Optional.of(Connection.builder().userA(reviewer).userB(reviewee).build()));
+                .thenReturn(Optional.of(Connection.builder()
+                        .userA(reviewer).userB(reviewee)
+                        .status(status).currentTrustLevel(level)
+                        .build()));
     }
 
     // ── submitReview: guards ─────────────────────────────────────────────────
@@ -200,6 +211,32 @@ class ReviewServiceTest {
         assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, null, 5)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("people you've connected with");
+
+        verify(reviewRepository, never()).save(any());
+        verify(trustScoreService, never()).recalculate(any());
+    }
+
+    @Test
+    void reviewBeforeReachingFullTrust_isRejected_soTheLadderCannotBeSkipped() {
+        bothUsersExist();
+        connectedAt(ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL);
+
+        assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, null, 5)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("fully trusted");
+
+        verify(reviewRepository, never()).save(any());
+        verify(trustScoreService, never()).recalculate(any());
+    }
+
+    @Test
+    void reviewOnAPendingInvite_isRejected() {
+        bothUsersExist();
+        connectedAt(ConnectionStatus.PENDING, TrustLevel.TRUSTED);
+
+        assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, null, 5)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("fully trusted");
 
         verify(reviewRepository, never()).save(any());
         verify(trustScoreService, never()).recalculate(any());

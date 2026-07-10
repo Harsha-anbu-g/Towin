@@ -347,7 +347,9 @@ export default function Register() {
   };
 
   const linkBtn = {
-    color: 'var(--blue-deep)', background: 'none', border: 'none', padding: 0,
+    color: 'var(--blue-deep)', background: 'none', border: 'none',
+    // 44px-tall hit area without changing the visual inline-link look
+    padding: '12px 0', margin: '-12px 0',
     cursor: 'pointer', font: 'inherit', textDecoration: 'underline',
   };
 
@@ -445,7 +447,7 @@ export default function Register() {
                   onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = 'var(--blue)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--blue-soft)'; }}
                 >
-                  <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-teal)' }}>
+                  <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)' }}>
                     {guestLoading === role ? 'Opening…' : label}
                   </span>
                   <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>
@@ -532,7 +534,7 @@ export default function Register() {
                       }}>
                       <div style={{
                         fontSize: 'var(--text-sm)', fontWeight: 600,
-                        color: active ? 'var(--blue)' : 'var(--ink)',
+                        color: active ? 'var(--blue-deep)' : 'var(--ink)',
                         marginBottom: '4px',
                         fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                       }}>
@@ -540,7 +542,7 @@ export default function Register() {
                       </div>
                       <div style={{
                         fontSize: 'var(--text-xs)', lineHeight: 1.3,
-                        color: active ? 'var(--blue-mid)' : 'var(--ink-4)',
+                        color: active ? 'var(--ink-slate)' : 'var(--ink-4)',
                         fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                       }}>
                         {desc}
@@ -679,14 +681,14 @@ export default function Register() {
 
               {/* Terms checkbox */}
               <label style={{
-                display: 'flex', alignItems: 'flex-start', gap: '10px',
-                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '10px',
+                cursor: 'pointer', minHeight: '44px',
               }}>
                 <input
                   type="checkbox"
                   checked={agreed}
                   onChange={e => setAgreed(e.target.checked)}
-                  style={{ marginTop: '2px', accentColor: 'var(--blue)', flexShrink: 0 }}
+                  style={{ width: '22px', height: '22px', accentColor: 'var(--blue)', flexShrink: 0 }}
                 />
                 <span style={{
                   fontSize: '14px', color: 'var(--ink-3)', lineHeight: 1.5,
@@ -735,7 +737,7 @@ export default function Register() {
           <div style={{ textAlign: 'center', marginTop: '14px' }}>
             <Link to="/how-it-works" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: 'transparent', color: 'var(--blue-teal)', textDecoration: 'none',
+              background: 'transparent', color: 'var(--blue-deep)', textDecoration: 'none',
               borderRadius: '9999px', padding: '11px 24px',
               fontSize: 'var(--text-sm)', fontWeight: 500,
               border: '1px solid var(--border)',

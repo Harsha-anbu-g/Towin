@@ -126,7 +126,7 @@ export default function NavBar() {
         display: 'flex', alignItems: 'center', gap: '8px',
         fontSize: '16px', fontFamily: SF,
         fontWeight: active ? 600 : 500,
-        color: active ? 'var(--blue)' : 'var(--ink-slate)',
+        color: active ? 'var(--blue-deep)' : 'var(--ink-slate)',
         textDecoration: 'none',
         padding: '10px 16px',
         minHeight: '44px', // elderly-first tap-target floor
@@ -151,7 +151,7 @@ export default function NavBar() {
         borderBottom: '1px solid var(--hairline)',
         fontSize: '17px', fontFamily: SF,
         fontWeight: active ? 700 : 500,
-        color: active ? 'var(--blue)' : 'var(--ink)',
+        color: active ? 'var(--blue-deep)' : 'var(--ink)',
         textDecoration: 'none',
       }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
@@ -184,7 +184,8 @@ export default function NavBar() {
           letterSpacing: '-0.374px', color: 'var(--green-deep)',
           textDecoration: 'none', flexShrink: 0,
           display: 'inline-flex', alignItems: 'center', gap: '8px',
-          minHeight: '44px', // elderly-first tap-target floor
+          justifyContent: 'center',
+          minHeight: '44px', minWidth: '44px', // elderly-first tap-target floor
           marginRight: isMobile ? 0 : '32px',
         }}>
           <img src="/logo.png" alt="ToWin logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
@@ -210,12 +211,14 @@ export default function NavBar() {
               )}
             </div>
             <div style={{ width: '1px', height: '22px', background: 'var(--border)', margin: '0 8px' }} />
-            <Link to="/trust" style={{
+            <Link to="/trust" className={trustActive ? 'trust-chip-active' : undefined} style={{
               display: 'flex', alignItems: 'center', gap: '7px',
               fontSize: '16px', fontFamily: SF, fontWeight: 600,
-              color: trustActive ? '#fff' : 'var(--trust-gold)',
-              background: trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.1)',
-              border: `1.5px solid ${trustActive ? '#9C7A3C' : 'rgba(156,122,60,0.35)'}`,
+              /* US-004: gold-deep chip — AA text in both states/themes;
+                 active text color lives in .trust-chip-active (CSS themes it) */
+              color: trustActive ? undefined : 'var(--gold-deep)',
+              background: trustActive ? 'var(--gold-deep)' : 'var(--gold-wash)',
+              border: `1.5px solid ${trustActive ? 'var(--gold-deep)' : 'var(--gold-line)'}`,
               borderRadius: '9999px', padding: '6px 16px',
               minHeight: '44px', // elderly-first tap-target floor
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
@@ -344,7 +347,7 @@ export default function NavBar() {
                 position: 'relative', textDecoration: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 minWidth: '44px', minHeight: '44px',
-                color: pathname.startsWith('/messages') ? 'var(--blue)' : 'var(--ink)',
+                color: pathname.startsWith('/messages') ? 'var(--blue-deep)' : 'var(--ink)',
               }}
             >
               <MessageCircle size={24} strokeWidth={2} aria-hidden="true" />
@@ -368,7 +371,7 @@ export default function NavBar() {
                   : 'Send SOS alert to your emergency contacts'}
                 style={{
                 fontSize: '14px', fontWeight: 700, fontFamily: SF,
-                padding: '7px 16px', minHeight: '40px', borderRadius: '9999px', border: 'none',
+                padding: '7px 16px', minHeight: '44px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? 'var(--blue)' : '#9b3535',
                 color: '#fff',

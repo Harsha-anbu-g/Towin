@@ -41,7 +41,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Idempotent, additive demo content so the demo accounts show every feature
@@ -271,7 +273,10 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new String[]{"Tamil", "English"});
 
         // Connections cover every state a viewer can act on:
-        //  • TRUSTED   — top of the ladder (Grace ↔ Harsha, Margaret ↔ Tom)
+        //  • TRUSTED   — top of the ladder (Grace ↔ Harsha, Margaret ↔ Tom,
+        //    Grace ↔ Priya, David ↔ Nina). Only these pairs may exchange
+        //    connection reviews — the Review button unlocks at TRUSTED and
+        //    ReviewService enforces the same gate.
         //  • PHONE_CALL with the helper already confirmed — Margaret sees a live
         //    "confirm to advance" button (the core trust step in action)
         //  • PENDING incoming/outgoing on BOTH demo accounts, so Add Friends →
@@ -287,7 +292,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hello Margaret! I'm Priya, happy to help with errands or cooking.", false, true);
         Connection cVideo = ensureConnection(david, james, ConnectionStatus.ACTIVE, TrustLevel.VIDEO_CALL, james,
                 "Hi David, fellow engineer here. Happy to help with anything.");
-        ensureConnection(grace, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
+        ensureConnection(grace, priya, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, priya,
                 "Hi Grace, I'd love to keep you company on your walks.");
         Connection cMargaretTom = ensureConnection(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, tom,
                 "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
@@ -295,7 +300,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hi Harsha, I'd love a hand learning to video-call my grandchildren.");
         Connection cJamesRose = ensureConnection(james, rose, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED, james,
                 "Hello Rose! I saw you love reading too. I'd be happy to help with anything you need.");
-        Connection cDavidNina = ensureConnection(david, nina, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, nina,
+        Connection cDavidNina = ensureConnection(david, nina, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, nina,
                 "Hi David! I can help with transportation and errands whenever you need.");
         // PENDING: Helen → Harsha (shows in Harsha's New Invites tab)
         ensureConnection(helen, james, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, helen,
@@ -375,7 +380,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         //  • OPEN (no offers)         — Company for my morning walk      [COMPANIONSHIP]
         //  • OPEN + a pending offer   — Ride to my doctor appointment    [TRANSPORTATION]  → accept applicant
         //  • ASSIGNED (helper agreed) — Weekly grocery shopping          [ERRANDS]         → mark complete / cancel
-        //  • COMPLETED (+ review)     — Help setting up my new tablet    [OTHER]
+        //  • COMPLETED                — Help setting up my new tablet    [OTHER]
         //  • CANCELLED                — Fix the dripping kitchen tap      [CLEANING]
         ensureNeed(margaret, "Company for my morning walk",
                 "I walk in Riverdale Park most mornings and would enjoy company.",
@@ -386,7 +391,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         Need shopping = ensureNeed(margaret, "Weekly grocery shopping",
                 "A hand carrying groceries home from the market on Saturday mornings.",
                 NeedCategory.ERRANDS, NeedUrgency.NORMAL, NeedStatus.ASSIGNED);
-        Need tablet = ensureNeed(margaret, "Help setting up my new tablet",
+        ensureNeed(margaret, "Help setting up my new tablet",
                 "My daughter sent me a tablet and I would love help setting it up for video calls.",
                 NeedCategory.OTHER, NeedUrgency.NORMAL, NeedStatus.COMPLETED);
         ensureNeed(margaret, "Fix the dripping kitchen tap",
@@ -427,45 +432,45 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureApplication(rosePhone, james, "Happy to help, Rose! Phones are my thing — we'll have it set up in no time.", ApplicationStatus.ACCEPTED);
         ensureApplication(davidLaptop, james, "I can definitely speed that up for you, David.", ApplicationStatus.ACCEPTED);
 
+        // One-time repair for DBs seeded before reviews were gated by the trust
+        // ladder: earlier baselines planted connection reviews between pairs that
+        // never reached TRUSTED (one even sat on a still-pending invite). The app
+        // can no longer create those — ReviewService now enforces the ladder — so
+        // retire any leftovers between demo personas before re-seeding.
+        retireUntrustedDemoReviews(demoUsers);
+
+        // Reviews only exist where the app could truly create them: between the
+        // two sides of a TRUSTED connection (the Review button unlocks at the top
+        // of the trust ladder) or across a COMPLETED need. Pairs still climbing
+        // (Margaret ↔ Priya at PHONE_CALL, Harsha ↔ Rose just connected) have no
+        // reviews yet — that's the product rule on display.
         ensureReview(david, james, davidLaptop, 4,
                 "Very reliable and great company. Always on time.",
                 List.of("Reliable", "Punctual"));
-        ensureReview(priya, margaret, null, 5,
-                "Margaret is warm and full of wonderful stories. A joy to visit.",
-                List.of("Friendly", "Welcoming"));
+        ensureReview(james, david, davidLaptop, 5,
+                "David is sharp, engaging, and great company every visit.",
+                List.of("Friendly", "Reliable"));
         ensureReview(tom, margaret, null, 4,
                 "Margaret was patient and made me feel very welcome.",
                 List.of("Patient", "Welcoming"));
-        ensureReview(nina, margaret, null, 4,
-                "Margaret made everything feel easy and comfortable.",
-                List.of("Welcoming", "Friendly"));
-        ensureReview(margaret, priya, null, 5,
-                "Priya is efficient, warm, and so cheerful. A joy to have around.",
-                List.of("Reliable", "Friendly"));
+        ensureReview(margaret, tom, null, 4,
+                "Tom set up my new tablet and explained it all so clearly.",
+                List.of("Reliable", "Patient"));
         ensureReview(grace, priya, null, 5,
                 "Priya is always on time and treats me with such genuine care.",
                 List.of("Reliable", "Punctual"));
         ensureReview(priya, grace, null, 5,
                 "Grace is a delight — full of stories and so easy to spend time with.",
                 List.of("Friendly", "Welcoming"));
-        ensureReview(james, david, null, 5,
-                "David is sharp, engaging, and great company every visit.",
-                List.of("Friendly", "Reliable"));
-        ensureReview(nina, david, null, 4,
-                "David is gracious and always prepared — a lovely person to help.",
-                List.of("Friendly", "Punctual"));
         ensureReview(grace, james, null, 5,
                 "Harsha is patient, knowledgeable, and genuinely kind.",
                 List.of("Patient", "Reliable"));
         ensureReview(james, grace, null, 5,
                 "Grace has a wonderful spirit and such a warm home.",
                 List.of("Friendly", "Welcoming"));
-        ensureReview(rose, james, null, 4,
-                "Harsha is warm and never makes me feel rushed. Very helpful.",
-                List.of("Patient", "Friendly"));
-        ensureReview(margaret, tom, tablet, 4,
-                "Tom set up my new tablet and explained it all so clearly.",
-                List.of("Reliable", "Patient"));
+        ensureReview(nina, david, null, 4,
+                "David is gracious and always prepared — a lovely person to help.",
+                List.of("Friendly", "Punctual"));
         ensureReview(david, nina, null, 4,
                 "Nina is cheerful, punctual, and makes every trip a pleasure.",
                 List.of("Punctual", "Friendly"));
@@ -527,6 +532,29 @@ public class DemoDataSeeder implements ApplicationRunner {
                 c.setConfirmedByA(false);
                 c.setConfirmedByB(false);
                 connectionRepository.save(c);
+            }
+        }
+    }
+
+    /** Delete connection-based (no-need) reviews between demo personas whose
+     *  connection never reached TRUSTED. The app can't create these any more —
+     *  ReviewService gates reviews at the top of the trust ladder — so they only
+     *  exist in DBs seeded from the older, looser baseline. Need-linked reviews
+     *  and any review touching a real user are left untouched. */
+    private void retireUntrustedDemoReviews(List<User> demoUsers) {
+        Set<UUID> demoIds = demoUsers.stream().map(User::getId).collect(Collectors.toSet());
+        for (Review r : reviewRepository.findAll()) {
+            if (r.getNeed() != null) continue;
+            if (!demoIds.contains(r.getReviewer().getId()) || !demoIds.contains(r.getReviewee().getId())) continue;
+            boolean fullyTrusted = connectionRepository
+                    .findBetweenUsers(r.getReviewer().getId(), r.getReviewee().getId())
+                    .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE
+                            && c.getCurrentTrustLevel() == TrustLevel.TRUSTED)
+                    .isPresent();
+            if (!fullyTrusted) {
+                log.info("Retiring pre-gate demo review {} → {}",
+                        r.getReviewer().getEmail(), r.getReviewee().getEmail());
+                reviewRepository.delete(r);
             }
         }
     }
@@ -691,7 +719,22 @@ public class DemoDataSeeder implements ApplicationRunner {
                                         TrustLevel level, User initiator, String requestMessage,
                                         boolean confirmedByA, boolean confirmedByB) {
         Optional<Connection> existing = connectionRepository.findBetweenUsers(a.getId(), b.getId());
-        if (existing.isPresent()) return existing.get();
+        if (existing.isPresent()) {
+            Connection c = existing.get();
+            // Trust levels only ever move UP in production, so an active row sitting
+            // below its seed baseline means the baseline itself was raised (e.g. the
+            // review-gate rebalance promoted two pairs to TRUSTED). Lift it to match;
+            // never lower a level a visitor has legitimately advanced.
+            if (c.getStatus() == ConnectionStatus.ACTIVE
+                    && status == ConnectionStatus.ACTIVE
+                    && c.getCurrentTrustLevel().getValue() < level.getValue()) {
+                c.setCurrentTrustLevel(level);
+                c.setConfirmedByA(confirmedByA);
+                c.setConfirmedByB(confirmedByB);
+                return connectionRepository.save(c);
+            }
+            return c;
+        }
         return connectionRepository.save(Connection.builder()
                 .userA(a).userB(b)
                 .status(status)

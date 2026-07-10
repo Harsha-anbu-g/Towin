@@ -1,8 +1,11 @@
 package com.towin.review.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.TrustLevel;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
+import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.need.entity.Need;
 import com.towin.need.repository.NeedApplicationRepository;
@@ -69,9 +72,16 @@ public class ReviewService {
                 throw new IllegalArgumentException("You can only review the other person from that need");
             }
         } else {
-            // No need attached (connection-based review): the two must actually be connected.
-            if (connectionRepository.findBetweenUsers(reviewerId, request.getRevieweeId()).isEmpty()) {
-                throw new IllegalArgumentException("You can only review people you've connected with");
+            // No need attached (connection-based review): the two must actually be
+            // connected AND have reached the top of the trust ladder. The dashboards
+            // only offer this review button on TRUSTED connections; enforce the same
+            // rule here so the API can't rate someone you barely know.
+            Connection connection = connectionRepository
+                    .findBetweenUsers(reviewerId, request.getRevieweeId())
+                    .orElseThrow(() -> new IllegalArgumentException("You can only review people you've connected with"));
+            if (connection.getStatus() != ConnectionStatus.ACTIVE
+                    || connection.getCurrentTrustLevel() != TrustLevel.TRUSTED) {
+                throw new IllegalArgumentException("You can review each other once you're fully trusted friends");
             }
         }
 
