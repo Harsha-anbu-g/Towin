@@ -37,11 +37,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
-      # Advisory until the 53 pre-existing lint errors are fixed
-      # (see docs/superpowers/plans/2026-07-04-test-suite-and-ci-gate.md follow-ups).
-      - name: Lint (advisory)
+      # Hard gate: the frontend is lint-clean (0 errors, 0 warnings) as of the
+      # 2026-07-09 audit fixes — a failure here means new lint debt.
+      - name: Lint
         run: npm run lint
-        continue-on-error: true
       # Hard gate: raw hex colors in JSX silently break night mode (theme is
       # CSS-token driven). Allowlist lives in scripts/check-tokens.mjs.
       - name: Theme-token check
