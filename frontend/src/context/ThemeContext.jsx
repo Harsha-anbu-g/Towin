@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { ThemeContext } from './useTheme';
 
 // Night mode is opt-in: light is always the default and we never follow the
 // OS preference — older users shouldn't have the app change look on its own.
@@ -6,8 +7,6 @@ import { createContext, useCallback, useContext, useState } from 'react';
 // this context just takes over ownership of the attribute after mount.
 const STORAGE_KEY = 'towin-theme';
 const THEME_COLOR = { light: '#4FA3CE', dark: '#201f1d' };
-
-const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
 
 function applyTheme(theme) {
   if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
@@ -35,8 +34,4 @@ export function ThemeProvider({ children }) {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  return useContext(ThemeContext);
 }

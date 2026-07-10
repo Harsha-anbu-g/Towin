@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, MessageCircle, User, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/useAuth';
+import { useToast } from '../context/useToast';
+import { useTheme } from '../context/useTheme';
 import ConfirmDialog from './ConfirmDialog';
 import api from '../api/axios';
 import { useSosCountdown } from '../lib/useSosCountdown';

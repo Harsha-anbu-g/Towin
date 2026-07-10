@@ -75,6 +75,16 @@ export default defineConfig([
     },
   },
   {
+    // src/data holds deliberate mixed content modules (copy + tiny inline
+    // components in one editable file). Fast Refresh falls back to a full
+    // reload for them, which is accepted — editing content is not hot-path
+    // component work, and splitting the files would hurt editability.
+    files: ['src/data/**/*.{js,jsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     // Build/tool config files run under Node, not the browser.
     files: ['*.config.js'],
     languageOptions: {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../context/useToast';
 import api from '../api/axios';
 
 // Shown right after a manual signup. The account does NOT exist yet — it's

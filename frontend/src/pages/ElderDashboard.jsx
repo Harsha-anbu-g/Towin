@@ -8,9 +8,9 @@ import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
 import LocationPrimer from '../components/LocationPrimer';
 import api from '../api/axios';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import Avatar from '../components/ui/Avatar';
 import { useSeenIds } from '../lib/useSeenIds';
 

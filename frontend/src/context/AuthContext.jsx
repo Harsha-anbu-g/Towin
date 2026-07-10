@@ -1,7 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { useState } from 'react';
 import posthog from 'posthog-js';
-
-const AuthContext = createContext(null);
+import { AuthContext } from './useAuth';
 
 function parseJwtPayload(token) {
   try {
@@ -50,5 +49,3 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => useContext(AuthContext);

@@ -12,7 +12,7 @@ vi.mock('../api/axios', () => ({
   default: { post: vi.fn() },
 }))
 
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../context/useAuth', () => ({
   useAuth: () => ({ login: vi.fn() }),
 }))
 

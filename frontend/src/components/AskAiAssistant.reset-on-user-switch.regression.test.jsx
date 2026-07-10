@@ -11,7 +11,7 @@ import AskAiAssistant from './AskAiAssistant'
 
 let mockUser = { userId: 'elder-1' }
 
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../context/useAuth', () => ({
   useAuth: () => ({ user: mockUser }),
 }))
 

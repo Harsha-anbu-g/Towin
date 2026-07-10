@@ -5,7 +5,7 @@ import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
