@@ -523,7 +523,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
   from { transform: scale(0.5); opacity: 0.8; }
   to   { transform: scale(1.9); opacity: 0; }
 }
-.arrive-bloom { animation: arrive-bloom 600ms var(--ease-arrive) forwards; }
+.arrive-bloom { animation: arrive-bloom 280ms var(--ease-arrive) forwards; }
 
 @keyframes start-rise {
   from { opacity: 0; transform: translateY(8px); }

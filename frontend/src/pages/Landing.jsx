@@ -215,9 +215,8 @@ function StartButton({ onStart }) {
 export default function Landing() {
   const navigate = useNavigate();
   const total = SLIDES.length;
-  // index = nearest page; drives the dots, counter, inert, and the Start swap.
+  // index = nearest page; drives the dots, counter, and inert.
   const [index, setIndex] = useState(0);
-  const isLast = index === total - 1;
   // arrived = the tortoise is actually standing on the last stop (index flips
   // at the halfway point, too early for an arrival moment).
   const [arrived, setArrived] = useState(false);
@@ -424,6 +423,21 @@ export default function Landing() {
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
+
+  // Honor Reduce Motion the moment it flips, not just at mount: zeroing the
+  // amplitude lets the waddle loop settle the legs and idle out, and
+  // applyFacing swaps instantly from here on. Flipping it back off simply
+  // lets the next scroll start the walk again.
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => {
+      const w = walk.current;
+      w.reduced = mq.matches;
+      if (mq.matches) w.amp = 0;
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
   useEffect(() => {
     // The trail is rebuilt on a layout swap (fresh flipper with its default
     // facing, new scroll metrics), so re-prime the walk instead of carrying
@@ -440,45 +454,97 @@ export default function Landing() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
 
-  // Laptop: a sideways gesture (trackpad swipe, tilt wheel, Shift+wheel on
-  // Windows) turns the deck one whole page — the map reads horizontal, so
-  // sideways input is a natural ask. The turn rides the same smooth native
-  // scroll the map stops use, so the deck and tortoise scrub through the
-  // pages and always come to rest ON a page — no half-way states. One page
-  // per gesture: once it turns, the rest of the swipe (momentum included) is
-  // swallowed until the deltas go quiet. Vertical scrolling stays fully
-  // native and snap is never touched. Native listener: React registers
-  // wheel as passive, so preventDefault would be ignored through onWheel.
+  // Laptop: sideways scrolling (trackpad swipe, tilt wheel, Shift+wheel on
+  // Windows) scrubs the deck exactly like vertical scrolling does — 1:1 with
+  // the hand, momentum and all. Vertical gets that from native scrolling on
+  // the runway; sideways deltas have no native home (the runway only scrolls
+  // vertically), so while a sideways gesture is live we let go of snap, feed
+  // deltaX straight into the same runway scrollTop the vertical wheel drives
+  // (paint() and the tortoise just follow), and once the deltas go quiet we
+  // settle onto a page and hand snap back — the same rest rule the browser
+  // applies to a vertical release. Native listener: React registers wheel as
+  // passive, so preventDefault would be ignored through onWheel.
   useEffect(() => {
     if (isMobile) return undefined;
     const sc = scrollerRef.current;
     if (!sc) return undefined;
-    const QUIET_MS = 220; // this much silence between deltas ends a gesture
-    const COMMIT_PX = 90; // sideways travel needed before the page turns
-    let acc = 0;
+    const QUIET_MS = 150; // this much silence between deltas ends a gesture
+    const INTENT = 0.12; // fraction of a page that reads as "meant to turn"
+    let owning = false; // between the first sideways delta and snap hand-back
+    let startPage = 0;
     let lastT = 0;
-    let turned = false;
+    let quietT = 0;
+    let restoreT = 0;
+    const pagesAt = () => {
+      const range = sc.scrollHeight - sc.clientHeight;
+      return range > 0 ? (sc.scrollTop / range) * (total - 1) : 0;
+    };
+    const restoreSnap = () => {
+      clearTimeout(restoreT);
+      sc.removeEventListener('scrollend', restoreSnap);
+      sc.style.scrollSnapType = 'y mandatory';
+      owning = false;
+    };
+    const settle = () => {
+      quietT = 0;
+      const pos = pagesAt();
+      const nearest = Math.round(pos);
+      const moved = pos - startPage;
+      // Same instinct as native snap: rest on the nearest page — but a clear
+      // push off the current one always turns at least one page, so a short
+      // deliberate swipe never rubber-bands back.
+      const target = Math.max(0, Math.min(total - 1,
+        nearest !== startPage ? nearest
+          : Math.abs(moved) > INTENT ? startPage + Math.sign(moved)
+            : startPage));
+      sc.scrollTo({
+        top: (target / (total - 1)) * (sc.scrollHeight - sc.clientHeight),
+        behavior: scrollBehavior(),
+      });
+      // Hand snap back only once the settle ride ends — restoring it
+      // mid-ride would teleport the deck. scrollend where supported, a
+      // timer backstop everywhere else.
+      sc.addEventListener('scrollend', restoreSnap, { once: true });
+      restoreT = setTimeout(restoreSnap, 700);
+    };
     const onWheel = (e) => {
       if (e.ctrlKey) return; // pinch-zoom arrives as ctrl+wheel
-      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // vertical stays native
-      e.preventDefault(); // sideways has no native home here — we own it
-      if (e.timeStamp - lastT > QUIET_MS) { acc = 0; turned = false; }
+      const sideways = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      if (!owning && !sideways) return; // plain vertical: fully native, snap on
+      if (!owning) {
+        // A sideways gesture begins: take over until the deck is back on a
+        // page with snap restored.
+        owning = true;
+        clearTimeout(restoreT);
+        sc.removeEventListener('scrollend', restoreSnap);
+        sc.style.scrollSnapType = 'none';
+        startPage = Math.round(pagesAt());
+      } else if (e.timeStamp - lastT > QUIET_MS) {
+        // New gesture arriving while the last settle still rides: re-base so
+        // "moved" measures this gesture, not the whole chain.
+        startPage = Math.round(pagesAt());
+      }
       lastT = e.timeStamp;
-      if (turned) return; // one page per gesture; momentum is swallowed
-      // deltaMode: 0 = pixels (trackpads, most wheels), 1 = lines (Firefox
-      // wheels), 2 = pages.
-      const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? sc.clientHeight : 1;
-      acc += e.deltaX * unit;
-      if (Math.abs(acc) < COMMIT_PX) return;
-      turned = true;
-      const range = sc.scrollHeight - sc.clientHeight;
-      if (range <= 0) return;
-      const cur = Math.round((sc.scrollTop / range) * (total - 1));
-      const target = Math.max(0, Math.min(total - 1, cur + (acc > 0 ? 1 : -1)));
-      sc.scrollTo({ top: (target / (total - 1)) * range, behavior: scrollBehavior() });
+      if (sideways) {
+        e.preventDefault();
+        // deltaMode: 0 = pixels (trackpads, most wheels), 1 = lines (Firefox
+        // wheels), 2 = pages.
+        const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? sc.clientHeight : 1;
+        sc.scrollTop += e.deltaX * unit;
+      }
+      // Vertical deltas mid-gesture scroll natively (snap is off either way);
+      // every delta holds the settle until the whole gesture goes quiet.
+      clearTimeout(quietT);
+      quietT = setTimeout(settle, QUIET_MS);
     };
     sc.addEventListener('wheel', onWheel, { passive: false });
-    return () => sc.removeEventListener('wheel', onWheel);
+    return () => {
+      sc.removeEventListener('wheel', onWheel);
+      sc.removeEventListener('scrollend', restoreSnap);
+      clearTimeout(quietT);
+      clearTimeout(restoreT);
+      sc.style.scrollSnapType = 'y mandatory';
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
 
@@ -568,10 +634,15 @@ export default function Landing() {
               </div>
               {i === total - 1 && (
                 <div
-                  // The rise plays when the reader arrives (class toggles on),
-                  // just after the trail's green bloom — bloom leads, action follows.
-                  className={index === total - 1 ? 'start-rise' : undefined}
-                  style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}
+                  // The rise keys off the same `arrived` signal as the trail's
+                  // green bloom and starts 150ms behind it — bloom leads, action
+                  // follows. (index flips at the halfway snap, too early.) Kept
+                  // mounted but hidden so the slide's layout never jumps.
+                  className={arrived ? 'start-rise' : undefined}
+                  style={{
+                    marginTop: '28px', display: 'flex', justifyContent: 'center',
+                    visibility: arrived ? undefined : 'hidden',
+                  }}
                 >
                   <StartButton onStart={() => navigate('/login')} />
                 </div>
@@ -703,9 +774,11 @@ export default function Landing() {
               {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
             </p>
 
-            {isLast ? (
-              // Mounts on arrival, so the rise plays just after the trail's
-              // green bloom — bloom leads, action follows.
+            {arrived ? (
+              // Mounts on arrival — the same signal as the trail's green bloom,
+              // with the rise 150ms behind it: bloom leads, action follows.
+              // (index alone flips at the halfway snap, too early; until the
+              // tortoise stands on the last stop the scroll cue stays honest.)
               <div className="start-rise" style={{ display: 'flex', justifyContent: 'center' }}>
                 <StartButton onStart={() => navigate('/login')} />
               </div>
