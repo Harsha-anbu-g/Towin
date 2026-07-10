@@ -184,7 +184,8 @@ export default function NavBar() {
           letterSpacing: '-0.374px', color: 'var(--green-deep)',
           textDecoration: 'none', flexShrink: 0,
           display: 'inline-flex', alignItems: 'center', gap: '8px',
-          minHeight: '44px', // elderly-first tap-target floor
+          justifyContent: 'center',
+          minHeight: '44px', minWidth: '44px', // elderly-first tap-target floor
           marginRight: isMobile ? 0 : '32px',
         }}>
           <img src="/logo.png" alt="ToWin logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
@@ -370,7 +371,7 @@ export default function NavBar() {
                   : 'Send SOS alert to your emergency contacts'}
                 style={{
                 fontSize: '14px', fontWeight: 700, fontFamily: SF,
-                padding: '7px 16px', minHeight: '40px', borderRadius: '9999px', border: 'none',
+                padding: '7px 16px', minHeight: '44px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? 'var(--blue)' : '#9b3535',
                 color: '#fff',

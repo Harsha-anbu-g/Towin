@@ -71,7 +71,7 @@ function RoleTab({ role, setRole }) {
 
 function ProgressDots({ count, current, onJump }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', marginBottom: '8px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px' }}>
       {Array.from({ length: count }).map((_, i) => {
         const done = i < current;
         const here = i === current;
@@ -81,13 +81,21 @@ function ProgressDots({ count, current, onJump }) {
             onClick={() => onJump(i)}
             aria-label={`Go to step ${i + 1}`}
             style={{
-              width: here ? '26px' : '11px', height: '11px', borderRadius: '9999px',
+              // 36x36 hit area (elders); the visual dot stays small inside.
+              minWidth: '36px', minHeight: '36px',
               border: 'none', cursor: 'pointer', padding: 0,
+              background: 'transparent',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <span style={{
+              display: 'block',
+              width: here ? '26px' : '11px', height: '11px', borderRadius: '9999px',
               background: here ? SKY : done ? BORDER : 'var(--border)',
               // GPU-only: the width change lands instantly; only paint animates.
               transition: 'background 0.2s ease-out',
-            }}
-          />
+            }} />
+          </button>
         );
       })}
     </div>

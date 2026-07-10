@@ -138,8 +138,8 @@ function MobileTrail({ count, current, arrived, onJump, walkedRef, tortoiseRef, 
               position: 'absolute', top: `${(i / (count - 1)) * 100}%`, left: '50%',
               transform: 'translate(-50%, -50%)', pointerEvents: 'auto',
               border: 'none', background: 'transparent', cursor: 'pointer',
-              // 44px-tall tap target (elders); the 8px dot sits centered on the line.
-              padding: '18px 13px', display: 'inline-flex',
+              // 44x44 tap target (elders); the 8px dot sits centered on the line.
+              padding: '18px', display: 'inline-flex',
             }}
           >
             <span style={{
