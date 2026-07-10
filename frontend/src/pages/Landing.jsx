@@ -242,9 +242,31 @@ export default function Landing() {
   // to styles. Reduced-motion visitors keep the original steady glide.
   const walk = useRef({
     primed: false, lastP: 0, phase: 0, amp: 0, raf: 0, dir: 1, legs: null,
+    arrived: false, face: '',
     reduced: typeof window !== 'undefined'
       && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
   });
+
+  // The ONE place the tortoise's facing is written. Arrival wins: standing on
+  // the last stop it turns to its drawn head-up pose (0deg, facing the viewer);
+  // otherwise it faces the direction of travel. A single writer keeps the
+  // arrival turn and the direction flips from overwriting each other — the
+  // flipper's own 240ms transition animates the turn. Reduced-motion visitors
+  // get an instant swap instead of a turn.
+  const applyFacing = () => {
+    const el = flipRef.current;
+    const w = walk.current;
+    if (!el) return;
+    const face = w.arrived
+      ? 'rotate(0deg)'
+      : isMobile
+        ? (w.dir === 1 ? 'rotate(180deg)' : 'rotate(0deg)')
+        : (w.dir === 1 ? 'rotate(90deg)' : 'rotate(-90deg)');
+    if (face === w.face) return;
+    w.face = face;
+    if (w.reduced) el.style.transition = 'none';
+    el.style.transform = face;
+  };
 
   // The trail mark's leg paths, found once and re-found after the trail is
   // rebuilt (layout swap). Pivots are set here so each leg swings from its
@@ -304,22 +326,18 @@ export default function Landing() {
     // position doesn't fake a step.
     const w = walk.current;
     if (!w.primed) { w.primed = true; w.lastP = p; }
-    setArrived(p >= 0.985);
+    w.arrived = p >= 0.985;
+    setArrived(w.arrived);
     const dp = p - w.lastP;
     w.lastP = p;
     if (!w.reduced && Math.abs(dp) > 0.00005) {
       // ~3 waddle cycles per page walked
       w.phase += Math.min(0.12, Math.abs(dp) * (total - 1) * 3);
       w.amp = 1;
-      const dir = dp > 0 ? 1 : -1;
-      if (dir !== w.dir && flipRef.current) {
-        w.dir = dir;
-        flipRef.current.style.transform = isMobile
-          ? (dir === 1 ? 'rotate(180deg)' : 'rotate(0deg)')
-          : (dir === 1 ? 'rotate(90deg)' : 'rotate(-90deg)');
-      }
+      w.dir = dp > 0 ? 1 : -1;
       if (!w.raf) w.raf = requestAnimationFrame(waddleTick);
     }
+    applyFacing();
 
     // Phone: vertical scroll drives the upright rail. The walked line grows
     // downward (scaleY) and the tortoise walks down (translateY). The active
@@ -415,6 +433,9 @@ export default function Landing() {
     w.dir = 1;
     w.amp = 0;
     w.legs = null;
+    // The fresh flipper mounts with its default inline facing — forget the
+    // last written one so applyFacing re-asserts against the new element.
+    w.face = '';
     paint();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
