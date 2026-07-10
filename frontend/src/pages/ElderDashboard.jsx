@@ -223,12 +223,17 @@ export default function ElderDashboard() {
     loadConnections();
     loadNeeds();
     initLocation();
+  // Mount-only bootstrap: the loaders are component-scoped and re-created each
+  // render, so listing them as deps would refire this on every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (tab === 'needs') loadNeeds();
     if (tab === 'connections') loadConnections();
     if (tab === 'friends') { loadConnections(); loadHelpers(); }
+  // Deliberately keyed to the user's tab/radius choices only (see above).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, radiusKm]);
 
   // Refetch when the window regains focus, so actions taken in another tab

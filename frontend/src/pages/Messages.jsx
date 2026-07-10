@@ -69,6 +69,9 @@ export default function Messages() {
     loadMessages();
     const interval = setInterval(loadMessages, 5000);
     return () => clearInterval(interval);
+  // Keyed to the conversation only: loadMessages is component-scoped and
+  // re-created each render; listing it would tear down the poll every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionId]);
 
   useEffect(() => {

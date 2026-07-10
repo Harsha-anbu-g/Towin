@@ -130,6 +130,9 @@ export default function ProfileEdit() {
         dateOfBirth: p.dateOfBirth || '',
       });
     }).catch(() => {});
+  // Mount-only load; isElder comes from the signed JWT and cannot change
+  // without a login round-trip that remounts the page.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const f = (key) => ({

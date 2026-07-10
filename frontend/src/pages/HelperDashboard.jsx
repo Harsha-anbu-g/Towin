@@ -327,12 +327,17 @@ export default function HelperDashboard() {
   useEffect(() => {
     loadConnections();
     initLocation();
+  // Mount-only bootstrap: the loaders are component-scoped and re-created each
+  // render, so listing them as deps would refire this on every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (tab === 'browse') { loadNeeds(); loadMyApplications(); }
     if (tab === 'connections') loadConnections();
     if (tab === 'requests') { loadConnections(); loadElders(); }
+  // Deliberately keyed to the user's tab/radius choices only (see above).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, radiusKm]);
 
   // Refetch when the window regains focus, so actions taken in another tab
@@ -343,6 +348,9 @@ export default function HelperDashboard() {
     const onFocus = () => { loadNeeds(); loadMyApplications(); loadConnections(true); };
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
+  // location/radius are the real inputs; the loaders themselves are re-created
+  // each render and would churn the listener if listed.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, radiusKm]);
 
   async function withdrawApplication(needId) {
