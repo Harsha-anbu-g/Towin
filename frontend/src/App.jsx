@@ -23,7 +23,6 @@ import PeekabooGame from './pages/PeekabooGame';
 import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
 import AskAiAssistant from './components/AskAiAssistant';
-import CookieConsent from './components/CookieConsent';
 import VerifyEmail from './pages/VerifyEmail';
 import CheckEmail from './pages/CheckEmail';
 import ForgotPassword from './pages/ForgotPassword';
@@ -185,7 +184,6 @@ function App() {
             <FeedbackWidget />
           </div>
           <AskAiDock />
-          <CookieConsent />
           </div>
         </BrowserRouter>
     </ToastProvider>
