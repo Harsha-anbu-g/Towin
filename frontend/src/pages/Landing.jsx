@@ -674,6 +674,13 @@ export default function Landing() {
               <div className="bf" style={{ width: '100%', maxWidth: s.wide ? '880px' : '760px' }}>
                 {s.render()}
               </div>
+              {/* The way in, on the very first screen — most phone visitors never
+                  reached the last slide's Start, so the hero offers it up front. */}
+              {i === 0 && (
+                <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
+                  <StartButton onStart={() => navigate('/login')} />
+                </div>
+              )}
               {i === total - 1 && (
                 <div
                   // Rises the moment the last slide becomes current — NOT on the
@@ -790,6 +797,13 @@ export default function Landing() {
                   }}>
                     <div className="bf" style={{ width: '100%', maxWidth: s.wide ? '880px' : '760px' }}>
                       {s.render()}
+                      {/* Same up-front Start as the phone deck: the way in sits
+                          on the first page, not only six pages deep. */}
+                      {i === 0 && (
+                        <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
+                          <StartButton onStart={() => navigate('/login')} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </section>
