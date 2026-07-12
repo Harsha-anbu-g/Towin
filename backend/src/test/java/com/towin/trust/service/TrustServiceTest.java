@@ -43,8 +43,8 @@ class TrustServiceTest {
 
     @BeforeEach
     void setUp() {
-        userA = buildUser(UUID.randomUUID());
-        userB = buildUser(UUID.randomUUID());
+        userA = buildUser(UUID.randomUUID(), UserRole.ELDER);
+        userB = buildUser(UUID.randomUUID(), UserRole.HELPER);
     }
 
     @Test
@@ -75,6 +75,52 @@ class TrustServiceTest {
 
         assertThat(response.getCurrentLevel()).isEqualTo(TrustLevel.DISCOVERED);
         assertThat(response.isConfirmedByMe()).isTrue();
+    }
+
+    @Test
+    void shouldRejectHelperStartingAStep() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(userRepository.findById(userB.getId())).thenReturn(Optional.of(userB));
+
+        assertThatThrownBy(() -> trustService.confirmTrustLevel(userB.getId(), connection.getId(), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("elder");
+
+        assertThat(connection.isConfirmedByUser(userB.getId())).isFalse();
+    }
+
+    @Test
+    void shouldLetBothRoleUserStartAStep() {
+        User bothRoleUser = buildUser(UUID.randomUUID(), UserRole.BOTH);
+        Connection connection = buildConnection(bothRoleUser, userB, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(userRepository.findById(bothRoleUser.getId())).thenReturn(Optional.of(bothRoleUser));
+        when(trustLogRepository.findByConnectionIdOrderByCreatedAtDesc(connection.getId())).thenReturn(List.of());
+        when(connectionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        TrustStatusResponse response = trustService.confirmTrustLevel(bothRoleUser.getId(), connection.getId(), null);
+
+        assertThat(response.isConfirmedByMe()).isTrue();
+        assertThat(response.getCurrentLevel()).isEqualTo(TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void helperCanAdvanceOnlyAfterElderStarts() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(trustLogRepository.findByConnectionIdOrderByCreatedAtDesc(connection.getId())).thenReturn(List.of());
+
+        assertThat(trustService.getStatus(userB.getId(), connection.getId()).isCanAdvance()).isFalse();
+        assertThat(trustService.getStatus(userA.getId(), connection.getId()).isCanAdvance()).isTrue();
+
+        connection.setConfirmedByUser(userA.getId(), true);
+
+        assertThat(trustService.getStatus(userB.getId(), connection.getId()).isCanAdvance()).isTrue();
+        assertThat(trustService.getStatus(userA.getId(), connection.getId()).isCanAdvance()).isFalse();
     }
 
     @Test
@@ -147,13 +193,13 @@ class TrustServiceTest {
                 .hasMessageContaining("not active");
     }
 
-    private User buildUser(UUID id) {
+    private User buildUser(UUID id, UserRole role) {
         return User.builder()
                 .id(id)
                 .email(id + "@test.com")
                 .phone("+1234567890")
                 .passwordHash("hash")
-                .role(UserRole.ELDER)
+                .role(role)
                 .trustScore(0.0)
                 .verificationStatus(VerificationStatus.NONE)
                 .isActive(true)
