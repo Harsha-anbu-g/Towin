@@ -676,14 +676,15 @@ export default function Landing() {
               </div>
               {i === total - 1 && (
                 <div
-                  // The rise keys off the same `arrived` signal as the trail's
-                  // green bloom and starts 150ms behind it — bloom leads, action
-                  // follows. (index flips at the halfway snap, too early.) Kept
-                  // mounted but hidden so the slide's layout never jumps.
-                  className={arrived ? 'start-rise' : undefined}
+                  // Rises the moment the last slide becomes current — NOT on the
+                  // stricter `arrived` (full settle at the very bottom), which
+                  // many visitors never hit: they reached this slide, saw no
+                  // action, and left. The trail's green bloom keeps `arrived`.
+                  // Kept mounted but hidden so the slide's layout never jumps.
+                  className={index === total - 1 ? 'start-rise' : undefined}
                   style={{
                     marginTop: '28px', display: 'flex', justifyContent: 'center',
-                    visibility: arrived ? undefined : 'hidden',
+                    visibility: index === total - 1 ? undefined : 'hidden',
                   }}
                 >
                   <StartButton onStart={() => navigate('/login')} />
@@ -816,11 +817,12 @@ export default function Landing() {
               {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
             </p>
 
-            {arrived ? (
-              // Mounts on arrival — the same signal as the trail's green bloom,
-              // with the rise 150ms behind it: bloom leads, action follows.
-              // (index alone flips at the halfway snap, too early; until the
-              // tortoise stands on the last stop the scroll cue stays honest.)
+            {index === total - 1 ? (
+              // Mounts as soon as the last page becomes current — NOT on the
+              // stricter `arrived` (a full settle at the runway's very bottom),
+              // which many visitors never reached: they landed on the last page,
+              // saw no action, and closed the site. The trail's green bloom
+              // still keys off `arrived`.
               <div className="start-rise" style={{ display: 'flex', justifyContent: 'center' }}>
                 <StartButton onStart={() => navigate('/login')} />
               </div>
