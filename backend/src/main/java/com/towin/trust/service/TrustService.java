@@ -3,6 +3,7 @@ package com.towin.trust.service;
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
+import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
@@ -41,6 +42,12 @@ public class TrustService {
         }
 
         User user = getUser(userId);
+
+        // The elder starts each step; the helper can only accept after that.
+        boolean otherConfirmed = connection.isConfirmedByUser(connection.getOtherUser(userId).getId());
+        if (!otherConfirmed && !actsAsElder(user)) {
+            throw new IllegalArgumentException("Only the elder can start the next step. You can accept it once they do.");
+        }
 
         connection.setConfirmedByUser(userId, true);
 
@@ -115,6 +122,7 @@ public class TrustService {
 
         UUID otherUserId = connection.getOtherUser(viewerUserId).getId();
         boolean confirmedByOther = connection.isConfirmedByUser(otherUserId);
+        User viewer = connection.getOtherUser(otherUserId);
 
         return TrustStatusResponse.builder()
                 .connectionId(connection.getId())
@@ -122,7 +130,8 @@ public class TrustService {
                 .confirmedByMe(connection.isConfirmedByUser(viewerUserId))
                 .confirmedByOther(confirmedByOther)
                 .canAdvance(!connection.isConfirmedByUser(viewerUserId)
-                        && connection.getStatus() == ConnectionStatus.ACTIVE)
+                        && connection.getStatus() == ConnectionStatus.ACTIVE
+                        && (actsAsElder(viewer) || confirmedByOther))
                 .history(history.stream().map(log -> TrustStatusResponse.TrustLogEntry.builder()
                         .fromLevel(log.getFromLevel())
                         .toLevel(log.getToLevel())
@@ -148,6 +157,10 @@ public class TrustService {
             throw new IllegalArgumentException("You are not part of this connection");
         }
         return connection;
+    }
+
+    private static boolean actsAsElder(User user) {
+        return user.getRole() == UserRole.ELDER || user.getRole() == UserRole.BOTH;
     }
 
     private User getUser(UUID userId) {

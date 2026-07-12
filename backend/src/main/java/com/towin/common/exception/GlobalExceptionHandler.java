@@ -62,6 +62,8 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Initiator cannot respond",                     "You can't respond to your own request.");
         SAFE_MESSAGES.put("Connection is not pending",                    "This request is no longer pending.");
         SAFE_MESSAGES.put("Only active connections can be ended",         "Only active connections can be ended.");
+        // Trust flow
+        SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow
         SAFE_MESSAGES.put("You cannot review yourself",                   "You can't review yourself.");
         SAFE_MESSAGES.put("You have already reviewed this service",       "You've already reviewed this.");
