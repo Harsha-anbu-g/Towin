@@ -1,7 +1,9 @@
 package com.towin.emergency.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.exception.RateLimitException;
 import com.towin.emergency.entity.EmergencyContact;
+import com.towin.emergency.security.SosRateLimiter;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
@@ -32,6 +34,7 @@ import static org.mockito.Mockito.when;
 class SosServiceTest {
 
     @Mock EmergencyContactService contactService;
+    @Mock SosRateLimiter sosRateLimiter;
 
     @InjectMocks SosService sosService;
 
@@ -147,6 +150,23 @@ class SosServiceTest {
 
             // Both contacts were attempted despite the first send blowing up.
             verify(creator, times(2)).create();
+        }
+    }
+
+    @Test
+    void triggerSos_whenRateLimited_sendsNoSmsAndBubblesUp() {
+        twilioConfigured();
+        contacts(contact("+15551110001"));
+        org.mockito.Mockito.doThrow(new RateLimitException("Your alert was already sent."))
+                .when(sosRateLimiter).check(elderId);
+
+        try (MockedStatic<Twilio> twilio = mockStatic(Twilio.class);
+             MockedStatic<Message> message = mockStatic(Message.class)) {
+
+            assertThatThrownBy(() -> sosService.triggerSos(elderId))
+                    .isInstanceOf(RateLimitException.class);
+
+            message.verifyNoInteractions();
         }
     }
 
