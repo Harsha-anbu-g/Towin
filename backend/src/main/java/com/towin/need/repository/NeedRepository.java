@@ -17,10 +17,13 @@ public interface NeedRepository extends JpaRepository<Need, UUID> {
 
     long countByElderIdAndStatus(UUID elderId, NeedStatus status);
 
-    @Query("SELECT n FROM Need n WHERE n.status = :status AND n.locationLat IS NOT NULL ORDER BY n.createdAt DESC")
+    // JOIN FETCH on both list queries: the elder is read for every row when
+    // building responses, so load it in the same query (avoids N+1 selects).
+    @Query("SELECT n FROM Need n JOIN FETCH n.elder WHERE n.status = :status AND n.locationLat IS NOT NULL ORDER BY n.createdAt DESC")
     List<Need> findOpenNeedsWithLocation(@Param("status") NeedStatus status);
 
-    List<Need> findByStatusOrderByCreatedAtDesc(NeedStatus status);
+    @Query("SELECT n FROM Need n JOIN FETCH n.elder WHERE n.status = :status ORDER BY n.createdAt DESC")
+    List<Need> findByStatusOrderByCreatedAtDesc(@Param("status") NeedStatus status);
 
     @Modifying
     @Query("DELETE FROM Need n WHERE n.elder.id = :elderId")

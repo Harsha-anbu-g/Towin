@@ -31,9 +31,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -78,9 +80,10 @@ public class NeedService {
 
     public List<NeedResponse> getAllOpen(UUID helperId) {
         Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
-        return needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN)
-                .stream()
-                .map(n -> toResponse(n, null, false, myApps.get(n.getId())))
+        List<Need> needs = needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN);
+        Map<UUID, String> elderNames = elderNameMap(needs);
+        return needs.stream()
+                .map(n -> toResponse(n, null, false, myApps.get(n.getId()), elderNames))
                 .collect(Collectors.toList());
     }
 
@@ -105,27 +108,40 @@ public class NeedService {
         // radius, fall back to the nearest open needs so the demo always has something.
         List<Object[]> visible = (withinRadius.isEmpty() && isDemoAccount(helper)) ? ranked : withinRadius;
 
-        return visible.stream()
+        List<Object[]> pageSlice = visible.stream()
                 .skip((long) page * size)
                 .limit(size)
+                .collect(Collectors.toList());
+
+        Map<UUID, String> elderNames = elderNameMap(pageSlice.stream()
+                .map(pair -> (Need) pair[0])
+                .collect(Collectors.toList()));
+
+        return pageSlice.stream()
                 .map(pair -> {
                     Need n = (Need) pair[0];
-                    return toResponse(n, (double) pair[1], false, myApps.get(n.getId()));
+                    return toResponse(n, (double) pair[1], false, myApps.get(n.getId()), elderNames);
                 })
                 .collect(Collectors.toList());
     }
 
     public List<NeedResponse> getMyApplications(UUID helperId) {
-        return applicationRepository.findByHelperId(helperId).stream()
+        List<NeedApplication> applications = applicationRepository.findByHelperId(helperId).stream()
                 .filter(a -> a.getStatus() != ApplicationStatus.WITHDRAWN)
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .map(a -> toResponse(a.getNeed(), null, false, a.getStatus()))
+                .collect(Collectors.toList());
+        Map<UUID, String> elderNames = elderNameMap(applications.stream()
+                .map(NeedApplication::getNeed)
+                .collect(Collectors.toList()));
+        return applications.stream()
+                .map(a -> toResponse(a.getNeed(), null, false, a.getStatus(), elderNames))
                 .collect(Collectors.toList());
     }
 
     public Page<NeedResponse> getMyNeeds(UUID elderId, int page, int size) {
-        return needRepository.findByElderIdOrderByCreatedAtDesc(elderId, PageRequest.of(page, size))
-                .map(n -> toResponse(n, null, true));
+        Page<Need> needs = needRepository.findByElderIdOrderByCreatedAtDesc(elderId, PageRequest.of(page, size));
+        Map<UUID, String> elderNames = elderNameMap(needs.getContent());
+        return needs.map(n -> toResponse(n, null, true, null, elderNames));
     }
 
     @Transactional
@@ -271,22 +287,39 @@ public class NeedService {
         return toResponse(need, distanceKm, includeApplicants, null);
     }
 
+    /** Display names for every elder in the list, in one query — never one lookup per need. */
+    private Map<UUID, String> elderNameMap(Collection<Need> needs) {
+        Set<UUID> elderIds = needs.stream()
+                .map(n -> n.getElder().getId())
+                .collect(Collectors.toSet());
+        if (elderIds.isEmpty()) return Map.of();
+        return elderProfileRepository.findNamesByUserIds(elderIds).stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> (String) row[1]));
+    }
+
     private NeedResponse toResponse(Need need, Double distanceKm, boolean includeApplicants, ApplicationStatus myStatus) {
-        String elderName = elderProfileRepository.findByUserId(need.getElder().getId())
-                .map(p -> p.getName())
-                .orElse(need.getElder().getEmail());
+        return toResponse(need, distanceKm, includeApplicants, myStatus, elderNameMap(List.of(need)));
+    }
+
+    private NeedResponse toResponse(Need need, Double distanceKm, boolean includeApplicants,
+                                    ApplicationStatus myStatus, Map<UUID, String> elderNames) {
+        String elderName = elderNames.getOrDefault(need.getElder().getId(), need.getElder().getEmail());
 
         List<ApplicantDto> applications = null;
         if (includeApplicants) {
-            applications = applicationRepository.findByNeedId(need.getId()).stream()
+            List<NeedApplication> apps = applicationRepository.findByNeedId(need.getId());
+            Set<UUID> helperIds = apps.stream()
+                    .map(a -> a.getHelper().getId())
+                    .collect(Collectors.toSet());
+            // One query for all applicant names/photos: rows of [userId, name, photoUrl]
+            Map<UUID, Object[]> helperInfo = helperIds.isEmpty() ? Map.of()
+                    : helperProfileRepository.findNamesAndPhotosByUserIds(helperIds).stream()
+                            .collect(Collectors.toMap(row -> (UUID) row[0], row -> row));
+            applications = apps.stream()
                     .map(a -> {
-                        var helperProfile = helperProfileRepository.findByUserId(a.getHelper().getId());
-                        String helperName = helperProfile
-                                .map(p -> p.getName())
-                                .orElse(a.getHelper().getEmail());
-                        String helperPhotoUrl = helperProfile
-                                .map(p -> s3Service.presignedUrl(p.getPhotoUrl()))
-                                .orElse(null);
+                        Object[] info = helperInfo.get(a.getHelper().getId());
+                        String helperName = info != null ? (String) info[1] : a.getHelper().getEmail();
+                        String helperPhotoUrl = info != null ? s3Service.presignedUrl((String) info[2]) : null;
                         return ApplicantDto.builder()
                                 .helperId(a.getHelper().getId())
                                 .helperName(helperName)

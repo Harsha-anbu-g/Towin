@@ -13,9 +13,13 @@ import java.util.UUID;
 
 public interface NeedApplicationRepository extends JpaRepository<NeedApplication, UUID> {
 
-    List<NeedApplication> findByNeedId(UUID needId);
+    // JOIN FETCH: responses read the helper (resp. need + its elder) for every
+    // row, so load them in the same query (avoids N+1 selects).
+    @Query("SELECT a FROM NeedApplication a JOIN FETCH a.helper WHERE a.need.id = :needId")
+    List<NeedApplication> findByNeedId(@Param("needId") UUID needId);
 
-    List<NeedApplication> findByHelperId(UUID helperId);
+    @Query("SELECT a FROM NeedApplication a JOIN FETCH a.need n JOIN FETCH n.elder WHERE a.helper.id = :helperId")
+    List<NeedApplication> findByHelperId(@Param("helperId") UUID helperId);
 
     Optional<NeedApplication> findByNeedIdAndHelperId(UUID needId, UUID helperId);
 

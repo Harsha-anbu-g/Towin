@@ -62,7 +62,6 @@ class NeedServiceTest {
     @Test
     void shouldPostNeed() {
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
-        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
         when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
 
         NeedRequest request = new NeedRequest();
@@ -107,7 +106,6 @@ class NeedServiceTest {
         when(applicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(Optional.of(app));
         when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(app));
         when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
-        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
 
         NeedResponse response = needService.acceptHelper(elder.getId(), need.getId(), helper.getId());
 
@@ -130,7 +128,6 @@ class NeedServiceTest {
         Need need = buildNeed(elder, NeedStatus.ASSIGNED);
         when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
         when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
-        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
 
         NeedResponse response = needService.complete(elder.getId(), need.getId());
 
@@ -142,7 +139,6 @@ class NeedServiceTest {
         Need need = buildNeed(elder, NeedStatus.OPEN);
         Page<Need> page = new PageImpl<>(List.of(need));
         when(needRepository.findByElderIdOrderByCreatedAtDesc(eq(elder.getId()), any(Pageable.class))).thenReturn(page);
-        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
 
         Page<NeedResponse> result = needService.getMyNeeds(elder.getId(), 0, 10);
 
@@ -160,7 +156,6 @@ class NeedServiceTest {
         when(applicationRepository.findByHelperId(helper.getId())).thenReturn(List.of(app));
         when(needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN))
                 .thenReturn(List.of(applied, untouched));
-        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
 
         List<NeedResponse> result = needService.getAllOpen(helper.getId());
 
@@ -182,13 +177,27 @@ class NeedServiceTest {
                 .status(ApplicationStatus.WITHDRAWN).createdAt(java.time.LocalDateTime.now().minusMinutes(5)).build();
 
         when(applicationRepository.findByHelperId(helper.getId())).thenReturn(List.of(pending, withdrawn));
-        when(elderProfileRepository.findByUserId(elder.getId())).thenReturn(Optional.empty());
 
         List<NeedResponse> result = needService.getMyApplications(helper.getId());
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(pendingNeed.getId());
         assertThat(result.get(0).getMyApplicationStatus()).isEqualTo(ApplicationStatus.PENDING);
+    }
+
+    @Test
+    void getAllOpen_looksUpElderNamesInOneBatchQuery() {
+        Need one = buildNeed(elder, NeedStatus.OPEN);
+        Need two = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN)).thenReturn(List.of(one, two));
+        when(elderProfileRepository.findNamesByUserIds(anyCollection()))
+                .thenReturn(List.<Object[]>of(new Object[]{elder.getId(), "Grace Elder"}));
+
+        List<NeedResponse> result = needService.getAllOpen(helper.getId());
+
+        assertThat(result).extracting(NeedResponse::getElderName).containsOnly("Grace Elder");
+        verify(elderProfileRepository, times(1)).findNamesByUserIds(anyCollection());
+        verify(elderProfileRepository, never()).findByUserId(any());
     }
 
     private User buildUser(UUID id, UserRole role) {
