@@ -36,6 +36,11 @@ const card = {
   background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--border)',
 };
 
+// Top of the trust ladder (TrustLevel.TRUSTED = 6). Reviews only open here.
+const FULLY_TRUSTED_STAGE = 6;
+
+const firstName = (name) => (name || '').trim().split(' ')[0] || 'They';
+
 /* ── Score: a plain number — it keeps growing, so no bounded ring ─────────── */
 function ScoreRing({ score }) {
   return (
@@ -313,6 +318,18 @@ function CustomerCard({ c }) {
       <div style={{ borderTop: '1px solid var(--hairline-3)', paddingTop: '6px' }}>
         <Meter label="Trust stages" earned={c.rooting} max={c.rootingMax} shape="dot" />
         <Meter label="Their review" earned={c.review}  max={c.reviewMax}  shape="star" />
+        {/* An empty star row has two different causes, and five grey stars on
+            their own read as a poor rating. Say which one it is: still climbing
+            the ladder (reviews aren't open to either of you yet), or fully
+            trusted but they simply haven't written one. ReviewService enforces
+            the same rule server-side. */}
+        {!c.hasReview && (
+          <p style={{ fontFamily: SF, fontSize: '14px', color: FAINT, margin: '-4px 0 8px', paddingLeft: '104px', lineHeight: 1.4 }}>
+            {c.stageIndex < FULLY_TRUSTED_STAGE
+              ? "You can review each other once you're fully trusted friends."
+              : `${firstName(c.customerName)} hasn't left a review yet.`}
+          </p>
+        )}
         <Meter label="Your profile" earned={c.profile} max={c.profileMax} shape="dot" />
       </div>
     </div>
