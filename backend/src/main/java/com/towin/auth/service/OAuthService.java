@@ -95,7 +95,8 @@ public class OAuthService {
             existing.setSetupCompleted(true);
             existing.setEmailVerified(true); // Google has already verified this address
             userRepository.save(existing);
-            String jwt = jwtUtil.generateToken(existing.getId().toString(), existing.getEmail(), existing.getRole().name());
+            String jwt = jwtUtil.generateToken(existing.getId().toString(), existing.getEmail(),
+                    existing.getRole().name(), existing.getTokenVersion());
             return new AuthResponse(jwt, existing.getRole().name(), existing.getId().toString());
         }
 
@@ -120,7 +121,8 @@ public class OAuthService {
                 .build();
 
         User saved = userRepository.save(user);
-        String jwt = jwtUtil.generateToken(saved.getId().toString(), saved.getEmail(), saved.getRole().name());
+        String jwt = jwtUtil.generateToken(saved.getId().toString(), saved.getEmail(),
+                saved.getRole().name(), saved.getTokenVersion());
         return new AuthResponse(jwt, saved.getRole().name(), saved.getId().toString());
     }
 
