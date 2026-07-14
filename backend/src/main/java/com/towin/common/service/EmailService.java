@@ -1,8 +1,10 @@
 package com.towin.common.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -20,18 +22,35 @@ import java.util.Map;
 @Service
 public class EmailService {
 
-    private final RestClient brevo = RestClient.builder()
-            .baseUrl("https://api.brevo.com/v3")
-            .build();
+    // Bounded timeouts, as in GroqClient and GeocodingService: a send happens
+    // inside the signup request, so a hung Brevo call would park a Tomcat thread
+    // indefinitely. Read is roomier than geocoding's 3s (mail is not latency
+    // critical) but still far short of holding a thread open.
+    private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final int READ_TIMEOUT_MS = 10000;
+
+    private final RestClient brevo;
 
     private final String apiKey;
     private final String fromEmail;
     private final String fromName;
     private final boolean configured;
 
+    // Spring constructor. @Autowired disambiguates it from the package-private
+    // test constructor below.
+    @Autowired
     public EmailService(@Value("${app.mail.brevo-api-key:}") String apiKey,
                         @Value("${app.mail.from:}") String fromEmail,
                         @Value("${app.mail.from-name:ToWin}") String fromName) {
+        this(apiKey, fromEmail, fromName, "https://api.brevo.com/v3");
+    }
+
+    // Test constructor: point the client at a local stub instead of the real Brevo.
+    EmailService(String apiKey, String fromEmail, String fromName, String baseUrl) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        factory.setReadTimeout(READ_TIMEOUT_MS);
+        this.brevo = RestClient.builder().baseUrl(baseUrl).requestFactory(factory).build();
         this.apiKey = apiKey;
         this.fromEmail = fromEmail;
         this.fromName = fromName;
