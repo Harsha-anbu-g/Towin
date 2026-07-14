@@ -3,6 +3,7 @@ package com.towin.connection.repository;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
 import com.towin.connection.entity.Connection;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +20,14 @@ public interface ConnectionRepository extends JpaRepository<Connection, UUID> {
 
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId)")
     List<Connection> findAllByUser(@Param("userId") UUID userId);
+
+    // Paged variants for the connection list: newest activity first, so a bounded
+    // page always holds the conversations the user actually looks at.
+    @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) AND c.status = :status ORDER BY c.updatedAt DESC")
+    List<Connection> findByUserAndStatus(@Param("userId") UUID userId, @Param("status") ConnectionStatus status, Pageable pageable);
+
+    @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) ORDER BY c.updatedAt DESC")
+    List<Connection> findAllByUser(@Param("userId") UUID userId, Pageable pageable);
 
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :a AND c.userB.id = :b) OR (c.userA.id = :b AND c.userB.id = :a)")
     Optional<Connection> findBetweenUsers(@Param("a") UUID userAId, @Param("b") UUID userBId);

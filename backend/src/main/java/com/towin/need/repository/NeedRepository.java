@@ -25,6 +25,10 @@ public interface NeedRepository extends JpaRepository<Need, UUID> {
     @Query("SELECT n FROM Need n JOIN FETCH n.elder WHERE n.status = :status ORDER BY n.createdAt DESC")
     List<Need> findByStatusOrderByCreatedAtDesc(@Param("status") NeedStatus status);
 
+    // Paged variant: the open-needs feed is bounded like /needs/nearby, newest first.
+    @Query("SELECT n FROM Need n JOIN FETCH n.elder WHERE n.status = :status ORDER BY n.createdAt DESC")
+    List<Need> findByStatusOrderByCreatedAtDesc(@Param("status") NeedStatus status, Pageable pageable);
+
     @Modifying
     @Query("DELETE FROM Need n WHERE n.elder.id = :elderId")
     void deleteByElderId(@Param("elderId") UUID elderId);

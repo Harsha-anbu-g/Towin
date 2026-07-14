@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -105,6 +106,44 @@ class MessageServiceTest {
 
         assertThatThrownBy(() -> messageService.send(connId, stranger, req))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void unreadConversationCount_countsConversationsInOneGroupedQuery() {
+        Connection second = Connection.builder()
+                .id(UUID.randomUUID()).userA(userA).userB(userB)
+                .status(ConnectionStatus.ACTIVE).currentTrustLevel(TrustLevel.MESSAGING).build();
+        when(connectionRepository.findAllByUser(userA.getId())).thenReturn(List.of(connection, second));
+        // Only the conversations that have unread messages come back — one row each.
+        when(messageRepository.countUnreadByConnectionIds(anyCollection(), eq(userA.getId())))
+                .thenReturn(List.<Object[]>of(new Object[]{connId, 4L}));
+
+        int count = messageService.unreadConversationCount(userA.getId());
+
+        assertThat(count).isEqualTo(1);
+        verify(messageRepository, never()).countByConnectionIdAndSenderIdNotAndSeenAtIsNull(any(), any());
+    }
+
+    @Test
+    void markSeen_stampsTheConversationInOneBulkUpdate() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+
+        messageService.markSeen(connId, userA.getId());
+
+        verify(messageRepository).markSeenByConnectionId(eq(connId), eq(userA.getId()), any(LocalDateTime.class));
+        // The chat polls this every few seconds — it must never read the messages first.
+        verify(messageRepository, never()).findByConnectionIdOrderByCreatedAtAsc(any(), any());
+    }
+
+    @Test
+    void markSeen_rejectsNonParticipantBeforeTouchingAnyMessage() {
+        UUID stranger = UUID.randomUUID();
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+
+        assertThatThrownBy(() -> messageService.markSeen(connId, stranger))
+                .isInstanceOf(IllegalStateException.class);
+
+        verify(messageRepository, never()).markSeenByConnectionId(any(), any(), any());
     }
 
     @Test

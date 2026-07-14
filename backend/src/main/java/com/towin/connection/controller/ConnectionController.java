@@ -7,6 +7,8 @@ import com.towin.connection.dto.RespondToConnectionRequest;
 import com.towin.connection.service.ConnectionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -47,11 +49,14 @@ public class ConnectionController {
         return ResponseEntity.noContent().build();
     }
 
+    // Still a plain array — the dashboards and the inbox filter it client-side — but a
+    // bounded one: newest activity first, ?page=&size= to read further back.
     @GetMapping
     public ResponseEntity<List<ConnectionResponse>> getMyConnections(
             Authentication auth,
-            @RequestParam(required = false) ConnectionStatus status) {
+            @RequestParam(required = false) ConnectionStatus status,
+            @PageableDefault(size = ConnectionService.DEFAULT_PAGE_SIZE) Pageable pageable) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(connectionService.getMyConnections(userId, status));
+        return ResponseEntity.ok(connectionService.getMyConnections(userId, status, pageable));
     }
 }

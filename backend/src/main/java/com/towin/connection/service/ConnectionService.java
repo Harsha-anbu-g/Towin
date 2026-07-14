@@ -17,12 +17,18 @@ import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,6 +37,11 @@ import java.util.stream.Collectors;
 public class ConnectionService {
 
     private static final int MAX_REQUESTS_PER_DAY = 10;
+
+    // The list callers (dashboards, inbox) filter the whole array client-side, so the
+    // default page has to clear a user's own hard limits: 20 active connections for a
+    // helper plus pending requests. Pass ?page=&size= to walk further back.
+    public static final int DEFAULT_PAGE_SIZE = 50;
 
     private int activeLimit(User user) {
         return switch (user.getRole()) {
@@ -172,27 +183,92 @@ public class ConnectionService {
     }
 
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status) {
+        return getMyConnections(userId, status, PageRequest.of(0, DEFAULT_PAGE_SIZE));
+    }
+
+    public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status, Pageable pageable) {
         List<Connection> connections = (status != null)
-                ? connectionRepository.findByUserAndStatus(userId, status)
-                : connectionRepository.findAllByUser(userId);
+                ? connectionRepository.findByUserAndStatus(userId, status, pageable)
+                : connectionRepository.findAllByUser(userId, pageable);
+
+        // Three queries for the whole page — the inbox, the Messages header and the
+        // navbar poll all land here, so it must never be one lookup per row.
+        Map<UUID, Object[]> lastMessages = lastMessageMap(connections);
+        Map<UUID, Long> unreadCounts = unreadCountMap(connections, userId);
+        Map<UUID, Object[]> profiles = profileCardMap(connections, userId);
 
         return connections.stream()
-                .map(c -> toResponse(c, userId))
+                .map(c -> toResponse(c, userId, lastMessages, unreadCounts, profiles))
                 .collect(Collectors.toList());
     }
 
+    // The empty case is a HashMap, not Map.of(): a connection that is not persisted yet
+    // has a null id, and Map.of().get(null) throws.
+
+    /** Newest message of every connection in the list, in one query — never one lookup per row. */
+    private Map<UUID, Object[]> lastMessageMap(Collection<Connection> connections) {
+        Set<UUID> connectionIds = connectionIds(connections);
+        if (connectionIds.isEmpty()) return new HashMap<>();
+        return messageRepository.findLatestByConnectionIds(connectionIds).stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> row, (a, b) -> a));
+    }
+
+    /** Unread count of every connection in the list, in one grouped query. */
+    private Map<UUID, Long> unreadCountMap(Collection<Connection> connections, UUID viewerUserId) {
+        Set<UUID> connectionIds = connectionIds(connections);
+        if (connectionIds.isEmpty()) return new HashMap<>();
+        return messageRepository.countUnreadByConnectionIds(connectionIds, viewerUserId).stream()
+                .collect(Collectors.toMap(row -> (UUID) row[0], row -> (Long) row[1]));
+    }
+
+    /** Name/photo/age of every other user in the list: one query per profile table. */
+    private Map<UUID, Object[]> profileCardMap(Collection<Connection> connections, UUID viewerUserId) {
+        Set<UUID> otherUserIds = connections.stream()
+                .map(c -> c.getOtherUser(viewerUserId).getId())
+                .collect(Collectors.toSet());
+        if (otherUserIds.isEmpty()) return new HashMap<>();
+
+        Map<UUID, Object[]> cards = new HashMap<>();
+        helperProfileRepository.findProfileCardsByUserIds(otherUserIds)
+                .forEach(row -> cards.put((UUID) row[0], row));
+        // Elder wins when a BOTH user has both profiles — same precedence as the
+        // single-row resolvers below.
+        elderProfileRepository.findProfileCardsByUserIds(otherUserIds)
+                .forEach(row -> cards.put((UUID) row[0], row));
+        return cards;
+    }
+
+    private Set<UUID> connectionIds(Collection<Connection> connections) {
+        return connections.stream()
+                .map(Connection::getId)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
     private ConnectionResponse toResponse(Connection connection, UUID viewerUserId) {
+        List<Connection> one = List.of(connection);
+        return toResponse(connection, viewerUserId,
+                lastMessageMap(one), unreadCountMap(one, viewerUserId), profileCardMap(one, viewerUserId));
+    }
+
+    private ConnectionResponse toResponse(Connection connection, UUID viewerUserId,
+                                          Map<UUID, Object[]> lastMessages,
+                                          Map<UUID, Long> unreadCounts,
+                                          Map<UUID, Object[]> profiles) {
         User other = connection.getOtherUser(viewerUserId);
-        String otherName = resolveDisplayName(other);
+        // Rows are [userId, name, photoUrl, age]; no profile row = fall back to the email.
+        Object[] card = profiles.get(other.getId());
+        String otherName = card != null ? (String) card[1] : other.getEmail();
 
         boolean phoneUnlocked = connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
-        var last = messageRepository.findFirstByConnectionIdOrderByCreatedAtDesc(connection.getId());
-        String preview = last.map(m -> m.getContent().length() > 60
-                ? m.getContent().substring(0, 57) + "…"
-                : m.getContent()).orElse(null);
-        java.time.LocalDateTime lastAt = last.map(com.towin.messaging.entity.Message::getCreatedAt).orElse(null);
-        int unread = (int) messageRepository.countByConnectionIdAndSenderIdNotAndSeenAtIsNull(connection.getId(), viewerUserId);
+        // Rows are [connectionId, content, createdAt].
+        Object[] last = lastMessages.get(connection.getId());
+        String content = last != null ? (String) last[1] : null;
+        String preview = content == null ? null
+                : (content.length() > 60 ? content.substring(0, 57) + "…" : content);
+        java.time.LocalDateTime lastAt = last != null ? (java.time.LocalDateTime) last[2] : null;
+        int unread = unreadCounts.getOrDefault(connection.getId(), 0L).intValue();
 
         return ConnectionResponse.builder()
                 .id(connection.getId())
@@ -206,8 +282,8 @@ public class ConnectionService {
                 .initiatedByMe(connection.getInitiatedBy().getId().equals(viewerUserId))
                 .requestMessage(connection.getRequestMessage())
                 .otherUserPhone(phoneUnlocked ? other.getPhone() : null)
-                .otherUserAge(resolveAge(other))
-                .otherUserPhotoUrl(resolvePhotoUrl(other))
+                .otherUserAge(card != null ? (Integer) card[3] : null)
+                .otherUserPhotoUrl(card != null ? s3Service.presignedUrl((String) card[2]) : null)
                 .createdAt(connection.getCreatedAt())
                 .updatedAt(connection.getUpdatedAt())
                 .lastMessagePreview(preview)
@@ -216,6 +292,8 @@ public class ConnectionService {
                 .build();
     }
 
+    // Single-profile resolvers. The list path above batches these lookups instead
+    // (findProfileCardsByUserIds), but they stay as the authoritative one-user rules.
     private String resolveDisplayName(User user) {
         Optional<ElderProfile> elder = elderProfileRepository.findByUserId(user.getId());
         if (elder.isPresent()) return elder.get().getName();

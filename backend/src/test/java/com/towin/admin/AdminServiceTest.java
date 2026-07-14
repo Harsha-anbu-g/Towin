@@ -6,10 +6,13 @@ import com.towin.common.repository.UserRepository;
 import com.towin.common.seed.DemoDataSeeder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,9 +24,23 @@ import static org.mockito.Mockito.*;
 class AdminServiceTest {
 
     @Mock UserRepository userRepository;
+    @Mock com.towin.profile.repository.ElderProfileRepository elderProfileRepository;
+    @Mock com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
+    @Mock com.towin.common.service.S3Service s3Service;
     @Mock ObjectProvider<DemoDataSeeder> demoDataSeederProvider;
     @Mock DemoDataSeeder demoDataSeeder;
     @InjectMocks AdminService adminService;
+
+    @Test
+    void getAllUsers_boundsTheListToADefaultPageSize() {
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        when(userRepository.findAll(pageable.capture())).thenReturn(Page.empty());
+
+        adminService.getAllUsers();
+
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(AdminService.DEFAULT_PAGE_SIZE);
+        verify(userRepository, never()).findAll();
+    }
 
     private User user(UserRole role) {
         User u = new User();

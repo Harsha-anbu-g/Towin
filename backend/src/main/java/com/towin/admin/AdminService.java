@@ -19,6 +19,9 @@ import com.towin.review.repository.ReviewRepository;
 import com.towin.trust.repository.TrustProgressionLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdminService {
+
+    // The panel searches and pages its lists client-side (20 rows a page), so a page of
+    // 100 keeps today's behaviour while the payload stops growing with the table.
+    // Pass ?page=&size= to read further.
+    public static final int DEFAULT_PAGE_SIZE = 100;
 
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
@@ -46,8 +54,17 @@ public class AdminService {
     // ObjectProvider because the seeder bean only exists when app.demo.seed-enabled=true.
     private final ObjectProvider<DemoDataSeeder> demoDataSeeder;
 
+    /** Newest first, one bounded page — the default the panel gets when it asks for no page. */
+    private static Pageable defaultPage() {
+        return PageRequest.of(0, DEFAULT_PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
+    }
+
     public List<AdminUserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
+        return getAllUsers(defaultPage());
+    }
+
+    public List<AdminUserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).getContent().stream()
                 .map(u -> AdminUserResponse.builder()
                         .id(u.getId())
                         .username(u.getUsername())
@@ -125,7 +142,11 @@ public class AdminService {
     }
 
     public List<AdminVerificationResponse> getPendingVerifications() {
-        return userRepository.findByVerificationStatus(VerificationStatus.PENDING)
+        return getPendingVerifications(defaultPage());
+    }
+
+    public List<AdminVerificationResponse> getPendingVerifications(Pageable pageable) {
+        return userRepository.findByVerificationStatus(VerificationStatus.PENDING, pageable)
                 .stream()
                 .map(u -> AdminVerificationResponse.builder()
                         .userId(u.getId())
@@ -156,7 +177,11 @@ public class AdminService {
     }
 
     public List<AdminReportResponse> getAllReports() {
-        return reportRepository.findAllWithUsers().stream()
+        return getAllReports(defaultPage());
+    }
+
+    public List<AdminReportResponse> getAllReports(Pageable pageable) {
+        return reportRepository.findAllWithUsers(pageable).stream()
                 .map(r -> AdminReportResponse.builder()
                         .id(r.getId())
                         .reporterEmail(r.getReporter().getEmail())
@@ -174,9 +199,13 @@ public class AdminService {
     }
 
     public List<AdminReviewResponse> getAllReviews(boolean safetyConcernOnly) {
+        return getAllReviews(safetyConcernOnly, defaultPage());
+    }
+
+    public List<AdminReviewResponse> getAllReviews(boolean safetyConcernOnly, Pageable pageable) {
         var reviews = safetyConcernOnly
-                ? reviewRepository.findBySafetyConcernTrue()
-                : reviewRepository.findAll();
+                ? reviewRepository.findBySafetyConcernTrue(pageable)
+                : reviewRepository.findAll(pageable).getContent();
         return reviews.stream()
                 .map(r -> AdminReviewResponse.builder()
                         .id(r.getId())
@@ -197,7 +226,11 @@ public class AdminService {
     }
 
     public List<AdminConnectionResponse> getAllConnections() {
-        return connectionRepository.findAll().stream()
+        return getAllConnections(defaultPage());
+    }
+
+    public List<AdminConnectionResponse> getAllConnections(Pageable pageable) {
+        return connectionRepository.findAll(pageable).getContent().stream()
                 .map(c -> AdminConnectionResponse.builder()
                         .id(c.getId())
                         .userAEmail(c.getUserA().getEmail())
@@ -217,7 +250,11 @@ public class AdminService {
     }
 
     public List<AdminNeedResponse> getAllNeeds() {
-        return needRepository.findAll().stream()
+        return getAllNeeds(defaultPage());
+    }
+
+    public List<AdminNeedResponse> getAllNeeds(Pageable pageable) {
+        return needRepository.findAll(pageable).getContent().stream()
                 .map(n -> AdminNeedResponse.builder()
                         .id(n.getId())
                         .elderEmail(n.getElder().getEmail())
@@ -235,7 +272,11 @@ public class AdminService {
     }
 
     public List<AdminMessageResponse> getAllMessages() {
-        return messageRepository.findAll().stream()
+        return getAllMessages(defaultPage());
+    }
+
+    public List<AdminMessageResponse> getAllMessages(Pageable pageable) {
+        return messageRepository.findAll(pageable).getContent().stream()
                 .map(m -> AdminMessageResponse.builder()
                         .id(m.getId())
                         .senderEmail(m.getSender().getEmail())

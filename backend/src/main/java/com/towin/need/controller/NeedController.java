@@ -7,6 +7,8 @@ import com.towin.need.service.NeedService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -55,10 +57,14 @@ public class NeedController {
         return ResponseEntity.ok(needService.postNeed(userId, request));
     }
 
+    // Bounded like /nearby, and still a plain array so the helper feed keeps reading it
+    // the same way: newest open needs first, ?page=&size= for more.
     @GetMapping("/open")
-    public ResponseEntity<List<NeedResponse>> getAllOpen(Authentication auth) {
+    public ResponseEntity<List<NeedResponse>> getAllOpen(
+            Authentication auth,
+            @PageableDefault(size = NeedService.DEFAULT_PAGE_SIZE) Pageable pageable) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(needService.getAllOpen(userId));
+        return ResponseEntity.ok(needService.getAllOpen(userId, pageable));
     }
 
     @GetMapping("/applications")
