@@ -215,6 +215,11 @@
                     <argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
             </plugin>
+            <!-- OWASP vulnerability scan. Configured here (so a direct
+                 `./mvnw dependency-check:check` picks the settings up) but deliberately
+                 NOT bound to a phase in the default build: the NVD download is slow and
+                 CI runs plain `./mvnw test`. The phase binding lives in the `security`
+                 profile below — run it with `./mvnw -Psecurity verify`. -->
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
@@ -238,5 +243,33 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Vulnerability scan, opt-in: `./mvnw -Psecurity verify`.
+             Kept out of the default lifecycle on purpose — the first run downloads the
+             whole NVD database, which would make `./mvnw test` and CI slow and flaky.
+             The plugin's configuration (failBuildOnCVSS=9, skipTestScope=true) is
+             inherited from the <build> section above; only the binding lives here. -->
+        <profile>
+            <id>security</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <executions>
+                            <execution>
+                                <id>dependency-check</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
