@@ -1,11 +1,13 @@
 package com.towin.auth.security;
 
 import com.towin.common.exception.RateLimitException;
+import com.towin.common.security.ExpiringKeyStore;
+import com.towin.common.security.SweepableRateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.Instant;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Fixed-window per-IP limiter for unauthenticated auth endpoints (register,
@@ -13,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * auth surface. In-memory; single-instance app — move to Redis if it scales out.
  */
 @Component
-public class IpRateLimiter {
+public class IpRateLimiter implements SweepableRateLimiter {
 
     private static final int  MAX_REQUESTS   = 10;   // per window, per IP
     private static final long WINDOW_SECONDS = 60;
@@ -23,12 +25,22 @@ public class IpRateLimiter {
         Instant resetAt;
     }
 
-    private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
+    private final Clock clock;
+    private final ExpiringKeyStore<String, Window> windows;
+
+    public IpRateLimiter() {
+        this(Clock.systemUTC(), ExpiringKeyStore.DEFAULT_MAX_ENTRIES);
+    }
+
+    IpRateLimiter(Clock clock, int maxEntries) {
+        this.clock = clock;
+        this.windows = new ExpiringKeyStore<>(w -> w.resetAt, clock, maxEntries);
+    }
 
     /** Counts this request against the IP's window; throws once over the limit. */
     public void check(HttpServletRequest request) {
         String ip = clientIp(request);
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         Window w = windows.compute(ip, (k, existing) -> {
             if (existing == null || existing.resetAt.isBefore(now)) {
                 existing = new Window();
@@ -37,9 +49,21 @@ public class IpRateLimiter {
             existing.count++;
             return existing;
         });
-        if (w.count > MAX_REQUESTS) {
+        // A null window means the store is at capacity and is not tracking this IP —
+        // the request is served rather than blocked (see ExpiringKeyStore#compute).
+        if (w != null && w.count > MAX_REQUESTS) {
             throw new RateLimitException("Too many requests. Please wait a minute and try again.");
         }
+    }
+
+    @Override
+    public void sweepExpired() {
+        windows.sweep();
+    }
+
+    /** IPs currently tracked. Visible for tests. */
+    int trackedKeys() {
+        return windows.size();
     }
 
     /**
