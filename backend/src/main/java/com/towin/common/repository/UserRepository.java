@@ -23,6 +23,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     List<User> findByVerificationStatus(VerificationStatus status);
 
+    // Paged variant for the admin panel — the queue must not grow without a bound.
+    List<User> findByVerificationStatus(VerificationStatus status, org.springframework.data.domain.Pageable pageable);
+
     @Query("""
         SELECT u FROM User u
         WHERE (u.role = com.towin.common.enums.UserRole.ELDER

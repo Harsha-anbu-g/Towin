@@ -14,5 +14,9 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     @Query("SELECT r FROM Report r JOIN FETCH r.reporter JOIN FETCH r.reportedUser")
     List<Report> findAllWithUsers();
 
+    // Paged variant for the admin panel — the list must not grow without a bound.
+    @Query("SELECT r FROM Report r JOIN FETCH r.reporter JOIN FETCH r.reportedUser")
+    List<Report> findAllWithUsers(org.springframework.data.domain.Pageable pageable);
+
     void deleteByReporterIdOrReportedUserId(UUID reporterId, UUID reportedUserId);
 }

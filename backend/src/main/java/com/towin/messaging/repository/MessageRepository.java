@@ -18,6 +18,42 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     java.util.Optional<Message> findFirstByConnectionIdOrderByCreatedAtDesc(UUID connectionId);
     long countByConnectionIdAndSenderIdNotAndSeenAtIsNull(UUID connectionId, UUID senderId);
 
+    /** Newest message of every listed connection in one query: rows of [connectionId, content, createdAt]. */
+    @Query("""
+        SELECT m.connection.id, m.content, m.createdAt FROM Message m
+        WHERE m.connection.id IN :connectionIds
+          AND m.createdAt = (SELECT MAX(m2.createdAt) FROM Message m2 WHERE m2.connection.id = m.connection.id)
+        """)
+    java.util.List<Object[]> findLatestByConnectionIds(
+            @Param("connectionIds") java.util.Collection<UUID> connectionIds);
+
+    /** Unread count of every listed connection in one query: rows of [connectionId, count]. */
+    @Query("""
+        SELECT m.connection.id, COUNT(m) FROM Message m
+        WHERE m.connection.id IN :connectionIds
+          AND m.sender.id <> :viewerId
+          AND m.seenAt IS NULL
+        GROUP BY m.connection.id
+        """)
+    java.util.List<Object[]> countUnreadByConnectionIds(
+            @Param("connectionIds") java.util.Collection<UUID> connectionIds,
+            @Param("viewerId") UUID viewerId);
+
+    // One UPDATE for the whole conversation — the chat polls this every few seconds,
+    // so it must never load the messages just to stamp them.
+    // flush first so a message sent in the same transaction is included; clear after so
+    // the persistence context cannot overwrite the stamped rows with its stale copies.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        UPDATE Message m SET m.seenAt = :now
+        WHERE m.connection.id = :connectionId
+          AND m.sender.id <> :viewerId
+          AND m.seenAt IS NULL
+        """)
+    int markSeenByConnectionId(@Param("connectionId") UUID connectionId,
+                               @Param("viewerId") UUID viewerId,
+                               @Param("now") java.time.LocalDateTime now);
+
     @Modifying
     @Query("DELETE FROM Message m WHERE m.connection.id = :connectionId")
     void deleteByConnectionId(@Param("connectionId") UUID connectionId);

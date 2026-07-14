@@ -15,7 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,19 +58,22 @@ public class MessageService {
     // total number of unread messages. Two people who messaged you reads as "2",
     // even if they sent five messages between them.
     public int unreadConversationCount(UUID userId) {
-        return (int) connectionRepository.findAllByUser(userId).stream()
-                .filter(c -> messageRepository
-                        .countByConnectionIdAndSenderIdNotAndSeenAtIsNull(c.getId(), userId) > 0)
-                .count();
+        // The navbar polls this: one grouped count for every connection, not one per row.
+        // The grouped query only returns connections that have unread messages, so the
+        // number of rows it gives back is the count.
+        List<UUID> connectionIds = connectionRepository.findAllByUser(userId).stream()
+                .map(Connection::getId)
+                .collect(Collectors.toList());
+        if (connectionIds.isEmpty()) return 0;
+        return messageRepository.countUnreadByConnectionIds(connectionIds, userId).size();
     }
 
     @Transactional
     public void markSeen(UUID connectionId, UUID userId) {
         getAuthorizedConnection(connectionId, userId);
-        messageRepository.findByConnectionIdOrderByCreatedAtAsc(connectionId, Pageable.unpaged())
-                .stream()
-                .filter(m -> !m.getSender().getId().equals(userId) && m.getSeenAt() == null)
-                .forEach(m -> m.setSeenAt(LocalDateTime.now()));
+        // Authorization first, then one UPDATE — the chat polls this every 5 seconds,
+        // so it must not load the conversation to stamp it row by row.
+        messageRepository.markSeenByConnectionId(connectionId, userId, LocalDateTime.now());
     }
 
     private Connection getAuthorizedConnection(UUID connectionId, UUID userId) {

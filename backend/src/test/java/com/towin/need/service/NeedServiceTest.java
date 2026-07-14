@@ -154,7 +154,7 @@ class NeedServiceTest {
                 .status(ApplicationStatus.PENDING).createdAt(java.time.LocalDateTime.now()).build();
 
         when(applicationRepository.findByHelperId(helper.getId())).thenReturn(List.of(app));
-        when(needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN))
+        when(needRepository.findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), any(Pageable.class)))
                 .thenReturn(List.of(applied, untouched));
 
         List<NeedResponse> result = needService.getAllOpen(helper.getId());
@@ -189,7 +189,8 @@ class NeedServiceTest {
     void getAllOpen_looksUpElderNamesInOneBatchQuery() {
         Need one = buildNeed(elder, NeedStatus.OPEN);
         Need two = buildNeed(elder, NeedStatus.OPEN);
-        when(needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN)).thenReturn(List.of(one, two));
+        when(needRepository.findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), any(Pageable.class)))
+                .thenReturn(List.of(one, two));
         when(elderProfileRepository.findNamesByUserIds(anyCollection()))
                 .thenReturn(List.<Object[]>of(new Object[]{elder.getId(), "Grace Elder"}));
 
@@ -198,6 +199,18 @@ class NeedServiceTest {
         assertThat(result).extracting(NeedResponse::getElderName).containsOnly("Grace Elder");
         verify(elderProfileRepository, times(1)).findNamesByUserIds(anyCollection());
         verify(elderProfileRepository, never()).findByUserId(any());
+    }
+
+    @Test
+    void getAllOpen_boundsTheFeedToADefaultPageSize() {
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        when(needRepository.findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), pageable.capture()))
+                .thenReturn(List.of());
+
+        needService.getAllOpen(helper.getId());
+
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(NeedService.DEFAULT_PAGE_SIZE);
+        verify(needRepository, never()).findByStatusOrderByCreatedAtDesc(any());
     }
 
     private User buildUser(UUID id, UserRole role) {

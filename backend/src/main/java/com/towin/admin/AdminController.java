@@ -2,6 +2,9 @@ package com.towin.admin;
 
 import com.towin.admin.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+// Every list here stays a plain array — the panel reads them that way — but each is now
+// a bounded page (newest first). ?page=&size= walks the rest.
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -25,8 +30,9 @@ public class AdminController {
 
     // Users
     @GetMapping("/users")
-    public ResponseEntity<List<AdminUserResponse>> getUsers() {
-        return ResponseEntity.ok(adminService.getAllUsers());
+    public ResponseEntity<List<AdminUserResponse>> getUsers(
+            @PageableDefault(size = AdminService.DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getAllUsers(pageable));
     }
 
     @DeleteMapping("/users/{id}")
@@ -56,8 +62,9 @@ public class AdminController {
 
     // Verifications
     @GetMapping("/verifications")
-    public ResponseEntity<List<AdminVerificationResponse>> getVerifications() {
-        return ResponseEntity.ok(adminService.getPendingVerifications());
+    public ResponseEntity<List<AdminVerificationResponse>> getVerifications(
+            @PageableDefault(size = AdminService.DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getPendingVerifications(pageable));
     }
 
     @PutMapping("/verifications/{id}/approve")
@@ -74,8 +81,9 @@ public class AdminController {
 
     // Reports
     @GetMapping("/reports")
-    public ResponseEntity<List<AdminReportResponse>> getReports() {
-        return ResponseEntity.ok(adminService.getAllReports());
+    public ResponseEntity<List<AdminReportResponse>> getReports(
+            @PageableDefault(size = AdminService.DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getAllReports(pageable));
     }
 
     @DeleteMapping("/reports/{id}")
@@ -87,8 +95,9 @@ public class AdminController {
     // Reviews
     @GetMapping("/reviews")
     public ResponseEntity<List<AdminReviewResponse>> getReviews(
-            @RequestParam(defaultValue = "false") boolean safetyOnly) {
-        return ResponseEntity.ok(adminService.getAllReviews(safetyOnly));
+            @RequestParam(defaultValue = "false") boolean safetyOnly,
+            @PageableDefault(size = AdminService.DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getAllReviews(safetyOnly, pageable));
     }
 
     @DeleteMapping("/reviews/{id}")
@@ -99,8 +108,9 @@ public class AdminController {
 
     // Connections
     @GetMapping("/connections")
-    public ResponseEntity<List<AdminConnectionResponse>> getConnections() {
-        return ResponseEntity.ok(adminService.getAllConnections());
+    public ResponseEntity<List<AdminConnectionResponse>> getConnections(
+            @PageableDefault(size = AdminService.DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getAllConnections(pageable));
     }
 
     @DeleteMapping("/connections/{id}")
@@ -111,8 +121,9 @@ public class AdminController {
 
     // Needs
     @GetMapping("/needs")
-    public ResponseEntity<List<AdminNeedResponse>> getNeeds() {
-        return ResponseEntity.ok(adminService.getAllNeeds());
+    public ResponseEntity<List<AdminNeedResponse>> getNeeds(
+            @PageableDefault(size = AdminService.DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getAllNeeds(pageable));
     }
 
     @DeleteMapping("/needs/{id}")
@@ -123,8 +134,9 @@ public class AdminController {
 
     // Messages
     @GetMapping("/messages")
-    public ResponseEntity<List<AdminMessageResponse>> getMessages() {
-        return ResponseEntity.ok(adminService.getAllMessages());
+    public ResponseEntity<List<AdminMessageResponse>> getMessages(
+            @PageableDefault(size = AdminService.DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getAllMessages(pageable));
     }
 
     @DeleteMapping("/messages/{id}")

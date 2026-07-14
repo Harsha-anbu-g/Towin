@@ -26,6 +26,9 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     List<Review> findBySafetyConcernTrue();
 
+    // Paged variant for the admin panel — the list must not grow without a bound.
+    List<Review> findBySafetyConcernTrue(org.springframework.data.domain.Pageable pageable);
+
     void deleteByReviewerIdOrRevieweeId(UUID reviewerId, UUID revieweeId);
 
     void deleteByNeedId(UUID needId);

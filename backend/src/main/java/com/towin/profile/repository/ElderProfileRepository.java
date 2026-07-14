@@ -20,5 +20,9 @@ public interface ElderProfileRepository extends JpaRepository<ElderProfile, UUID
     @Query("SELECT p.user.id, p.name FROM ElderProfile p WHERE p.user.id IN :userIds")
     List<Object[]> findNamesByUserIds(@org.springframework.data.repository.query.Param("userIds") java.util.Collection<UUID> userIds);
 
+    /** Name, photo and age for a batch of user ids in one query: rows of [userId, name, photoUrl, age]. */
+    @Query("SELECT p.user.id, p.name, p.photoUrl, p.age FROM ElderProfile p WHERE p.user.id IN :userIds")
+    List<Object[]> findProfileCardsByUserIds(@org.springframework.data.repository.query.Param("userIds") java.util.Collection<UUID> userIds);
+
     void deleteByUserId(UUID userId);
 }

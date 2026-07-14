@@ -27,6 +27,7 @@ import com.towin.profile.repository.HelperProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class NeedService {
+
+    // Same bound as /needs/nearby: the open-needs feed is a browse list, not an archive.
+    public static final int DEFAULT_PAGE_SIZE = 20;
 
     private final NeedRepository needRepository;
     private final NeedApplicationRepository applicationRepository;
@@ -79,8 +83,12 @@ public class NeedService {
     }
 
     public List<NeedResponse> getAllOpen(UUID helperId) {
+        return getAllOpen(helperId, PageRequest.of(0, DEFAULT_PAGE_SIZE));
+    }
+
+    public List<NeedResponse> getAllOpen(UUID helperId, Pageable pageable) {
         Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
-        List<Need> needs = needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN);
+        List<Need> needs = needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN, pageable);
         Map<UUID, String> elderNames = elderNameMap(needs);
         return needs.stream()
                 .map(n -> toResponse(n, null, false, myApps.get(n.getId()), elderNames))

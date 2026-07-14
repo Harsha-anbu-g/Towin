@@ -20,5 +20,9 @@ public interface HelperProfileRepository extends JpaRepository<HelperProfile, UU
     @Query("SELECT p.user.id, p.name, p.photoUrl FROM HelperProfile p WHERE p.user.id IN :userIds")
     List<Object[]> findNamesAndPhotosByUserIds(@org.springframework.data.repository.query.Param("userIds") java.util.Collection<UUID> userIds);
 
+    /** Name, photo and age for a batch of user ids in one query: rows of [userId, name, photoUrl, age]. */
+    @Query("SELECT p.user.id, p.name, p.photoUrl, p.age FROM HelperProfile p WHERE p.user.id IN :userIds")
+    List<Object[]> findProfileCardsByUserIds(@org.springframework.data.repository.query.Param("userIds") java.util.Collection<UUID> userIds);
+
     void deleteByUserId(UUID userId);
 }
