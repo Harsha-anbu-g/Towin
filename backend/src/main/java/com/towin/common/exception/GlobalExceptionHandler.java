@@ -109,6 +109,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(message, 400, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableBody(
+            org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        // Malformed JSON or a wrong-typed field (e.g. a text latitude) is a client
+        // mistake, not a server fault. Without this it would fall through to the
+        // RuntimeException handler below and surface as a 500.
+        log.warn("Unreadable request body: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse("We couldn't read that request. Please check the values and try again.",
+                        400, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
         // Business-rule / authorization-state guards (e.g. "Not a participant",

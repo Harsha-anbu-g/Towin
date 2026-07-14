@@ -62,12 +62,10 @@ public class ProfileController {
     @PutMapping("/location")
     public ResponseEntity<Void> updateLocation(
             Authentication auth,
-            @RequestBody Map<String, Object> body) {
+            @Valid @RequestBody UpdateLocationRequest request) {
         UUID userId = UUID.fromString(auth.getName());
-        Double lat = body.get("locationLat") != null ? ((Number) body.get("locationLat")).doubleValue() : null;
-        Double lng = body.get("locationLng") != null ? ((Number) body.get("locationLng")).doubleValue() : null;
-        String city = body.get("city") instanceof String s ? s : null;
-        profileService.updateLocation(userId, lat, lng, city);
+        // Coordinates may be null (geolocation denied) — the service handles that.
+        profileService.updateLocation(userId, request.getLocationLat(), request.getLocationLng(), request.getCity());
         return ResponseEntity.ok().build();
     }
 

@@ -5,6 +5,7 @@ import com.towin.trust.dto.TrustActionRequest;
 import com.towin.trust.dto.TrustScoreBreakdownResponse;
 import com.towin.trust.dto.TrustStatusResponse;
 import com.towin.trust.service.TrustService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,7 +31,8 @@ public class TrustController {
     public ResponseEntity<TrustStatusResponse> confirm(
             Authentication auth,
             @PathVariable UUID connectionId,
-            @RequestBody(required = false) TrustActionRequest request) {
+            // The note is optional — callers may confirm with no body at all.
+            @Valid @RequestBody(required = false) TrustActionRequest request) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(trustService.confirmTrustLevel(userId, connectionId, request));
     }
