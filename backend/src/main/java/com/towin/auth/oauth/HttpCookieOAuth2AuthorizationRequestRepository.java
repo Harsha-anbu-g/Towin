@@ -35,7 +35,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
             removeAuthorizationRequestCookies(request, response);
             return;
         }
-        CookieUtils.addCookie(response, COOKIE_NAME, CookieUtils.serialize(authRequest), COOKIE_TTL);
+        CookieUtils.addCookie(request, response, COOKIE_NAME, CookieUtils.serialize(authRequest), COOKIE_TTL);
     }
 
     @Override
