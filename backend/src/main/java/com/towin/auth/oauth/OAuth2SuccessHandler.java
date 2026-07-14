@@ -66,7 +66,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                         "name", name != null ? name : ""
                 ));
             } else {
-                String jwt = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
+                String jwt = jwtUtil.generateToken(user.getId().toString(), user.getEmail(),
+                        user.getRole().name(), user.getTokenVersion());
                 code = storeCode("READY", Map.of("type", "READY", "token", jwt));
             }
         } else {

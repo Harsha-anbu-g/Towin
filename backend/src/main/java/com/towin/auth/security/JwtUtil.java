@@ -45,6 +45,13 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * NEW USERS ONLY — hardcodes tokenVersion 0.
+     * Only safe for an account that has just been created, where the version genuinely is 0.
+     * For any existing user (Google sign-in, password login, …) call the overload above with
+     * {@code user.getTokenVersion()}: a token claiming 0 for a user who has ever reset or
+     * changed their password is rejected by JwtAuthFilter on every request.
+     */
     public String generateToken(String userId, String email, String role) {
         return generateToken(userId, email, role, 0, true);
     }
