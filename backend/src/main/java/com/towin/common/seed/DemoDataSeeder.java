@@ -433,23 +433,18 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureApplication(davidLaptop, james, "I can definitely speed that up for you, David.", ApplicationStatus.ACCEPTED);
 
         // One-time repair for DBs seeded before reviews were gated by the trust
-        // ladder: earlier baselines planted connection reviews between pairs that
-        // never reached TRUSTED (one even sat on a still-pending invite). The app
-        // can no longer create those — ReviewService now enforces the ladder — so
-        // retire any leftovers between demo personas before re-seeding.
+        // ladder: earlier baselines planted reviews between pairs that never reached
+        // TRUSTED — some on a still-pending invite, some hanging off a finished need
+        // (David ↔ Harsha, who stop at VIDEO_CALL). The app can no longer create any
+        // of those — ReviewService gates every review on the ladder — so retire the
+        // leftovers between demo personas before re-seeding.
         retireUntrustedDemoReviews(demoUsers);
 
-        // Reviews only exist where the app could truly create them: between the
-        // two sides of a TRUSTED connection (the Review button unlocks at the top
-        // of the trust ladder) or across a COMPLETED need. Pairs still climbing
-        // (Margaret ↔ Priya at PHONE_CALL, Harsha ↔ Rose just connected) have no
-        // reviews yet — that's the product rule on display.
-        ensureReview(david, james, davidLaptop, 4,
-                "Very reliable and great company. Always on time.",
-                List.of("Reliable", "Punctual"));
-        ensureReview(james, david, davidLaptop, 5,
-                "David is sharp, engaging, and great company every visit.",
-                List.of("Friendly", "Reliable"));
+        // Reviews only exist where the app could truly create them: between the two
+        // sides of an ACTIVE + TRUSTED connection. Finishing a job together is not a
+        // shortcut past the ladder. Pairs still climbing (Margaret ↔ Priya at
+        // PHONE_CALL, David ↔ Harsha at VIDEO_CALL, Harsha ↔ Rose just connected)
+        // carry no reviews — that's the product rule on display.
         ensureReview(tom, margaret, null, 4,
                 "Margaret was patient and made me feel very welcome.",
                 List.of("Patient", "Welcoming"));
@@ -544,7 +539,8 @@ public class DemoDataSeeder implements ApplicationRunner {
     private void retireUntrustedDemoReviews(List<User> demoUsers) {
         Set<UUID> demoIds = demoUsers.stream().map(User::getId).collect(Collectors.toSet());
         for (Review r : reviewRepository.findAll()) {
-            if (r.getNeed() != null) continue;
+            // Need-based reviews are checked too: a finished job never exempted a pair
+            // from the trust ladder, and the seeder used to plant reviews that way.
             if (!demoIds.contains(r.getReviewer().getId()) || !demoIds.contains(r.getReviewee().getId())) continue;
             boolean fullyTrusted = connectionRepository
                     .findBetweenUsers(r.getReviewer().getId(), r.getReviewee().getId())

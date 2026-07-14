@@ -51,9 +51,21 @@ public class ReviewService {
         User reviewer = getUser(reviewerId);
         User reviewee = getUser(request.getRevieweeId());
 
-        // A review must reflect a real interaction, or the trust score it feeds could
-        // be gamed (fake 5-stars to inflate a stranger, fake 1-stars / safety flags to
-        // smear one). Two legitimate paths: a shared need, or an existing connection.
+        // Only fully trusted friends may review each other. A review feeds the trust
+        // score, so without this gate it could be gamed (fake 5-stars to inflate a
+        // near-stranger, fake 1-stars / safety flags to smear one). Finishing a job
+        // together is NOT a shortcut past the ladder: the pair must be ACTIVE and
+        // TRUSTED whether or not the review hangs off a need.
+        Connection connection = connectionRepository
+                .findBetweenUsers(reviewerId, request.getRevieweeId())
+                .orElseThrow(() -> new IllegalArgumentException("You can only review people you've connected with"));
+        if (connection.getStatus() != ConnectionStatus.ACTIVE
+                || connection.getCurrentTrustLevel() != TrustLevel.TRUSTED) {
+            throw new IllegalArgumentException("You can review each other once you're fully trusted friends");
+        }
+
+        // A review pinned to a need must also reflect that need: the reviewer was on
+        // it, and the person being reviewed was on the other side of it.
         Need need = null;
         if (request.getNeedId() != null) {
             need = needRepository.findById(request.getNeedId())
@@ -70,18 +82,6 @@ public class ReviewService {
                     : need.getElder().getId().equals(request.getRevieweeId());
             if (!revieweeIsCounterparty) {
                 throw new IllegalArgumentException("You can only review the other person from that need");
-            }
-        } else {
-            // No need attached (connection-based review): the two must actually be
-            // connected AND have reached the top of the trust ladder. The dashboards
-            // only offer this review button on TRUSTED connections; enforce the same
-            // rule here so the API can't rate someone you barely know.
-            Connection connection = connectionRepository
-                    .findBetweenUsers(reviewerId, request.getRevieweeId())
-                    .orElseThrow(() -> new IllegalArgumentException("You can only review people you've connected with"));
-            if (connection.getStatus() != ConnectionStatus.ACTIVE
-                    || connection.getCurrentTrustLevel() != TrustLevel.TRUSTED) {
-                throw new IllegalArgumentException("You can review each other once you're fully trusted friends");
             }
         }
 

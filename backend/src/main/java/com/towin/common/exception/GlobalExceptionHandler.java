@@ -69,6 +69,8 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("You can only review users from needs",         "You can only review someone you've actually helped or been helped by.");
         SAFE_MESSAGES.put("You can only review the other person",         "You can only review the other person from that request.");
         SAFE_MESSAGES.put("You can only review people you've connected",  "You can only review people you're connected with.");
+        SAFE_MESSAGES.put("You can review each other once you're fully trusted",
+                "You can leave a review once you're fully trusted friends.");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
