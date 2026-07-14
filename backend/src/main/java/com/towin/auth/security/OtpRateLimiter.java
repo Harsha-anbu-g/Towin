@@ -1,11 +1,13 @@
 package com.towin.auth.security;
 
 import com.towin.common.exception.RateLimitException;
+import com.towin.common.security.ExpiringKeyStore;
+import com.towin.common.security.SweepableRateLimiter;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Per-user fixed-window limiter for phone-OTP *requests*. Each OTP send fires a
@@ -15,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link IpRateLimiter} / {@link LoginRateLimiter}.
  */
 @Component
-public class OtpRateLimiter {
+public class OtpRateLimiter implements SweepableRateLimiter {
 
     private static final int  MAX_REQUESTS    = 3;    // per window, per user
     private static final long WINDOW_SECONDS  = 900;  // 15 minutes
@@ -27,11 +29,21 @@ public class OtpRateLimiter {
         Instant lastRequestAt;
     }
 
-    private final ConcurrentHashMap<UUID, Window> windows = new ConcurrentHashMap<>();
+    private final Clock clock;
+    private final ExpiringKeyStore<UUID, Window> windows;
+
+    public OtpRateLimiter() {
+        this(Clock.systemUTC(), ExpiringKeyStore.DEFAULT_MAX_ENTRIES);
+    }
+
+    OtpRateLimiter(Clock clock, int maxEntries) {
+        this.clock = clock;
+        this.windows = new ExpiringKeyStore<>(w -> w.resetAt, clock, maxEntries);
+    }
 
     /** Counts this OTP request against the user's window; throws once over the limit. */
     public void check(UUID userId) {
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         Window w = windows.compute(userId, (k, existing) -> {
             if (existing == null || existing.resetAt.isBefore(now)) {
                 existing = new Window();
@@ -45,8 +57,20 @@ public class OtpRateLimiter {
             existing.lastRequestAt = now;
             return existing;
         });
-        if (w.count > MAX_REQUESTS) {
+        // A null window means the store is at capacity and is not tracking this user
+        // (see ExpiringKeyStore#compute) — the send is allowed rather than blocked.
+        if (w != null && w.count > MAX_REQUESTS) {
             throw new RateLimitException("Too many verification codes requested. Try again in 15 minutes.");
         }
+    }
+
+    @Override
+    public void sweepExpired() {
+        windows.sweep();
+    }
+
+    /** Users currently tracked. Visible for tests. */
+    int trackedKeys() {
+        return windows.size();
     }
 }

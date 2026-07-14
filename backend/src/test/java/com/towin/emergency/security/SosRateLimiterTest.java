@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -88,5 +89,40 @@ class SosRateLimiterTest {
         limiter.check(elderId);
 
         assertThatCode(() -> limiter.check(otherElder)).doesNotThrowAnyException();
+    }
+
+    // --- the leak: expired windows must not pile up forever ---
+
+    @Test
+    void expiredWindows_areSweptAwayInsteadOfAccumulating() {
+        for (int i = 0; i < 100; i++) {
+            limiter.check(UUID.randomUUID());
+        }
+        assertThat(limiter.trackedKeys()).isEqualTo(100);
+
+        clock.advanceSeconds(Duration.ofHours(1).toSeconds() + 1);
+        limiter.sweepExpired();
+
+        assertThat(limiter.trackedKeys()).isZero();
+    }
+
+    @Test
+    void aLiveWindowSurvivesTheSweep() {
+        limiter.check(elderId);
+
+        limiter.sweepExpired();
+
+        assertThat(limiter.trackedKeys()).isEqualTo(1);
+    }
+
+    @Test
+    void burstOfDistinctUsers_cannotGrowTheMapPastTheCap() {
+        SosRateLimiter capped = new SosRateLimiter(clock, 100);
+
+        for (int i = 0; i < 500; i++) {
+            capped.check(UUID.randomUUID());
+        }
+
+        assertThat(capped.trackedKeys()).isEqualTo(100);
     }
 }

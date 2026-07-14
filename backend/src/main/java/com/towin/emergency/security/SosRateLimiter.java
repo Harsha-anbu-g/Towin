@@ -1,12 +1,13 @@
 package com.towin.emergency.security;
 
 import com.towin.common.exception.RateLimitException;
+import com.towin.common.security.ExpiringKeyStore;
+import com.towin.common.security.SweepableRateLimiter;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Per-user fixed-window limiter for SOS triggers. Each SOS fans out a real
@@ -18,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Mirrors {@link com.towin.auth.security.OtpRateLimiter}.
  */
 @Component
-public class SosRateLimiter {
+public class SosRateLimiter implements SweepableRateLimiter {
 
     private static final int  MAX_REQUESTS     = 5;    // per window, per user
     private static final long WINDOW_SECONDS   = 3600; // 1 hour
@@ -31,14 +32,19 @@ public class SosRateLimiter {
     }
 
     private final Clock clock;
-    private final ConcurrentHashMap<UUID, Window> windows = new ConcurrentHashMap<>();
+    private final ExpiringKeyStore<UUID, Window> windows;
 
     public SosRateLimiter() {
         this(Clock.systemUTC());
     }
 
     SosRateLimiter(Clock clock) {
+        this(clock, ExpiringKeyStore.DEFAULT_MAX_ENTRIES);
+    }
+
+    SosRateLimiter(Clock clock, int maxEntries) {
         this.clock = clock;
+        this.windows = new ExpiringKeyStore<>(w -> w.resetAt, clock, maxEntries);
     }
 
     /** Counts this SOS against the user's window; throws once over the limit. */
@@ -58,9 +64,21 @@ public class SosRateLimiter {
             existing.lastRequestAt = now;
             return existing;
         });
-        if (w.count > MAX_REQUESTS) {
+        // A null window means the store is at capacity and is not tracking this user
+        // (see ExpiringKeyStore#compute) — an emergency alert is never withheld for that.
+        if (w != null && w.count > MAX_REQUESTS) {
             throw new RateLimitException(
                     "You have sent several alerts this hour. Please call your emergency contact directly.");
         }
+    }
+
+    @Override
+    public void sweepExpired() {
+        windows.sweep();
+    }
+
+    /** Users currently tracked. Visible for tests. */
+    int trackedKeys() {
+        return windows.size();
     }
 }
