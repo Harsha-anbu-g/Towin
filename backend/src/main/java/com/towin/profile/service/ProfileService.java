@@ -133,38 +133,40 @@ public class ProfileService {
         return getProfile(userId, true);
     }
 
-    public ProfileResponse getProfile(UUID userId, boolean includePhone) {
+    public ProfileResponse getProfile(UUID userId, boolean isSelf) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         ElderProfile elder = elderProfileRepository.findByUserId(userId).orElse(null);
         HelperProfile helper = helperProfileRepository.findByUserId(userId).orElse(null);
 
-        return buildProfileResponse(user, elder, helper, includePhone);
+        return buildProfileResponse(user, elder, helper, isSelf);
     }
 
     private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper) {
         return buildProfileResponse(user, elder, helper, true);
     }
 
-    private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper, boolean includePhone) {
+    private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper, boolean isSelf) {
         int score = user.getTrustScore() != null ? (int) Math.round(user.getTrustScore()) : 0;
+        // Email, phone, date of birth, and sign-in metadata are the owner's
+        // business only — other users get the public fields (name, bio, trust).
         ProfileResponse.ProfileResponseBuilder builder = ProfileResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
-                .email(user.getEmail())
+                .email(isSelf ? user.getEmail() : null)
                 // Default name from the linked Google account; overridden below once a profile exists
                 .name(user.getFullName())
-                .authProvider(user.getAuthProvider())
-                .hasPassword(user.getPasswordHash() != null)
+                .authProvider(isSelf ? user.getAuthProvider() : null)
+                .hasPassword(isSelf && user.getPasswordHash() != null)
                 .role(user.getRole().name())
                 .trustScore(score)
                 .trustTier(TrustScoreService.tierFor(score))
                 .verificationStatus(user.getVerificationStatus().name())
                 .phoneVerified(user.isPhoneVerified())
-                .phone(includePhone ? user.getPhone() : null)
+                .phone(isSelf ? user.getPhone() : null)
                 .city(user.getCity())
-                .dateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
+                .dateOfBirth(isSelf && user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
 
         if (elder != null) {
             builder.name(elder.getName())

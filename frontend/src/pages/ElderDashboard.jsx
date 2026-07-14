@@ -450,6 +450,13 @@ export default function ElderDashboard() {
   // Only ACTIVE connections count as "Connected" — a pending request must not
   // show the Connected badge in Find New Helpers.
   const connectedHelperIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
+  // Reviewing is the reward at the top of the trust ladder: only fully trusted
+  // friends may rate each other. Finishing a request together is not a shortcut
+  // past it, so the review UI on a completed request checks this too — and
+  // ReviewService enforces the same rule server-side.
+  const fullyTrustedHelperIds = new Set(
+    connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').map(c => c.otherUserId)
+  );
   const incomingRequests = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
   const sentRequests = connections.filter(c => c.status === 'PENDING' && c.initiatedByMe);
   const requestedHelperIds = new Set(sentRequests.map(c => c.otherUserId));
@@ -1095,7 +1102,23 @@ export default function ElderDashboard() {
                       </button>
                     </div>
                   )}
-                  {need.status === 'COMPLETED' && !reviewedNeeds.has(need.id) && need.applications?.some(a => a.status === 'ACCEPTED') && (
+                  {/* Not fully trusted yet: no review, and say plainly why and what
+                      unlocks it, rather than leaving a blank space where the
+                      button would be. */}
+                  {need.status === 'COMPLETED' && !reviewedNeeds.has(need.id) && acceptedApp
+                    && !fullyTrustedHelperIds.has(acceptedApp.helperId) && (
+                    <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0, maxWidth: '44ch' }}>
+                        Helped by <strong style={{ color: 'var(--ink)' }}>{acceptedApp.helperName}</strong>. You can leave a review once you two are fully trusted friends.
+                      </p>
+                      <button onClick={() => setTab('connections')}
+                        style={{ height: '42px', padding: '0 20px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '10px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+                        Build trust together
+                      </button>
+                    </div>
+                  )}
+                  {need.status === 'COMPLETED' && !reviewedNeeds.has(need.id) && acceptedApp
+                    && fullyTrustedHelperIds.has(acceptedApp.helperId) && (
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px' }}>
                       {reviewingNeed === need.id ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

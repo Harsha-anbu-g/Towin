@@ -149,6 +149,7 @@ class ReviewServiceTest {
     @Test
     void missingNeed_throws() {
         bothUsersExist();
+        connected();
         when(needRepository.findById(needId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, needId, 5)))
@@ -161,6 +162,7 @@ class ReviewServiceTest {
     @Test
     void reviewerWhoWasNotOnTheNeed_isRejected() {
         bothUsersExist();
+        connected();
         User someoneElsesElder = User.builder().id(UUID.randomUUID()).build();
         when(needRepository.findById(needId)).thenReturn(Optional.of(need(someoneElsesElder)));
         // reviewer never applied either (existsByNeedIdAndHelperId defaults to false)
@@ -176,6 +178,7 @@ class ReviewServiceTest {
     @Test
     void elderCannotReviewSomeoneWhoNeverAppliedToTheNeed() {
         bothUsersExist();
+        connected();
         when(needRepository.findById(needId)).thenReturn(Optional.of(need(reviewer)));
         when(needApplicationRepository.existsByNeedIdAndHelperId(needId, revieweeId)).thenReturn(false);
 
@@ -190,6 +193,7 @@ class ReviewServiceTest {
     @Test
     void helperCannotReviewSomeoneOtherThanTheNeedsElder() {
         bothUsersExist();
+        connected();
         User actualElder = User.builder().id(UUID.randomUUID()).build();
         when(needRepository.findById(needId)).thenReturn(Optional.of(need(actualElder)));
         when(needApplicationRepository.existsByNeedIdAndHelperId(needId, reviewerId)).thenReturn(true);
@@ -242,12 +246,42 @@ class ReviewServiceTest {
         verify(trustScoreService, never()).recalculate(any());
     }
 
+    // A finished job is not a licence to rate: the trust ladder gates every review,
+    // whether it hangs off a need or off the connection alone.
+
+    @Test
+    void reviewFromASharedNeedBeforeFullTrust_isRejected() {
+        bothUsersExist();
+        connectedAt(ConnectionStatus.ACTIVE, TrustLevel.VIDEO_CALL);
+
+        assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, needId, 5)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("fully trusted");
+
+        verify(reviewRepository, never()).save(any());
+        verify(trustScoreService, never()).recalculate(any());
+    }
+
+    @Test
+    void reviewFromASharedNeedWithNoConnection_isRejected() {
+        bothUsersExist();
+        when(connectionRepository.findBetweenUsers(reviewerId, revieweeId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, needId, 5)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("people you've connected with");
+
+        verify(reviewRepository, never()).save(any());
+        verify(trustScoreService, never()).recalculate(any());
+    }
+
     // ── submitReview: happy paths ────────────────────────────────────────────
 
     @Test
     void elderReviewsHelperFromSharedNeed_savesReviewAndRecalculatesTrust() {
         bothUsersExist();
         saveEchoes();
+        connected();
         Need need = need(reviewer);
         when(needRepository.findById(needId)).thenReturn(Optional.of(need));
         when(needApplicationRepository.existsByNeedIdAndHelperId(needId, revieweeId)).thenReturn(true);
@@ -273,6 +307,7 @@ class ReviewServiceTest {
     void helperReviewsTheNeedsElder_savesReview() {
         bothUsersExist();
         saveEchoes();
+        connected();
         when(needRepository.findById(needId)).thenReturn(Optional.of(need(reviewee)));
         when(needApplicationRepository.existsByNeedIdAndHelperId(needId, reviewerId)).thenReturn(true);
         when(elderProfileRepository.findByUserId(reviewerId)).thenReturn(Optional.empty());

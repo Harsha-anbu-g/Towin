@@ -1,6 +1,7 @@
 package com.towin.emergency.service;
 
 import com.towin.emergency.entity.EmergencyContact;
+import com.towin.emergency.security.SosRateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import java.util.UUID;
 public class SosService {
 
     private final EmergencyContactService contactService;
+    private final SosRateLimiter sosRateLimiter;
 
     @Value("${twilio.account-sid:}")
     private String accountSid;
@@ -25,6 +27,7 @@ public class SosService {
     private String fromNumber;
 
     public void triggerSos(UUID elderId) {
+        sosRateLimiter.check(elderId);
         List<EmergencyContact> contacts = contactService.getContactEntities(elderId);
         if (contacts.isEmpty()) {
             log.warn("SOS triggered by elder {} but no emergency contacts found", elderId);

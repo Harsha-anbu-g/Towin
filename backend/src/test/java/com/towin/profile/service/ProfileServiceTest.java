@@ -87,6 +87,67 @@ class ProfileServiceTest {
     }
 
     @Test
+    void strangerView_hidesEmailDobPhoneAndAccountMeta() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .username("johne")
+                .email("private@test.com")
+                .phone("+1234567890")
+                .passwordHash("hash")
+                .authProvider("GOOGLE")
+                .dateOfBirth(java.time.LocalDate.of(1950, 3, 14))
+                .role(UserRole.ELDER)
+                .trustScore(40.0)
+                .verificationStatus(VerificationStatus.NONE)
+                .isActive(true)
+                .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(elderProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        var response = profileService.getProfile(userId, false);
+
+        assertThat(response.getEmail()).isNull();
+        assertThat(response.getDateOfBirth()).isNull();
+        assertThat(response.getPhone()).isNull();
+        assertThat(response.getAuthProvider()).isNull();
+        assertThat(response.isHasPassword()).isFalse();
+        // Public fields still come through untouched.
+        assertThat(response.getUsername()).isEqualTo("johne");
+        assertThat(response.getTrustScore()).isEqualTo(40);
+    }
+
+    @Test
+    void selfView_keepsEmailDobAndPhone() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .username("johne")
+                .email("private@test.com")
+                .phone("+1234567890")
+                .passwordHash("hash")
+                .authProvider("GOOGLE")
+                .dateOfBirth(java.time.LocalDate.of(1950, 3, 14))
+                .role(UserRole.ELDER)
+                .trustScore(40.0)
+                .verificationStatus(VerificationStatus.NONE)
+                .isActive(true)
+                .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(elderProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        var response = profileService.getProfile(userId, true);
+
+        assertThat(response.getEmail()).isEqualTo("private@test.com");
+        assertThat(response.getDateOfBirth()).isEqualTo("1950-03-14");
+        assertThat(response.getPhone()).isEqualTo("+1234567890");
+        assertThat(response.getAuthProvider()).isEqualTo("GOOGLE");
+        assertThat(response.isHasPassword()).isTrue();
+    }
+
+    @Test
     void shouldThrowWhenUserNotFound() {
         UUID userId = UUID.randomUUID();
         when(userRepository.findById(userId)).thenReturn(Optional.empty());

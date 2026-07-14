@@ -21,7 +21,6 @@ public class GlobalExceptionHandler {
     private static final Map<String, String> SAFE_MESSAGES;
     static {
         SAFE_MESSAGES = new HashMap<>();
-        SAFE_MESSAGES.put("User not found",                               "Invalid request.");
         SAFE_MESSAGES.put("Invalid request.",                             "Invalid request.");
         SAFE_MESSAGES.put("Email already registered",                     "Email already registered.");
         SAFE_MESSAGES.put("Username already taken",                       "Username already taken. Please choose another.");
@@ -70,11 +69,21 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("You can only review users from needs",         "You can only review someone you've actually helped or been helped by.");
         SAFE_MESSAGES.put("You can only review the other person",         "You can only review the other person from that request.");
         SAFE_MESSAGES.put("You can only review people you've connected",  "You can only review people you're connected with.");
+        SAFE_MESSAGES.put("You can review each other once you're fully trusted",
+                "You can leave a review once you're fully trusted friends.");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("IllegalArgumentException: {}", ex.getMessage());
+        // Missing resources ("User not found", "Need not found: <id>") are 404s,
+        // not bad requests. These lookups are keyed by the JWT user id or an
+        // unguessable UUID, so the status code enables no enumeration.
+        if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("not found")) {
+            return ResponseEntity.status(404)
+                    .body(new ErrorResponse("We couldn't find that. It may have been removed.",
+                            404, LocalDateTime.now()));
+        }
         String safe = SAFE_MESSAGES.entrySet().stream()
                 .filter(e -> ex.getMessage() != null && ex.getMessage().startsWith(e.getKey()))
                 .map(Map.Entry::getValue)
