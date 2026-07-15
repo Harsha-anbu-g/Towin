@@ -1,0 +1,85 @@
+# Manual-only Snyk security scan. Runs ONLY when a maintainer clicks
+# "Run workflow" in the Actions tab (or via `gh workflow run security-snyk.yml`).
+# Never runs on push or pull_request — this is an on-demand audit, not a gate.
+#
+# Report-only: findings are printed in the run logs; the job does NOT fail the
+# run when vulnerabilities are found (continue-on-error on each scan step).
+#
+# One-time setup: add a repo secret named SNYK_TOKEN
+#   Settings > Secrets and variables > Actions > New repository secret
+#   Value: an API token from https://app.snyk.io/account
+# Until that secret exists the job prints a warning and passes (skips the scan),
+# so the check stays visibly present in the repo even before it is wired up.
+name: Security - Snyk (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snyk:
+    name: Snyk (dependencies + code)
+    runs-on: ubuntu-latest
+    env:
+      # Secrets can't be used in a step `if:` expression, so surface the token
+      # as an env var and let the guard step decide whether to run or skip.
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify SNYK_TOKEN is configured
+        id: guard
+        run: |
+          if [ -z "${SNYK_TOKEN}" ]; then
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Snyk scan skipped::SNYK_TOKEN secret is not set. Add it under Settings > Secrets and variables > Actions (name: SNYK_TOKEN, value: an API token from https://app.snyk.io/account). The scan is skipped and this job intentionally passes until the token is configured."
+          else
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 21 (backend)
+        if: steps.guard.outputs.has_token == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Node.js (frontend)
+        if: steps.guard.outputs.has_token == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Snyk CLI
+        if: steps.guard.outputs.has_token == 'true'
+        run: |
+          npm install -g snyk
+          snyk --version
+
+      # ---- Dependency scanning (Snyk Open Source) ----
+      # `snyk test` exits 1 when issues are found; continue-on-error keeps it report-only.
+      - name: Snyk Open Source - Maven backend (dependencies)
+        if: steps.guard.outputs.has_token == 'true'
+        continue-on-error: true
+        working-directory: backend
+        run: snyk test --all-projects
+
+      - name: Snyk Open Source - npm frontend (dependencies)
+        if: steps.guard.outputs.has_token == 'true'
+        continue-on-error: true
+        working-directory: frontend
+        run: snyk test
+
+      # ---- Static code scanning (Snyk Code / SAST) ----
+      # One repo-wide scan covers both backend and frontend source.
+      # Requires Snyk Code enabled for your Snyk org; harmless if not (logs + passes).
+      - name: Snyk Code - static analysis (whole repo)
+        if: steps.guard.outputs.has_token == 'true'
+        continue-on-error: true
+        run: snyk code test

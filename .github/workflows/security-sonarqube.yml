@@ -1,0 +1,151 @@
+# Manual-only, self-hosted SonarQube analysis. Runs ONLY when a maintainer clicks
+# "Run workflow" in the Actions tab (or via `gh workflow run security-sonarqube.yml`).
+# Never runs on push or pull_request.
+#
+# Self-contained: it boots a throwaway SonarQube Community server inside the job,
+# analyzes the backend (Java, with JaCoCo coverage) and the frontend (TypeScript),
+# then the server is discarded. No SonarCloud account and no repo secret needed.
+#
+# Report-only: a failing quality gate does NOT fail the run. Results are visible
+# in the job logs; the server is ephemeral (gone when the run ends), so there is
+# no persistent dashboard — that is inherent to the throwaway-server pattern.
+name: Security - SonarQube (self-hosted, manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonarqube:
+    name: SonarQube (backend + frontend)
+    runs-on: ubuntu-latest
+
+    # SonarQube Community Build as a service container. A service starts BEFORE
+    # any job step, so we can't raise vm.max_map_count in time — disabling the
+    # Elasticsearch bootstrap check is the reliable way to boot on a runner.
+    # Pin to a specific tag (e.g. sonarqube:26.7.0.124771-community) for a fully
+    # reproducible server; the rolling `community` tag tracks the latest build.
+    services:
+      sonarqube:
+        image: sonarqube:community
+        ports:
+          - 9000:9000
+        env:
+          SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+
+    env:
+      SONAR_HOST_URL: http://localhost:9000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history so SonarQube can attribute issues via SCM blame
+
+      - name: Wait for SonarQube to be UP
+        run: |
+          echo "Waiting for SonarQube to reach status UP ..."
+          for i in $(seq 1 90); do
+            status=$(curl -s "${SONAR_HOST_URL}/api/system/status" | jq -r '.status // empty' 2>/dev/null || true)
+            if [ "$status" = "UP" ]; then
+              echo "SonarQube is UP after ~$((i * 5))s."
+              exit 0
+            fi
+            echo "  attempt $i/90 - status='${status:-starting}' ..."
+            sleep 5
+          done
+          echo "SonarQube did not come UP in time." >&2
+          exit 1
+
+      - name: Bootstrap analysis token (default admin/admin)
+        run: |
+          set -euo pipefail
+          ADMIN_USER="admin"
+          OLD_PASS="admin"
+          NEW_PASS="Sonar.Admin.2026!"
+
+          # Modern SonarQube won't mint a token until the default password is
+          # changed. Attempt it; ignore failure so this works whether or not the
+          # change is required (the container has a fresh in-memory DB each run).
+          curl -s -o /dev/null -u "${ADMIN_USER}:${OLD_PASS}" \
+            -X POST "${SONAR_HOST_URL}/api/users/change_password" \
+            -d "login=${ADMIN_USER}" \
+            -d "previousPassword=${OLD_PASS}" \
+            -d "password=${NEW_PASS}" || true
+
+          # Use whichever password now authenticates.
+          if curl -s -u "${ADMIN_USER}:${NEW_PASS}" \
+               "${SONAR_HOST_URL}/api/authentication/validate" | grep -q '"valid":true'; then
+            AUTH="${ADMIN_USER}:${NEW_PASS}"
+          else
+            AUTH="${ADMIN_USER}:${OLD_PASS}"
+          fi
+
+          # Unique token name per run so re-runs never collide (generate 400s on dup name).
+          TOKEN_NAME="ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          TOKEN=$(curl -s -u "${AUTH}" \
+            -X POST "${SONAR_HOST_URL}/api/user_tokens/generate" \
+            -d "name=${TOKEN_NAME}" | jq -r '.token // empty')
+
+          if [ -z "$TOKEN" ]; then
+            echo "Failed to generate analysis token." >&2
+            exit 1
+          fi
+          echo "Analysis token generated (name=${TOKEN_NAME})."
+          echo "::add-mask::${TOKEN}"
+          echo "SONAR_TOKEN=${TOKEN}" >> "$GITHUB_ENV"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # `test` runs the suite and regenerates target/site/jacoco/jacoco.xml (the
+      # JaCoCo report is bound to the test phase). This does NOT trigger the OWASP
+      # dependency-check — that lives in the opt-in `security` Maven profile.
+      - name: Backend - build, test and JaCoCo coverage
+        working-directory: backend
+        run: ./mvnw -B --no-transfer-progress test
+
+      - name: Backend - SonarQube analysis (report-only)
+        working-directory: backend
+        continue-on-error: true
+        run: |
+          ./mvnw -B --no-transfer-progress \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.host.url="${SONAR_HOST_URL}" \
+            -Dsonar.token="${SONAR_TOKEN}" \
+            -Dsonar.projectKey=towin-backend \
+            -Dsonar.projectName="ToWin Backend" \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend - install and coverage (lcov)
+        working-directory: frontend
+        continue-on-error: true
+        run: |
+          npm ci
+          npx vitest run --coverage \
+            --coverage.provider=v8 \
+            --coverage.reporter=lcov \
+            --coverage.reporter=text
+
+      # Reads frontend/sonar-project.properties; SONAR_TOKEN was exported above.
+      - name: Frontend - SonarQube analysis (report-only)
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        continue-on-error: true
+        with:
+          projectBaseDir: frontend
+        env:
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
