@@ -18,6 +18,11 @@ import java.time.Instant;
  * elapsed lock starts fresh (as it always did), and a part-way failure count for
  * a key that never comes back is reclaimed instead of being held for the life of
  * the process. The policy is unchanged — 5 failures inside 15 minutes still locks.
+ *
+ * <p>Unlike the throughput limiters, this one fails <em>closed</em>: if the backing
+ * store is saturated and cannot track a key, the login is denied rather than let
+ * through, so a flood of junk identifiers can't quietly switch the guard off. That
+ * never blocks a real sign-in — a correct password is honoured before this check runs.
  */
 @Component
 public class LoginRateLimiter implements SweepableRateLimiter {
@@ -52,6 +57,15 @@ public class LoginRateLimiter implements SweepableRateLimiter {
         Attempt a = attempts.get(key(email));
         if (a != null && a.lockedUntil != null && a.lockedUntil.isAfter(clock.instant())) {
             throw new RateLimitException("Too many attempts. Try again in 15 minutes.");
+        }
+        // Fail CLOSED, not open. If the store is saturated (a flood of junk identifiers
+        // filling it with live windows) it can no longer track this key — and a lockout
+        // guard that waves an untracked key through is silently disabled, letting the
+        // flood double as cover for guessing a real account. Denying instead cannot lock
+        // a genuine user out: a correct password short-circuits in AuthService before this
+        // check runs, so only wrong-credential attempts ever reach here.
+        if (a == null && attempts.isFull()) {
+            throw new RateLimitException("Too many attempts right now. Try again in a minute.");
         }
     }
 

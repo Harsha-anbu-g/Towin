@@ -108,4 +108,31 @@ class LoginRateLimiterTest {
 
         assertThat(limiter.trackedKeys()).isEqualTo(MAX_TRACKED_KEYS);
     }
+
+    // --- fail CLOSED, not open: a saturated store must not silently disable the
+    //     lockout. A lockout limiter's safe direction is deny, the opposite of the
+    //     throughput limiters. Only wrong-credential logins ever reach checkNotLocked
+    //     (a correct password short-circuits in AuthService), so this never blocks a
+    //     legitimate sign-in. ---
+
+    @Test
+    void whenStoreIsSaturated_anUntrackedKeyIsDeniedNotWavedThrough() {
+        // Flood the store with junk identifiers until it is full of live windows.
+        for (int i = 0; i < MAX_TRACKED_KEYS * 5; i++) {
+            limiter.recordFailure("junk-" + i + "@example.com");
+        }
+        assertThat(limiter.trackedKeys()).isEqualTo(MAX_TRACKED_KEYS);
+
+        // A victim not already tracked would, under the old fail-open behaviour, be
+        // read as "not locked" and let through — the brute-force guard silently off.
+        assertThatThrownBy(() -> limiter.checkNotLocked("victim@example.com"))
+                .isInstanceOf(RateLimitException.class);
+    }
+
+    @Test
+    void whenStoreHasRoom_anUntrackedKeyIsNotDenied() {
+        // With capacity to spare, an untracked key is simply not locked — no false throttle.
+        assertThatCode(() -> limiter.checkNotLocked("newcomer@example.com"))
+                .doesNotThrowAnyException();
+    }
 }

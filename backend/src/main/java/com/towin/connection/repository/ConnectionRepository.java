@@ -26,7 +26,15 @@ public interface ConnectionRepository extends JpaRepository<Connection, UUID> {
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) AND c.status = :status ORDER BY c.updatedAt DESC")
     List<Connection> findByUserAndStatus(@Param("userId") UUID userId, @Param("status") ConnectionStatus status, Pageable pageable);
 
-    @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) ORDER BY c.updatedAt DESC")
+    // Live states first (ACTIVE, then PAUSED, then PENDING), terminal states last, each
+    // group newest-first. The page cap must only ever truncate DECLINED/ENDED history —
+    // never a live conversation the inbox is expected to show in full.
+    @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) "
+         + "ORDER BY CASE c.status "
+         + "WHEN com.towin.common.enums.ConnectionStatus.ACTIVE THEN 0 "
+         + "WHEN com.towin.common.enums.ConnectionStatus.PAUSED THEN 1 "
+         + "WHEN com.towin.common.enums.ConnectionStatus.PENDING THEN 2 "
+         + "ELSE 3 END, c.updatedAt DESC")
     List<Connection> findAllByUser(@Param("userId") UUID userId, Pageable pageable);
 
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :a AND c.userB.id = :b) OR (c.userA.id = :b AND c.userB.id = :a)")

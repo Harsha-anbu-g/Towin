@@ -104,6 +104,22 @@ public final class ExpiringKeyStore<K, V> {
         return entries.size();
     }
 
+    /**
+     * True when the store is at capacity and would refuse to track a new key (it
+     * sweeps expired entries first, so this reports genuine saturation, not stale bulk).
+     *
+     * <p>Throughput limiters ignore this and fail open. A <em>lockout</em> limiter
+     * checks it to fail closed instead: for it, "cannot track you" must mean "throttle,"
+     * because waving an untracked key through would silently disable the guard.
+     */
+    public boolean isFull() {
+        if (size() < maxEntries) {
+            return false;
+        }
+        sweep();
+        return size() >= maxEntries;
+    }
+
     private boolean isExpired(V entry, Instant now) {
         Instant expiresAt = expiryOf.apply(entry);
         return expiresAt == null || expiresAt.isBefore(now);

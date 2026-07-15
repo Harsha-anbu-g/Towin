@@ -41,7 +41,11 @@ public class ConnectionService {
     // The list callers (dashboards, inbox) filter the whole array client-side, so the
     // default page has to clear a user's own hard limits: 20 active connections for a
     // helper plus pending requests. Pass ?page=&size= to walk further back.
-    public static final int DEFAULT_PAGE_SIZE = 50;
+    // Generous on purpose: the batched read is a fixed 3 queries regardless of size, so
+    // this only bounds a pathological payload. Live connections are ordered ahead of
+    // terminal ones (see ConnectionRepository.findAllByUser), so no real user's active
+    // conversations are ever truncated — only very long DECLINED/ENDED history is.
+    public static final int DEFAULT_PAGE_SIZE = 100;
 
     private int activeLimit(User user) {
         return switch (user.getRole()) {
