@@ -6,7 +6,7 @@
 
 Youngers who help, elders who get help — and both win.
 
-**[🚀 Try the live demo →](https://towin.vercel.app)**
+**[🚀 Try the live demo →](https://towin.vercel.app)** · **[🎥 Watch the video →](https://lnkd.in/p/gWXjNXcX)**
 
 *No signup needed — open the sign-in page and click **Try as an Elder** or **Try as a Helper**.*
 
