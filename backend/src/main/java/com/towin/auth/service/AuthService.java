@@ -60,8 +60,9 @@ public class AuthService {
     public void register(RegisterRequest request) {
         if (request.getRole() != UserRole.ELDER
                 && request.getRole() != UserRole.HELPER
-                && request.getRole() != UserRole.BOTH) {
-            throw new IllegalArgumentException("Role must be ELDER, HELPER, or BOTH");
+                && request.getRole() != UserRole.BOTH
+                && request.getRole() != UserRole.FAMILY) {
+            throw new IllegalArgumentException("Role must be ELDER, HELPER, BOTH, or FAMILY");
         }
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username already taken");

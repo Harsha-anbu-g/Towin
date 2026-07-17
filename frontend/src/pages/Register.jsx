@@ -381,6 +381,7 @@ export default function Register() {
   const ROLES = [
     { value: 'ELDER', label: 'Elder', desc: 'Looking for friends or help' },
     { value: 'HELPER', label: 'Helper', desc: 'Want to help others' },
+    { value: 'FAMILY', label: "I'm here for a family member", desc: "You'll link to your parent inside the app after you sign up.", fullWidth: true },
   ];
 
   return (
@@ -522,11 +523,12 @@ export default function Register() {
                 First, who are you joining as?
               </label>
               <div className="role-grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: '12px' }}>
-                {ROLES.map(({ value, label, desc }) => {
+                {ROLES.map(({ value, label, desc, fullWidth }) => {
                   const active = form.role === value;
                   return (
                     <button key={value} type="button" onClick={() => setForm({ ...form, role: value })}
                       style={{
+                        gridColumn: fullWidth ? '1 / -1' : undefined,
                         padding: '14px 12px', borderRadius: '11px',
                         border: active ? '2px solid var(--blue)' : '1.5px solid var(--border)',
                         background: active ? 'var(--blue-wash)' : 'var(--canvas)',
