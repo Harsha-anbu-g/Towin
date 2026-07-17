@@ -63,6 +63,10 @@ public class Connection {
     @JoinColumn(name = "is_paused_by")
     private User isPausedBy;
 
+    @Column(name = "shared_with_family", nullable = false)
+    @Builder.Default
+    private Boolean sharedWithFamily = false;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
