@@ -18,8 +18,23 @@ public class TrustScoreBreakdownResponse {
     /** Your profile readiness — the same value silently adds to every customer. */
     private ProfileSection profile;
 
+    /**
+     * Family connected — +1 per ACTIVE family link, capped at 5 (US-008).
+     * Null for users without an elder seat (helpers and FAMILY-role users
+     * earn nothing from family, so the UI shows no family line).
+     */
+    private FamilySection family;
+
     /** One card per active customer relationship. */
     private List<CustomerCard> customers;
+
+    /** Family connected: one point per accepted family member, up to 5. */
+    @Data
+    @Builder
+    public static class FamilySection {
+        private int earned;          // 0–5 (one point per ACTIVE family link)
+        private int max;             // 5
+    }
 
     @Data
     @Builder

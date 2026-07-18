@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.TrustScoreService;
 import com.towin.common.service.UserIdentifierResolver;
 import com.towin.family.dto.FamilyAlertResponse;
 import com.towin.family.dto.FamilyAlertsResponse;
@@ -41,6 +42,7 @@ public class FamilyService {
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
     private final UserRepository userRepository;
+    private final TrustScoreService trustScoreService;
 
     @Transactional
     public FamilyLinkResponse createRequest(UUID callerId, FamilyRequest request) {
@@ -118,13 +120,19 @@ public class FamilyService {
 
         link.setStatus(accept ? FamilyLinkStatus.ACTIVE : FamilyLinkStatus.DECLINED);
         link.setRespondedAt(LocalDateTime.now());
-        return toResponse(familyLinkRepository.save(link), callerId);
+        FamilyLinkResponse response = toResponse(familyLinkRepository.save(link), callerId);
+        if (accept) {
+            // US-008: the elder earns +1 per ACTIVE link (recompute model).
+            trustScoreService.recalculate(link.getElder().getId());
+        }
+        return response;
     }
 
     @Transactional
     public void revoke(UUID callerId, UUID linkId) {
         FamilyLink link = getLink(linkId);
         requireParticipant(link, callerId);
+        boolean wasActive = link.getStatus() == FamilyLinkStatus.ACTIVE;
         switch (link.getStatus()) {
             case ACTIVE -> {
                 // Elder revokes; family member unlinks themself. Both are participants.
@@ -145,6 +153,10 @@ public class FamilyService {
         link.setRevokedAt(LocalDateTime.now());
         link.setIsPrimary(false);
         familyLinkRepository.save(link);
+        if (wasActive) {
+            // US-008: revoked links stop counting — recompute drops the point.
+            trustScoreService.recalculate(link.getElder().getId());
+        }
     }
 
     @Transactional

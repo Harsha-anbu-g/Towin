@@ -36,6 +36,7 @@ class TrustScoreServiceTest {
     @Mock ReviewRepository reviewRepository;
     @Mock ConnectionRepository connectionRepository;
     @Mock com.towin.common.service.S3Service s3Service;
+    @Mock com.towin.family.repository.FamilyLinkRepository familyLinkRepository;
 
     @InjectMocks TrustScoreService trustScoreService;
 

@@ -2,11 +2,14 @@ package com.towin.common.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.TrustLevel;
+import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
+import com.towin.family.repository.FamilyLinkRepository;
 import com.towin.profile.entity.ElderProfile;
 import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
@@ -44,12 +47,16 @@ public class TrustScoreService {
     public static final int PROFILE_MAX  = 3;
     public static final int CUSTOMER_MAX = ROOTING_MAX + REVIEW_MAX + PROFILE_MAX; // 15
 
+    /** US-008: +1 per ACTIVE family link for the elder, capped at 5. */
+    public static final int FAMILY_MAX = 5;
+
     private final UserRepository userRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final ReviewRepository reviewRepository;
     private final ConnectionRepository connectionRepository;
     private final S3Service s3Service;
+    private final FamilyLinkRepository familyLinkRepository;
 
     @Transactional
     public void recalculate(UUID userId) {
@@ -60,7 +67,7 @@ public class TrustScoreService {
         Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
         // Profile completeness always counts once so new users get immediate feedback.
-        int total = profilePoints;
+        int total = profilePoints + familyPoints(user);
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
             UUID customerId = c.getOtherUser(userId).getId();
             int rooting = rootingPoints(c.getCurrentTrustLevel());
@@ -80,8 +87,10 @@ public class TrustScoreService {
         int profilePoints = completedGroups(profileGroups);
         Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
+        int familyPoints = familyPoints(user);
+
         List<CustomerCard> cards = new ArrayList<>();
-        int total = profilePoints;
+        int total = profilePoints + familyPoints;
 
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
             User customer = c.getOtherUser(userId);
@@ -115,11 +124,31 @@ public class TrustScoreService {
                         .max(PROFILE_MAX)
                         .groups(profileGroups)
                         .build())
+                .family(hasElderSeat(user)
+                        ? FamilySection.builder().earned(familyPoints).max(FAMILY_MAX).build()
+                        : null)
                 .customers(cards)
                 .build();
     }
 
     // ── Scoring helpers ──────────────────────────────────────────────────────
+
+    /**
+     * US-008: +1 per ACTIVE family link, elders only (ELDER/BOTH), capped at
+     * FAMILY_MAX. Helpers and FAMILY-role users earn 0 from family; PENDING
+     * links count 0. Points don't depend on the share switch — linking earns
+     * the point, sharing is a separate private choice.
+     */
+    private int familyPoints(User user) {
+        if (!hasElderSeat(user)) return 0;
+        long active = familyLinkRepository.countByElderIdAndStatusIn(
+                user.getId(), List.of(FamilyLinkStatus.ACTIVE));
+        return (int) Math.min(active, FAMILY_MAX);
+    }
+
+    private boolean hasElderSeat(User user) {
+        return user.getRole() == UserRole.ELDER || user.getRole() == UserRole.BOTH;
+    }
 
     /** One point per trust stage reached: DISCOVERED=1 … TRUSTED=7. */
     private int rootingPoints(TrustLevel level) {

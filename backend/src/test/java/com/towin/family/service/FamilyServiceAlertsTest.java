@@ -32,6 +32,7 @@ class FamilyServiceAlertsTest {
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;
+    @Mock com.towin.common.service.TrustScoreService trustScoreService;
 
     @InjectMocks FamilyService familyService;
 
