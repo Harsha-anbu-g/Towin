@@ -29,11 +29,14 @@ public interface ConnectionRepository extends JpaRepository<Connection, UUID> {
     // Live states first (ACTIVE, then PAUSED, then PENDING), terminal states last, each
     // group newest-first. The page cap must only ever truncate DECLINED/ENDED history —
     // never a live conversation the inbox is expected to show in full.
+    // NOTE: compares via str(c.status), not HQL enum literals — Hibernate renders enum
+    // literals for this NAMED_ENUM column as 'ACTIVE'::ConnectionStatus, a Postgres type
+    // that doesn't exist (the real type is connection_status), which 500'd this query.
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) "
-         + "ORDER BY CASE c.status "
-         + "WHEN com.towin.common.enums.ConnectionStatus.ACTIVE THEN 0 "
-         + "WHEN com.towin.common.enums.ConnectionStatus.PAUSED THEN 1 "
-         + "WHEN com.towin.common.enums.ConnectionStatus.PENDING THEN 2 "
+         + "ORDER BY CASE str(c.status) "
+         + "WHEN 'ACTIVE' THEN 0 "
+         + "WHEN 'PAUSED' THEN 1 "
+         + "WHEN 'PENDING' THEN 2 "
          + "ELSE 3 END, c.updatedAt DESC")
     List<Connection> findAllByUser(@Param("userId") UUID userId, Pageable pageable);
 
