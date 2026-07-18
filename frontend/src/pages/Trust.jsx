@@ -179,6 +179,46 @@ function ScoreSummary({ data }) {
   );
 }
 
+/* ── Family connected: +1 per accepted family member, up to 5 (elders only).
+      The backend sends `family` only for elder-seat users — everyone else
+      simply has no line here. Trust words stay in the gold family. ─────────── */
+function FamilyCard({ family }) {
+  if (!family) return null;
+  const { earned, max } = family;
+  const marks = [];
+  for (let i = 0; i < max; i++) {
+    marks.push(
+      <span key={i} style={{
+        width: '9px', height: '9px', borderRadius: '50%',
+        background: i < earned ? TRUST : EMPTY, display: 'inline-block',
+      }} />
+    );
+  }
+  return (
+    <div style={{ ...card, padding: '16px 20px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: TRUST, margin: '0 0 3px' }}>
+            Family connected
+          </p>
+          <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.5 }}>
+            Each family member who accepts your link earns you 1 point, up to {max}.
+          </p>
+        </div>
+        <span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          {marks}
+        </span>
+        <span aria-label={`+${earned} of ${max}`} style={{
+          fontFamily: SF, fontSize: '15px', fontWeight: 600,
+          color: earned > 0 ? TRUST : FAINT, flexShrink: 0, whiteSpace: 'nowrap',
+        }}>
+          +{earned}<span aria-hidden="true" style={{ color: FAINT, fontWeight: 400 }}> of {max}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /* ── One profile group = 1 point, earned only when every field is filled ──── */
 function ProfileGroup({ group }) {
   const { label, completed, doneCount, itemCount, items } = group;
@@ -383,6 +423,7 @@ export default function Trust() {
         {data && (
           <>
             <ScoreSummary data={data} />
+            <FamilyCard family={data.family} />
 
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '24px 0 12px' }}>
               <h3 style={{ fontFamily: SFD, fontSize: '17px', fontWeight: 700, color: INK, margin: 0 }}>
