@@ -8,6 +8,9 @@ import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.emergency.entity.EmergencyContact;
 import com.towin.emergency.repository.EmergencyContactRepository;
+import com.towin.family.entity.FamilyLink;
+import com.towin.family.repository.FamilyAlertRepository;
+import com.towin.family.repository.FamilyLinkRepository;
 import com.towin.messaging.entity.Message;
 import com.towin.messaging.repository.MessageRepository;
 import com.towin.need.entity.Need;
@@ -90,7 +93,8 @@ public class DemoDataSeeder implements ApplicationRunner {
             "demo.grace@towin.app", "demo.nina@towin.app", "demo.rose@towin.app",
             "demo.helen@towin.app", "demo.arthur@towin.app", "demo.sofia@towin.app",
             "demo.lakshmi@towin.app", "demo.karthik@towin.app",
-            "demo.meena@towin.app", "demo.arjun@towin.app");
+            "demo.meena@towin.app", "demo.arjun@towin.app",
+            "demo.sarah@towin.app");
 
     // Most demo personas (elders and helpers) are pinned to Montreal, Canada so
     // they cluster together and "near me" discovery matches across both roles.
@@ -113,6 +117,8 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final ReviewRepository reviewRepository;
     private final UserStreakRepository userStreakRepository;
     private final EmergencyContactRepository emergencyContactRepository;
+    private final FamilyLinkRepository familyLinkRepository;
+    private final FamilyAlertRepository familyAlertRepository;
     private final ReportRepository reportRepository;
     private final TrustProgressionLogRepository trustProgressionLogRepository;
     private final PasswordEncoder passwordEncoder;
@@ -180,8 +186,13 @@ public class DemoDataSeeder implements ApplicationRunner {
         User meena    = ensureUser("demo.meena@towin.app",   "+919442001114", UserRole.ELDER,  "DemoMeena!2026",   COIMBATORE);
         User arjun    = ensureUser("demo.arjun@towin.app",   "+919442001115", UserRole.HELPER, "DemoArjun!2026",   SALEM);
 
+        // Family story: Sarah is Margaret's daughter — the same person as the
+        // long-standing "Sarah (daughter)" emergency contact, now with her own
+        // FAMILY-role account linked in-app (see the family seed below).
+        User sarah    = ensureUser("demo.sarah@towin.app",   "+14165550112", UserRole.FAMILY, "DemoSarah!2026");
+
         List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur, sofia,
-                lakshmi, karthik, meena, arjun);
+                lakshmi, karthik, meena, arjun, sarah);
 
         // Clear anything visitors left on the public demo accounts so the rest of
         // this method re-seeds a clean, minimal showcase (one of each type).
@@ -318,6 +329,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureConnection(margaret, sofia, ConnectionStatus.PENDING, TrustLevel.DISCOVERED, margaret,
                 "Hi Sofia! Your profile looked wonderful — I'd love a hand getting the hang of my new tablet.",
                 true, false);
+
+        // Family in the trust system: Sarah (daughter) holds an ACTIVE link to
+        // Margaret, so the demo shows a linked family member, the elder's +1
+        // family trust point, and the Family Home screen with a real elder card.
+        ensureFamilyLink(margaret, sarah, "Daughter");
+        // The elder's choice on display: Margaret shares her trusted friendship
+        // with Tom with her family, while her newer connection with Priya stays
+        // private (shared_with_family keeps its FALSE default).
+        markSharedWithFamily(cMargaretTom);
 
         // One-time repair for DBs seeded before the default changed: earlier seeds
         // set both confirm flags true on active connections, an impossible state
@@ -508,6 +528,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         reportRepository.deleteByReporterIdOrReportedUserId(id, id);
         needRepository.deleteByElderId(id);
         trustProgressionLogRepository.deleteByUserId(id);
+        familyAlertRepository.deleteByElderId(id);
+        familyLinkRepository.deleteByElderIdOrFamilyUserId(id, id);
         connectionRepository.deleteByUserId(id);
         emergencyContactRepository.deleteByElderId(id);
         userStreakRepository.findByUserId(id).ifPresent(userStreakRepository::delete);
@@ -553,6 +575,41 @@ public class DemoDataSeeder implements ApplicationRunner {
                 reviewRepository.delete(r);
             }
         }
+    }
+
+    /**
+     * Ensure an ACTIVE family link between the demo elder and their family
+     * member, as if the request was sent by the family member and accepted
+     * in-app. On reset the row was just purged, so this recreates the accepted
+     * baseline; in additive mode an existing link (any status) is restored to
+     * ACTIVE only if a visitor revoked/declined it. The elder's +1 family trust
+     * point follows from the recalculate loop at the end of {@link #seed()}.
+     */
+    private void ensureFamilyLink(User elder, User familyUser, String relationship) {
+        FamilyLink link = familyLinkRepository
+                .findByElderIdAndFamilyUserId(elder.getId(), familyUser.getId())
+                .orElse(null);
+        if (link == null) {
+            link = FamilyLink.builder()
+                    .elder(elder).familyUser(familyUser).initiatedBy(familyUser)
+                    .build();
+        } else if (link.getStatus() == FamilyLinkStatus.ACTIVE) {
+            return;
+        }
+        link.setRelationship(relationship);
+        link.setStatus(FamilyLinkStatus.ACTIVE);
+        link.setRespondedAt(LocalDateTime.now());
+        link.setRevokedAt(null);
+        familyLinkRepository.save(link);
+    }
+
+    /** Flip the elder's per-connection family switch ON for one baseline
+     *  connection, so the demo shows a shared friendship next to private ones
+     *  (every other connection keeps the FALSE default). */
+    private void markSharedWithFamily(Connection c) {
+        if (Boolean.TRUE.equals(c.getSharedWithFamily())) return;
+        c.setSharedWithFamily(true);
+        connectionRepository.save(c);
     }
 
     private User ensureUser(String email, String phone, UserRole role, String rawPassword) {
