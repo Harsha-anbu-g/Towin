@@ -30,4 +30,11 @@ public interface FamilyLinkRepository extends JpaRepository<FamilyLink, UUID> {
     // regardless of which side initiated — callers split incoming/outgoing by initiatedBy.
     @Query("SELECT f FROM FamilyLink f WHERE (f.elder.id = :userId OR f.familyUser.id = :userId) AND f.status = :status")
     List<FamilyLink> findByParticipantAndStatus(@Param("userId") UUID userId, @Param("status") FamilyLinkStatus status);
+
+    // GDPR export: every link the user participates in, both directions, all statuses.
+    List<FamilyLink> findByElderIdOrFamilyUserId(UUID elderId, UUID familyUserId);
+
+    // GDPR purge: a participant is always elder or familyUser, so this also
+    // clears every row where they are initiatedBy (the initiator is one of the two).
+    void deleteByElderIdOrFamilyUserId(UUID elderId, UUID familyUserId);
 }

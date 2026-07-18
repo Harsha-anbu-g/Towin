@@ -6,6 +6,10 @@ import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.emergency.entity.EmergencyContact;
 import com.towin.emergency.repository.EmergencyContactRepository;
+import com.towin.family.entity.FamilyAlert;
+import com.towin.family.entity.FamilyLink;
+import com.towin.family.repository.FamilyAlertRepository;
+import com.towin.family.repository.FamilyLinkRepository;
 import com.towin.messaging.repository.MessageRepository;
 import com.towin.need.entity.Need;
 import com.towin.need.repository.NeedApplicationRepository;
@@ -48,6 +52,8 @@ public class AccountService {
     private final MessageRepository messageRepository;
     private final EmergencyContactRepository emergencyContactRepository;
     private final TrustProgressionLogRepository trustProgressionLogRepository;
+    private final FamilyLinkRepository familyLinkRepository;
+    private final FamilyAlertRepository familyAlertRepository;
 
     private final com.towin.common.service.S3Service s3Service;
 
@@ -72,6 +78,8 @@ public class AccountService {
                 .forEach(need -> needApplicationRepository.deleteByNeedId(need.getId()));
         needRepository.deleteByElderId(userId);
         emergencyContactRepository.deleteByElderId(userId);
+        familyAlertRepository.deleteByElderId(userId);
+        familyLinkRepository.deleteByElderIdOrFamilyUserId(userId, userId);
         trustProgressionLogRepository.deleteByUserId(userId);
         connectionRepository.deleteByUserId(userId);
         elderProfileRepository.deleteByUserId(userId);
@@ -127,6 +135,13 @@ public class AccountService {
 
         out.put("connections", connectionRepository.findAllByUser(userId)
                 .stream().map(this::connectionSummary).collect(Collectors.toList()));
+
+        out.put("familyLinks", familyLinkRepository.findByElderIdOrFamilyUserId(userId, userId)
+                .stream().map(this::familyLinkSummary).collect(Collectors.toList()));
+
+        // Elder-keyed: non-elders simply get an empty list here.
+        out.put("familyAlerts", familyAlertRepository.findByElderIdOrderByCreatedAtDesc(userId)
+                .stream().map(this::familyAlertSummary).collect(Collectors.toList()));
 
         return out;
     }
@@ -196,6 +211,29 @@ public class AccountService {
         m.put("name", c.getName());
         m.put("phone", c.getPhone());
         m.put("relationship", c.getRelationship());
+        return m;
+    }
+
+    private Map<String, Object> familyLinkSummary(FamilyLink l) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", l.getId());
+        m.put("elderId", l.getElder() != null ? l.getElder().getId() : null);
+        m.put("familyUserId", l.getFamilyUser() != null ? l.getFamilyUser().getId() : null);
+        m.put("initiatedById", l.getInitiatedBy() != null ? l.getInitiatedBy().getId() : null);
+        m.put("relationship", l.getRelationship());
+        m.put("status", l.getStatus() != null ? l.getStatus().name() : null);
+        m.put("isPrimary", l.getIsPrimary());
+        m.put("createdAt", l.getCreatedAt());
+        m.put("respondedAt", l.getRespondedAt());
+        m.put("revokedAt", l.getRevokedAt());
+        return m;
+    }
+
+    private Map<String, Object> familyAlertSummary(FamilyAlert a) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("type", a.getType());
+        m.put("body", a.getBody());
+        m.put("createdAt", a.getCreatedAt());
         return m;
     }
 

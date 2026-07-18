@@ -61,6 +61,8 @@ class AccountServiceTest {
     @Mock MessageRepository messageRepository;
     @Mock EmergencyContactRepository emergencyContactRepository;
     @Mock TrustProgressionLogRepository trustProgressionLogRepository;
+    @Mock com.towin.family.repository.FamilyLinkRepository familyLinkRepository;
+    @Mock com.towin.family.repository.FamilyAlertRepository familyAlertRepository;
     @Mock S3Service s3Service;
 
     @InjectMocks AccountService accountService;
