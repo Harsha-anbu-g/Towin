@@ -69,6 +69,15 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("A family request already exists",          "You already have a family request or link with this person.");
         SAFE_MESSAGES.put("Family limit reached",                     "You can have up to 5 family members. Remove one before adding another.");
         SAFE_MESSAGES.put("Daily family request limit reached",       "You've sent too many family requests today. Try again tomorrow.");
+        SAFE_MESSAGES.put("You are not part of this family link",     "You are not part of this family link.");
+        SAFE_MESSAGES.put("You can't respond to your own family request", "You can't respond to your own request.");
+        SAFE_MESSAGES.put("This family request is no longer pending", "This request is no longer waiting for an answer.");
+        SAFE_MESSAGES.put("Only the person who sent this request can cancel it",
+                "Only the person who sent this request can cancel it.");
+        SAFE_MESSAGES.put("This family link has already ended",       "This family link has already ended.");
+        SAFE_MESSAGES.put("Only the elder can choose the main contact", "Only the elder can choose their main family contact.");
+        SAFE_MESSAGES.put("Only an accepted family member can be the main contact",
+                "Only an accepted family member can be the main contact.");
         // Trust flow
         SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow

@@ -100,6 +100,71 @@ public class FamilyService {
         return toResponse(familyLinkRepository.save(link), callerId);
     }
 
+    @Transactional
+    public FamilyLinkResponse respond(UUID callerId, UUID linkId, boolean accept) {
+        FamilyLink link = getLink(linkId);
+        requireParticipant(link, callerId);
+        if (link.getInitiatedBy().getId().equals(callerId)) {
+            throw new IllegalArgumentException("You can't respond to your own family request");
+        }
+        if (link.getStatus() != FamilyLinkStatus.PENDING) {
+            throw new IllegalArgumentException("This family request is no longer pending");
+        }
+
+        link.setStatus(accept ? FamilyLinkStatus.ACTIVE : FamilyLinkStatus.DECLINED);
+        link.setRespondedAt(LocalDateTime.now());
+        return toResponse(familyLinkRepository.save(link), callerId);
+    }
+
+    @Transactional
+    public void revoke(UUID callerId, UUID linkId) {
+        FamilyLink link = getLink(linkId);
+        requireParticipant(link, callerId);
+        switch (link.getStatus()) {
+            case ACTIVE -> {
+                // Elder revokes; family member unlinks themself. Both are participants.
+            }
+            case PENDING -> {
+                boolean isElder = link.getElder().getId().equals(callerId);
+                boolean isInitiator = link.getInitiatedBy().getId().equals(callerId);
+                // Elder revokes any link; otherwise only the sender may cancel
+                // (the receiving family member declines via respond instead).
+                if (!isElder && !isInitiator) {
+                    throw new IllegalArgumentException("Only the person who sent this request can cancel it");
+                }
+            }
+            default -> throw new IllegalArgumentException("This family link has already ended");
+        }
+
+        link.setStatus(FamilyLinkStatus.REVOKED);
+        link.setRevokedAt(LocalDateTime.now());
+        link.setIsPrimary(false);
+        familyLinkRepository.save(link);
+    }
+
+    @Transactional
+    public FamilyLinkResponse setPrimary(UUID callerId, UUID linkId) {
+        FamilyLink link = getLink(linkId);
+        if (!link.getElder().getId().equals(callerId)) {
+            throw new IllegalArgumentException("Only the elder can choose the main contact");
+        }
+        if (link.getStatus() != FamilyLinkStatus.ACTIVE) {
+            throw new IllegalArgumentException("Only an accepted family member can be the main contact");
+        }
+
+        // Clear and FLUSH the old primary before setting the new one, so the
+        // partial unique index (one ACTIVE primary per elder) never sees two.
+        familyLinkRepository.findByElderIdAndStatus(callerId, FamilyLinkStatus.ACTIVE).stream()
+                .filter(l -> Boolean.TRUE.equals(l.getIsPrimary()) && !l.getId().equals(linkId))
+                .forEach(l -> {
+                    l.setIsPrimary(false);
+                    familyLinkRepository.saveAndFlush(l);
+                });
+
+        link.setIsPrimary(true);
+        return toResponse(familyLinkRepository.save(link), callerId);
+    }
+
     @Transactional(readOnly = true)
     public FamilyLinksResponse getLinks(UUID callerId) {
         List<FamilyLink> active = new ArrayList<>();
@@ -120,6 +185,18 @@ public class FamilyService {
 
     private boolean hasElderSeat(User user) {
         return user.getRole() == UserRole.ELDER || user.getRole() == UserRole.BOTH;
+    }
+
+    private FamilyLink getLink(UUID linkId) {
+        // "not found" (lowercase) is mapped to a 404 by GlobalExceptionHandler.
+        return familyLinkRepository.findById(linkId)
+                .orElseThrow(() -> new IllegalArgumentException("Family link not found"));
+    }
+
+    private void requireParticipant(FamilyLink link, UUID userId) {
+        if (!link.getElder().getId().equals(userId) && !link.getFamilyUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not part of this family link");
+        }
     }
 
     private User getUser(UUID userId) {
