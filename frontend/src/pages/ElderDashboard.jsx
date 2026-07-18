@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
+import FamilyShareToggle from '../components/FamilyShareToggle';
 import { applicantsLabel } from '../lib/copy';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import BlurFade from '../components/magic/BlurFade';
@@ -813,6 +814,10 @@ export default function ElderDashboard() {
                       confirming={confirmingTrust === conn.id}
                     />
                   )}
+
+                  {/* US-011: elder-only per-friendship family visibility switch.
+                      Helpers never see this — it exists only on the elder card. */}
+                  <FamilyShareToggle connectionId={conn.id} shared={conn.sharedWithFamily} />
                 </div>
                 );
               })}
