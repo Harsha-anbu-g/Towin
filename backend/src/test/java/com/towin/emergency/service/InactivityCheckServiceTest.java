@@ -3,7 +3,6 @@ package com.towin.emergency.service;
 import com.towin.common.entity.User;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
-import com.towin.emergency.entity.EmergencyContact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -19,7 +18,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -27,7 +28,6 @@ import static org.mockito.Mockito.when;
 class InactivityCheckServiceTest {
 
     @Mock UserRepository userRepository;
-    @Mock EmergencyContactService contactService;
     @Mock SosService sosService;
 
     @InjectMocks InactivityCheckService inactivityCheckService;
@@ -45,10 +45,6 @@ class InactivityCheckServiceTest {
                 .build();
     }
 
-    private EmergencyContact contact(String phone) {
-        return EmergencyContact.builder().name("Daughter").phone(phone).build();
-    }
-
     private void inactiveElders(User... elders) {
         when(userRepository.findInactiveElders(any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(elders));
@@ -60,38 +56,22 @@ class InactivityCheckServiceTest {
 
         inactivityCheckService.checkInactiveElders();
 
-        verifyNoInteractions(contactService, sosService);
+        verifyNoInteractions(sosService);
         verify(userRepository, never()).save(any());
     }
 
     @Test
-    void inactiveElder_alertsEveryContactAndStampsAlertTime() {
+    void inactiveElder_alertedOncePerEventAndStampsAlertTime() {
+        // SosService owns fan-out (SMS per contact + one in-app family alert);
+        // the check job fires exactly one event per inactive elder.
         User elder = elder();
         inactiveElders(elder);
-        when(contactService.getContactEntities(elder.getId()))
-                .thenReturn(List.of(contact("+15551110001"), contact("+15551110002")));
 
         inactivityCheckService.checkInactiveElders();
 
-        verify(sosService).sendInactivityAlert("+15551110001", elder);
-        verify(sosService).sendInactivityAlert("+15551110002", elder);
+        verify(sosService, times(1)).sendInactivityAlert(elder);
         assertThat(elder.getInactivityAlertedAt())
                 .isCloseTo(LocalDateTime.now(), within(5, ChronoUnit.SECONDS));
-        verify(userRepository).save(elder);
-    }
-
-    @Test
-    void elderWithNoContacts_isStillMarkedAlerted_soNobodyIsEverTold() {
-        // Documents current behavior: with zero contacts nobody is notified, yet the
-        // elder is stamped as alerted and skipped for the next 7-day cooldown window.
-        User elder = elder();
-        inactiveElders(elder);
-        when(contactService.getContactEntities(elder.getId())).thenReturn(List.of());
-
-        inactivityCheckService.checkInactiveElders();
-
-        verifyNoInteractions(sosService);
-        assertThat(elder.getInactivityAlertedAt()).isNotNull();
         verify(userRepository).save(elder);
     }
 
@@ -100,14 +80,11 @@ class InactivityCheckServiceTest {
         User broken = elder();
         User healthy = elder();
         inactiveElders(broken, healthy);
-        when(contactService.getContactEntities(broken.getId()))
-                .thenThrow(new RuntimeException("db hiccup"));
-        when(contactService.getContactEntities(healthy.getId()))
-                .thenReturn(List.of(contact("+15551110001")));
+        doThrow(new RuntimeException("db hiccup")).when(sosService).sendInactivityAlert(broken);
 
         inactivityCheckService.checkInactiveElders();
 
-        verify(sosService).sendInactivityAlert("+15551110001", healthy);
+        verify(sosService).sendInactivityAlert(healthy);
         verify(userRepository).save(healthy);
         // The failed elder is not stamped, so it will be retried on the next run.
         assertThat(broken.getInactivityAlertedAt()).isNull();

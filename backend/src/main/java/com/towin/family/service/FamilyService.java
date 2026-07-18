@@ -5,10 +5,14 @@ import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.UserIdentifierResolver;
+import com.towin.family.dto.FamilyAlertResponse;
+import com.towin.family.dto.FamilyAlertsResponse;
 import com.towin.family.dto.FamilyLinkResponse;
 import com.towin.family.dto.FamilyLinksResponse;
 import com.towin.family.dto.FamilyRequest;
+import com.towin.family.entity.FamilyAlert;
 import com.towin.family.entity.FamilyLink;
+import com.towin.family.repository.FamilyAlertRepository;
 import com.towin.family.repository.FamilyLinkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +39,7 @@ public class FamilyService {
     private static final String NOT_FOUND_MESSAGE = "We couldn't find that person";
 
     private final FamilyLinkRepository familyLinkRepository;
+    private final FamilyAlertRepository familyAlertRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -180,6 +185,36 @@ public class FamilyService {
                         .filter(l -> !l.getInitiatedBy().getId().equals(callerId)).toList(), callerId))
                 .outgoingRequests(toResponses(pending.stream()
                         .filter(l -> l.getInitiatedBy().getId().equals(callerId)).toList(), callerId))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public FamilyAlertsResponse getAlerts(UUID callerId) {
+        List<UUID> elderIds = familyLinkRepository
+                .findByFamilyUserIdAndStatus(callerId, FamilyLinkStatus.ACTIVE).stream()
+                .map(link -> link.getElder().getId())
+                .toList();
+        if (elderIds.isEmpty()) {
+            return FamilyAlertsResponse.builder().alerts(List.of()).build();
+        }
+        List<FamilyAlertResponse> alerts = familyAlertRepository
+                .findByElderIdInOrderByCreatedAtDesc(elderIds).stream()
+                .map(this::toAlertResponse)
+                .toList();
+        return FamilyAlertsResponse.builder().alerts(alerts).build();
+    }
+
+    private FamilyAlertResponse toAlertResponse(FamilyAlert alert) {
+        User elder = alert.getElder();
+        String elderName = elder.getFullName() != null && !elder.getFullName().isBlank()
+                ? elder.getFullName() : elder.getUsername();
+        return FamilyAlertResponse.builder()
+                .id(alert.getId())
+                .elderId(elder.getId())
+                .elderName(elderName)
+                .type(alert.getType())
+                .body(alert.getBody())
+                .createdAt(alert.getCreatedAt())
                 .build();
     }
 

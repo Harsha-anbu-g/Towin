@@ -2,7 +2,6 @@ package com.towin.emergency.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.repository.UserRepository;
-import com.towin.emergency.entity.EmergencyContact;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +17,6 @@ import java.util.List;
 public class InactivityCheckService {
 
     private final UserRepository userRepository;
-    private final EmergencyContactService contactService;
     private final SosService sosService;
 
     private static final int INACTIVITY_DAYS = 5;
@@ -35,8 +33,9 @@ public class InactivityCheckService {
 
         for (User elder : inactiveElders) {
             try {
-                List<EmergencyContact> contacts = contactService.getContactEntities(elder.getId());
-                contacts.forEach(c -> sosService.sendInactivityAlert(c.getPhone(), elder));
+                // One event per elder: SosService texts every emergency contact
+                // and writes one in-app family alert.
+                sosService.sendInactivityAlert(elder);
                 elder.setInactivityAlertedAt(LocalDateTime.now());
                 userRepository.save(elder);
                 log.info("Inactivity alert sent for elder {}", elder.getId());

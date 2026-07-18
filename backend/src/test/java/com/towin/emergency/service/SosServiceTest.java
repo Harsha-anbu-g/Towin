@@ -35,6 +35,10 @@ class SosServiceTest {
 
     @Mock EmergencyContactService contactService;
     @Mock SosRateLimiter sosRateLimiter;
+    @Mock com.towin.family.repository.FamilyLinkRepository familyLinkRepository;
+    @Mock com.towin.family.repository.FamilyAlertRepository familyAlertRepository;
+    @Mock com.towin.connection.repository.ConnectionRepository connectionRepository;
+    @Mock com.towin.common.repository.UserRepository userRepository;
 
     @InjectMocks SosService sosService;
 
@@ -214,13 +218,14 @@ class SosServiceTest {
     @Test
     void sendInactivityAlert_asksContactToCheckOnElder() {
         twilioConfigured();
-        User elder = User.builder().id(UUID.randomUUID()).build();
+        User elder = User.builder().id(elderId).build();
+        contacts(contact("+15551110001"));
 
         try (MockedStatic<Twilio> twilio = mockStatic(Twilio.class);
              MockedStatic<Message> message = mockStatic(Message.class)) {
             stubCreator(message);
 
-            sosService.sendInactivityAlert("+15551110001", elder);
+            sosService.sendInactivityAlert(elder);
 
             ArgumentCaptor<PhoneNumber> to = ArgumentCaptor.forClass(PhoneNumber.class);
             ArgumentCaptor<String> body = ArgumentCaptor.forClass(String.class);

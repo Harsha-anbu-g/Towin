@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
 class FamilyServiceTest {
 
     @Mock FamilyLinkRepository familyLinkRepository;
+    @Mock com.towin.family.repository.FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;
 
     FamilyService familyService;
@@ -42,7 +43,7 @@ class FamilyServiceTest {
 
     @BeforeEach
     void setUp() {
-        familyService = new FamilyService(familyLinkRepository, userRepository);
+        familyService = new FamilyService(familyLinkRepository, familyAlertRepository, userRepository);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
     }

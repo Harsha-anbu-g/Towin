@@ -1,5 +1,6 @@
 package com.towin.family.controller;
 
+import com.towin.family.dto.FamilyAlertsResponse;
 import com.towin.family.dto.FamilyLinkResponse;
 import com.towin.family.dto.FamilyLinksResponse;
 import com.towin.family.dto.FamilyRequest;
@@ -54,5 +55,11 @@ public class FamilyController {
     public ResponseEntity<FamilyLinksResponse> getLinks(Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(familyService.getLinks(userId));
+    }
+
+    @GetMapping("/alerts")
+    public ResponseEntity<FamilyAlertsResponse> getAlerts(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyService.getAlerts(userId));
     }
 }
