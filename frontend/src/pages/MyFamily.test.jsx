@@ -1,0 +1,140 @@
+// US-010: Elder "My Family" screen — request / accept / revoke / primary flows.
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
+import MyFamily from './MyFamily'
+
+vi.mock('../api/axios', () => ({
+  default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
+}))
+
+vi.mock('../context/useAuth', () => ({
+  useAuth: () => ({ user: { role: 'ELDER', name: 'Margaret', username: 'margaret' } }),
+}))
+
+vi.mock('../context/useToast', () => ({
+  useToast: () => ({ toast: { success: vi.fn(), error: vi.fn() } }),
+}))
+
+// NavBar pulls theme/toast/api/polling machinery — not under test here.
+vi.mock('../components/NavBar', () => ({ default: () => <nav /> }))
+
+import api from '../api/axios'
+
+const links = {
+  activeLinks: [
+    { id: 'l1', otherUserName: 'Sarah', relationship: 'Daughter', isPrimary: true, status: 'ACTIVE', initiatedByMe: true, iAmElder: true },
+    { id: 'l2', otherUserName: 'Arun', relationship: 'Son', isPrimary: false, status: 'ACTIVE', initiatedByMe: false, iAmElder: true },
+  ],
+  incomingRequests: [
+    { id: 'r1', otherUserName: 'Meena', relationship: 'Niece', isPrimary: false, status: 'PENDING', initiatedByMe: false, iAmElder: true },
+  ],
+  outgoingRequests: [
+    { id: 'r2', otherUserName: 'Ravi', relationship: 'Son', isPrimary: false, status: 'PENDING', initiatedByMe: true, iAmElder: true },
+  ],
+}
+
+const renderPage = () => render(<MemoryRouter><MyFamily /></MemoryRouter>)
+
+describe('MyFamily', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    api.get.mockResolvedValue({ data: links })
+    api.post.mockResolvedValue({ data: {} })
+    api.delete.mockResolvedValue({ data: {} })
+  })
+
+  it('loads and shows family, incoming and outgoing requests', async () => {
+    renderPage()
+    expect(api.get).toHaveBeenCalledWith('/family/links')
+    expect(await screen.findByText('Sarah')).toBeInTheDocument()
+    expect(screen.getByText('Arun')).toBeInTheDocument()
+    // incoming request names the person and offers both outcomes
+    expect(screen.getByText('Meena')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /accept/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument()
+    // outgoing waiting state says what's waited on and who controls it
+    expect(screen.getByText('Ravi')).toBeInTheDocument()
+    expect(screen.getByText(/waiting for ravi to accept/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /cancel request/i })).toBeInTheDocument()
+  })
+
+  it('states the plain-words promises and the trust line', async () => {
+    renderPage()
+    await screen.findByText('Sarah')
+    expect(screen.getByText(/can see you're safe/i)).toBeInTheDocument()
+    expect(screen.getByText(/only see the friendships you choose to share/i)).toBeInTheDocument()
+    expect(screen.getByText(/never post or act for you/i)).toBeInTheDocument()
+    expect(screen.getByText(/remove anyone at any time/i)).toBeInTheDocument()
+    expect(screen.getByText(/\+1 trust point per family member \(up to 5\)/i)).toBeInTheDocument()
+  })
+
+  it('sends a family request with the exact identifier', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Sarah')
+    await user.click(screen.getByRole('button', { name: /add a family member/i }))
+    await user.type(screen.getByLabelText(/username, email or phone/i), 'arun_kumar')
+    await user.type(screen.getByLabelText(/relationship/i), 'Son')
+    await user.click(screen.getByRole('button', { name: /send request/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/requests', {
+        identifier: 'arun_kumar', relationship: 'Son', side: 'family',
+      })
+    })
+  })
+
+  it('accepts an incoming request', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Meena')
+    await user.click(screen.getByRole('button', { name: /accept/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/requests/r1/respond', { accept: true })
+    })
+  })
+
+  it('declines an incoming request with Not now', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Meena')
+    await user.click(screen.getByRole('button', { name: /not now/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/requests/r1/respond', { accept: false })
+    })
+  })
+
+  it('removes a family member after confirming', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Arun')
+    // second Remove belongs to Arun (non-primary card)
+    await user.click(screen.getAllByRole('button', { name: /^remove$/i })[1])
+    await user.click(screen.getByRole('button', { name: /remove from family/i }))
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith('/family/links/l2')
+    })
+  })
+
+  it('cancels an outgoing pending request', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Ravi')
+    await user.click(screen.getByRole('button', { name: /cancel request/i }))
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith('/family/links/r2')
+    })
+  })
+
+  it('marks the primary and can move it', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Sarah')
+    expect(screen.getByText('Main contact')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /make main contact/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/links/l2/primary')
+    })
+  })
+})

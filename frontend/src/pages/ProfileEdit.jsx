@@ -677,6 +677,27 @@ export default function ProfileEdit() {
               </BlurFade>
             )}
 
+            {/* My Family — link card next to Emergency Contacts (kept separate). */}
+            {isElder && (
+              <BlurFade delay={4}>
+                <div className="pe-card" style={card}>
+                  <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 6px' }}>My Family</h2>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.5 }}>
+                    Link your family so they can see you're safe. They only see the friendships
+                    you choose to share, and you can remove anyone at any time.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/family')}
+                    className="ghost-btn"
+                    style={{ width: '100%', fontSize: 'var(--text-sm)', minHeight: '44px' }}
+                  >
+                    Manage My Family
+                  </button>
+                </div>
+              </BlurFade>
+            )}
+
             {/* Reviews received */}
             <BlurFade delay={4}>
               <div className="pe-card" style={card}>

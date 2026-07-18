@@ -12,6 +12,7 @@ import HelperDashboard from './pages/HelperDashboard';
 import ProfileEdit from './pages/ProfileEdit';
 import ChangePassword from './pages/ChangePassword';
 import EmergencyContacts from './pages/EmergencyContacts';
+import MyFamily from './pages/MyFamily';
 import Messages from './pages/Messages';
 import MessagesInbox from './pages/MessagesInbox';
 import Admin from './pages/Admin';
@@ -164,6 +165,7 @@ function App() {
             <Route path="/profile" element={<PrivateRoute><ProfileEdit /></PrivateRoute>} />
             <Route path="/profile/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
+            <Route path="/family" element={<ElderOnly><MyFamily /></ElderOnly>} />
             <Route path="/messages" element={<PrivateRoute><MessagesInbox /></PrivateRoute>} />
             <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
             <Route path="/streaks" element={<PrivateRoute><Streaks /></PrivateRoute>} />

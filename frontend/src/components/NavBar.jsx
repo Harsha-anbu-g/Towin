@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon } from 'lucide-react';
+import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 import { useTheme } from '../context/useTheme';
@@ -293,6 +293,18 @@ export default function NavBar() {
                     <User size={18} strokeWidth={2} aria-hidden="true" />Profile
                   </Link>
                   {isElder && (
+                    <Link to="/family" role="menuitem" onClick={() => setAccountOpen(false)} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
+                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <Users size={18} strokeWidth={2} aria-hidden="true" />My Family
+                    </Link>
+                  )}
+                  {isElder && (
                     <Link to="/emergency-contacts" role="menuitem" onClick={() => setAccountOpen(false)} style={{
                       display: 'flex', alignItems: 'center', gap: '10px',
                       padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
@@ -414,6 +426,7 @@ export default function NavBar() {
             <MenuLink to="/dashboard" label="Dashboard" icon={Home} />
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
+            {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/game" label="Peekaboo" icon={Gamepad2} />
