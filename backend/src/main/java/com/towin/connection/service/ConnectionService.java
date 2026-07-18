@@ -3,6 +3,8 @@ package com.towin.connection.service;
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
+import com.towin.common.enums.UserRole;
+import com.towin.common.exception.ForbiddenException;
 import com.towin.common.messaging.ConnectionEvent;
 import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
@@ -186,6 +188,27 @@ public class ConnectionService {
         trustScoreService.recalculate(connection.getUserB().getId());
     }
 
+    /**
+     * US-006: the elder participant chooses, per friendship, whether their linked
+     * family can see it. Elder seat = role ELDER/BOTH (same rule as FamilyService);
+     * the helper side of the connection gets a 403, never a silent no-op.
+     */
+    @Transactional
+    public ConnectionResponse setFamilyVisibility(UUID callerId, UUID connectionId, boolean shared) {
+        Connection connection = getConnection(connectionId);
+        if (!connection.isParticipant(callerId)) {
+            throw new IllegalArgumentException("You are not part of this connection");
+        }
+        User caller = connection.getUserA().getId().equals(callerId)
+                ? connection.getUserA() : connection.getUserB();
+        boolean elderSeat = caller.getRole() == UserRole.ELDER || caller.getRole() == UserRole.BOTH;
+        if (!elderSeat) {
+            throw new ForbiddenException("Only the elder can choose whether family sees this friendship");
+        }
+        connection.setSharedWithFamily(shared);
+        return toResponse(connectionRepository.save(connection), callerId);
+    }
+
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status) {
         return getMyConnections(userId, status, PageRequest.of(0, DEFAULT_PAGE_SIZE));
     }
@@ -284,6 +307,7 @@ public class ConnectionService {
                 .confirmedByMe(connection.isConfirmedByUser(viewerUserId))
                 .confirmedByOther(connection.isConfirmedByUser(other.getId()))
                 .initiatedByMe(connection.getInitiatedBy().getId().equals(viewerUserId))
+                .sharedWithFamily(Boolean.TRUE.equals(connection.getSharedWithFamily()))
                 .requestMessage(connection.getRequestMessage())
                 .otherUserPhone(phoneUnlocked ? other.getPhone() : null)
                 .otherUserAge(card != null ? (Integer) card[3] : null)

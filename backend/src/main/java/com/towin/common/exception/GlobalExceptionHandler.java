@@ -117,6 +117,15 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage(), 429, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException ex) {
+        // Business-level "you may not do this" (e.g. helper flipping an elder-only
+        // switch). Message is written user-facing at the throw site.
+        log.warn("ForbiddenException: {}", ex.getMessage());
+        return ResponseEntity.status(403)
+                .body(new ErrorResponse(ex.getMessage(), 403, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()

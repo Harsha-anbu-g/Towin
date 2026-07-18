@@ -21,6 +21,7 @@ public class ConnectionResponse {
     private boolean confirmedByMe;
     private boolean confirmedByOther;
     private boolean initiatedByMe;
+    private boolean sharedWithFamily;
     private String otherUserPhone;
     private Integer otherUserAge;
     private String otherUserPhotoUrl;

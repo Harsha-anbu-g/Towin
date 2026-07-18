@@ -3,6 +3,7 @@ package com.towin.connection.controller;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.connection.dto.ConnectionRequest;
 import com.towin.connection.dto.ConnectionResponse;
+import com.towin.connection.dto.FamilyVisibilityRequest;
 import com.towin.connection.dto.RespondToConnectionRequest;
 import com.towin.connection.service.ConnectionService;
 import jakarta.validation.Valid;
@@ -38,6 +39,16 @@ public class ConnectionController {
             @Valid @RequestBody RespondToConnectionRequest request) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(connectionService.respond(userId, connectionId, request));
+    }
+
+    @PostMapping("/{connectionId}/family-visibility")
+    public ResponseEntity<ConnectionResponse> setFamilyVisibility(
+            Authentication auth,
+            @PathVariable UUID connectionId,
+            @Valid @RequestBody FamilyVisibilityRequest request) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(
+                connectionService.setFamilyVisibility(userId, connectionId, request.getShared()));
     }
 
     @DeleteMapping("/{connectionId}")
