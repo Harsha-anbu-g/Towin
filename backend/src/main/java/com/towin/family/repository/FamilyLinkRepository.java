@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,10 @@ public interface FamilyLinkRepository extends JpaRepository<FamilyLink, UUID> {
     List<FamilyLink> findByFamilyUserIdAndStatus(UUID familyUserId, FamilyLinkStatus status);
 
     Optional<FamilyLink> findByElderIdAndFamilyUserId(UUID elderId, UUID familyUserId);
+
+    // Daily request rate limit (10/day per user). Reused terminal rows keep their
+    // original created_at, so a re-request doesn't count — acceptable slack.
+    long countByInitiatedByIdAndCreatedAtAfter(UUID initiatedById, LocalDateTime after);
 
     // Pending requests seen from either side of the link (elder or family member),
     // regardless of which side initiated — callers split incoming/outgoing by initiatedBy.

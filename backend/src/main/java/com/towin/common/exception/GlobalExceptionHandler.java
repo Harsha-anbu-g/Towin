@@ -61,6 +61,14 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Initiator cannot respond",                     "You can't respond to your own request.");
         SAFE_MESSAGES.put("Connection is not pending",                    "This request is no longer pending.");
         SAFE_MESSAGES.put("Only active connections can be ended",         "Only active connections can be ended.");
+        // Family flow
+        SAFE_MESSAGES.put("We couldn't find that person",
+                "We couldn't find that person. Check the exact username, email, or phone number and try again.");
+        SAFE_MESSAGES.put("You can't add yourself as family",         "You can't add yourself as family.");
+        SAFE_MESSAGES.put("Only elders can add family members",       "Only elders can add family members.");
+        SAFE_MESSAGES.put("A family request already exists",          "You already have a family request or link with this person.");
+        SAFE_MESSAGES.put("Family limit reached",                     "You can have up to 5 family members. Remove one before adding another.");
+        SAFE_MESSAGES.put("Daily family request limit reached",       "You've sent too many family requests today. Try again tomorrow.");
         // Trust flow
         SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow

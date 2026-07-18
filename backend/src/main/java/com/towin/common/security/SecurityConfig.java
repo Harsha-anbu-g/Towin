@@ -79,6 +79,9 @@ public class SecurityConfig {
                 // users are recognised and get personalized answers. Throttled per IP.
                 .requestMatchers("/api/assistant/**").permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                // Family links/requests/alerts are always about a signed-in person —
+                // explicit here (US-004) even though anyRequest() would cover it.
+                .requestMatchers("/api/family/**").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth

@@ -261,18 +261,10 @@ public class AuthService {
     }
 
     private User resolveUser(String identifier) {
-        if (identifier.contains("@")) {
-            return userRepository.findByEmail(identifier).orElse(null);
-        }
-        // Phone numbers may be typed with spaces, dashes, or parens — strip them so the
-        // value matches how it was stored at registration. Phone verification is a trust
-        // signal, not an auth gate: the password is what proves identity, so an account
-        // can sign in by phone before its number is OTP-verified.
-        String phone = identifier.replaceAll("[\\s()-]", "");
-        if (phone.startsWith("+") || phone.matches("\\d{10,15}")) {
-            return userRepository.findByPhone(phone).orElse(null);
-        }
-        return userRepository.findByUsername(identifier).orElse(null);
+        // Logic extracted to UserIdentifierResolver so family requests reuse the
+        // exact login lookup semantics (email / normalized phone / username).
+        return com.towin.common.service.UserIdentifierResolver
+                .resolve(userRepository, identifier).orElse(null);
     }
 
     @Transactional
