@@ -22,16 +22,19 @@ export function useSosCountdown(send, seconds = 5) {
       setCountdown(null);
       return;
     }
-    setCountdown(seconds);
+    // Track the remaining seconds locally: state updaters must stay pure
+    // (StrictMode double-invokes them in dev), so the send fires out here.
+    let remaining = seconds;
+    setCountdown(remaining);
     timerRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clear();
-          sendRef.current();
-          return null;
-        }
-        return prev - 1;
-      });
+      remaining -= 1;
+      if (remaining <= 0) {
+        clear();
+        setCountdown(null);
+        sendRef.current();
+        return;
+      }
+      setCountdown(remaining);
     }, 1000);
   };
 

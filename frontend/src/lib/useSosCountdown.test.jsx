@@ -5,6 +5,7 @@
 // Report: .gstack/qa-reports/qa-report-localhost-5174-2026-07-05.md
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { useSosCountdown } from './useSosCountdown'
 
 describe('useSosCountdown', () => {
@@ -53,6 +54,21 @@ describe('useSosCountdown', () => {
     act(() => vi.advanceTimersByTime(10000))
 
     expect(send).not.toHaveBeenCalled()
+    expect(result.current.countdown).toBe(null)
+  })
+
+  // Regression: US-015 E2E found the live SOS press firing TWO requests in dev —
+  // the second 429'd on the rate limiter. Root cause: send() ran inside the
+  // setCountdown updater, which React StrictMode double-invokes. Updaters must
+  // stay pure; the send has to live outside them.
+  it('sends exactly once under StrictMode (updater must stay pure)', () => {
+    const send = vi.fn()
+    const { result } = renderHook(() => useSosCountdown(send), { wrapper: StrictMode })
+
+    act(() => result.current.press())
+    act(() => vi.advanceTimersByTime(5000))
+
+    expect(send).toHaveBeenCalledTimes(1)
     expect(result.current.countdown).toBe(null)
   })
 
