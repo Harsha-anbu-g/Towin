@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon } from 'lucide-react';
+import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon, HeartHandshake } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 import { useTheme } from '../context/useTheme';
@@ -51,7 +51,12 @@ export default function NavBar() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   const isElder = user?.role === 'ELDER' || user?.role === 'BOTH';
+  const isFamilyRole = user?.role === 'FAMILY';
   const [unread, setUnread] = useState(0);
+  // Non-FAMILY users who are someone's linked family also get the Family
+  // Home entry (US-012) — checked once per mount.
+  const [hasFamilySideLink, setHasFamilySideLink] = useState(false);
+  const showFamilyHome = isFamilyRole || hasFamilySideLink;
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 1024);
@@ -90,6 +95,13 @@ export default function NavBar() {
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!user || isFamilyRole) return;
+    api.get('/family/links')
+      .then(r => setHasFamilySideLink((r.data?.activeLinks || []).some(l => !l.iAmElder)))
+      .catch(() => {});
+  }, [user, isFamilyRole]);
 
   useEffect(() => {
     if (!user) return;
@@ -304,6 +316,18 @@ export default function NavBar() {
                       <Users size={18} strokeWidth={2} aria-hidden="true" />My Family
                     </Link>
                   )}
+                  {showFamilyHome && (
+                    <Link to="/family-home" role="menuitem" onClick={() => setAccountOpen(false)} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
+                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <HeartHandshake size={18} strokeWidth={2} aria-hidden="true" />Family Home
+                    </Link>
+                  )}
                   {isElder && (
                     <Link to="/emergency-contacts" role="menuitem" onClick={() => setAccountOpen(false)} style={{
                       display: 'flex', alignItems: 'center', gap: '10px',
@@ -427,6 +451,7 @@ export default function NavBar() {
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
             {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
+            {showFamilyHome && <MenuLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
             <MenuLink to="/game" label="Peekaboo" icon={Gamepad2} />

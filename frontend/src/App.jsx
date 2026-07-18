@@ -13,6 +13,7 @@ import ProfileEdit from './pages/ProfileEdit';
 import ChangePassword from './pages/ChangePassword';
 import EmergencyContacts from './pages/EmergencyContacts';
 import MyFamily from './pages/MyFamily';
+import FamilyHome from './pages/FamilyHome';
 import Messages from './pages/Messages';
 import MessagesInbox from './pages/MessagesInbox';
 import Admin from './pages/Admin';
@@ -88,6 +89,9 @@ function PublicRoute({ children }) {
   const { user } = useAuth();
   if (!user) return children;
   if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
+  // Family members land on their own home — they have no check-in streaks,
+  // discovery, needs or connection surfaces (family-in-trust Step 1)
+  if (user.role === 'FAMILY') return <Navigate to="/family-home" replace />;
   // Elders land on the daily check-in first — keeps the post-login flow
   // consistent even when navigation races the auth context update
   return <Navigate to="/streaks" replace />;
@@ -103,6 +107,9 @@ function ElderOnly({ children }) {
 function DashboardRouter() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  // FAMILY-role users get no discovery/needs/connection surfaces —
+  // their dashboard IS the family home (family-in-trust Step 1)
+  if (user.role === 'FAMILY') return <FamilyHome />;
   if (user.role === 'HELPER') return <HelperDashboard />;
   return <ElderDashboard />;
 }
@@ -166,6 +173,7 @@ function App() {
             <Route path="/profile/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
             <Route path="/family" element={<ElderOnly><MyFamily /></ElderOnly>} />
+            <Route path="/family-home" element={<PrivateRoute><FamilyHome /></PrivateRoute>} />
             <Route path="/messages" element={<PrivateRoute><MessagesInbox /></PrivateRoute>} />
             <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
             <Route path="/streaks" element={<PrivateRoute><Streaks /></PrivateRoute>} />

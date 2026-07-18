@@ -1,5 +1,6 @@
 package com.towin.family.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.towin.common.enums.FamilyLinkStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,4 +27,14 @@ public class FamilyLinkResponse {
     private boolean iAmElder;
     private LocalDateTime createdAt;
     private LocalDateTime respondedAt;
+
+    /**
+     * Explicit getter (Lombok skips generating its own) so the JSON field is
+     * the camelCase "iAmElder" — Jackson would otherwise derive "iamElder"
+     * from isIAmElder() by lowercasing the whole leading capital run.
+     */
+    @JsonProperty("iAmElder")
+    public boolean isIAmElder() {
+        return iAmElder;
+    }
 }

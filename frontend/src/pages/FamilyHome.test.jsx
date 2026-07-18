@@ -1,0 +1,140 @@
+// US-012: Family home screen — add-parent / requests / elder cards / alert feed.
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
+import FamilyHome from './FamilyHome'
+
+vi.mock('../api/axios', () => ({
+  default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
+}))
+
+vi.mock('../context/useAuth', () => ({
+  useAuth: () => ({ user: { role: 'FAMILY', name: 'Sarah', username: 'sarah' } }),
+}))
+
+vi.mock('../context/useToast', () => ({
+  useToast: () => ({ toast: { success: vi.fn(), error: vi.fn() } }),
+}))
+
+// NavBar pulls theme/toast/api/polling machinery — not under test here.
+vi.mock('../components/NavBar', () => ({ default: () => <nav /> }))
+
+import api from '../api/axios'
+
+// Everything is from the CALLER's perspective; FamilyHome only shows the
+// links where the caller sits on the FAMILY side (iAmElder: false).
+const links = {
+  activeLinks: [
+    { id: 'l1', otherUserName: 'Margaret', relationship: 'Daughter', isPrimary: true, status: 'ACTIVE', initiatedByMe: true, iAmElder: false },
+    // Elder-side link (a BOTH user's own family) — must NOT appear here.
+    { id: 'l9', otherUserName: 'ElderSideOnly', relationship: 'Son', isPrimary: false, status: 'ACTIVE', initiatedByMe: true, iAmElder: true },
+  ],
+  incomingRequests: [
+    { id: 'r1', otherUserName: 'Harold', relationship: 'Daughter', isPrimary: false, status: 'PENDING', initiatedByMe: false, iAmElder: false },
+  ],
+  outgoingRequests: [
+    { id: 'r2', otherUserName: 'Doris', relationship: 'Niece', isPrimary: false, status: 'PENDING', initiatedByMe: true, iAmElder: false },
+  ],
+}
+
+const alerts = [
+  { id: 'a1', elderId: 'e1', elderName: 'Margaret', type: 'SOS', body: 'Margaret pressed SOS.', createdAt: '2026-07-17T12:00:00' },
+  { id: 'a2', elderId: 'e1', elderName: 'Margaret', type: 'FIRST_MEET', body: 'Margaret is ready to meet Arun in person.', createdAt: '2026-07-16T12:00:00' },
+  { id: 'a3', elderId: 'e1', elderName: 'Margaret', type: 'INACTIVITY', body: 'Margaret has not checked in for 7 days.', createdAt: '2026-07-15T12:00:00' },
+]
+
+const mockGet = (alertList = alerts) => {
+  api.get.mockImplementation((url) => {
+    if (url === '/family/links') return Promise.resolve({ data: links })
+    if (url === '/family/alerts') return Promise.resolve({ data: { alerts: alertList } })
+    return Promise.resolve({ data: {} })
+  })
+}
+
+const renderPage = () => render(<MemoryRouter><FamilyHome /></MemoryRouter>)
+
+describe('FamilyHome', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockGet()
+    api.post.mockResolvedValue({ data: {} })
+    api.delete.mockResolvedValue({ data: {} })
+  })
+
+  it('loads links and alerts, shows the linked elder and both request lists', async () => {
+    renderPage()
+    expect(api.get).toHaveBeenCalledWith('/family/links')
+    expect(api.get).toHaveBeenCalledWith('/family/alerts')
+    expect(await screen.findByText('Margaret')).toBeInTheDocument()
+    // incoming: the elder invited me — I choose
+    expect(screen.getByText('Harold')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /accept/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument()
+    // outgoing waiting state says what's waited on and who controls it
+    expect(screen.getByText('Doris')).toBeInTheDocument()
+    expect(screen.getByText(/waiting for doris to accept/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /cancel request/i })).toBeInTheDocument()
+  })
+
+  it('never shows the caller-as-elder side of links', async () => {
+    renderPage()
+    await screen.findByText('Margaret')
+    expect(screen.queryByText('ElderSideOnly')).not.toBeInTheDocument()
+  })
+
+  it('sends an add-parent request with side elder', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Margaret')
+    await user.click(screen.getByRole('button', { name: /add your parent/i }))
+    await user.type(screen.getByLabelText(/username, email or phone/i), 'margaret')
+    await user.type(screen.getByLabelText(/relationship/i), 'Daughter')
+    await user.click(screen.getByRole('button', { name: /send request/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/requests', {
+        identifier: 'margaret', relationship: 'Daughter', side: 'elder',
+      })
+    })
+  })
+
+  it('accepts an incoming request from an elder', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Harold')
+    await user.click(screen.getByRole('button', { name: /accept/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/requests/r1/respond', { accept: true })
+    })
+  })
+
+  it('cancels an outgoing pending request', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByText('Doris')
+    await user.click(screen.getByRole('button', { name: /cancel request/i }))
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith('/family/links/r2')
+    })
+  })
+
+  it('shows the alert feed with a plain-words explanation per alert type', async () => {
+    renderPage()
+    await screen.findByText('Margaret pressed SOS.')
+    // SOS
+    expect(screen.getByText(/asked for urgent help/i)).toBeInTheDocument()
+    // FIRST_MEET
+    expect(screen.getByText('Margaret is ready to meet Arun in person.')).toBeInTheDocument()
+    expect(screen.getByText(/meeting a friend in person for the first time/i)).toBeInTheDocument()
+    // INACTIVITY
+    expect(screen.getByText('Margaret has not checked in for 7 days.')).toBeInTheDocument()
+    expect(screen.getByText(/not checked in for a while/i)).toBeInTheDocument()
+  })
+
+  it('explains the empty alert feed in plain words', async () => {
+    mockGet([])
+    renderPage()
+    await screen.findByText('Margaret')
+    expect(screen.getByText(/no alerts right now/i)).toBeInTheDocument()
+  })
+})
