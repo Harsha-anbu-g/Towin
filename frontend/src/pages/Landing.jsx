@@ -220,6 +220,10 @@ export default function Landing() {
   // arrived = the tortoise is actually standing on the last stop (index flips
   // at the halfway point, too early for an arrival moment).
   const [arrived, setArrived] = useState(false);
+  // lastReached = the last page has started arriving under the drag. The Start
+  // button keys off this, not `index` — index flips only at the halfway point,
+  // which read as the button showing up late mid-gesture.
+  const [lastReached, setLastReached] = useState(false);
 
   // Phones get a plain vertical layout (scroll down = go down) with the journey
   // line stood upright on the side; laptops keep the sideways scrubbed deck.
@@ -351,6 +355,11 @@ export default function Landing() {
         if (el && el.offsetTop <= mid) active = i;
       }
       setIndex(active);
+      // Start shows the moment the last slide's top crosses into view — a
+      // swipe that far always settles there (snap-stop: always), so the
+      // button is already risen by the time its spot scrolls up.
+      const lastEl = sectionsRef.current[total - 1];
+      setLastReached(!!lastEl && sc.scrollTop + sc.clientHeight > lastEl.offsetTop + 1);
       return;
     }
 
@@ -360,6 +369,9 @@ export default function Landing() {
     if (walkedRef.current) walkedRef.current.style.transform = `scaleX(${p})`;
     if (tortoiseRef.current) tortoiseRef.current.style.transform = `translateX(${p * 100}%)`;
     setIndex(Math.round(p * (total - 1)));
+    // Start shows as soon as the drag crosses onto the last page's runway
+    // stretch — not at the halfway rounding point, which felt late.
+    setLastReached(p * (total - 1) > total - 2 + 0.02);
   };
 
   const onScroll = () => {
@@ -669,37 +681,37 @@ export default function Landing() {
             <div style={{
               flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
-              padding: '40px 46px 40px 22px',
+              // The last slide reserves room under its copy so nothing can end
+              // up hidden beneath the pinned Start button at full scroll.
+              padding: i === total - 1 ? '40px 46px 120px 22px' : '40px 46px 40px 22px',
             }}>
               <div className="bf" style={{ width: '100%', maxWidth: s.wide ? '880px' : '760px' }}>
                 {s.render()}
               </div>
-              {/* The way in, on the very first screen — most phone visitors never
-                  reached the last slide's Start, so the hero offers it up front. */}
-              {i === 0 && (
-                <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
-                  <StartButton onStart={() => navigate('/login')} />
-                </div>
-              )}
-              {i === total - 1 && (
-                <div
-                  // Rises the moment the last slide becomes current — NOT on the
-                  // stricter `arrived` (full settle at the very bottom), which
-                  // many visitors never hit: they reached this slide, saw no
-                  // action, and left. The trail's green bloom keeps `arrived`.
-                  // Kept mounted but hidden so the slide's layout never jumps.
-                  className={index === total - 1 ? 'start-rise' : undefined}
-                  style={{
-                    marginTop: '28px', display: 'flex', justifyContent: 'center',
-                    visibility: index === total - 1 ? undefined : 'hidden',
-                  }}
-                >
-                  <StartButton onStart={() => navigate('/login')} />
-                </div>
-              )}
             </div>
           </section>
         ))}
+
+        {/* The way in — pinned to the bottom of the screen the moment the last
+            slide starts arriving (`lastReached`). In-flow it sat under the copy,
+            which on short phones was ~150px below the fold: visitors landed on
+            the last slide, saw no action, and left. Fixed, it can never be cut
+            off; the wrapper passes taps through outside the button itself. */}
+        {lastReached && (
+          <div
+            className="start-rise"
+            style={{
+              position: 'fixed', left: 0, right: 0,
+              bottom: 'calc(20px + env(safe-area-inset-bottom))',
+              display: 'flex', justifyContent: 'center',
+              zIndex: 5, pointerEvents: 'none',
+            }}
+          >
+            <div style={{ pointerEvents: 'auto' }}>
+              <StartButton onStart={() => navigate('/login')} />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -797,13 +809,6 @@ export default function Landing() {
                   }}>
                     <div className="bf" style={{ width: '100%', maxWidth: s.wide ? '880px' : '760px' }}>
                       {s.render()}
-                      {/* Same up-front Start as the phone deck: the way in sits
-                          on the first page, not only six pages deep. */}
-                      {i === 0 && (
-                        <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'center' }}>
-                          <StartButton onStart={() => navigate('/login')} />
-                        </div>
-                      )}
                     </div>
                   </div>
                 </section>
@@ -831,12 +836,12 @@ export default function Landing() {
               {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
             </p>
 
-            {index === total - 1 ? (
-              // Mounts as soon as the last page becomes current — NOT on the
-              // stricter `arrived` (a full settle at the runway's very bottom),
-              // which many visitors never reached: they landed on the last page,
-              // saw no action, and closed the site. The trail's green bloom
-              // still keys off `arrived`.
+            {lastReached ? (
+              // Mounts as soon as the drag crosses onto the last page
+              // (`lastReached`) — NOT on `index` (flips at the halfway point,
+              // which read as late) and NOT on the stricter `arrived` (a full
+              // settle at the runway's very bottom), which many visitors never
+              // reached. The trail's green bloom still keys off `arrived`.
               <div className="start-rise" style={{ display: 'flex', justifyContent: 'center' }}>
                 <StartButton onStart={() => navigate('/login')} />
               </div>

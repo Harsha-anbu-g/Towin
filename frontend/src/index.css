@@ -529,7 +529,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.start-rise { animation: start-rise 240ms var(--ease-arrive) 150ms both; }
+.start-rise { animation: start-rise 240ms var(--ease-arrive) both; }
 
 /* Scroll cue under the deck: a soft slow bob on the chevron. transform-only;
    the global reduced-motion override freezes it. */
