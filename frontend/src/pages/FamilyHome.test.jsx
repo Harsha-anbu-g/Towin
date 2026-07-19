@@ -26,7 +26,7 @@ import api from '../api/axios'
 // links where the caller sits on the FAMILY side (iAmElder: false).
 const links = {
   activeLinks: [
-    { id: 'l1', otherUserName: 'Margaret', relationship: 'Daughter', isPrimary: true, status: 'ACTIVE', initiatedByMe: true, iAmElder: false },
+    { id: 'l1', elderId: 'e1', otherUserName: 'Margaret', relationship: 'Daughter', isPrimary: true, status: 'ACTIVE', initiatedByMe: true, iAmElder: false },
     // Elder-side link (a BOTH user's own family) — must NOT appear here.
     { id: 'l9', otherUserName: 'ElderSideOnly', relationship: 'Son', isPrimary: false, status: 'ACTIVE', initiatedByMe: true, iAmElder: true },
   ],
@@ -44,10 +44,18 @@ const alerts = [
   { id: 'a3', elderId: 'e1', elderName: 'Margaret', type: 'INACTIVITY', body: 'Margaret has not checked in for 7 days.', createdAt: '2026-07-15T12:00:00' },
 ]
 
-const mockGet = (alertList = alerts) => {
+// US-002: journey data — parent status (check-in + open help requests) per elder.
+const journey = {
+  elders: [
+    { elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 2, sharedHelpers: [] },
+  ],
+}
+
+const mockGet = (alertList = alerts, journeyData = journey) => {
   api.get.mockImplementation((url) => {
     if (url === '/family/links') return Promise.resolve({ data: links })
     if (url === '/family/alerts') return Promise.resolve({ data: { alerts: alertList } })
+    if (url === '/family/journey') return Promise.resolve({ data: journeyData })
     return Promise.resolve({ data: {} })
   })
 }
@@ -136,5 +144,34 @@ describe('FamilyHome', () => {
     renderPage()
     await screen.findByText('Margaret')
     expect(screen.getByText(/no alerts right now/i)).toBeInTheDocument()
+  })
+
+  // US-002: parent status line — check-in chip + open help request count.
+  it('shows the checked-in chip and the open request count on the elder card', async () => {
+    renderPage()
+    expect(await screen.findByText('Checked in today')).toBeInTheDocument()
+    expect(screen.getByText('2 help requests open')).toBeInTheDocument()
+    expect(api.get).toHaveBeenCalledWith('/family/journey')
+  })
+
+  it('shows the neutral chip and hides the count when no check-in and zero open requests', async () => {
+    mockGet(alerts, {
+      elders: [
+        { elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: false, openNeedsCount: 0, sharedHelpers: [] },
+      ],
+    })
+    renderPage()
+    expect(await screen.findByText('No check-in yet today')).toBeInTheDocument()
+    expect(screen.queryByText(/help request/i)).not.toBeInTheDocument()
+  })
+
+  it('uses singular wording for one open help request', async () => {
+    mockGet(alerts, {
+      elders: [
+        { elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 1, sharedHelpers: [] },
+      ],
+    })
+    renderPage()
+    expect(await screen.findByText('1 help request open')).toBeInTheDocument()
   })
 })

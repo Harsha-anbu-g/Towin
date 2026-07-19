@@ -98,6 +98,7 @@ export default function FamilyHome() {
   const { toast } = useToast();
   const [family, setFamily] = useState({ activeLinks: [], incomingRequests: [], outgoingRequests: [] });
   const [alerts, setAlerts] = useState([]);
+  const [journey, setJourney] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState({ identifier: '', relationship: '' });
@@ -109,6 +110,7 @@ export default function FamilyHome() {
     return Promise.all([
       api.get('/family/links').then(r => setFamily(r.data)).catch(() => {}),
       api.get('/family/alerts').then(r => setAlerts(r.data?.alerts || [])).catch(() => {}),
+      api.get('/family/journey').then(r => setJourney(r.data?.elders || [])).catch(() => {}),
     ]).finally(() => setLoaded(true));
   }, []);
 
@@ -292,29 +294,69 @@ export default function FamilyHome() {
               </div>
             )}
 
-            {elders.map(l => (
-              <div key={l.id} style={cardStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <DefaultAvatar color="var(--blue)" size={52} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
-                      {l.otherUserName}
-                    </p>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '2px 0 0' }}>
-                      {l.relationship ? `You're their ${l.relationship.toLowerCase()}` : 'Your family member'}
-                    </p>
+            {elders.map(l => {
+              const j = journey.find(e => e.elderId === l.elderId);
+              return (
+                <div key={l.id} style={cardStyle}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <DefaultAvatar color="var(--blue)" size={52} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
+                        {l.otherUserName}
+                      </p>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '2px 0 0' }}>
+                        {l.relationship ? `You're their ${l.relationship.toLowerCase()}` : 'Your family member'}
+                      </p>
+                    </div>
+                    <span style={{
+                      fontSize: '14px', fontWeight: 600, color: 'var(--green-deep)',
+                      background: 'color-mix(in srgb, var(--green-deep) 8%, transparent)',
+                      border: '1px solid color-mix(in srgb, var(--green-deep) 25%, transparent)',
+                      borderRadius: '9999px', padding: '6px 14px', whiteSpace: 'nowrap', flexShrink: 0,
+                    }}>
+                      Linked
+                    </span>
                   </div>
-                  <span style={{
-                    fontSize: '14px', fontWeight: 600, color: 'var(--green-deep)',
-                    background: 'color-mix(in srgb, var(--green-deep) 8%, transparent)',
-                    border: '1px solid color-mix(in srgb, var(--green-deep) 25%, transparent)',
-                    borderRadius: '9999px', padding: '6px 14px', whiteSpace: 'nowrap', flexShrink: 0,
-                  }}>
-                    Linked
-                  </span>
+
+                  {/* US-002: parent status line — check-in chip + open help requests */}
+                  {j && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '14px' }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        fontSize: '14px', fontWeight: 600,
+                        color: j.checkedInToday ? 'var(--green-deep)' : 'var(--ink-3)',
+                        background: j.checkedInToday
+                          ? 'color-mix(in srgb, var(--green-deep) 8%, transparent)'
+                          : 'color-mix(in srgb, var(--ink-3) 7%, transparent)',
+                        border: j.checkedInToday
+                          ? '1px solid color-mix(in srgb, var(--green-deep) 25%, transparent)'
+                          : '1px solid var(--border)',
+                        borderRadius: '9999px', padding: '5px 12px', whiteSpace: 'nowrap',
+                      }}>
+                        {j.checkedInToday ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 7v5l3 2" />
+                          </svg>
+                        )}
+                        {j.checkedInToday ? 'Checked in today' : 'No check-in yet today'}
+                      </span>
+                      {j.openNeedsCount > 0 && (
+                        <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)' }}>
+                          {j.openNeedsCount} help request{j.openNeedsCount === 1 ? '' : 's'} open
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </BlurFade>
 
