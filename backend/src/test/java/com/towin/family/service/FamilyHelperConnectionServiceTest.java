@@ -43,6 +43,7 @@ class FamilyHelperConnectionServiceTest {
     @Mock ConnectionRepository connectionRepository;
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock ElderProfileRepository elderProfileRepository;
+    @Mock com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
     @Mock ConnectionService connectionService;
 
     FamilyHelperConnectionService service;
@@ -56,7 +57,8 @@ class FamilyHelperConnectionServiceTest {
     @BeforeEach
     void setUp() {
         service = new FamilyHelperConnectionService(
-                connectionRepository, familyLinkRepository, elderProfileRepository, connectionService);
+                connectionRepository, familyLinkRepository, elderProfileRepository,
+                helperProfileRepository, connectionService);
         elder  = User.builder().id(UUID.randomUUID()).build();
         helper = User.builder().id(UUID.randomUUID()).build();
         shared = Connection.builder()
@@ -121,6 +123,35 @@ class FamilyHelperConnectionServiceTest {
         assertThatThrownBy(() -> service.requestHelperConnection(callerId, sharedId))
                 .isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(connectionService);
+    }
+
+    @Test
+    void transparency_listsFamilyMembersFamilyTypedConnections() {
+        User sarah = User.builder().id(callerId).fullName("Sarah").build();
+        FamilyLink link = mock(FamilyLink.class);
+        when(link.getFamilyUser()).thenReturn(sarah);
+        when(link.getRelationship()).thenReturn("Daughter");
+        when(familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(java.util.List.of(link));
+        Connection famConn = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(helper)
+                .status(ConnectionStatus.ACTIVE)
+                .type(ConnectionType.FAMILY)
+                .build();
+        Connection normal = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(User.builder().id(UUID.randomUUID()).build())
+                .status(ConnectionStatus.ACTIVE)
+                .type(ConnectionType.SOCIAL)
+                .build();
+        when(connectionRepository.findByUserAndStatus(callerId, ConnectionStatus.ACTIVE))
+                .thenReturn(java.util.List.of(famConn, normal));
+
+        var result = service.transparency(elder.getId());
+
+        assertThat(result.getConnections()).hasSize(1);
+        assertThat(result.getConnections().get(0).getFamilyMemberName()).isEqualTo("Sarah");
+        assertThat(result.getConnections().get(0).getRelationship()).isEqualTo("Daughter");
+        assertThat(result.getConnections().get(0).getHelperUserId()).isEqualTo(helper.getId());
     }
 
     @Test

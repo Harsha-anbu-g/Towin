@@ -34,6 +34,7 @@ public class FamilyHelperConnectionService {
     private final ConnectionRepository connectionRepository;
     private final FamilyLinkRepository familyLinkRepository;
     private final ElderProfileRepository elderProfileRepository;
+    private final com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
     private final ConnectionService connectionService;
 
     @Transactional
@@ -70,6 +71,40 @@ public class FamilyHelperConnectionService {
         // The helper sees who is asking and why: "Family of Margaret".
         request.setRequestMessage("Family of " + elderDisplayName(elder));
         return connectionService.sendRequest(callerId, request);
+    }
+
+    /** Step 4 transparency (locked rule 7): which of the elder's family members
+     *  hold an ACTIVE direct connection with which helpers. */
+    @Transactional(readOnly = true)
+    public com.towin.family.dto.ElderTransparencyResponse transparency(UUID elderId) {
+        java.util.List<com.towin.family.dto.ElderTransparencyResponse.Row> rows = new java.util.ArrayList<>();
+        for (com.towin.family.entity.FamilyLink link
+                : familyLinkRepository.findByElderIdAndStatus(elderId, FamilyLinkStatus.ACTIVE)) {
+            User familyMember = link.getFamilyUser();
+            for (Connection c : connectionRepository.findByUserAndStatus(familyMember.getId(), ConnectionStatus.ACTIVE)) {
+                if (c.getType() != ConnectionType.FAMILY) continue;
+                User other = c.getOtherUser(familyMember.getId());
+                rows.add(com.towin.family.dto.ElderTransparencyResponse.Row.builder()
+                        .familyMemberName(plainName(familyMember))
+                        .relationship(link.getRelationship())
+                        .helperUserId(other.getId())
+                        .helperName(helperDisplayName(other))
+                        .build());
+            }
+        }
+        return com.towin.family.dto.ElderTransparencyResponse.builder().connections(rows).build();
+    }
+
+    private String plainName(User user) {
+        return user.getFullName() != null && !user.getFullName().isBlank()
+                ? user.getFullName() : user.getUsername();
+    }
+
+    private String helperDisplayName(User helper) {
+        return helperProfileRepository.findByUserId(helper.getId())
+                .map(com.towin.profile.entity.HelperProfile::getName)
+                .filter(n -> n != null && !n.isBlank())
+                .orElseGet(() -> plainName(helper));
     }
 
     private String elderDisplayName(User elder) {

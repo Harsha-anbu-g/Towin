@@ -155,6 +155,7 @@ export default function ElderDashboard() {
   const seenConn = useSeenIds(user?.userId, 'connections');
   const seenApplicants = useSeenIds(user?.userId, 'applicants');
   const [connections, setConnections] = useState([]);
+  const [familyTransparency, setFamilyTransparency] = useState([]);
   const [myNeeds, setMyNeeds] = useState([]);
   // Which tab/section is open lives in the URL (?tab=…&hseg=…&nseg=…) so a full
   // page refresh restores the view the user was on instead of snapping back to
@@ -215,6 +216,8 @@ export default function ElderDashboard() {
     if (!silent) setLoading(true);
     try { const r = await api.get('/connections'); setConnections(r.data); } catch { /* transient load error — keep last list, spinner clears below */ }
     finally { if (!silent) setLoading(false); }
+    // Step 4 transparency: which of my family are connected with which helpers.
+    try { const t = await api.get('/family/transparency'); setFamilyTransparency(t.data?.connections || []); } catch { /* optional context — stay quiet */ }
   }
   async function loadNeeds(silent = false) {
     if (!silent) setLoading(true);
@@ -819,6 +822,16 @@ export default function ElderDashboard() {
                   {/* US-011: elder-only per-friendship family visibility switch.
                       Helpers never see this — it exists only on the elder card. */}
                   <FamilyShareToggle connectionId={conn.id} shared={conn.sharedWithFamily} />
+
+                  {/* Step 4 transparency: nothing about you happens out of your sight —
+                      you always see which of your family connected with this helper. */}
+                  {familyTransparency
+                    .filter(t => t.helperUserId === conn.otherUserId)
+                    .map((t, i) => (
+                      <p key={i} style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '10px 0 0', lineHeight: 1.5 }}>
+                        Your {(t.relationship || 'family member').toLowerCase()} {t.familyMemberName} and {t.helperName} are connected.
+                      </p>
+                    ))}
 
                   {/* US-004 (Step 3): the shared updates thread — the elder always
                       sees everything family and the helper say to each other. */}

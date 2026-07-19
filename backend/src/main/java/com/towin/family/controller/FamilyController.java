@@ -34,6 +34,13 @@ public class FamilyController {
         return ResponseEntity.ok(familyService.createRequest(userId, request));
     }
 
+    /** Step 4 transparency: which of my family members are connected with which helpers. */
+    @GetMapping("/transparency")
+    public ResponseEntity<com.towin.family.dto.ElderTransparencyResponse> transparency(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyHelperConnectionService.transparency(userId));
+    }
+
     /** Step 4: family member → helper connection request (gated like the updates thread). */
     @PostMapping("/helper-connections")
     public ResponseEntity<com.towin.connection.dto.ConnectionResponse> requestHelperConnection(
