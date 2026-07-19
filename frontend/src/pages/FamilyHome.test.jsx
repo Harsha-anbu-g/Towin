@@ -174,4 +174,53 @@ describe('FamilyHome', () => {
     renderPage()
     expect(await screen.findByText('1 help request open')).toBeInTheDocument()
   })
+
+  // US-003: shared helper journey cards under each elder card.
+  it('renders a shared helper row with name, trust badge and ladder stage', async () => {
+    mockGet(alerts, {
+      elders: [
+        {
+          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
+          sharedHelpers: [
+            { connectionId: 'c1', helperName: 'Arun', helperPhotoUrl: null, trustScore: 9, tier: 'Reliable', stageIndex: 2, stageLabel: 'Phone Ready', readyToMeet: false },
+          ],
+        },
+      ],
+    })
+    renderPage()
+    expect(await screen.findByText('Friendships shared with you')).toBeInTheDocument()
+    expect(screen.getByText('Arun')).toBeInTheDocument()
+    // TrustBadge: tier + score
+    expect(screen.getByText('Reliable')).toBeInTheDocument()
+    expect(screen.getByText('· 9')).toBeInTheDocument()
+    // Ladder stage in plain words (stageIndex is 0-based → Stage 3 of 7)
+    expect(screen.getByText(/stage 3 of 7/i)).toBeInTheDocument()
+    expect(screen.getByText(/phone ready/i)).toBeInTheDocument()
+    // Not ready to meet — no highlight
+    expect(screen.queryByText(/getting ready to meet in person/i)).not.toBeInTheDocument()
+  })
+
+  it('highlights a helper who is getting ready to meet in person', async () => {
+    mockGet(alerts, {
+      elders: [
+        {
+          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
+          sharedHelpers: [
+            { connectionId: 'c2', helperName: 'Priya', helperPhotoUrl: null, trustScore: 12, tier: 'Highly Trusted', stageIndex: 5, stageLabel: 'Ready to Meet', readyToMeet: true },
+          ],
+        },
+      ],
+    })
+    renderPage()
+    expect(await screen.findByText('Priya')).toBeInTheDocument()
+    expect(screen.getByText(/stage 6 of 7/i)).toBeInTheDocument()
+    expect(screen.getByText(/they're getting ready to meet in person/i)).toBeInTheDocument()
+  })
+
+  it('shows the plain-words empty state when the parent has shared no friendships', async () => {
+    renderPage()
+    await screen.findByText('Margaret')
+    expect(screen.getByText(/no friendships shared with you yet/i)).toBeInTheDocument()
+    expect(screen.getByText(/your parent chooses what to share/i)).toBeInTheDocument()
+  })
 })

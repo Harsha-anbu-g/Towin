@@ -4,6 +4,7 @@ import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
+import TrustBadge from '../components/TrustBadge';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -352,6 +353,75 @@ export default function FamilyHome() {
                           {j.openNeedsCount} help request{j.openNeedsCount === 1 ? '' : 's'} open
                         </span>
                       )}
+                    </div>
+                  )}
+
+                  {/* US-003: shared helper journey — only the friendships the parent chose to share */}
+                  {j && (
+                    <div style={{ marginTop: '18px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 10px' }}>
+                        Friendships shared with you
+                      </p>
+
+                      {(j.sharedHelpers || []).length === 0 && (
+                        <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
+                          No friendships shared with you yet. Your parent chooses what to share.
+                        </p>
+                      )}
+
+                      {(j.sharedHelpers || []).map(h => (
+                        <div
+                          key={h.connectionId}
+                          style={{
+                            border: h.readyToMeet
+                              ? '1px solid color-mix(in srgb, var(--blue-deep) 35%, transparent)'
+                              : '1px solid var(--border)',
+                            background: h.readyToMeet
+                              ? 'color-mix(in srgb, var(--blue) 6%, transparent)'
+                              : 'transparent',
+                            borderRadius: '14px',
+                            padding: '12px 14px',
+                            marginBottom: '10px',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {h.helperPhotoUrl ? (
+                              <img
+                                src={h.helperPhotoUrl}
+                                alt=""
+                                style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                              />
+                            ) : (
+                              <DefaultAvatar color="var(--ink-4)" size={44} />
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
+                                  {h.helperName}
+                                </p>
+                                <TrustBadge tier={h.tier} score={h.trustScore} />
+                              </div>
+                              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', margin: '4px 0 0' }}>
+                                Stage {h.stageIndex + 1} of 7 · {h.stageLabel}
+                              </p>
+                            </div>
+                          </div>
+                          {h.readyToMeet && (
+                            <p style={{
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              fontSize: '14px', fontWeight: 600, color: 'var(--blue-deep)',
+                              margin: '10px 0 0', lineHeight: 1.4,
+                            }}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                              </svg>
+                              They're getting ready to meet in person
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
