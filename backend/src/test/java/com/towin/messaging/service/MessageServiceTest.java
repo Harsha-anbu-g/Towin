@@ -2,7 +2,13 @@ package com.towin.messaging.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.MessageChannel;
 import com.towin.common.enums.MessageType;
+import com.towin.common.repository.UserRepository;
+import com.towin.common.service.S3Service;
+import com.towin.family.repository.FamilyLinkRepository;
+import com.towin.profile.repository.ElderProfileRepository;
+import com.towin.profile.repository.HelperProfileRepository;
 import com.towin.common.enums.TrustLevel;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
@@ -34,6 +40,16 @@ class MessageServiceTest {
     MessageRepository messageRepository;
     @Mock
     ConnectionRepository connectionRepository;
+    @Mock
+    FamilyLinkRepository familyLinkRepository;
+    @Mock
+    UserRepository userRepository;
+    @Mock
+    ElderProfileRepository elderProfileRepository;
+    @Mock
+    HelperProfileRepository helperProfileRepository;
+    @Mock
+    S3Service s3Service;
     @InjectMocks
     MessageService messageService;
 
@@ -71,7 +87,7 @@ class MessageServiceTest {
         MessageRequest req = new MessageRequest();
         req.setContent("Hello!");
 
-        MessageResponse response = messageService.send(connId, userA.getId(), req);
+        MessageResponse response = messageService.send(connId, userA.getId(), MessageChannel.MAIN, req);
 
         assertThat(response.getContent()).isEqualTo("Hello!");
         assertThat(response.getSenderId()).isEqualTo(userA.getId());
@@ -91,7 +107,7 @@ class MessageServiceTest {
         MessageRequest req = new MessageRequest();
         req.setContent("Hello!");
 
-        assertThatThrownBy(() -> messageService.send(connId, userA.getId(), req))
+        assertThatThrownBy(() -> messageService.send(connId, userA.getId(), MessageChannel.MAIN, req))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Trust level too low");
     }
@@ -104,7 +120,7 @@ class MessageServiceTest {
         MessageRequest req = new MessageRequest();
         req.setContent("Hello!");
 
-        assertThatThrownBy(() -> messageService.send(connId, stranger, req))
+        assertThatThrownBy(() -> messageService.send(connId, stranger, MessageChannel.MAIN, req))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -157,9 +173,11 @@ class MessageServiceTest {
                 .type(MessageType.TEXT)
                 .build();
         Page<Message> page = new PageImpl<>(List.of(m));
-        when(messageRepository.findByConnectionIdOrderByCreatedAtDesc(eq(connId), any())).thenReturn(page);
+        when(messageRepository.findByConnectionIdAndChannelOrderByCreatedAtDesc(
+                eq(connId), eq(MessageChannel.MAIN), any())).thenReturn(page);
 
-        Page<MessageResponse> result = messageService.getHistory(connId, userA.getId(), PageRequest.of(0, 30));
+        Page<MessageResponse> result = messageService.getHistory(
+                connId, userA.getId(), MessageChannel.MAIN, PageRequest.of(0, 30));
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getContent()).isEqualTo("Hi");

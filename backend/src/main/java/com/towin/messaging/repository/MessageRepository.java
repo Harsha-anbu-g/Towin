@@ -12,6 +12,9 @@ import java.util.UUID;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     Page<Message> findByConnectionIdOrderByCreatedAtAsc(UUID connectionId, Pageable pageable);
     Page<Message> findByConnectionIdOrderByCreatedAtDesc(UUID connectionId, Pageable pageable);
+    // Channel-scoped history (V40): keeps FAMILY_UPDATES notes out of the private MAIN chat.
+    Page<Message> findByConnectionIdAndChannelOrderByCreatedAtDesc(
+            UUID connectionId, com.towin.common.enums.MessageChannel channel, Pageable pageable);
     long countByConnectionIdAndSeenAtIsNull(UUID connectionId);
     long countByConnectionId(UUID connectionId);
 

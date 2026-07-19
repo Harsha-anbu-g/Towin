@@ -1,5 +1,6 @@
 package com.towin.messaging.dto;
 
+import com.towin.common.enums.MessageChannel;
 import com.towin.common.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,4 +19,10 @@ public class MessageResponse {
     private LocalDateTime seenAt;
     private boolean flagged;
     private LocalDateTime createdAt;
+    private MessageChannel channel;
+    // FAMILY_UPDATES sender rendering only: name + presigned photo + plain
+    // relationship label ("their daughter Sarah", "helper Maria") — never phone/email.
+    private String senderName;
+    private String senderPhotoUrl;
+    private String senderLabel;
 }

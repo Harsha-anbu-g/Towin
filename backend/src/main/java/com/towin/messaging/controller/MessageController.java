@@ -1,5 +1,6 @@
 package com.towin.messaging.controller;
 
+import com.towin.common.enums.MessageChannel;
 import com.towin.messaging.dto.MessageRequest;
 import com.towin.messaging.dto.MessageResponse;
 import com.towin.messaging.service.MessageService;
@@ -29,19 +30,21 @@ public class MessageController {
     @GetMapping("/{connectionId}")
     public ResponseEntity<Page<MessageResponse>> getHistory(
             @PathVariable UUID connectionId,
+            @RequestParam(name = "channel", defaultValue = "MAIN") MessageChannel channel,
             @PageableDefault(size = 30, sort = "createdAt") Pageable pageable,
             Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(messageService.getHistory(connectionId, userId, pageable));
+        return ResponseEntity.ok(messageService.getHistory(connectionId, userId, channel, pageable));
     }
 
     @PostMapping("/{connectionId}/send")
     public ResponseEntity<MessageResponse> send(
             @PathVariable UUID connectionId,
+            @RequestParam(name = "channel", defaultValue = "MAIN") MessageChannel channel,
             @Valid @RequestBody MessageRequest request,
             Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(messageService.send(connectionId, userId, request));
+        return ResponseEntity.ok(messageService.send(connectionId, userId, channel, request));
     }
 
     @PostMapping("/{connectionId}/seen")
