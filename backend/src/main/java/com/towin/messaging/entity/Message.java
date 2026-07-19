@@ -1,6 +1,7 @@
 package com.towin.messaging.entity;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.MessageChannel;
 import com.towin.common.enums.MessageType;
 import com.towin.connection.entity.Connection;
 import jakarta.persistence.*;
@@ -35,6 +36,12 @@ public class Message {
     @Column(nullable = false, columnDefinition = "message_type")
     @Builder.Default
     private MessageType type = MessageType.TEXT;
+
+    // VARCHAR(20) column (V40), not a Postgres enum type — plain STRING mapping.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private MessageChannel channel = MessageChannel.MAIN;
 
     private LocalDateTime seenAt;
 
