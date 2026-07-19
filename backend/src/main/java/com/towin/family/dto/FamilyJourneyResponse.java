@@ -33,6 +33,7 @@ public class FamilyJourneyResponse {
     @Builder
     public static class SharedHelper {
         private UUID connectionId;
+        private UUID helperUserId;   // lets the family UI match their own connection state (Step 4)
         private String helperName;
         private String helperPhotoUrl;     // presigned, short-lived
         private int trustScore;

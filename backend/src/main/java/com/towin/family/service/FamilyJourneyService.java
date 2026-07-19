@@ -85,6 +85,7 @@ public class FamilyJourneyService {
         int score = helper.getTrustScore() == null ? 0
                 : (int) Math.round(helper.getTrustScore());
         return SharedHelper.builder()
+                .helperUserId(helper.getId())
                 .connectionId(connection.getId())
                 .helperName(displayName(helper))
                 .helperPhotoUrl(photoUrl(helper))

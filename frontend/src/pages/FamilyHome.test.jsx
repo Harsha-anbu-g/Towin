@@ -56,6 +56,7 @@ const mockGet = (alertList = alerts, journeyData = journey) => {
     if (url === '/family/links') return Promise.resolve({ data: links })
     if (url === '/family/alerts') return Promise.resolve({ data: { alerts: alertList } })
     if (url === '/family/journey') return Promise.resolve({ data: journeyData })
+    if (url === '/connections') return Promise.resolve({ data: [] }) // Step 4: own connection states
     return Promise.resolve({ data: {} })
   })
 }

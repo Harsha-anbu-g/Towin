@@ -6,6 +6,7 @@ import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
 import TrustBadge from '../components/TrustBadge';
 import FamilyHelperUpdates from '../components/FamilyHelperUpdates';
+import FamilyHelperConnect from '../components/FamilyHelperConnect';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -101,6 +102,7 @@ export default function FamilyHome() {
   const [family, setFamily] = useState({ activeLinks: [], incomingRequests: [], outgoingRequests: [] });
   const [alerts, setAlerts] = useState([]);
   const [journey, setJourney] = useState([]);
+  const [myConns, setMyConns] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState({ identifier: '', relationship: '' });
@@ -113,6 +115,8 @@ export default function FamilyHome() {
       api.get('/family/links').then(r => setFamily(r.data)).catch(() => {}),
       api.get('/family/alerts').then(r => setAlerts(r.data?.alerts || [])).catch(() => {}),
       api.get('/family/journey').then(r => setJourney(r.data?.elders || [])).catch(() => {}),
+      // Step 4: my own connections, to show waiting/connected states on helper cards.
+      api.get('/connections').then(r => setMyConns(r.data || [])).catch(() => {}),
     ]).finally(() => setLoaded(true));
   }, []);
 
@@ -421,6 +425,12 @@ export default function FamilyHome() {
                               They're getting ready to meet in person
                             </p>
                           )}
+                          {/* Step 4: direct family ↔ helper connection (helper decides) */}
+                          <FamilyHelperConnect
+                            helper={h}
+                            myConnection={(myConns || []).find(c => c.otherUserId === h.helperUserId)}
+                            onChanged={load}
+                          />
                           {/* US-004 (Step 3): the shared updates thread — read + reply */}
                           <FamilyHelperUpdates helper={h} elderName={l.otherUserName} />
                         </div>
