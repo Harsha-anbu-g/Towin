@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
+import HelperFamilyUpdates from '../components/HelperFamilyUpdates';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import BlurFade from '../components/magic/BlurFade';
 import LocationPrompt from '../components/LocationPrompt';
@@ -822,6 +823,9 @@ export default function HelperDashboard() {
                       confirming={confirmingTrust === conn.id}
                     />
                   )}
+
+                  {/* Updates for the family — only while the elder shares this friendship (US-003) */}
+                  <HelperFamilyUpdates conn={conn} />
                 </div>
                 );
               })}
