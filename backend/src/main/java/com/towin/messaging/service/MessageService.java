@@ -5,7 +5,6 @@ import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.MessageChannel;
 import com.towin.common.enums.TrustLevel;
-import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.S3Service;
 import com.towin.connection.entity.Connection;
@@ -162,30 +161,10 @@ public class MessageService {
         return builder.build();
     }
 
-    /** "their daughter Sarah" / "helper Maria" / the elder's plain name. */
+    /** The sender's proper name, plain and warm (user call 2026-07-19) — the
+     *  thread's own context already says who is family and who is the helper. */
     private String senderLabel(User sender, String name, Connection conn) {
-        if (!conn.isParticipant(sender.getId())) {
-            return "their " + relationshipToElder(sender, conn) + " " + name;
-        }
-        return isElderSide(sender, conn) ? name : "helper " + name;
-    }
-
-    private String relationshipToElder(User sender, Connection conn) {
-        return activeLinkTo(conn.getUserA().getId(), sender.getId())
-                .or(() -> activeLinkTo(conn.getUserB().getId(), sender.getId()))
-                .map(FamilyLink::getRelationship)
-                .filter(this::notBlank)
-                .map(r -> r.toLowerCase())
-                .orElse("family member");
-    }
-
-    private boolean isElderSide(User participant, Connection conn) {
-        if (participant.getRole() == UserRole.ELDER) return true;
-        User other = conn.getOtherUser(participant.getId());
-        if (other.getRole() == UserRole.ELDER) return false;
-        // Roles can be BOTH — the side family links point at is the elder side.
-        return familyLinkRepository.countByElderIdAndStatusIn(
-                participant.getId(), List.of(FamilyLinkStatus.ACTIVE)) > 0;
+        return name;
     }
 
     private String displayName(User user) {

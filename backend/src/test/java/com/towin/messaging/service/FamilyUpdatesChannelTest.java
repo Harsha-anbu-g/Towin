@@ -229,7 +229,7 @@ class FamilyUpdatesChannelTest {
         MessageResponse r = firstFamilyMessage(sarah.getId());
 
         assertThat(r.getSenderName()).isEqualTo("Sarah");
-        assertThat(r.getSenderLabel()).isEqualTo("their daughter Sarah");
+        assertThat(r.getSenderLabel()).isEqualTo("Sarah");
     }
 
     @Test
@@ -240,7 +240,7 @@ class FamilyUpdatesChannelTest {
         MessageResponse r = firstFamilyMessage(sarah.getId());
 
         assertThat(r.getSenderName()).isEqualTo("Maria");
-        assertThat(r.getSenderLabel()).isEqualTo("helper Maria");
+        assertThat(r.getSenderLabel()).isEqualTo("Maria");
     }
 
     @Test

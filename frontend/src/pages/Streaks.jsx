@@ -163,10 +163,13 @@ export default function Streaks() {
       {/* Right — streak content */}
       <div className="streaks-right" style={{
         flex: 1, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        background: 'var(--surface-pearl)', padding: '48px 40px',
+        alignItems: 'center', justifyContent: 'flex-start',
+        background: 'var(--surface-pearl)', padding: '28px 36px',
+        maxHeight: '100svh', overflowY: 'auto',
       }}>
-        <div style={{ width: '100%', maxWidth: '420px' }}>
+        {/* margin auto centers when there's room, but never clips when there isn't —
+            the action buttons must stay reachable on every screen height. */}
+        <div style={{ width: '100%', maxWidth: '420px', margin: 'auto 0' }}>
 
           {/* Greeting */}
           <p className="streaks-greeting" style={{
@@ -178,7 +181,7 @@ export default function Streaks() {
           <h1 className="streaks-heading" style={{
             fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 400,
             color: 'var(--ink)', letterSpacing: '-0.02em',
-            marginBottom: '32px', lineHeight: 1.1,
+            marginBottom: '18px', lineHeight: 1.1,
           }}>
             {alreadyDone ? 'You showed up today.' : 'Ready to check in?'}
           </h1>
@@ -186,8 +189,8 @@ export default function Streaks() {
           {/* Streak card */}
           <div className="streak-card" style={{
             background: 'var(--canvas)', borderRadius: '18px',
-            border: '1px solid var(--border)', padding: '36px',
-            textAlign: 'center', marginBottom: '28px',
+            border: '1px solid var(--border)', padding: '26px 28px',
+            textAlign: 'center', marginBottom: '18px',
           }}>
             {loading ? (
               <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>Loading…</p>
@@ -318,9 +321,11 @@ export default function Streaks() {
             )}
           </div>
 
-          {/* Action */}
+          {/* Action — pinned to the panel's bottom edge while scrolling, so the
+              way onward is always on screen (user report 2026-07-19). */}
           {!loading && (
-            alreadyDone ? (
+            <div style={{ position: 'sticky', bottom: 0, background: 'var(--surface-pearl)', padding: '10px 0 6px' }}>
+            {alreadyDone ? (
               /* Already checked in — show two options */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{
@@ -394,7 +399,8 @@ export default function Streaks() {
                   </button>
                 </div>
               </div>
-            )
+            )}
+            </div>
           )}
 
         </div>

@@ -222,6 +222,8 @@ export default function NavBar() {
                 }}>{unread > 99 ? '99+' : unread}</span>
               )}
             </div>
+            {/* Family members are watchers, not earners — no Trust Score for them (user call 2026-07-19). */}
+            {!isFamilyRole && (<>
             <div style={{ width: '1px', height: '22px', background: 'var(--border)', margin: '0 8px' }} />
             <Link to="/trust" className={trustActive ? 'trust-chip-active' : undefined} style={{
               display: 'flex', alignItems: 'center', gap: '7px',
@@ -238,6 +240,7 @@ export default function NavBar() {
               <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
               Trust Score
             </Link>
+            </>)}
           </div>
         )}
 
@@ -453,7 +456,7 @@ export default function NavBar() {
             {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
             {showFamilyHome && <MenuLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
-            <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />
+            {!isFamilyRole && <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />}
             <MenuLink to="/game" label="Peekaboo" icon={Gamepad2} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             <button role="switch" aria-checked={nightOn} onClick={toggleTheme} style={{

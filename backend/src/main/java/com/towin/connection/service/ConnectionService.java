@@ -312,9 +312,10 @@ public class ConnectionService {
                                           Map<UUID, Long> unreadCounts,
                                           Map<UUID, Object[]> profiles) {
         User other = connection.getOtherUser(viewerUserId);
-        // Rows are [userId, name, photoUrl, age]; no profile row = fall back to the email.
+        // Rows are [userId, name, photoUrl, age]; no profile row (e.g. FAMILY-role
+        // users) = fall back to their proper name, never straight to the email.
         Object[] card = profiles.get(other.getId());
-        String otherName = card != null ? (String) card[1] : other.getEmail();
+        String otherName = card != null ? (String) card[1] : plainName(other);
 
         boolean phoneUnlocked = connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
@@ -358,6 +359,13 @@ public class ConnectionService {
         Optional<HelperProfile> helper = helperProfileRepository.findByUserId(user.getId());
         if (helper.isPresent()) return helper.get().getName();
 
+        return plainName(user);
+    }
+
+    /** Proper-name fallback for users without a profile: full name → username → email. */
+    private String plainName(User user) {
+        if (user.getFullName() != null && !user.getFullName().isBlank()) return user.getFullName();
+        if (user.getUsername() != null && !user.getUsername().isBlank()) return user.getUsername();
         return user.getEmail();
     }
 

@@ -11,6 +11,8 @@ export default function FeedbackWidget() {
     pathname === '/feedback' ||
     pathname === '/' ||
     pathname === '/streaks' ||
+    // Admin: the fab sat on top of the demo-reset button (user report 2026-07-19).
+    pathname.startsWith('/admin') ||
     pathname.startsWith('/messages/')
   ) return null;
 

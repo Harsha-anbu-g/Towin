@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import NavBar from '../components/NavBar';
 import api from '../api/axios';
@@ -393,6 +393,9 @@ export default function Trust() {
       .catch(() => setError('Could not load your trust score. Please try again.'))
       .finally(() => setLoading(false));
   }, []);
+
+  // Family members are watchers, not earners — no Trust Score page for them.
+  if (user?.role === 'FAMILY') return <Navigate to="/family-home" replace />;
 
   const customers = data?.customers ?? [];
 
