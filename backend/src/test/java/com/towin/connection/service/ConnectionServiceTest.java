@@ -203,6 +203,28 @@ class ConnectionServiceTest {
     }
 
     @Test
+    void acceptingFamilyRequestSkipsTheConnectionCap() {
+        Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
+        pending.setType(ConnectionType.FAMILY);
+        when(connectionRepository.findById(pending.getId())).thenReturn(Optional.of(pending));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
+        // Both sides sit over every role's cap — FAMILY coordination must still land,
+        // matching sendRequest's exemption ("never eat into anyone's capacity").
+        List<Connection> full = java.util.stream.IntStream.range(0, 25)
+                .mapToObj(i -> buildConnection(sender, target, ConnectionStatus.ACTIVE))
+                .toList();
+        lenient().when(connectionRepository.findByUserAndStatus(any(), eq(ConnectionStatus.ACTIVE)))
+                .thenReturn(full);
+
+        RespondToConnectionRequest request = new RespondToConnectionRequest();
+        request.setAccept(true);
+
+        ConnectionResponse response = connectionService.respond(target.getId(), pending.getId(), request);
+
+        assertThat(response.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+    }
+
+    @Test
     void shouldDeclineConnectionRequest() {
         Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
         when(connectionRepository.findById(pending.getId())).thenReturn(Optional.of(pending));

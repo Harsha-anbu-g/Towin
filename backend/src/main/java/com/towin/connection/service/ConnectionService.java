@@ -171,8 +171,12 @@ public class ConnectionService {
 
         ConnectionEvent.Type eventType;
         if (Boolean.TRUE.equals(request.getAccept())) {
-            enforceActiveLimit(connection.getUserA());
-            enforceActiveLimit(connection.getUserB());
+            // FAMILY-type connections never consume capacity: sendRequest already
+            // skips the cap for them, and accepting must not re-impose it.
+            if (connection.getType() != com.towin.common.enums.ConnectionType.FAMILY) {
+                enforceActiveLimit(connection.getUserA());
+                enforceActiveLimit(connection.getUserB());
+            }
             connection.setStatus(ConnectionStatus.ACTIVE);
             connection.setConfirmedByUser(connection.getUserA().getId(), false);
             connection.setConfirmedByUser(connection.getUserB().getId(), false);
