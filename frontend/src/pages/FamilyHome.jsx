@@ -166,43 +166,12 @@ export default function FamilyHome() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
 
-      {/* Hero */}
-      <BlurFade delay={1}>
-        <div style={{
-          background: 'linear-gradient(180deg, var(--blue-wash) 0%, var(--surface) 100%)',
-          borderBottom: '1px solid var(--sky-line)',
-          padding: 'clamp(32px, 7vw, 64px) 20px clamp(24px, 5vw, 48px)',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            width: '64px', height: '64px', borderRadius: '16px',
-            background: 'var(--canvas)', border: '1px solid var(--blue-soft)',
-            margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(79,163,206,0.15)',
-          }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M3 10.5 12 4l9 6.5" /><path d="M5 9.5V20h14V9.5" /><path d="M9 20v-6h6v6" />
-            </svg>
-          </div>
-          <h1 style={{
-            fontSize: 'clamp(28px, 8vw, 48px)', fontWeight: 400, color: 'var(--ink)',
-            fontFamily: 'var(--font-display)', letterSpacing: '-0.02em',
-            marginBottom: '12px', lineHeight: 1.1,
-          }}>
-            Family Home
-          </h1>
-          <p style={{ fontSize: '17px', color: 'var(--ink-slate-2)', maxWidth: '460px', margin: '0 auto', lineHeight: 1.5 }}>
-            See that your parent is doing well, and the news they choose to share with you.
-          </p>
-        </div>
-      </BlurFade>
-
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 60px' }}>
 
-        {/* Header + add-parent */}
+        {/* Header + add-parent (page title — the big hero card was removed on the user's call, 2026-07-18) */}
         <BlurFade delay={2}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', margin: '0 0 16px' }}>
-            <h2 style={sectionH}>My Parents</h2>
+            <h1 style={sectionH}>My Parents</h1>
             {!showAddForm && (
               <button onClick={() => { setShowAddForm(true); setFormMsg(''); }} style={{ ...fillBtn, whiteSpace: 'nowrap', flexShrink: 0 }}>
                 + Add your parent

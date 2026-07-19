@@ -5,10 +5,13 @@ import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
+import com.towin.common.enums.TrustLevel;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
+import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.family.repository.FamilyLinkRepository;
+import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
 import com.towin.review.repository.ReviewRepository;
@@ -24,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +41,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * US-008: elders earn +1 trust point per ACTIVE family link, capped at 5.
- * Helpers and FAMILY-role users earn 0 from this component; PENDING links count 0.
+ * Family point (user decision 2026-07-18): elders earn ONE flat trust point
+ * once any family member is linked — never more, however many links — and the
+ * point repeats in every active customer block, like profile points.
+ * HELPER, BOTH and FAMILY roles earn 0 from this component; PENDING links count 0.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -82,21 +88,40 @@ class TrustScoreServiceFamilyPointsTest {
     }
 
     @Test
-    void twoActiveLinks_addTwoPoints_forElder() {
+    void anyActiveLink_earnsOneFlatPoint_forElder() {
         activeLinks(2);
 
         trustScoreService.recalculate(userId);
 
-        assertThat(user.getTrustScore()).isEqualTo(2.0);
+        assertThat(user.getTrustScore()).isEqualTo(1.0);
     }
 
     @Test
-    void sevenActiveLinks_capAtFivePoints() {
-        activeLinks(7);
+    void fiveActiveLinks_stillOneFlatPoint() {
+        activeLinks(5);
 
         trustScoreService.recalculate(userId);
 
+        assertThat(user.getTrustScore()).isEqualTo(1.0);
+    }
+
+    @Test
+    void familyPoint_repeatsInEveryCustomerBlock() {
+        activeLinks(3); // still just one flat point
+        Connection c1 = connectionTo(TrustLevel.DISCOVERED);
+        Connection c2 = connectionTo(TrustLevel.DISCOVERED);
+        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(c1, c2));
+
+        trustScoreService.recalculate(userId);
+
+        // standalone (profile 0 + family 1) + 2 × (rooting 1 + review 0 + profile 0 + family 1)
         assertThat(user.getTrustScore()).isEqualTo(5.0);
+    }
+
+    private Connection connectionTo(TrustLevel level) {
+        User other = User.builder().id(UUID.randomUUID()).build();
+        return Connection.builder().userA(user).userB(other).currentTrustLevel(level).build();
     }
 
     @Test
@@ -111,13 +136,13 @@ class TrustScoreServiceFamilyPointsTest {
     }
 
     @Test
-    void bothRole_earnsFamilyPoints() {
+    void bothRole_earnsZero_ruleIsElderOnly() {
         user.setRole(UserRole.BOTH);
         activeLinks(3);
 
         trustScoreService.recalculate(userId);
 
-        assertThat(user.getTrustScore()).isEqualTo(3.0);
+        assertThat(user.getTrustScore()).isEqualTo(0.0);
     }
 
     @Test
@@ -147,9 +172,28 @@ class TrustScoreServiceFamilyPointsTest {
         TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
 
         assertThat(r.getFamily()).isNotNull();
-        assertThat(r.getFamily().getEarned()).isEqualTo(2);
-        assertThat(r.getFamily().getMax()).isEqualTo(5);
-        assertThat(r.getTotalScore()).isEqualTo(2.0);
+        assertThat(r.getFamily().getEarned()).isEqualTo(1);
+        assertThat(r.getFamily().getMax()).isEqualTo(1);
+        assertThat(r.getTotalScore()).isEqualTo(1.0);
+    }
+
+    @Test
+    void elderProfile_hasTwoGroups_maxTwo() {
+        user.setPhoneVerified(true);
+        user.setVerificationStatus(VerificationStatus.VERIFIED);
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(HelperProfile.builder()
+                .photoUrl("https://photo.jpg").bio("Hi there").dateOfBirth(LocalDate.of(1950, 1, 1))
+                .occupation("Retired").hobbies(new String[]{"gardening"})
+                .facebookUrl("https://facebook.com/me").build()));
+        activeLinks(1);
+
+        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+
+        assertThat(r.getProfile().getMax()).isEqualTo(2);
+        assertThat(r.getProfile().getEarned()).isEqualTo(2);
+        assertThat(r.getProfile().getGroups()).hasSize(2);
+        // profile 2 + family 1, standalone (no connections stubbed)
+        assertThat(r.getTotalScore()).isEqualTo(3.0);
     }
 
     @Test

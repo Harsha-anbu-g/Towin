@@ -12,28 +12,28 @@ public class TrustScoreBreakdownResponse {
     private double totalScore;
     private String tier;
 
-    /** Max points a single customer can ever be worth (rooting 7 + review 5 + profile 3). */
+    /** Max points a single customer can ever be worth: 15 (helpers 7+5+3, elders 7+5+2+1). */
     private int maxPerCustomer;
 
     /** Your profile readiness — the same value silently adds to every customer. */
     private ProfileSection profile;
 
     /**
-     * Family connected — +1 per ACTIVE family link, capped at 5 (US-008).
-     * Null for users without an elder seat (helpers and FAMILY-role users
-     * earn nothing from family, so the UI shows no family line).
+     * Family connected — one flat point once any family member is linked
+     * (elders only, user decision 2026-07-18). Null for every other role, so
+     * the UI shows no family line.
      */
     private FamilySection family;
 
     /** One card per active customer relationship. */
     private List<CustomerCard> customers;
 
-    /** Family connected: one point per accepted family member, up to 5. */
+    /** Family connected: one flat point, however many family members are linked. */
     @Data
     @Builder
     public static class FamilySection {
-        private int earned;          // 0–5 (one point per ACTIVE family link)
-        private int max;             // 5
+        private int earned;          // 0 or 1
+        private int max;             // 1
     }
 
     @Data
@@ -82,10 +82,13 @@ public class TrustScoreBreakdownResponse {
         private int reviewMax;   // 5
         private boolean hasReview;
 
-        private int profile;     // 0–3 (mirrors ProfileSection.earned)
-        private int profileMax;  // 3
+        private int profile;     // mirrors ProfileSection.earned
+        private int profileMax;  // 3 (elders: 2)
 
-        private int total;       // rooting + review + profile, 0–15
+        private int family;      // elders: flat family point 0–1; other roles 0
+        private int familyMax;   // 1 for elders, 0 otherwise (UI hides the meter)
+
+        private int total;       // rooting + review + profile + family, 0–15
         private int totalMax;    // 15
     }
 }

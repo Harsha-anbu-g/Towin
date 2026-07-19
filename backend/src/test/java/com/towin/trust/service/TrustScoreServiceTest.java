@@ -3,6 +3,7 @@ package com.towin.trust.service;
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
+import com.towin.common.enums.UserRole;
 import com.towin.common.enums.VerificationStatus;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
@@ -46,11 +47,14 @@ class TrustScoreServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // HELPER pins the default 3-group scheme (builder would default role to
+        // ELDER, whose profile shrank to 2 groups + family point on 2026-07-18).
         baseUser = User.builder()
                 .id(userId)
                 .email("t@t.com").phone("123").passwordHash("x")
                 .phoneVerified(false)
                 .verificationStatus(VerificationStatus.NONE)
+                .role(UserRole.HELPER)
                 .trustScore(0.0)
                 .build();
         when(userRepository.findById(userId)).thenReturn(Optional.of(baseUser));

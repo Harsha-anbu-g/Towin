@@ -154,6 +154,7 @@ export default function Login() {
   const DEMO = {
     ELDER:  { identifier: 'elder',  password: '12345678' },
     HELPER: { identifier: 'helper', password: '123456789' },
+    FAMILY: { identifier: 'demo.sarah@towin.app', password: 'DemoSarah!2026' },
   };
 
   const handleGuest = async (role) => {
@@ -162,9 +163,11 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', DEMO[role]);
       login(data.token);
-      // Everyone lands on the daily check-in first — elder and helper alike.
+      // Elders and helpers land on the daily check-in; family goes to their home page.
       navigate(
-        data.role === 'ADMIN' ? '/admin' : '/streaks',
+        data.role === 'ADMIN' ? '/admin'
+          : data.role === 'FAMILY' ? '/family-home'
+          : '/streaks',
         { replace: true }
       );
     } catch (err) {
@@ -190,9 +193,11 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token);
-      // Everyone lands on the daily check-in first — elder and helper alike.
+      // Elders and helpers land on the daily check-in; family goes to their home page.
       navigate(
-        data.role === 'ADMIN' ? '/admin' : '/streaks',
+        data.role === 'ADMIN' ? '/admin'
+          : data.role === 'FAMILY' ? '/family-home'
+          : '/streaks',
         { replace: true }
       );
     } catch (err) {
@@ -245,12 +250,13 @@ export default function Login() {
             }}>
               Look around with a sample account, no account needed.
             </p>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {[
                 // Ages track the demo accounts' seeded birthdates (DemoDataSeeder)
                 // so the chips never drift from what the app itself computes.
                 { role: 'ELDER', label: 'Try as an Elder', sub: `Margaret, ${yearsOld('1953-05-14')}` },
                 { role: 'HELPER', label: 'Try as a Helper', sub: `Harsha, ${yearsOld('2003-03-14')}` },
+                { role: 'FAMILY', label: 'Try as Family', sub: "Sarah, Margaret's daughter" },
               ].map(({ role, label, sub }) => (
                 <button
                   key={role}

@@ -179,9 +179,9 @@ function ScoreSummary({ data }) {
   );
 }
 
-/* ── Family connected: +1 per accepted family member, up to 5 (elders only).
-      The backend sends `family` only for elder-seat users — everyone else
-      simply has no line here. Trust words stay in the gold family. ─────────── */
+/* ── Family connected: one flat point once any family member is linked
+      (elders only — the backend sends `family` only for role ELDER; everyone
+      else simply has no line here). Trust words stay in the gold family. ───── */
 function FamilyCard({ family }) {
   if (!family) return null;
   const { earned, max } = family;
@@ -202,7 +202,7 @@ function FamilyCard({ family }) {
             Family connected
           </p>
           <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.5 }}>
-            Each family member who accepts your link earns you 1 point, up to {max}.
+            One point for having your family connected — however many family members you add.
           </p>
         </div>
         <span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -371,6 +371,9 @@ function CustomerCard({ c }) {
           </p>
         )}
         <Meter label="Your profile" earned={c.profile} max={c.profileMax} shape="dot" />
+        {c.familyMax > 0 && (
+          <Meter label="Family" earned={c.family} max={c.familyMax} shape="dot" />
+        )}
       </div>
     </div>
   );
@@ -403,8 +406,12 @@ export default function Trust() {
             Your <span style={{ color: TRUST }}>Trust</span> Score
           </h1>
           <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: 0, lineHeight: 1.5 }}>
-            Each person you help can earn you up to 15 points:
-            7 for growing trust together, 5 from their review, and 3 for your profile.
+            {isHelper
+              ? <>Each person you help can earn you up to 15 points:
+                 7 for growing trust together, 5 from their review, and 3 for your profile.</>
+              : <>Each person who helps you can earn you up to 15 points:
+                 7 for growing trust together, 5 from their review, 2 for your profile,
+                 and 1 for family connected.</>}
           </p>
         </div>
 

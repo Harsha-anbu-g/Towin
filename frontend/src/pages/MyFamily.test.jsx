@@ -67,7 +67,7 @@ describe('MyFamily', () => {
     expect(screen.getByText(/only see the friendships you choose to share/i)).toBeInTheDocument()
     expect(screen.getByText(/never post or act for you/i)).toBeInTheDocument()
     expect(screen.getByText(/remove anyone at any time/i)).toBeInTheDocument()
-    expect(screen.getByText(/\+1 trust point per family member \(up to 5\)/i)).toBeInTheDocument()
+    expect(screen.getByText(/one point total, however many/i)).toBeInTheDocument()
   })
 
   it('sends a family request with the exact identifier', async () => {

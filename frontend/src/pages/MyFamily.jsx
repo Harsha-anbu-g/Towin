@@ -166,38 +166,7 @@ export default function MyFamily() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
 
-      {/* Hero */}
-      <BlurFade delay={1}>
-        <div style={{
-          background: 'linear-gradient(180deg, var(--blue-wash) 0%, var(--surface) 100%)',
-          borderBottom: '1px solid var(--sky-line)',
-          padding: 'clamp(32px, 7vw, 64px) 20px clamp(24px, 5vw, 48px)',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            width: '64px', height: '64px', borderRadius: '16px',
-            background: 'var(--canvas)', border: '1px solid var(--blue-soft)',
-            margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(79,163,206,0.15)',
-          }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <h1 style={{
-            fontSize: 'clamp(28px, 8vw, 48px)', fontWeight: 400, color: 'var(--ink)',
-            fontFamily: 'var(--font-display)', letterSpacing: '-0.02em',
-            marginBottom: '12px', lineHeight: 1.1,
-          }}>
-            My Family
-          </h1>
-          <p style={{ fontSize: '17px', color: 'var(--ink-slate-2)', maxWidth: '460px', margin: '0 auto', lineHeight: 1.5 }}>
-            Invite the people closest to you, so they can see you're doing well.
-          </p>
-        </div>
-      </BlurFade>
-
+      {/* Big hero card removed on the user's call, 2026-07-18 — the list header below is the page title. */}
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 60px' }}>
 
         {/* Plain-words promises */}
@@ -211,7 +180,8 @@ export default function MyFamily() {
               <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>You can remove anyone at any time.</li>
             </ul>
             <p style={{ fontSize: '16px', color: 'var(--gold-deep)', fontWeight: 600, margin: '14px 0 0' }}>
-              You earn +1 trust point per family member (up to 5).
+              Family connected gives you +1 trust point — one point total, however many
+              family members you add (up to 5 people).
             </p>
           </div>
         </BlurFade>
@@ -219,12 +189,12 @@ export default function MyFamily() {
         {/* Header + add */}
         <BlurFade delay={3}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', margin: '18px 0 16px' }}>
-            <h2 style={sectionH}>
+            <h1 style={sectionH}>
               My Family
               <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
                 ({seatCount}/{FAMILY_MAX})
               </span>
-            </h2>
+            </h1>
             {canAdd && !showAddForm && (
               <button onClick={() => { setShowAddForm(true); setFormMsg(''); }} style={{ ...fillBtn, whiteSpace: 'nowrap', flexShrink: 0 }}>
                 + Add a family member
@@ -400,7 +370,7 @@ export default function MyFamily() {
         open={!!pendingRemove}
         danger
         title={`Remove ${pendingRemove?.otherUserName || 'this person'} from your family?`}
-        message="They will no longer see that you're safe or any friendship you shared. This also removes the trust point for this link. You can add them again later — they would need to accept again."
+        message="They will no longer see that you're safe or any friendship you shared. If they're your last family member here, your family trust point goes too. You can add them again later — they would need to accept again."
         confirmLabel="Remove from family"
         cancelLabel="Keep"
         loading={removing}

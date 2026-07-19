@@ -34,7 +34,9 @@ import java.util.UUID;
  * Every active customer relationship is worth up to 15 whole points:
  *   • Rooting  0–7  — one point per trust stage reached with that customer.
  *   • Review   0–5  — one point per star the customer gives you (latest review).
- *   • Profile  0–3  — your profile completeness, counted for every customer.
+ *   • Helpers/BOTH/FAMILY: Profile 0–3 (three groups), counted for every customer.
+ *   • Elders: Profile 0–2 (two groups) + Family 0–1 (flat point once any family
+ *     member is linked), both counted for every customer.
  *
  * Total trust score = the sum across all customers.
  */
@@ -44,11 +46,13 @@ public class TrustScoreService {
 
     public static final int ROOTING_MAX  = 7;
     public static final int REVIEW_MAX   = 5;
+    /** Helpers, BOTH and FAMILY roles keep the original three profile groups. */
     public static final int PROFILE_MAX  = 3;
-    public static final int CUSTOMER_MAX = ROOTING_MAX + REVIEW_MAX + PROFILE_MAX; // 15
-
-    /** US-008: +1 per ACTIVE family link for the elder, capped at 5. */
-    public static final int FAMILY_MAX = 5;
+    /** Elders: profile shrinks to two groups; family connected is the third point. */
+    public static final int PROFILE_MAX_ELDER = 2;
+    /** Elders: one flat point once any family member is linked — never more. */
+    public static final int FAMILY_POINT = 1;
+    public static final int CUSTOMER_MAX = ROOTING_MAX + REVIEW_MAX + PROFILE_MAX; // 15 both ways
 
     private final UserRepository userRepository;
     private final HelperProfileRepository helperProfileRepository;
@@ -64,15 +68,16 @@ public class TrustScoreService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         int profilePoints = calculateProfilePoints(user);
+        int familyPoints  = familyPoints(user);
         Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
-        // Profile completeness always counts once so new users get immediate feedback.
-        int total = profilePoints + familyPoints(user);
+        // Profile + family always count once so new users get immediate feedback.
+        int total = profilePoints + familyPoints;
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
             UUID customerId = c.getOtherUser(userId).getId();
             int rooting = rootingPoints(c.getCurrentTrustLevel());
             int review  = Math.min(reviewByCustomer.getOrDefault(customerId, 0), REVIEW_MAX);
-            total += rooting + review + profilePoints;
+            total += rooting + review + profilePoints + familyPoints;
         }
 
         user.setTrustScore((double) total);
@@ -88,6 +93,8 @@ public class TrustScoreService {
         Map<UUID, Integer> reviewByCustomer = latestRatingByReviewer(userId);
 
         int familyPoints = familyPoints(user);
+        int profileMax   = profileMaxFor(user);
+        boolean isElder  = user.getRole() == UserRole.ELDER;
 
         List<CustomerCard> cards = new ArrayList<>();
         int total = profilePoints + familyPoints;
@@ -96,7 +103,7 @@ public class TrustScoreService {
             User customer = c.getOtherUser(userId);
             int rooting = rootingPoints(c.getCurrentTrustLevel());
             int review  = Math.min(reviewByCustomer.getOrDefault(customer.getId(), 0), REVIEW_MAX);
-            int cardTotal = rooting + review + profilePoints;
+            int cardTotal = rooting + review + profilePoints + familyPoints;
             total += cardTotal;
 
             cards.add(CustomerCard.builder()
@@ -107,7 +114,8 @@ public class TrustScoreService {
                     .stageIndex(c.getCurrentTrustLevel().getValue())
                     .rooting(rooting).rootingMax(ROOTING_MAX)
                     .review(review).reviewMax(REVIEW_MAX).hasReview(review > 0)
-                    .profile(profilePoints).profileMax(PROFILE_MAX)
+                    .profile(profilePoints).profileMax(profileMax)
+                    .family(familyPoints).familyMax(isElder ? FAMILY_POINT : 0)
                     .total(cardTotal).totalMax(CUSTOMER_MAX)
                     .build());
         }
@@ -121,11 +129,11 @@ public class TrustScoreService {
                 .maxPerCustomer(CUSTOMER_MAX)
                 .profile(ProfileSection.builder()
                         .earned(profilePoints)
-                        .max(PROFILE_MAX)
+                        .max(profileMax)
                         .groups(profileGroups)
                         .build())
-                .family(hasElderSeat(user)
-                        ? FamilySection.builder().earned(familyPoints).max(FAMILY_MAX).build()
+                .family(isElder
+                        ? FamilySection.builder().earned(familyPoints).max(FAMILY_POINT).build()
                         : null)
                 .customers(cards)
                 .build();
@@ -134,20 +142,22 @@ public class TrustScoreService {
     // ── Scoring helpers ──────────────────────────────────────────────────────
 
     /**
-     * US-008: +1 per ACTIVE family link, elders only (ELDER/BOTH), capped at
-     * FAMILY_MAX. Helpers and FAMILY-role users earn 0 from family; PENDING
-     * links count 0. Points don't depend on the share switch — linking earns
-     * the point, sharing is a separate private choice.
+     * Family connected — one flat point, role ELDER only (user decision
+     * 2026-07-18): 1 point whether one or five family members are linked, and
+     * it repeats in every customer block exactly like profile points do.
+     * HELPER, BOTH and FAMILY roles earn 0 from family; PENDING links count 0.
+     * Points don't depend on the share switch — linking earns the point,
+     * sharing is a separate private choice.
      */
     private int familyPoints(User user) {
-        if (!hasElderSeat(user)) return 0;
+        if (user.getRole() != UserRole.ELDER) return 0;
         long active = familyLinkRepository.countByElderIdAndStatusIn(
                 user.getId(), List.of(FamilyLinkStatus.ACTIVE));
-        return (int) Math.min(active, FAMILY_MAX);
+        return active > 0 ? FAMILY_POINT : 0;
     }
 
-    private boolean hasElderSeat(User user) {
-        return user.getRole() == UserRole.ELDER || user.getRole() == UserRole.BOTH;
+    private int profileMaxFor(User user) {
+        return user.getRole() == UserRole.ELDER ? PROFILE_MAX_ELDER : PROFILE_MAX;
     }
 
     /** One point per trust stage reached: DISCOVERED=1 … TRUSTED=7. */
@@ -155,7 +165,7 @@ public class TrustScoreService {
         return Math.min(level.getValue() + 1, ROOTING_MAX);
     }
 
-    /** Profile = 3 groups of fields; each fully-filled group is worth 1 whole point. */
+    /** Profile groups (3 by default, 2 for elders); each fully-filled group is 1 point. */
     private int calculateProfilePoints(User user) {
         return completedGroups(buildProfileGroups(user));
     }
@@ -193,7 +203,26 @@ public class TrustScoreService {
 
         String interestsLabel = (p != null) ? "Your hobbies" : "Your interests";
 
+        List<ProfileItem> verifyItems = List.of(
+                item("phone", "Phone verified", phoneVerified, "Verify your phone number in Profile."),
+                item("id",    "ID verified",    idVerified,    "Upload a government ID in Profile → Verification."));
+
         List<ProfileGroup> groups = new ArrayList<>();
+        if (user.getRole() == UserRole.ELDER) {
+            // Elders (user decision 2026-07-18): two groups — everything about
+            // you in one, verification in the other. Family connected is the
+            // elder's third point, earned on the family page instead.
+            groups.add(group("about", "About you", List.of(
+                    item("photo", "Profile photo", photo, "Add a clear photo of yourself."),
+                    item("bio",   "Short bio",     bio,   "Write a few lines about yourself."),
+                    item("dob",   "Date of birth", dob,   "Add your date of birth."),
+                    item("occupation", "Occupation",   occupation, "Add what you do — it helps others feel comfortable."),
+                    item("interests",  interestsLabel, interests,  "Add at least one. Shared interests start friendships."),
+                    item("social",     "Social link",  social,     "Link your Facebook or Instagram.")
+            )));
+            groups.add(group("verify", "Verify yourself", verifyItems));
+            return groups;
+        }
         groups.add(group("introduce", "Introduce yourself", List.of(
                 item("photo", "Profile photo", photo, "Add a clear photo of yourself."),
                 item("bio",   "Short bio",     bio,   "Write a few lines about yourself."),
@@ -204,10 +233,7 @@ public class TrustScoreService {
                 item("interests",  interestsLabel,   interests,  "Add at least one. Shared interests start friendships."),
                 item("social",     "Social link",    social,     "Link your Facebook or Instagram.")
         )));
-        groups.add(group("verify", "Verify yourself", List.of(
-                item("phone", "Phone verified", phoneVerified, "Verify your phone number in Profile."),
-                item("id",    "ID verified",    idVerified,    "Upload a government ID in Profile → Verification.")
-        )));
+        groups.add(group("verify", "Verify yourself", verifyItems));
         return groups;
     }
 
