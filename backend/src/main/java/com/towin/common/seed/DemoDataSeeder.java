@@ -404,6 +404,15 @@ public class DemoDataSeeder implements ApplicationRunner {
                 msg(tom,      "We sorted the wifi today — the new password is in Margaret's blue notebook. She was in great spirits."),
                 msg(sarah,    "Thank you so much, Tom. That router has been defeating us for months!"),
                 msg(margaret, "It's true. Tom fixed it in ten minutes. Tea and biscuits were had.")));
+        // Step 4 demo: Sarah has asked to connect with Tom directly — the Tom login
+        // shows the labeled request ("Family of Margaret"), Sarah's card shows the
+        // waiting state, and accepting it demos the zero-points FAMILY connection.
+        Connection sarahTom = ensureConnection(sarah, tom, ConnectionStatus.PENDING,
+                TrustLevel.DISCOVERED, sarah, "Family of Margaret");
+        if (sarahTom.getType() != ConnectionType.FAMILY) {
+            sarahTom.setType(ConnectionType.FAMILY);
+            connectionRepository.save(sarahTom);
+        }
         seedMessagesIfEmpty(cJamesRose, 900, List.of(
                 msg(james, "Hello Rose! I'd be glad to help with anything you need."),
                 msg(rose, "Hello Harsha! So kind of you. I could use a hand with a few things.")));
