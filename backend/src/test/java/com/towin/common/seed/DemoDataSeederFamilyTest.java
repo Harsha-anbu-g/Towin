@@ -1,7 +1,9 @@
 package com.towin.common.seed;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.FamilyLinkStatus;
+import com.towin.common.enums.TrustLevel;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
@@ -18,7 +20,9 @@ import com.towin.need.repository.NeedRepository;
 import com.towin.profile.repository.ElderProfileRepository;
 import com.towin.profile.repository.HelperProfileRepository;
 import com.towin.report.repository.ReportRepository;
+import com.towin.review.entity.Review;
 import com.towin.review.repository.ReviewRepository;
+import com.towin.streak.entity.UserStreak;
 import com.towin.streak.repository.UserStreakRepository;
 import com.towin.trust.repository.TrustProgressionLogRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +37,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -149,6 +154,65 @@ class DemoDataSeederFamilyTest {
                 .filter(c -> !Boolean.TRUE.equals(c.getSharedWithFamily())).toList();
         assertThat(shared).as("one elder connection is shared with family").isNotEmpty();
         assertThat(kept).as("another elder connection stays private").isNotEmpty();
+    }
+
+    // ── US-004: demo shows the journey on day one ────────────────────────
+
+    private List<Connection> savedMargaretConnections() {
+        ArgumentCaptor<Connection> captor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionRepository, atLeastOnce()).save(captor.capture());
+        return captor.getAllValues().stream()
+                .filter(c -> DemoDataSeeder.ELDER_DEMO_EMAIL.equals(c.getUserA().getEmail()))
+                .distinct()
+                .toList();
+    }
+
+    @Test
+    void sharedConnectionSitsAtReadyToMeet() {
+        seeder.run(null);
+
+        List<Connection> shared = savedMargaretConnections().stream()
+                .filter(c -> Boolean.TRUE.equals(c.getSharedWithFamily())).toList();
+        assertThat(shared).as("exactly one shared connection").hasSize(1);
+        assertThat(shared.get(0).getCurrentTrustLevel())
+                .as("shared friendship shows the ready-to-meet highlight on day one")
+                .isEqualTo(TrustLevel.FIRST_MEET);
+        assertThat(shared.get(0).getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+    }
+
+    @Test
+    void margaretHasCheckedInToday() {
+        seeder.run(null);
+
+        User margaret = savedUser(DemoDataSeeder.ELDER_DEMO_EMAIL);
+        ArgumentCaptor<UserStreak> captor = ArgumentCaptor.forClass(UserStreak.class);
+        verify(userStreakRepository, atLeastOnce()).save(captor.capture());
+        UserStreak margaretStreak = captor.getAllValues().stream()
+                .filter(s -> margaret.getId().equals(s.getUserId()))
+                .findFirst().orElse(null);
+        assertThat(margaretStreak).as("Margaret's streak is seeded").isNotNull();
+        assertThat(margaretStreak.getLastCheckinDate())
+                .as("check-in chip is green on day one")
+                .isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    void noReviewsBetweenMargaretAndHerSharedHelper() {
+        seeder.run(null);
+
+        // Reviews unlock only at TRUSTED; Margaret ↔ Tom now sit at FIRST_MEET,
+        // so the seed must not plant reviews the app could never create.
+        ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
+        verify(reviewRepository, atLeastOnce()).save(captor.capture());
+        assertThat(captor.getAllValues())
+                .noneMatch(r -> involves(r, DemoDataSeeder.ELDER_DEMO_EMAIL, "demo.tom@towin.app"));
+    }
+
+    private boolean involves(Review r, String emailA, String emailB) {
+        String reviewer = r.getReviewer().getEmail();
+        String reviewee = r.getReviewee().getEmail();
+        return (reviewer.equals(emailA) && reviewee.equals(emailB))
+                || (reviewer.equals(emailB) && reviewee.equals(emailA));
     }
 
     @Test

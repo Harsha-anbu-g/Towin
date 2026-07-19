@@ -284,10 +284,13 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new String[]{"Tamil", "English"});
 
         // Connections cover every state a viewer can act on:
-        //  • TRUSTED   — top of the ladder (Grace ↔ Harsha, Margaret ↔ Tom,
-        //    Grace ↔ Priya, David ↔ Nina). Only these pairs may exchange
-        //    connection reviews — the Review button unlocks at TRUSTED and
-        //    ReviewService enforces the same gate.
+        //  • TRUSTED   — top of the ladder (Grace ↔ Harsha, Grace ↔ Priya,
+        //    David ↔ Nina). Only these pairs may exchange connection reviews —
+        //    the Review button unlocks at TRUSTED and ReviewService enforces
+        //    the same gate.
+        //  • FIRST_MEET — Margaret ↔ Tom, the friendship Margaret shares with
+        //    her family, so the Sarah demo shows the "getting ready to meet in
+        //    person" highlight on the Family Home journey from day one.
         //  • PHONE_CALL with the helper already confirmed — Margaret sees a live
         //    "confirm to advance" button (the core trust step in action)
         //  • PENDING incoming/outgoing on BOTH demo accounts, so Add Friends →
@@ -305,7 +308,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hi David, fellow engineer here. Happy to help with anything.");
         ensureConnection(grace, priya, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, priya,
                 "Hi Grace, I'd love to keep you company on your walks.");
-        Connection cMargaretTom = ensureConnection(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, tom,
+        Connection cMargaretTom = ensureConnection(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.FIRST_MEET, tom,
                 "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
         Connection cGraceJames = ensureConnection(grace, james, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, grace,
                 "Hi Harsha, I'd love a hand learning to video-call my grandchildren.");
@@ -334,9 +337,10 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Margaret, so the demo shows a linked family member, the elder's +1
         // family trust point, and the Family Home screen with a real elder card.
         ensureFamilyLink(margaret, sarah, "Daughter");
-        // The elder's choice on display: Margaret shares her trusted friendship
-        // with Tom with her family, while her newer connection with Priya stays
-        // private (shared_with_family keeps its FALSE default).
+        // The elder's choice on display: Margaret shares her friendship with
+        // Tom (at Ready to Meet, so family sees the meeting highlight) while
+        // her newer connection with Priya stays private (shared_with_family
+        // keeps its FALSE default).
         markSharedWithFamily(cMargaretTom);
 
         // One-time repair for DBs seeded before the default changed: earlier seeds
@@ -463,14 +467,9 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Reviews only exist where the app could truly create them: between the two
         // sides of an ACTIVE + TRUSTED connection. Finishing a job together is not a
         // shortcut past the ladder. Pairs still climbing (Margaret ↔ Priya at
-        // PHONE_CALL, David ↔ Harsha at VIDEO_CALL, Harsha ↔ Rose just connected)
-        // carry no reviews — that's the product rule on display.
-        ensureReview(tom, margaret, null, 4,
-                "Margaret was patient and made me feel very welcome.",
-                List.of("Patient", "Welcoming"));
-        ensureReview(margaret, tom, null, 4,
-                "Tom set up my new tablet and explained it all so clearly.",
-                List.of("Reliable", "Patient"));
+        // PHONE_CALL, Margaret ↔ Tom at FIRST_MEET, David ↔ Harsha at VIDEO_CALL,
+        // Harsha ↔ Rose just connected) carry no reviews — that's the product
+        // rule on display.
         ensureReview(grace, priya, null, 5,
                 "Priya is always on time and treats me with such genuine care.",
                 List.of("Reliable", "Punctual"));
@@ -490,8 +489,12 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Nina is cheerful, punctual, and makes every trip a pleasure.",
                 List.of("Punctual", "Friendly"));
 
-        ensureStreak(margaret, 6, 14);
-        ensureStreak(david, 3, 9);
+        // Margaret has already checked in today, so the family journey's
+        // "Checked in today" chip is green the moment Sarah's demo loads.
+        // David's last check-in stays yesterday so a visitor on an elder
+        // account can still press the check-in button and grow a streak.
+        ensureStreak(margaret, 7, 14, LocalDate.now());
+        ensureStreak(david, 3, 9, LocalDate.now().minusDays(1));
 
         ensureEmergencyContact(margaret, "Sarah (daughter)", "+14165550199", "Family");
 
@@ -890,14 +893,13 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .build());
     }
 
-    private void ensureStreak(User user, int current, int longest) {
+    private void ensureStreak(User user, int current, int longest, LocalDate lastCheckin) {
         if (userStreakRepository.findByUserId(user.getId()).isPresent()) return;
         UserStreak s = new UserStreak();
         s.setUserId(user.getId());
         s.setCurrentStreak(current);
         s.setLongestStreak(longest);
-        // Yesterday — so a demo visitor can check in today and grow the streak
-        s.setLastCheckinDate(LocalDate.now().minusDays(1));
+        s.setLastCheckinDate(lastCheckin);
         userStreakRepository.save(s);
     }
 
