@@ -125,6 +125,24 @@ class TrustScoreServiceFamilyPointsTest {
     }
 
     @Test
+    void familyTypeConnection_earnsNothing_evenAtTrusted() {
+        activeLinks(1); // the elder has family, so the flat +1 stands alone
+        User other = User.builder().id(UUID.randomUUID()).build();
+        Connection famConn = Connection.builder()
+                .userA(user).userB(other)
+                .currentTrustLevel(TrustLevel.TRUSTED)
+                .type(com.towin.common.enums.ConnectionType.FAMILY)
+                .build();
+        when(connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(famConn));
+
+        trustScoreService.recalculate(userId);
+
+        // Standalone profile 0 + family 1 — the FAMILY-type connection adds zero.
+        assertThat(user.getTrustScore()).isEqualTo(1.0);
+    }
+
+    @Test
     void onlyActiveLinksAreCounted_pendingEarnsNothing() {
         activeLinks(0);
 

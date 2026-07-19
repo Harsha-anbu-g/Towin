@@ -39,6 +39,7 @@ class ConnectionServiceTest {
     @Mock com.towin.messaging.repository.MessageRepository messageRepository;
     @Mock com.towin.common.service.TrustScoreService trustScoreService;
     @Mock com.towin.common.service.S3Service s3Service;
+    @Mock com.towin.family.repository.FamilyLinkRepository familyLinkRepository;
     ConnectionService connectionService;
 
     private User sender;
@@ -50,7 +51,8 @@ class ConnectionServiceTest {
         // which @InjectMocks cannot populate
         connectionService = new ConnectionService(
                 connectionRepository, userRepository, elderProfileRepository,
-                helperProfileRepository, Optional.empty(), messageRepository, trustScoreService, s3Service);
+                helperProfileRepository, Optional.empty(), messageRepository, trustScoreService, s3Service,
+                familyLinkRepository);
         sender = buildUser(UUID.randomUUID(), "sender@test.com");
         target = buildUser(UUID.randomUUID(), "target@test.com");
     }
@@ -77,6 +79,73 @@ class ConnectionServiceTest {
         assertThat(response.getStatus()).isEqualTo(ConnectionStatus.PENDING);
         assertThat(response.isConfirmedByMe()).isTrue();
         verify(connectionRepository).save(any(Connection.class));
+    }
+
+    @Test
+    void familyLinkedPair_isAutoTypedFamily_andSkipsCapacityLimits() {
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
+        com.towin.family.entity.FamilyLink link = mock(com.towin.family.entity.FamilyLink.class);
+        when(link.getStatus()).thenReturn(com.towin.common.enums.FamilyLinkStatus.ACTIVE);
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(sender.getId(), target.getId()))
+                .thenReturn(Optional.of(link));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
+            Connection c = i.getArgument(0);
+            c.setCreatedAt(LocalDateTime.now());
+            c.setUpdatedAt(LocalDateTime.now());
+            return c;
+        });
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.SOCIAL); // requested type is overridden by the link
+
+        connectionService.sendRequest(sender.getId(), request);
+
+        ArgumentCaptor<Connection> captor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionRepository).save(captor.capture());
+        assertThat(captor.getValue().getType()).isEqualTo(ConnectionType.FAMILY);
+        // FAMILY-type requests never consult capacity, and get no score head start.
+        verify(connectionRepository, never()).findByUserAndStatus(any(), any());
+        assertThat(captor.getValue().getCurrentTrustLevel())
+                .isEqualTo(com.towin.common.enums.TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void activeLimit_ignoresFamilyTypeConnections() {
+        // Sender (elder, limit 10) sits at 10 ACTIVE connections — but all FAMILY-type,
+        // so a normal SOCIAL request still goes through.
+        java.util.List<Connection> familyOnly = new java.util.ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            familyOnly.add(Connection.builder()
+                    .id(UUID.randomUUID()).userA(sender)
+                    .userB(buildUser(UUID.randomUUID(), "fam" + i + "@test.com"))
+                    .status(ConnectionStatus.ACTIVE)
+                    .type(ConnectionType.FAMILY)
+                    .build());
+        }
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
+        when(connectionRepository.findByUserAndStatus(sender.getId(), ConnectionStatus.ACTIVE)).thenReturn(familyOnly);
+        when(connectionRepository.findByUserAndStatus(target.getId(), ConnectionStatus.ACTIVE)).thenReturn(List.of());
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
+            Connection c = i.getArgument(0);
+            c.setCreatedAt(LocalDateTime.now());
+            c.setUpdatedAt(LocalDateTime.now());
+            return c;
+        });
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.SOCIAL);
+
+        ConnectionResponse response = connectionService.sendRequest(sender.getId(), request);
+
+        assertThat(response.getStatus()).isEqualTo(ConnectionStatus.PENDING);
     }
 
     @Test

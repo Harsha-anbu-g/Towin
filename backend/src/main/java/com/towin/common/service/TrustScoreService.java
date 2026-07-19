@@ -74,6 +74,8 @@ public class TrustScoreService {
         // Profile + family always count once so new users get immediate feedback.
         int total = profilePoints + familyPoints;
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
+            // Step 4: FAMILY-type connections are coordination-only — zero points, both sides.
+            if (c.getType() == com.towin.common.enums.ConnectionType.FAMILY) continue;
             UUID customerId = c.getOtherUser(userId).getId();
             int rooting = rootingPoints(c.getCurrentTrustLevel());
             int review  = Math.min(reviewByCustomer.getOrDefault(customerId, 0), REVIEW_MAX);
@@ -100,6 +102,8 @@ public class TrustScoreService {
         int total = profilePoints + familyPoints;
 
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
+            // Step 4: FAMILY-type connections earn nothing and show no card.
+            if (c.getType() == com.towin.common.enums.ConnectionType.FAMILY) continue;
             User customer = c.getOtherUser(userId);
             int rooting = rootingPoints(c.getCurrentTrustLevel());
             int review  = Math.min(reviewByCustomer.getOrDefault(customer.getId(), 0), REVIEW_MAX);

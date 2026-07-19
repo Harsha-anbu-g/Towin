@@ -7,6 +7,7 @@ import com.towin.family.dto.FamilyLinksResponse;
 import com.towin.family.dto.FamilyRequest;
 import com.towin.family.dto.FamilyRespondRequest;
 import com.towin.family.service.FamilyJourneyService;
+import com.towin.family.service.FamilyHelperConnectionService;
 import com.towin.family.service.FamilyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class FamilyController {
 
     private final FamilyService familyService;
     private final FamilyJourneyService familyJourneyService;
+    private final FamilyHelperConnectionService familyHelperConnectionService;
 
     @PostMapping("/requests")
     public ResponseEntity<FamilyLinkResponse> createRequest(
@@ -30,6 +32,15 @@ public class FamilyController {
             @Valid @RequestBody FamilyRequest request) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(familyService.createRequest(userId, request));
+    }
+
+    /** Step 4: family member → helper connection request (gated like the updates thread). */
+    @PostMapping("/helper-connections")
+    public ResponseEntity<com.towin.connection.dto.ConnectionResponse> requestHelperConnection(
+            Authentication auth,
+            @Valid @RequestBody com.towin.family.dto.HelperConnectionRequest request) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyHelperConnectionService.requestHelperConnection(userId, request.getConnectionId()));
     }
 
     @PostMapping("/requests/{linkId}/respond")

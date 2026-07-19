@@ -45,6 +45,7 @@ class ConnectionServiceFamilyVisibilityTest {
     @Mock com.towin.messaging.repository.MessageRepository messageRepository;
     @Mock com.towin.common.service.TrustScoreService trustScoreService;
     @Mock com.towin.common.service.S3Service s3Service;
+    @Mock com.towin.family.repository.FamilyLinkRepository familyLinkRepository;
     ConnectionService connectionService;
 
     private User elder;
@@ -55,7 +56,8 @@ class ConnectionServiceFamilyVisibilityTest {
     void setUp() {
         connectionService = new ConnectionService(
                 connectionRepository, userRepository, elderProfileRepository,
-                helperProfileRepository, Optional.empty(), messageRepository, trustScoreService, s3Service);
+                helperProfileRepository, Optional.empty(), messageRepository, trustScoreService, s3Service,
+                familyLinkRepository);
         elder = buildUser(UUID.randomUUID(), "elder@test.com", UserRole.ELDER);
         helper = buildUser(UUID.randomUUID(), "helper@test.com", UserRole.HELPER);
         connection = buildConnection(elder, helper, ConnectionStatus.ACTIVE);

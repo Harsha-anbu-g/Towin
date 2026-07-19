@@ -59,7 +59,11 @@ public class ConnectionService {
     }
 
     private void enforceActiveLimit(User user) {
-        int active = connectionRepository.findByUserAndStatus(user.getId(), ConnectionStatus.ACTIVE).size();
+        // FAMILY-type connections (Step 4) are coordination-only and never eat
+        // into anyone's elder/helper capacity.
+        int active = (int) connectionRepository.findByUserAndStatus(user.getId(), ConnectionStatus.ACTIVE).stream()
+                .filter(c -> c.getType() != com.towin.common.enums.ConnectionType.FAMILY)
+                .count();
         int limit  = activeLimit(user);
         if (active >= limit) {
             throw new IllegalArgumentException(
@@ -75,6 +79,7 @@ public class ConnectionService {
     private final MessageRepository messageRepository;
     private final com.towin.common.service.TrustScoreService trustScoreService;
     private final com.towin.common.service.S3Service s3Service;
+    private final com.towin.family.repository.FamilyLinkRepository familyLinkRepository;
 
     @Transactional
     public ConnectionResponse sendRequest(UUID senderId, ConnectionRequest request) {
@@ -91,8 +96,16 @@ public class ConnectionService {
             }
         });
 
-        enforceActiveLimit(sender);
-        enforceActiveLimit(target);
+        // Step 4: a pair that already holds an ACTIVE family link is always typed
+        // FAMILY (a daughter helping her own mother earns no points), and FAMILY
+        // connections skip capacity limits and the score-based head start.
+        com.towin.common.enums.ConnectionType type = resolveType(sender, target, request.getType());
+        boolean isFamilyType = type == com.towin.common.enums.ConnectionType.FAMILY;
+
+        if (!isFamilyType) {
+            enforceActiveLimit(sender);
+            enforceActiveLimit(target);
+        }
 
         long recentCount = connectionRepository.countRequestsSince(senderId, LocalDateTime.now().minusDays(1));
         if (recentCount >= MAX_REQUESTS_PER_DAY) {
@@ -101,13 +114,15 @@ public class ConnectionService {
 
         int senderScore = sender.getTrustScore() != null ? (int) Math.round(sender.getTrustScore()) : 0;
         TrustLevel startLevel = TrustLevel.DISCOVERED;
-        if (senderScore >= 71) startLevel = TrustLevel.VERIFIED;
-        else if (senderScore >= 51) startLevel = TrustLevel.PHONE_CALL;
+        if (!isFamilyType) {
+            if (senderScore >= 71) startLevel = TrustLevel.VERIFIED;
+            else if (senderScore >= 51) startLevel = TrustLevel.PHONE_CALL;
+        }
 
         Connection connection = Connection.builder()
                 .userA(sender)
                 .userB(target)
-                .type(request.getType())
+                .type(type)
                 .status(ConnectionStatus.PENDING)
                 .initiatedBy(sender)
                 .requestMessage(request.getRequestMessage())
@@ -124,6 +139,20 @@ public class ConnectionService {
                 .recipientId(target.getId())
                 .build()));
         return toResponse(saved, senderId);
+    }
+
+    /** An ACTIVE family link between the pair forces type FAMILY (Step 4). */
+    private com.towin.common.enums.ConnectionType resolveType(
+            User sender, User target, com.towin.common.enums.ConnectionType requested) {
+        boolean familyLinked = hasActiveFamilyLink(sender.getId(), target.getId())
+                || hasActiveFamilyLink(target.getId(), sender.getId());
+        return familyLinked ? com.towin.common.enums.ConnectionType.FAMILY : requested;
+    }
+
+    private boolean hasActiveFamilyLink(UUID elderId, UUID familyUserId) {
+        return familyLinkRepository.findByElderIdAndFamilyUserId(elderId, familyUserId)
+                .filter(l -> l.getStatus() == com.towin.common.enums.FamilyLinkStatus.ACTIVE)
+                .isPresent();
     }
 
     @Transactional

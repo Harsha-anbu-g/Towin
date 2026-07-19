@@ -44,9 +44,13 @@ public class TrustService {
         User user = getUser(userId);
 
         // The elder starts each step; the helper can only accept after that.
+        // On FAMILY-type connections (family member ↔ helper, Step 4) the
+        // connection's initiator holds that seat instead.
         boolean otherConfirmed = connection.isConfirmedByUser(connection.getOtherUser(userId).getId());
-        if (!otherConfirmed && !actsAsElder(user)) {
-            throw new IllegalArgumentException("Only the elder can start the next step. You can accept it once they do.");
+        if (!otherConfirmed && !holdsInitiatorSeat(connection, user, userId)) {
+            throw new IllegalArgumentException(connection.getType() == com.towin.common.enums.ConnectionType.FAMILY
+                    ? "Only the person who started this connection can begin the next step. You can accept it once they do."
+                    : "Only the elder can start the next step. You can accept it once they do.");
         }
 
         connection.setConfirmedByUser(userId, true);
@@ -73,7 +77,9 @@ public class TrustService {
                     .build();
             trustLogRepository.save(logEntry);
 
-            if (to == TrustLevel.FIRST_MEET) {
+            // FAMILY-type connections have no elder participant — the meeting is
+            // between a family member and a helper, so no emergency-contact notice.
+            if (to == TrustLevel.FIRST_MEET && connection.getType() != com.towin.common.enums.ConnectionType.FAMILY) {
                 UUID elderId = connection.getUserA().getRole().name().equals("ELDER")
                         ? connection.getUserA().getId()
                         : connection.getUserB().getId();
@@ -131,7 +137,7 @@ public class TrustService {
                 .confirmedByOther(confirmedByOther)
                 .canAdvance(!connection.isConfirmedByUser(viewerUserId)
                         && connection.getStatus() == ConnectionStatus.ACTIVE
-                        && (actsAsElder(viewer) || confirmedByOther))
+                        && (holdsInitiatorSeat(connection, viewer, viewerUserId) || confirmedByOther))
                 .history(history.stream().map(log -> TrustStatusResponse.TrustLogEntry.builder()
                         .fromLevel(log.getFromLevel())
                         .toLevel(log.getToLevel())
@@ -161,6 +167,16 @@ public class TrustService {
 
     private static boolean actsAsElder(User user) {
         return user.getRole() == UserRole.ELDER || user.getRole() == UserRole.BOTH;
+    }
+
+    /** Who may start the next ladder step: the elder on normal connections, the
+     *  connection's initiator on FAMILY-type ones (Step 4). */
+    private static boolean holdsInitiatorSeat(Connection connection, User user, UUID userId) {
+        if (connection.getType() == com.towin.common.enums.ConnectionType.FAMILY) {
+            return connection.getInitiatedBy() != null
+                    && connection.getInitiatedBy().getId().equals(userId);
+        }
+        return actsAsElder(user);
     }
 
     private User getUser(UUID userId) {
