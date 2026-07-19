@@ -190,6 +190,12 @@ public class DemoDataSeeder implements ApplicationRunner {
         // long-standing "Sarah (daughter)" emergency contact, now with her own
         // FAMILY-role account linked in-app (see the family seed below).
         User sarah    = ensureUser("demo.sarah@towin.app",   "+14165550112", UserRole.FAMILY, "DemoSarah!2026");
+        // FAMILY accounts have no elder/helper profile, so the updates thread renders
+        // User.fullName — keep Sarah's a warm first name, not "demo_sarah".
+        if (!"Sarah".equals(sarah.getFullName())) {
+            sarah.setFullName("Sarah");
+            sarah = userRepository.save(sarah);
+        }
 
         List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur, sofia,
                 lakshmi, karthik, meena, arjun, sarah);
@@ -392,6 +398,12 @@ public class DemoDataSeeder implements ApplicationRunner {
         seedMessagesIfEmpty(cMargaretTom, 350, List.of(
                 msg(tom, "Hello Margaret! Happy to help with any tech or wifi troubles."),
                 msg(margaret, "Thank you Tom, that's very kind. My wifi has been a bit slow lately.")));
+        // The family updates thread (Step 3): a living exchange on the one SHARED
+        // friendship, so all three demo logins show the thread on day one.
+        seedFamilyNotesIfEmpty(cMargaretTom, 320, List.of(
+                msg(tom,      "We sorted the wifi today — the new password is in Margaret's blue notebook. She was in great spirits."),
+                msg(sarah,    "Thank you so much, Tom. That router has been defeating us for months!"),
+                msg(margaret, "It's true. Tom fixed it in ten minutes. Tea and biscuits were had.")));
         seedMessagesIfEmpty(cJamesRose, 900, List.of(
                 msg(james, "Hello Rose! I'd be glad to help with anything you need."),
                 msg(rose, "Hello Harsha! So kind of you. I could use a hand with a few things.")));
@@ -850,6 +862,26 @@ public class DemoDataSeeder implements ApplicationRunner {
                     .sender(d.sender())
                     .content(d.content())
                     .type(MessageType.TEXT)
+                    .createdAt(ts)
+                    .build());
+        }
+    }
+
+    /** Family updates live beside the MAIN chat on the same connection, so they get
+     *  their own channel-scoped seed gate (the MAIN gate above would block them). */
+    private void seedFamilyNotesIfEmpty(Connection conn, long endedMinutesAgo, List<Draft> drafts) {
+        if (messageRepository.countByConnectionIdAndChannel(conn.getId(), MessageChannel.FAMILY_UPDATES) > 0) return;
+        int n = drafts.size();
+        LocalDateTime end = LocalDateTime.now().minusMinutes(endedMinutesAgo);
+        for (int i = 0; i < n; i++) {
+            Draft d = drafts.get(i);
+            LocalDateTime ts = end.minusMinutes((long) (n - 1 - i) * 9L);
+            messageRepository.save(Message.builder()
+                    .connection(conn)
+                    .sender(d.sender())
+                    .content(d.content())
+                    .type(MessageType.TEXT)
+                    .channel(MessageChannel.FAMILY_UPDATES)
                     .createdAt(ts)
                     .build());
         }
