@@ -1,10 +1,12 @@
 package com.towin.family.controller;
 
 import com.towin.family.dto.FamilyAlertsResponse;
+import com.towin.family.dto.FamilyJourneyResponse;
 import com.towin.family.dto.FamilyLinkResponse;
 import com.towin.family.dto.FamilyLinksResponse;
 import com.towin.family.dto.FamilyRequest;
 import com.towin.family.dto.FamilyRespondRequest;
+import com.towin.family.service.FamilyJourneyService;
 import com.towin.family.service.FamilyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class FamilyController {
 
     private final FamilyService familyService;
+    private final FamilyJourneyService familyJourneyService;
 
     @PostMapping("/requests")
     public ResponseEntity<FamilyLinkResponse> createRequest(
@@ -55,6 +58,12 @@ public class FamilyController {
     public ResponseEntity<FamilyLinksResponse> getLinks(Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(familyService.getLinks(userId));
+    }
+
+    @GetMapping("/journey")
+    public ResponseEntity<FamilyJourneyResponse> getJourney(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyJourneyService.getJourney(userId));
     }
 
     @GetMapping("/alerts")
