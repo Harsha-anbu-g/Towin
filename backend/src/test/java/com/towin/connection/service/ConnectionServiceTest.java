@@ -114,6 +114,35 @@ class ConnectionServiceTest {
     }
 
     @Test
+    void spoofedFamilyTypeWithoutALinkIsDowngradedToSocialAndHitsTheCap() {
+        // Security: only a real family link may produce a FAMILY connection.
+        // A stranger requesting type FAMILY must not slip past the capacity cap.
+        java.util.List<Connection> tenSocial = new java.util.ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            tenSocial.add(Connection.builder()
+                    .id(UUID.randomUUID()).userA(sender)
+                    .userB(buildUser(UUID.randomUUID(), "s" + i + "@test.com"))
+                    .status(ConnectionStatus.ACTIVE)
+                    .type(ConnectionType.SOCIAL)
+                    .build());
+        }
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        // No family link either direction — familyLinkRepository returns empty by default.
+        when(connectionRepository.findByUserAndStatus(sender.getId(), ConnectionStatus.ACTIVE)).thenReturn(tenSocial);
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.FAMILY); // spoofed — no family link backs it
+
+        assertThatThrownBy(() -> connectionService.sendRequest(sender.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("limit");
+        verify(connectionRepository, never()).save(any(Connection.class));
+    }
+
+    @Test
     void activeLimit_ignoresFamilyTypeConnections() {
         // Sender (elder, limit 10) sits at 10 ACTIVE connections — but all FAMILY-type,
         // so a normal SOCIAL request still goes through.

@@ -141,12 +141,20 @@ public class ConnectionService {
         return toResponse(saved, senderId);
     }
 
-    /** An ACTIVE family link between the pair forces type FAMILY (Step 4). */
+    /**
+     * The connection type is server-derived, never taken on trust from the client.
+     * Only a real ACTIVE family link between the pair yields FAMILY; a client that
+     * asks for FAMILY without one is downgraded to SOCIAL, so the FAMILY exemptions
+     * (no capacity cap, no points, no trust ladder) can never be spoofed.
+     */
     private com.towin.common.enums.ConnectionType resolveType(
             User sender, User target, com.towin.common.enums.ConnectionType requested) {
         boolean familyLinked = hasActiveFamilyLink(sender.getId(), target.getId())
                 || hasActiveFamilyLink(target.getId(), sender.getId());
-        return familyLinked ? com.towin.common.enums.ConnectionType.FAMILY : requested;
+        if (familyLinked) return com.towin.common.enums.ConnectionType.FAMILY;
+        return requested == com.towin.common.enums.ConnectionType.FAMILY
+                ? com.towin.common.enums.ConnectionType.SOCIAL
+                : requested;
     }
 
     private boolean hasActiveFamilyLink(UUID elderId, UUID familyUserId) {
