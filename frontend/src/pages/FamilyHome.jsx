@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
 import TrustBadge from '../components/TrustBadge';
+import FamilyHelperUpdates from '../components/FamilyHelperUpdates';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -420,6 +421,8 @@ export default function FamilyHome() {
                               They're getting ready to meet in person
                             </p>
                           )}
+                          {/* US-004 (Step 3): the shared updates thread — read + reply */}
+                          <FamilyHelperUpdates helper={h} elderName={l.otherUserName} />
                         </div>
                       ))}
                     </div>

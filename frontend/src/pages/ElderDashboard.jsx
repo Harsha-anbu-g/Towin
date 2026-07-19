@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import FamilyShareToggle from '../components/FamilyShareToggle';
+import ElderFamilyUpdates from '../components/ElderFamilyUpdates';
 import { applicantsLabel } from '../lib/copy';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import BlurFade from '../components/magic/BlurFade';
@@ -818,6 +819,10 @@ export default function ElderDashboard() {
                   {/* US-011: elder-only per-friendship family visibility switch.
                       Helpers never see this — it exists only on the elder card. */}
                   <FamilyShareToggle connectionId={conn.id} shared={conn.sharedWithFamily} />
+
+                  {/* US-004 (Step 3): the shared updates thread — the elder always
+                      sees everything family and the helper say to each other. */}
+                  <ElderFamilyUpdates conn={conn} />
                 </div>
                 );
               })}

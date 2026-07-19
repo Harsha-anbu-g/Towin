@@ -217,6 +217,39 @@ describe('FamilyHome', () => {
     expect(screen.getByText(/they're getting ready to meet in person/i)).toBeInTheDocument()
   })
 
+  // US-004: the shared updates thread opens from the helper journey card.
+  it('offers Open updates on a helper card at FIRST_MEET or above', async () => {
+    mockGet(alerts, {
+      elders: [
+        {
+          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
+          sharedHelpers: [
+            { connectionId: 'c2', helperName: 'Priya', helperPhotoUrl: null, trustScore: 12, tier: 'Highly Trusted', stageIndex: 5, stageLabel: 'Ready to Meet', readyToMeet: true },
+          ],
+        },
+      ],
+    })
+    renderPage()
+    await screen.findByText('Priya')
+    expect(screen.getByRole('button', { name: /open updates/i })).toBeInTheDocument()
+  })
+
+  it('offers no updates thread below FIRST_MEET (none exists yet)', async () => {
+    mockGet(alerts, {
+      elders: [
+        {
+          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
+          sharedHelpers: [
+            { connectionId: 'c1', helperName: 'Arun', helperPhotoUrl: null, trustScore: 9, tier: 'Reliable', stageIndex: 2, stageLabel: 'Phone Ready', readyToMeet: false },
+          ],
+        },
+      ],
+    })
+    renderPage()
+    await screen.findByText('Arun')
+    expect(screen.queryByRole('button', { name: /open updates/i })).not.toBeInTheDocument()
+  })
+
   it('shows the plain-words empty state when the parent has shared no friendships', async () => {
     renderPage()
     await screen.findByText('Margaret')
