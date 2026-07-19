@@ -102,7 +102,6 @@ export default function FamilyHome() {
   const [family, setFamily] = useState({ activeLinks: [], incomingRequests: [], outgoingRequests: [] });
   const [alerts, setAlerts] = useState([]);
   const [journey, setJourney] = useState([]);
-  const [myConns, setMyConns] = useState([]);
   // Same section-tab pattern as the elder/helper dashboards (user call 2026-07-19).
   const [tab, setTab] = useState('parents');
   const [loaded, setLoaded] = useState(false);
@@ -111,14 +110,19 @@ export default function FamilyHome() {
   const [sending, setSending] = useState(false);
   const [formMsg, setFormMsg] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const [standings, setStandings] = useState([]);
+  const [standingsLoaded, setStandingsLoaded] = useState(false);
 
   const load = useCallback(() => {
     return Promise.all([
       api.get('/family/links').then(r => setFamily(r.data)).catch(() => {}),
       api.get('/family/alerts').then(r => setAlerts(r.data?.alerts || [])).catch(() => {}),
       api.get('/family/journey').then(r => setJourney(r.data?.elders || [])).catch(() => {}),
-      // Step 4: my own connections, to show waiting/connected states on helper cards.
-      api.get('/connections').then(r => setMyConns(r.data || [])).catch(() => {}),
+      // Trust inheritance: the helpers I can reach through my parent's shared trust.
+      // Only mark loaded on success — a failed fetch must not read as "removed".
+      api.get('/family/standings')
+        .then(r => { setStandings(r.data?.standings || []); setStandingsLoaded(true); })
+        .catch(() => {}),
     ]).finally(() => setLoaded(true));
   }, []);
 
@@ -465,10 +469,13 @@ export default function FamilyHome() {
                               They're getting ready to meet in person
                             </p>
                           )}
-                          {/* Step 4: direct family ↔ helper connection (helper decides) */}
+                          {/* Trust inheritance: your parent's earned trust is the
+                              bridge — message the helper directly, no request. */}
                           <FamilyHelperConnect
                             helper={h}
-                            myConnection={(myConns || []).find(c => c.otherUserId === h.helperUserId)}
+                            standing={standings.find(s => s.standingConnectionId === h.connectionId)}
+                            standingsLoaded={standingsLoaded}
+                            elderName={l.otherUserName}
                             onChanged={load}
                           />
                           {/* US-004 (Step 3): the shared updates thread — read + reply */}

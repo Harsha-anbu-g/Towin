@@ -41,6 +41,7 @@ public class MessageService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final S3Service s3Service;
+    private final com.towin.family.service.FamilyStandingService familyStandingService;
 
     public Page<MessageResponse> getHistory(UUID connectionId, UUID userId,
                                             MessageChannel channel, Pageable pageable) {
@@ -61,8 +62,11 @@ public class MessageService {
         }
         // MAIN keeps its own trust gate; the FAMILY_UPDATES gate (ACTIVE + shared
         // + >= FIRST_MEET) is already enforced for family in getAuthorizedConnection,
-        // and participants always keep their thread (Step 3 locked rule 1).
+        // and participants always keep their thread (Step 3 locked rule 1). The
+        // FAMILY-type inheritance gate is enforced in getAuthorizedConnection too,
+        // so a closed bridge has already thrown above.
         if (channel == MessageChannel.MAIN
+                && conn.getType() != com.towin.common.enums.ConnectionType.FAMILY
                 && conn.getCurrentTrustLevel().getValue() < TrustLevel.MESSAGING.getValue()) {
             throw new IllegalStateException("Trust level too low to message");
         }
@@ -104,7 +108,20 @@ public class MessageService {
     private Connection getAuthorizedConnection(UUID connectionId, UUID userId, MessageChannel channel) {
         Connection conn = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
-        if (conn.isParticipant(userId)) return conn;
+        if (conn.isParticipant(userId)) {
+            // A FAMILY-type chat exists only while an elder's shared trust bridges
+            // the two people. The same derivation that opens it (chatAllowed) also
+            // closes reading and seen-stamping the moment consent is withdrawn —
+            // nothing is cached, so the elder flipping the share switch off (or a
+            // family-side pause) severs the whole chat, not just new messages.
+            if (channel == MessageChannel.MAIN
+                    && conn.getType() == com.towin.common.enums.ConnectionType.FAMILY
+                    && !familyStandingService.chatAllowed(conn)) {
+                throw new IllegalStateException(
+                        "This chat is closed right now. It opens through your family member's shared trust.");
+            }
+            return conn;
+        }
         // Family members reach ONLY the updates thread, and only through the double
         // gate; flipping shared_with_family off cuts them immediately.
         if (channel == MessageChannel.FAMILY_UPDATES

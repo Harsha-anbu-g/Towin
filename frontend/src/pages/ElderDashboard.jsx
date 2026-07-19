@@ -835,7 +835,9 @@ export default function ElderDashboard() {
                     .filter(t => t.helperUserId === conn.otherUserId)
                     .map((t, i) => (
                       <p key={i} style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '10px 0 0', lineHeight: 1.5 }}>
-                        Your {(t.relationship || 'family member').toLowerCase()} {t.familyMemberName} and {t.helperName} are connected.
+                        {t.inherited
+                          ? <>Your {(t.relationship || 'family member').toLowerCase()} {t.familyMemberName} can message {t.helperName} through your shared trust.</>
+                          : <>Your {(t.relationship || 'family member').toLowerCase()} {t.familyMemberName} and {t.helperName} are talking.</>}
                       </p>
                     ))}
 

@@ -73,6 +73,11 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     void deleteByConnectionId(@Param("connectionId") UUID connectionId);
 
     @Modifying
+    @Query("DELETE FROM Message m WHERE m.connection.id = :connectionId AND m.channel = :channel")
+    void deleteByConnectionIdAndChannel(@Param("connectionId") UUID connectionId,
+                                        @Param("channel") com.towin.common.enums.MessageChannel channel);
+
+    @Modifying
     @Query("DELETE FROM Message m WHERE m.sender.id = :userId OR m.connection.userA.id = :userId OR m.connection.userB.id = :userId")
     void deleteByConnectionUserIdOrSenderId(@Param("userId") UUID userId);
 }

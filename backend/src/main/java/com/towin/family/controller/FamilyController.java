@@ -1,14 +1,17 @@
 package com.towin.family.controller;
 
+import com.towin.common.enums.FamilyStandingState;
+import com.towin.family.dto.ElderTransparencyResponse;
 import com.towin.family.dto.FamilyAlertsResponse;
 import com.towin.family.dto.FamilyJourneyResponse;
 import com.towin.family.dto.FamilyLinkResponse;
 import com.towin.family.dto.FamilyLinksResponse;
 import com.towin.family.dto.FamilyRequest;
 import com.towin.family.dto.FamilyRespondRequest;
+import com.towin.family.dto.FamilyStandingsResponse;
 import com.towin.family.service.FamilyJourneyService;
-import com.towin.family.service.FamilyHelperConnectionService;
 import com.towin.family.service.FamilyService;
+import com.towin.family.service.FamilyStandingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +27,7 @@ public class FamilyController {
 
     private final FamilyService familyService;
     private final FamilyJourneyService familyJourneyService;
-    private final FamilyHelperConnectionService familyHelperConnectionService;
+    private final FamilyStandingService familyStandingService;
 
     @PostMapping("/requests")
     public ResponseEntity<FamilyLinkResponse> createRequest(
@@ -34,20 +37,45 @@ public class FamilyController {
         return ResponseEntity.ok(familyService.createRequest(userId, request));
     }
 
-    /** Step 4 transparency: which of my family members are connected with which helpers. */
+    /** Transparency: every helper my family can reach — opened chats and
+     *  inherited standings alike. Nothing family-facing is hidden from the elder. */
     @GetMapping("/transparency")
-    public ResponseEntity<com.towin.family.dto.ElderTransparencyResponse> transparency(Authentication auth) {
+    public ResponseEntity<ElderTransparencyResponse> transparency(Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(familyHelperConnectionService.transparency(userId));
+        return ResponseEntity.ok(familyStandingService.transparency(userId));
     }
 
-    /** Step 4: family member → helper connection request (gated like the updates thread). */
-    @PostMapping("/helper-connections")
-    public ResponseEntity<com.towin.connection.dto.ConnectionResponse> requestHelperConnection(
-            Authentication auth,
-            @Valid @RequestBody com.towin.family.dto.HelperConnectionRequest request) {
+    /** Trust inheritance: the helpers this family member can reach through
+     *  their elders' shared trust. Fully derived — no request, no accept. */
+    @GetMapping("/standings")
+    public ResponseEntity<FamilyStandingsResponse> standings(Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
-        return ResponseEntity.ok(familyHelperConnectionService.requestHelperConnection(userId, request.getConnectionId()));
+        return ResponseEntity.ok(familyStandingService.standingsFor(userId));
+    }
+
+    /** Open (or reopen) the chat behind a standing; returns the chat connection id. */
+    @PostMapping("/standings/{connectionId}/chat")
+    public ResponseEntity<UUID> openChat(Authentication auth, @PathVariable UUID connectionId) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyStandingService.materializeChat(userId, connectionId));
+    }
+
+    @PostMapping("/standings/{connectionId}/pause")
+    public ResponseEntity<Void> pauseStanding(Authentication auth, @PathVariable UUID connectionId) {
+        familyStandingService.setControl(UUID.fromString(auth.getName()), connectionId, FamilyStandingState.PAUSED);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/standings/{connectionId}/resume")
+    public ResponseEntity<Void> resumeStanding(Authentication auth, @PathVariable UUID connectionId) {
+        familyStandingService.setControl(UUID.fromString(auth.getName()), connectionId, null);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/standings/{connectionId}/revoke")
+    public ResponseEntity<Void> revokeStanding(Authentication auth, @PathVariable UUID connectionId) {
+        familyStandingService.setControl(UUID.fromString(auth.getName()), connectionId, FamilyStandingState.REVOKED);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/requests/{linkId}/respond")

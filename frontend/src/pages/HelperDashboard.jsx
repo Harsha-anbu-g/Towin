@@ -811,8 +811,22 @@ export default function HelperDashboard() {
                     </div>
                   )}
 
+                  {/* Family connections skip the trust ladder entirely: they are
+                      coordination-only, materialized automatically from the elder's
+                      shared trust — no request, no accept — and open while that
+                      friendship stays shared. */}
+                  {conn.status === 'ACTIVE' && conn.type === 'FAMILY' && (
+                    <p style={{
+                      fontSize: 'var(--text-sm)', color: 'var(--ink-slate)',
+                      fontFamily: 'inherit', margin: '10px 0 0',
+                    }}>
+                      You and {conn.otherUserName || 'they'} are connected through the trust you built
+                      with the person you help. You can message each other while that friendship stays shared.
+                    </p>
+                  )}
+
                   {/* Trust Journey — only on active connections */}
-                  {conn.status === 'ACTIVE' && (
+                  {conn.status === 'ACTIVE' && conn.type !== 'FAMILY' && (
                     <TrustJourney
                       currentTrustLevel={conn.currentTrustLevel}
                       confirmedByMe={conn.confirmedByMe}

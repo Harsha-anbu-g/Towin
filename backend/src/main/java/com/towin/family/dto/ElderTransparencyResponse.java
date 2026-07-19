@@ -23,5 +23,8 @@ public class ElderTransparencyResponse {
         private String relationship;   // "Daughter", free text from the family link
         private UUID helperUserId;     // lets the elder UI match its connection cards
         private String helperName;
+        /** True when the reach comes from inherited standing (your shared trust)
+         *  rather than an already-opened chat. */
+        private boolean inherited;
     }
 }

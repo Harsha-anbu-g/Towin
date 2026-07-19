@@ -50,6 +50,8 @@ class MessageServiceTest {
     HelperProfileRepository helperProfileRepository;
     @Mock
     S3Service s3Service;
+    @Mock
+    com.towin.family.service.FamilyStandingService familyStandingService;
     @InjectMocks
     MessageService messageService;
 
@@ -91,6 +93,76 @@ class MessageServiceTest {
 
         assertThat(response.getContent()).isEqualTo("Hello!");
         assertThat(response.getSenderId()).isEqualTo(userA.getId());
+    }
+
+    @Test
+    void familyConnectionChatsWhileTheInheritedBridgeHolds() {
+        // FAMILY connections have no ladder — their gate is trust inheritance.
+        // While an elder's shared trust bridges the two people, chat flows even
+        // though the row sits at DISCOVERED forever.
+        connection = Connection.builder()
+                .id(connId)
+                .userA(userA)
+                .userB(userB)
+                .type(com.towin.common.enums.ConnectionType.FAMILY)
+                .status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.DISCOVERED)
+                .build();
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(familyStandingService.chatAllowed(connection)).thenReturn(true);
+        when(messageRepository.save(any())).thenReturn(Message.builder()
+                .id(UUID.randomUUID()).connection(connection).sender(userA)
+                .content("We're set for Saturday.").type(MessageType.TEXT).build());
+
+        MessageRequest req = new MessageRequest();
+        req.setContent("We're set for Saturday.");
+
+        MessageResponse response = messageService.send(connId, userA.getId(), MessageChannel.MAIN, req);
+
+        assertThat(response.getContent()).isEqualTo("We're set for Saturday.");
+    }
+
+    @Test
+    void familyChatHistoryIsSeveredWhenTheBridgeIsGone() {
+        // Consent gate: reading old history must close too, not only sending — the
+        // elder turning sharing off severs the family member's whole window.
+        connection = Connection.builder()
+                .id(connId).userA(userA).userB(userB)
+                .type(com.towin.common.enums.ConnectionType.FAMILY)
+                .status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.DISCOVERED)
+                .build();
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(familyStandingService.chatAllowed(connection)).thenReturn(false);
+
+        assertThatThrownBy(() ->
+                messageService.getHistory(connId, userA.getId(), MessageChannel.MAIN,
+                        org.springframework.data.domain.PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("shared trust");
+    }
+
+    @Test
+    void familyChatClosesTheMomentTheBridgeIsGone() {
+        // Share switch off, trust dropped, pause or revoke — re-derived on every
+        // send, so the chat closes immediately with a plain-words reason.
+        connection = Connection.builder()
+                .id(connId)
+                .userA(userA)
+                .userB(userB)
+                .type(com.towin.common.enums.ConnectionType.FAMILY)
+                .status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.DISCOVERED)
+                .build();
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(familyStandingService.chatAllowed(connection)).thenReturn(false);
+
+        MessageRequest req = new MessageRequest();
+        req.setContent("Hello?");
+
+        assertThatThrownBy(() -> messageService.send(connId, userA.getId(), MessageChannel.MAIN, req))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("shared trust");
     }
 
     @Test
