@@ -90,7 +90,8 @@ public class MessageService {
                 .map(Connection::getId)
                 .collect(Collectors.toList());
         if (connectionIds.isEmpty()) return 0;
-        return messageRepository.countUnreadByConnectionIds(connectionIds, userId).size();
+        // MAIN only — family updates must not light up the private chat badge.
+        return messageRepository.countUnreadByConnectionIds(connectionIds, userId, MessageChannel.MAIN).size();
     }
 
     @Transactional
@@ -98,7 +99,7 @@ public class MessageService {
         getAuthorizedConnection(connectionId, userId, MessageChannel.MAIN);
         // Authorization first, then one UPDATE — the chat polls this every 5 seconds,
         // so it must not load the conversation to stamp it row by row.
-        messageRepository.markSeenByConnectionId(connectionId, userId, LocalDateTime.now());
+        messageRepository.markSeenByConnectionId(connectionId, userId, LocalDateTime.now(), MessageChannel.MAIN);
     }
 
     private Connection getAuthorizedConnection(UUID connectionId, UUID userId, MessageChannel channel) {

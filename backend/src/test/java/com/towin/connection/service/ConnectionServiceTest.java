@@ -167,9 +167,9 @@ class ConnectionServiceTest {
 
         when(connectionRepository.findAllByUser(eq(sender.getId()), any(Pageable.class)))
                 .thenReturn(List.of(withChat, quiet));
-        when(messageRepository.findLatestByConnectionIds(anyCollection()))
+        when(messageRepository.findLatestByConnectionIds(anyCollection(), eq(com.towin.common.enums.MessageChannel.MAIN)))
                 .thenReturn(List.<Object[]>of(new Object[]{withChat.getId(), "See you Tuesday", lastAt}));
-        when(messageRepository.countUnreadByConnectionIds(anyCollection(), eq(sender.getId())))
+        when(messageRepository.countUnreadByConnectionIds(anyCollection(), eq(sender.getId()), eq(com.towin.common.enums.MessageChannel.MAIN)))
                 .thenReturn(List.<Object[]>of(new Object[]{withChat.getId(), 3L}));
         when(elderProfileRepository.findProfileCardsByUserIds(anyCollection()))
                 .thenReturn(List.<Object[]>of(new Object[]{target.getId(), "Margaret", "photos/m.jpg", 72}));
@@ -195,8 +195,9 @@ class ConnectionServiceTest {
         assertThat(silent.getOtherUserName()).isEqualTo(second.getEmail());
 
         // One query per lookup for the whole list — never one per connection.
-        verify(messageRepository, times(1)).findLatestByConnectionIds(anyCollection());
-        verify(messageRepository, times(1)).countUnreadByConnectionIds(anyCollection(), any());
+        // MAIN-scoped (US-006): family updates must never leak into previews or badges.
+        verify(messageRepository, times(1)).findLatestByConnectionIds(anyCollection(), eq(com.towin.common.enums.MessageChannel.MAIN));
+        verify(messageRepository, times(1)).countUnreadByConnectionIds(anyCollection(), any(), eq(com.towin.common.enums.MessageChannel.MAIN));
         verify(elderProfileRepository, times(1)).findProfileCardsByUserIds(anyCollection());
         verify(helperProfileRepository, times(1)).findProfileCardsByUserIds(anyCollection());
         verify(messageRepository, never()).findFirstByConnectionIdOrderByCreatedAtDesc(any());

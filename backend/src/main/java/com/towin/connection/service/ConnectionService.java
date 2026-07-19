@@ -236,7 +236,7 @@ public class ConnectionService {
     private Map<UUID, Object[]> lastMessageMap(Collection<Connection> connections) {
         Set<UUID> connectionIds = connectionIds(connections);
         if (connectionIds.isEmpty()) return new HashMap<>();
-        return messageRepository.findLatestByConnectionIds(connectionIds).stream()
+        return messageRepository.findLatestByConnectionIds(connectionIds, com.towin.common.enums.MessageChannel.MAIN).stream()
                 .collect(Collectors.toMap(row -> (UUID) row[0], row -> row, (a, b) -> a));
     }
 
@@ -244,7 +244,7 @@ public class ConnectionService {
     private Map<UUID, Long> unreadCountMap(Collection<Connection> connections, UUID viewerUserId) {
         Set<UUID> connectionIds = connectionIds(connections);
         if (connectionIds.isEmpty()) return new HashMap<>();
-        return messageRepository.countUnreadByConnectionIds(connectionIds, viewerUserId).stream()
+        return messageRepository.countUnreadByConnectionIds(connectionIds, viewerUserId, com.towin.common.enums.MessageChannel.MAIN).stream()
                 .collect(Collectors.toMap(row -> (UUID) row[0], row -> (Long) row[1]));
     }
 

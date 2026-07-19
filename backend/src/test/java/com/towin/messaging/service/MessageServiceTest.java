@@ -131,7 +131,7 @@ class MessageServiceTest {
                 .status(ConnectionStatus.ACTIVE).currentTrustLevel(TrustLevel.MESSAGING).build();
         when(connectionRepository.findAllByUser(userA.getId())).thenReturn(List.of(connection, second));
         // Only the conversations that have unread messages come back — one row each.
-        when(messageRepository.countUnreadByConnectionIds(anyCollection(), eq(userA.getId())))
+        when(messageRepository.countUnreadByConnectionIds(anyCollection(), eq(userA.getId()), eq(MessageChannel.MAIN)))
                 .thenReturn(List.<Object[]>of(new Object[]{connId, 4L}));
 
         int count = messageService.unreadConversationCount(userA.getId());
@@ -146,7 +146,7 @@ class MessageServiceTest {
 
         messageService.markSeen(connId, userA.getId());
 
-        verify(messageRepository).markSeenByConnectionId(eq(connId), eq(userA.getId()), any(LocalDateTime.class));
+        verify(messageRepository).markSeenByConnectionId(eq(connId), eq(userA.getId()), any(LocalDateTime.class), eq(MessageChannel.MAIN));
         // The chat polls this every few seconds — it must never read the messages first.
         verify(messageRepository, never()).findByConnectionIdOrderByCreatedAtAsc(any(), any());
     }
@@ -159,7 +159,7 @@ class MessageServiceTest {
         assertThatThrownBy(() -> messageService.markSeen(connId, stranger))
                 .isInstanceOf(IllegalStateException.class);
 
-        verify(messageRepository, never()).markSeenByConnectionId(any(), any(), any());
+        verify(messageRepository, never()).markSeenByConnectionId(any(), any(), any(), any());
     }
 
     @Test

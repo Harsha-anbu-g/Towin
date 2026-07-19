@@ -17,30 +17,39 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             UUID connectionId, com.towin.common.enums.MessageChannel channel, Pageable pageable);
     long countByConnectionIdAndSeenAtIsNull(UUID connectionId);
     long countByConnectionId(UUID connectionId);
+    long countByConnectionIdAndChannel(UUID connectionId, com.towin.common.enums.MessageChannel channel);
 
     java.util.Optional<Message> findFirstByConnectionIdOrderByCreatedAtDesc(UUID connectionId);
     long countByConnectionIdAndSenderIdNotAndSeenAtIsNull(UUID connectionId, UUID senderId);
 
-    /** Newest message of every listed connection in one query: rows of [connectionId, content, createdAt]. */
+    /** Newest message of every listed connection in one query, scoped to ONE channel:
+     *  rows of [connectionId, content, createdAt]. Channel-scoped so FAMILY_UPDATES
+     *  notes never surface as the private chat's preview. */
     @Query("""
         SELECT m.connection.id, m.content, m.createdAt FROM Message m
         WHERE m.connection.id IN :connectionIds
-          AND m.createdAt = (SELECT MAX(m2.createdAt) FROM Message m2 WHERE m2.connection.id = m.connection.id)
+          AND m.channel = :channel
+          AND m.createdAt = (SELECT MAX(m2.createdAt) FROM Message m2
+                             WHERE m2.connection.id = m.connection.id AND m2.channel = :channel)
         """)
     java.util.List<Object[]> findLatestByConnectionIds(
-            @Param("connectionIds") java.util.Collection<UUID> connectionIds);
+            @Param("connectionIds") java.util.Collection<UUID> connectionIds,
+            @Param("channel") com.towin.common.enums.MessageChannel channel);
 
-    /** Unread count of every listed connection in one query: rows of [connectionId, count]. */
+    /** Unread count of every listed connection in one query, scoped to ONE channel
+     *  (family notes must not light up the private chat badge): rows of [connectionId, count]. */
     @Query("""
         SELECT m.connection.id, COUNT(m) FROM Message m
         WHERE m.connection.id IN :connectionIds
+          AND m.channel = :channel
           AND m.sender.id <> :viewerId
           AND m.seenAt IS NULL
         GROUP BY m.connection.id
         """)
     java.util.List<Object[]> countUnreadByConnectionIds(
             @Param("connectionIds") java.util.Collection<UUID> connectionIds,
-            @Param("viewerId") UUID viewerId);
+            @Param("viewerId") UUID viewerId,
+            @Param("channel") com.towin.common.enums.MessageChannel channel);
 
     // One UPDATE for the whole conversation — the chat polls this every few seconds,
     // so it must never load the messages just to stamp them.
@@ -50,12 +59,14 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Query("""
         UPDATE Message m SET m.seenAt = :now
         WHERE m.connection.id = :connectionId
+          AND m.channel = :channel
           AND m.sender.id <> :viewerId
           AND m.seenAt IS NULL
         """)
     int markSeenByConnectionId(@Param("connectionId") UUID connectionId,
                                @Param("viewerId") UUID viewerId,
-                               @Param("now") java.time.LocalDateTime now);
+                               @Param("now") java.time.LocalDateTime now,
+                               @Param("channel") com.towin.common.enums.MessageChannel channel);
 
     @Modifying
     @Query("DELETE FROM Message m WHERE m.connection.id = :connectionId")
