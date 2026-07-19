@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import { useAuth } from '../context/useAuth';
@@ -30,6 +30,11 @@ const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 export default function Messages() {
   const { connectionId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // The family updates thread rides this same page as a small group chat
+  // (user call 2026-07-19): elder, helper and family all read the same notes.
+  const isFamilyThread = searchParams.get('channel') === 'family';
+  const channelQuery = isFamilyThread ? '&channel=FAMILY_UPDATES' : '';
   const { user } = useAuth();
   const myUserId = user?.userId;
   const { toast } = useToast();
@@ -64,6 +69,19 @@ export default function Messages() {
             setOtherTrustScore(p.data.trustScore ?? null);
           }).catch(() => {});
         }
+      } else if (isFamilyThread) {
+        // Family viewers aren't participants of the connection — resolve the
+        // thread's names through the journey instead.
+        api.get('/family/journey').then(j => {
+          for (const e of (j.data?.elders || [])) {
+            const h = (e.sharedHelpers || []).find(s => s.connectionId === connectionId);
+            if (h) {
+              setOtherName(`${e.elderName} & ${h.helperName}`);
+              setOtherPhotoUrl(h.helperPhotoUrl || null);
+              break;
+            }
+          }
+        }).catch(() => {});
       }
     }).catch(() => {});
     loadMessages();
@@ -89,7 +107,7 @@ export default function Messages() {
       // Ask for 50 messages; the newest-first backend returns the latest 50.
       // Sort by timestamp client-side so display is correct regardless of the
       // server's ordering (robust across the asc→desc backend change).
-      const res = await api.get(`/messages/${connectionId}?size=50`);
+      const res = await api.get(`/messages/${connectionId}?size=50${channelQuery}`);
       const ordered = (res.data.content ?? []).slice()
         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       setMessages(prev => {
@@ -101,7 +119,8 @@ export default function Messages() {
         return ordered;
       });
       setLoadError('');
-      await api.post(`/messages/${connectionId}/seen`).catch(() => {});
+      // Seen-stamping is a private-chat concept; family notes have no unread badge.
+      if (!isFamilyThread) await api.post(`/messages/${connectionId}/seen`).catch(() => {});
     } catch (err) {
       const msg = err?.response?.data?.message || '';
       if (msg.toLowerCase().includes('trust')) {
@@ -115,7 +134,7 @@ export default function Messages() {
     if (!text.trim()) return;
     setSending(true);
     try {
-      const res = await api.post(`/messages/${connectionId}/send`, { content: text.trim() });
+      const res = await api.post(`/messages/${connectionId}/send${isFamilyThread ? '?channel=FAMILY_UPDATES' : ''}`, { content: text.trim() });
       setMessages(prev => [...prev, res.data]);
       setText('');
       setSent(true);
@@ -225,8 +244,18 @@ export default function Messages() {
         </button>
       </header>
 
+      {/* Family thread: everyone reads the same notes — say so plainly. */}
+      {isFamilyThread && (
+        <div style={{ background: 'var(--sky-ghost)', borderBottom: '1px solid var(--sky-hairline)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
+            Family updates — the elder, the helper and the family all read the same notes.
+          </p>
+        </div>
+      )}
+
       {/* One consolidated trust hint (replaces the two stacked strips) */}
-      {trustLevel && (
+      {!isFamilyThread && trustLevel && (
         <div style={{ background: 'var(--sky-ghost)', borderBottom: '1px solid var(--sky-hairline)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
@@ -321,9 +350,18 @@ export default function Messages() {
           const isMe = m.senderId === myUserId;
           const prevMsg = messages[idx - 1];
           const showDateSep = !prevMsg || new Date(m.createdAt).toDateString() !== new Date(prevMsg.createdAt).toDateString();
+          // Group style (family thread): name the speaker above their bubble,
+          // WhatsApp-group style, whenever the speaker changes.
+          const groupName = isFamilyThread && !isMe ? (m.senderLabel || m.senderName) : null;
+          const showGroupName = groupName && (!prevMsg || prevMsg.senderId !== m.senderId);
 
           return (
             <div key={m.id}>
+              {showGroupName && (
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blue-deep)', fontFamily: SFText, margin: '10px 0 2px 14px' }}>
+                  {groupName}
+                </p>
+              )}
               {showDateSep && (
                 <div style={{ textAlign: 'center', margin: '16px 0 8px' }}>
                   <span style={{

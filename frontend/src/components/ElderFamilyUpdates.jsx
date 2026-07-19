@@ -6,7 +6,7 @@
 // friendship with no notes shows nothing.
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
-import FamilyUpdatesThread from './FamilyUpdatesThread';
+import FamilyThreadLink from './FamilyThreadLink';
 
 const TRUST_LEVEL_ORDER = {
   DISCOVERED: 1, MESSAGING: 2, PHONE_CALL: 3, VIDEO_CALL: 4,
@@ -52,14 +52,9 @@ export default function ElderFamilyUpdates({ conn }) {
             : `Sharing is off, so your family can't see these notes. You and ${helperName} still can. Use the switch above to share again.`}
         </p>
       </div>
-      <FamilyUpdatesThread
-        connectionId={conn.id}
-        placeholder={shared
-          ? `Write a note your family and ${helperName} can read`
-          : `Write a note ${helperName} can read`}
-        emptyText={`No updates yet. After a visit, ${helperName} can write how it went.`}
-        sendLabel="Send"
-      />
+      <div>
+        <FamilyThreadLink connectionId={conn.id} />
+      </div>
     </div>
   );
 }

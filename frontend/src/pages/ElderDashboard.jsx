@@ -171,14 +171,19 @@ export default function ElderDashboard() {
   // (My Helpers → Active) instead of carrying over a segment picked in another
   // tab. A refresh keeps the current section because it reloads the URL as-is
   // rather than going through this handler.
-  const setTab = (next) => setSearchParams(prev => {
-    const p = new URLSearchParams(prev);
-    p.set('tab', next);
-    p.delete('hseg');
-    p.delete('nseg');
-    p.delete('fseg');
-    return p;
-  }, { replace: true });
+  const setTab = (next) => {
+    // "My Family" lives at the top of the dashboard (user call 2026-07-19) but
+    // is its own page — the tab is a doorway, not a panel.
+    if (next === 'family') { navigate('/family'); return; }
+    setSearchParams(prev => {
+      const p = new URLSearchParams(prev);
+      p.set('tab', next);
+      p.delete('hseg');
+      p.delete('nseg');
+      p.delete('fseg');
+      return p;
+    }, { replace: true });
+  };
   // Sub-filter segment per tab. Param absent (null) = follow the smart default
   // (the segment that needs the user's action first); a value = user picked one.
   const needsSeg = searchParams.get('nseg');
@@ -480,6 +485,7 @@ export default function ElderDashboard() {
 
   const tabs = [
     ['connections', 'My Helpers', connBadge],
+    ['family', 'My Family', 0],
     ['post', 'Post Help', 0],
     ['needs', 'Posted Help', requestsBadge],
     ['friends', 'Add Friends', friendsBadge],

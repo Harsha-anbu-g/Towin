@@ -3,7 +3,7 @@
 // connection ACTIVE + elder shared it with family + trust >= FIRST_MEET.
 // Note-led, not chat-led — the composer leads with a post-visit prompt and
 // the helper always sees exactly who reads what they write.
-import FamilyUpdatesThread from './FamilyUpdatesThread';
+import FamilyThreadLink from './FamilyThreadLink';
 
 const TRUST_LEVEL_ORDER = {
   DISCOVERED: 1, MESSAGING: 2, PHONE_CALL: 3, VIDEO_CALL: 4,
@@ -31,12 +31,9 @@ export default function HelperFamilyUpdates({ conn }) {
           Their family and {elderName} can read these notes.
         </p>
       </div>
-      <FamilyUpdatesThread
-        connectionId={conn.id}
-        placeholder="Write a short note about how things went"
-        emptyText="No notes yet. After a visit, write how it went."
-        sendLabel="Share note"
-      />
+      <div>
+        <FamilyThreadLink connectionId={conn.id} label="Write or read family updates" />
+      </div>
     </div>
   );
 }

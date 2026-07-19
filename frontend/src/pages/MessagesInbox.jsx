@@ -59,13 +59,37 @@ export default function MessagesInbox() {
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [journeyThreads, setJourneyThreads] = useState([]);
 
   useEffect(() => {
     api.get('/connections')
       .then(r => setConnections(r.data || []))
       .catch(() => setConnections([]))
       .finally(() => setLoading(false));
+    // Family updates threads a linked family member can read (their parents'
+    // shared friendships at Ready to Meet or beyond).
+    api.get('/family/journey').then(r => {
+      const rows = [];
+      for (const e of (r.data?.elders || [])) {
+        for (const h of (e.sharedHelpers || [])) {
+          if (h.stageIndex >= 5) {
+            rows.push({ id: h.connectionId, title: `${e.elderName} & ${h.helperName}`, photo: h.helperPhotoUrl || null });
+          }
+        }
+      }
+      setJourneyThreads(rows);
+    }).catch(() => {});
   }, []);
+
+  // As a participant, my own shared friendships carry the same group thread.
+  const participantThreads = connections
+    .filter(c => c.status === 'ACTIVE' && c.sharedWithFamily
+      && (c.currentTrustLevel === 'FIRST_MEET' || c.currentTrustLevel === 'TRUSTED'))
+    .map(c => ({ id: c.id, title: `You & ${c.otherUserName}`, photo: null }));
+  const familyThreads = [
+    ...participantThreads,
+    ...journeyThreads.filter(t => !participantThreads.some(p => p.id === t.id)),
+  ];
 
   const active = connections
     .filter(c => c.status === 'ACTIVE')
@@ -155,6 +179,47 @@ export default function MessagesInbox() {
               >
                 Go to Dashboard
               </button>
+            </div>
+          </BlurFade>
+        )}
+
+        {/* Family updates — the shared group notes live in Messages now (user call 2026-07-19). */}
+        {!loading && familyThreads.length > 0 && (
+          <BlurFade delay={1}>
+            <div style={{
+              background: 'var(--canvas)', border: '1px solid var(--border)',
+              borderRadius: '18px', overflow: 'hidden', marginBottom: '16px',
+            }}>
+              {familyThreads.map((t, i) => (
+                <button
+                  key={t.id}
+                  onClick={() => navigate(`/messages/${t.id}?channel=family`)}
+                  style={{
+                    width: '100%', background: 'transparent', border: 'none',
+                    borderBottom: i === familyThreads.length - 1 ? 'none' : '1px solid var(--border)',
+                    padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px',
+                    cursor: 'pointer', textAlign: 'left', fontFamily: SFText, minHeight: '44px',
+                  }}
+                >
+                  <span style={{
+                    width: '46px', height: '46px', borderRadius: '50%', flexShrink: 0,
+                    background: 'var(--blue-wash)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue-deep)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                  </span>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)' }}>
+                      Family updates
+                    </span>
+                    <span style={{ display: 'block', fontSize: '14px', color: 'var(--ink-3)', marginTop: '2px' }}>
+                      {t.title} — everyone reads the same notes
+                    </span>
+                  </span>
+                </button>
+              ))}
             </div>
           </BlurFade>
         )}

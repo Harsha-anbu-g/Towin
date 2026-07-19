@@ -103,6 +103,8 @@ export default function FamilyHome() {
   const [alerts, setAlerts] = useState([]);
   const [journey, setJourney] = useState([]);
   const [myConns, setMyConns] = useState([]);
+  // Same section-tab pattern as the elder/helper dashboards (user call 2026-07-19).
+  const [tab, setTab] = useState('parents');
   const [loaded, setLoaded] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState({ identifier: '', relationship: '' });
@@ -174,8 +176,46 @@ export default function FamilyHome() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
 
+      {/* Section tabs — the same top-of-dashboard pattern elders and helpers get (user call 2026-07-19). */}
+      <div style={{ position: 'sticky', top: '60px', zIndex: 'var(--z-sticky)', background: 'var(--canvas)', borderBottom: '1px solid var(--border)' }}>
+        <div className="dash-tab-wrap">
+          <div className="dash-tab-scroll" role="tablist" aria-label="Family sections">
+            {[['parents', 'My Parents', 0], ['news', 'News', alerts.length]].map(([id, label, badge]) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setTab(id)}
+                  style={{
+                    flex: '1 1 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    height: '44px', padding: '0 16px', fontSize: '16px', letterSpacing: '-0.1px',
+                    fontWeight: active ? 700 : 600,
+                    color: active ? 'var(--action-ink)' : 'var(--ink-slate)',
+                    background: active ? 'var(--action-fill)' : 'transparent',
+                    border: active ? '1px solid var(--action-fill)' : '1px solid transparent',
+                    borderRadius: '10px', cursor: 'pointer', fontFamily: SF,
+                  }}
+                >
+                  {label}
+                  {badge > 0 && (
+                    <span style={{
+                      fontSize: '13px', fontWeight: 700, borderRadius: '9999px', padding: '1px 8px',
+                      background: active ? 'color-mix(in srgb, var(--action-ink) 22%, transparent)' : 'var(--blue-wash)',
+                      color: active ? 'var(--action-ink)' : 'var(--blue-deep)',
+                    }}>{badge}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 60px' }}>
 
+        {tab === 'parents' && (<>
         {/* Header + add-parent (page title — the big hero card was removed on the user's call, 2026-07-18) */}
         <BlurFade delay={2}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', margin: '0 0 16px' }}>
@@ -444,6 +484,9 @@ export default function FamilyHome() {
         </BlurFade>
 
         {/* Alert feed */}
+        </>)}
+
+        {tab === 'news' && (
         <BlurFade delay={5}>
           <div style={{ marginTop: '28px' }}>
             <h2 style={{ ...sectionH, marginBottom: '6px' }}>News about your family</h2>
@@ -493,6 +536,7 @@ export default function FamilyHome() {
             })}
           </div>
         </BlurFade>
+        )}
       </div>
     </div>
   );

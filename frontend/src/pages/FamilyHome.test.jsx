@@ -128,7 +128,11 @@ describe('FamilyHome', () => {
   })
 
   it('shows the alert feed with a plain-words explanation per alert type', async () => {
+    const user = userEvent.setup()
     renderPage()
+    await screen.findByText('Margaret')
+    // The feed lives behind the News tab now (section tabs, user call 2026-07-19).
+    await user.click(screen.getByRole('tab', { name: /news/i }))
     await screen.findByText('Margaret pressed SOS.')
     // SOS
     expect(screen.getByText(/asked for urgent help/i)).toBeInTheDocument()
@@ -141,9 +145,11 @@ describe('FamilyHome', () => {
   })
 
   it('explains the empty alert feed in plain words', async () => {
+    const user = userEvent.setup()
     mockGet([])
     renderPage()
     await screen.findByText('Margaret')
+    await user.click(screen.getByRole('tab', { name: /news/i }))
     expect(screen.getByText(/no alerts right now/i)).toBeInTheDocument()
   })
 
@@ -232,7 +238,7 @@ describe('FamilyHome', () => {
     })
     renderPage()
     await screen.findByText('Priya')
-    expect(screen.getByRole('button', { name: /open updates/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /family updates/i })).toBeInTheDocument()
   })
 
   it('offers no updates thread below FIRST_MEET (none exists yet)', async () => {
