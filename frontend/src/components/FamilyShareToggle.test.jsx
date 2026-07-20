@@ -33,7 +33,7 @@ describe('FamilyShareToggle', () => {
     render(<FamilyShareToggle connectionId="c1" shared />)
     const sw = screen.getByRole('switch', { name: /let my family see this friendship/i })
     expect(sw).toHaveAttribute('aria-checked', 'true')
-    expect(screen.getByText(/your family can see this friendship/i)).toBeInTheDocument()
+    expect(screen.getByText(/your family can watch how this friendship is going/i)).toBeInTheDocument()
   })
 
   it('turning it on calls the family-visibility endpoint with shared=true', async () => {
@@ -44,7 +44,7 @@ describe('FamilyShareToggle', () => {
       expect(api.post).toHaveBeenCalledWith('/connections/c1/family-visibility', { shared: true }),
     )
     expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true')
-    expect(screen.getByText(/your family can see this friendship/i)).toBeInTheDocument()
+    expect(screen.getByText(/your family can watch how this friendship is going/i)).toBeInTheDocument()
   })
 
   it('turning it off calls the endpoint with shared=false', async () => {

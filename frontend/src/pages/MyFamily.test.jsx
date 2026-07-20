@@ -140,3 +140,91 @@ describe('MyFamily', () => {
     })
   })
 })
+
+// Controls: the two powers a family member can hold, finally in one place
+// under one heading (user call 2026-07-20). Watching = what they may SEE,
+// Act for me = what they may DO. They used to live on separate screens, which
+// read as though only one of them existed.
+describe('MyFamily — Controls', () => {
+  const connections = [
+    { id: 'c1', otherUserName: 'Harsha', status: 'ACTIVE', currentTrustLevel: 'TRUSTED', sharedWithFamily: false },
+    { id: 'c2', otherUserName: 'Priya', status: 'ACTIVE', currentTrustLevel: 'PHONE_CALL', sharedWithFamily: true },
+    // Ended friendships are not offered — you cannot share what is over.
+    { id: 'c3', otherUserName: 'Gone', status: 'ENDED', currentTrustLevel: 'MESSAGING', sharedWithFamily: false },
+  ]
+
+  const mockGet = (powers = []) => {
+    api.get.mockImplementation((url) => {
+      if (url === '/family/links') {
+        return Promise.resolve({
+          data: {
+            activeLinks: [{ ...links.activeLinks[0], delegatedPowers: powers }],
+            incomingRequests: [], outgoingRequests: [],
+          },
+        })
+      }
+      if (url === '/connections') return Promise.resolve({ data: connections })
+      return Promise.resolve({ data: {} })
+    })
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    api.post.mockResolvedValue({ data: {} })
+    api.delete.mockResolvedValue({ data: {} })
+    mockGet()
+  })
+
+  it('heads the section Controls and offers both tabs', async () => {
+    renderPage()
+    expect(await screen.findByRole('heading', { name: 'Controls' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /watching/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /act for me/i })).toBeInTheDocument()
+  })
+
+  it('opens on Watching, listing each live friendship with its own switch', async () => {
+    renderPage()
+    await screen.findByRole('heading', { name: 'Controls' })
+    expect(screen.getByText('Harsha')).toBeInTheDocument()
+    expect(screen.getByText('Priya')).toBeInTheDocument()
+    // An ended friendship is not something you can share.
+    expect(screen.queryByText('Gone')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('switch', { name: /let my family see this friendship/i })).toHaveLength(2)
+  })
+
+  it('flips a friendship to watched through the visibility endpoint', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByRole('heading', { name: 'Controls' })
+    const switches = screen.getAllByRole('switch', { name: /let my family see this friendship/i })
+    await user.click(switches[0])
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/connections/c1/family-visibility', { shared: true })
+    })
+  })
+
+  it('shows the Act for me switches per family member, all off by default', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByRole('heading', { name: 'Controls' })
+    await user.click(screen.getByRole('tab', { name: /act for me/i }))
+    const powerSwitches = await screen.findAllByRole('switch', { name: /sarah/i })
+    expect(powerSwitches).toHaveLength(4)
+    powerSwitches.forEach(s => expect(s).toHaveAttribute('aria-checked', 'false'))
+  })
+
+  it('grants one power without disturbing the others', async () => {
+    const user = userEvent.setup()
+    mockGet(['MESSAGE_HELPERS'])
+    api.put = vi.fn().mockResolvedValue({ data: { delegatedPowers: ['MESSAGE_HELPERS', 'LEAVE_REVIEWS'] } })
+    renderPage()
+    await screen.findByRole('heading', { name: 'Controls' })
+    await user.click(screen.getByRole('tab', { name: /act for me/i }))
+    await user.click(await screen.findByRole('switch', { name: /leave a review for you — sarah/i }))
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith('/family/links/l1/powers', {
+        powers: expect.arrayContaining(['MESSAGE_HELPERS', 'LEAVE_REVIEWS']),
+      })
+    })
+  })
+})

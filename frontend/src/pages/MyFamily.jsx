@@ -5,7 +5,9 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
+import SegmentedTabs from '../components/SegmentedTabs';
 import DelegatedPowerToggle from '../components/DelegatedPowerToggle';
+import FamilyShareToggle from '../components/FamilyShareToggle';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -81,12 +83,20 @@ export default function MyFamily() {
   const [busyId, setBusyId] = useState(null);
   const [pendingRemove, setPendingRemove] = useState(null);
   const [removing, setRemoving] = useState(false);
+  // Controls: the two things family can be given — seeing, and doing.
+  // They were on separate screens, which made it look like only one existed
+  // (user call 2026-07-20).
+  const [controlsTab, setControlsTab] = useState('watching');
+  const [connections, setConnections] = useState([]);
 
   const load = useCallback(() => {
-    return api.get('/family/links')
-      .then(r => setFamily(r.data))
-      .catch(() => {})
-      .finally(() => setLoaded(true));
+    return Promise.all([
+      api.get('/family/links').then(r => setFamily(r.data)).catch(() => {}),
+      // My own friendships — each one carries its own Watching switch.
+      api.get('/connections')
+        .then(r => setConnections((r.data || []).filter(c => c.status === 'ACTIVE')))
+        .catch(() => {}),
+    ]).finally(() => setLoaded(true));
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -361,19 +371,88 @@ export default function MyFamily() {
                     Remove
                   </button>
                 </div>
-                <DelegatedPowerToggle
-                  linkId={l.id}
-                  familyName={l.otherUserName}
-                  powers={l.delegatedPowers || []}
-                  onSaved={updated => setFamily(prev => ({
-                    ...prev,
-                    activeLinks: (prev.activeLinks || []).map(x => x.id === l.id ? { ...x, ...updated } : x),
-                  }))}
-                />
               </div>
             ))}
           </div>
         </BlurFade>
+
+        {/* ── Controls ─────────────────────────────────────────────────────
+            Two different things, side by side at last: what family may SEE
+            (Watching, one switch per friendship) and what they may DO
+            (Act for me, one set of switches per family member). */}
+        {active.length > 0 && (
+          <BlurFade delay={6}>
+            <div style={{ marginTop: '28px' }}>
+              <h2 style={{ ...sectionH, marginBottom: '4px' }}>Controls</h2>
+              <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 14px', lineHeight: 1.5 }}>
+                Watching is what your family can see. Act for me is what they can do.
+                Both start off, and only you can change them.
+              </p>
+
+              <SegmentedTabs
+                segments={[
+                  { id: 'watching', label: 'Watching', count: connections.filter(c => c.sharedWithFamily).length },
+                  { id: 'acting', label: 'Act for me', count: active.filter(l => (l.delegatedPowers || []).length > 0).length },
+                ]}
+                value={controlsTab}
+                onChange={setControlsTab}
+                label="Family controls"
+              />
+
+              {controlsTab === 'watching' && (
+                <div style={{ marginTop: '14px' }}>
+                  {connections.length === 0 ? (
+                    <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
+                        You have no friendships yet. Once you do, you choose here which ones
+                        your family can watch.
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={cardStyle}>
+                      <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 12px', lineHeight: 1.5 }}>
+                        Everyone in your family sees the friendships you turn on here.
+                        They can watch how it is going — they cannot change anything.
+                      </p>
+                      {connections.map(c => (
+                        <div key={c.id} style={{ marginBottom: '10px' }}>
+                          <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 4px' }}>
+                            {c.otherUserName}
+                          </p>
+                          <FamilyShareToggle connectionId={c.id} shared={c.sharedWithFamily} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {controlsTab === 'acting' && (
+                <div style={{ marginTop: '14px' }}>
+                  {active.map(l => (
+                    <div key={l.id} style={cardStyle}>
+                      <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
+                        {l.otherUserName}
+                        <span style={{ fontSize: '14px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
+                          {l.relationship || 'Family member'}
+                        </span>
+                      </p>
+                      <DelegatedPowerToggle
+                        linkId={l.id}
+                        familyName={l.otherUserName}
+                        powers={l.delegatedPowers || []}
+                        onSaved={updated => setFamily(prev => ({
+                          ...prev,
+                          activeLinks: (prev.activeLinks || []).map(x => x.id === l.id ? { ...x, ...updated } : x),
+                        }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </BlurFade>
+        )}
       </div>
 
       <ConfirmDialog

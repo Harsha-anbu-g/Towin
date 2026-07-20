@@ -5,13 +5,8 @@ import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
-import TrustBadge from '../components/TrustBadge';
-import TrustJourney from '../components/TrustJourney';
-import FamilyHelperUpdates from '../components/FamilyHelperUpdates';
-import FamilyHelperConnect from '../components/FamilyHelperConnect';
-import FamilyNeedsForParent from '../components/FamilyNeedsForParent';
-import FamilyTrustAdvance from '../components/FamilyTrustAdvance';
-import FamilyReviewForParent from '../components/FamilyReviewForParent';
+// The per-parent detail — trust ladders, guardian actions, the updates thread —
+// now lives on FamilyParent.jsx, so this page imports none of it.
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -115,28 +110,14 @@ export default function FamilyHome() {
   const [sending, setSending] = useState(false);
   const [formMsg, setFormMsg] = useState('');
   const [busyId, setBusyId] = useState(null);
-  const [standings, setStandings] = useState([]);
-  const [standingsLoaded, setStandingsLoaded] = useState(false);
 
-  /**
-   * Guardian mode: what this parent has asked me to do for them. Read straight
-   * from the link the server sent, so a power the parent has taken back stops
-   * showing on the next load — and the server checks again anyway before it
-   * lets any of it through.
-   */
-  const powersFor = (elderId) =>
-    (family.activeLinks || []).find(l => l.elderId === elderId)?.delegatedPowers || [];
-
+  // Guardian powers and trust standings are only ever acted on from a parent's
+  // own page, so this list no longer fetches them.
   const load = useCallback(() => {
     return Promise.all([
       api.get('/family/links').then(r => setFamily(r.data)).catch(() => {}),
       api.get('/family/alerts').then(r => setAlerts(r.data?.alerts || [])).catch(() => {}),
       api.get('/family/journey').then(r => setJourney(r.data?.elders || [])).catch(() => {}),
-      // Trust inheritance: the helpers I can reach through my parent's shared trust.
-      // Only mark loaded on success — a failed fetch must not read as "removed".
-      api.get('/family/standings')
-        .then(r => { setStandings(r.data?.standings || []); setStandingsLoaded(true); })
-        .catch(() => {}),
     ]).finally(() => setLoaded(true));
   }, []);
 
@@ -317,6 +298,7 @@ export default function FamilyHome() {
 
             {elders.map(l => {
               const j = journey.find(e => e.elderId === l.elderId);
+              const sharedCount = (j?.sharedHelpers || []).length;
               return (
                 <div key={l.id} style={cardStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -376,161 +358,30 @@ export default function FamilyHome() {
                     </div>
                   )}
 
-                  {/* The parent's OPEN help requests. Seeing them was never a power —
-                      acting on them is, so the buttons wait on MANAGE_HELP_REQUESTS. */}
-                  {j && (
-                    <FamilyNeedsForParent
-                      elderId={j.elderId}
-                      elderName={j.elderName || l.otherUserName}
-                      openNeeds={j.openNeeds}
-                      canManage={powersFor(j.elderId).includes('MANAGE_HELP_REQUESTS')}
-                      onChanged={load}
-                    />
-                  )}
+                  {/* Everything deeper — their help requests, the friendships they
+                      shared, the trust ladders and anything you may do for them —
+                      moved to this parent's own page (user call 2026-07-20). The
+                      list stays skimmable no matter how much is going on. */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/family-home/parent/${l.elderId}`)}
+                    style={{
+                      display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
+                      gap: '10px', minHeight: '44px', marginTop: '14px', padding: '10px 16px',
+                      background: 'var(--action-fill)', color: 'var(--action-ink)', border: 'none',
+                      borderRadius: '9999px', cursor: 'pointer',
+                      fontSize: '16px', fontWeight: 600, fontFamily: SFText,
+                    }}
+                  >
+                    <span>
+                      Open {l.otherUserName}'s page
+                      {sharedCount > 0 && ` · ${sharedCount} friendship${sharedCount === 1 ? '' : 's'}`}
+                    </span>
+                    <svg width="9" height="15" viewBox="0 0 10 16" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <path d="M1.5 1L8.5 8L1.5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
 
-                  {/* US-003: shared helper journey — only the friendships the parent chose to share */}
-                  {j && (
-                    <div style={{ marginTop: '18px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 10px' }}>
-                        Friendships shared with you
-                      </p>
-
-                      {(j.sharedHelpers || []).length === 0 && (
-                        <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                          No friendships shared with you yet. Your parent chooses what to share.
-                        </p>
-                      )}
-
-                      {(j.sharedHelpers || []).map(h => (
-                        <div
-                          key={h.connectionId}
-                          style={{
-                            border: h.readyToMeet
-                              ? '1px solid color-mix(in srgb, var(--blue-deep) 35%, transparent)'
-                              : '1px solid var(--border)',
-                            background: h.readyToMeet
-                              ? 'color-mix(in srgb, var(--blue) 6%, transparent)'
-                              : 'transparent',
-                            borderRadius: '14px',
-                            padding: '12px 14px',
-                            marginBottom: '10px',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            {h.helperPhotoUrl ? (
-                              <img
-                                src={h.helperPhotoUrl}
-                                alt=""
-                                style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                              />
-                            ) : (
-                              <DefaultAvatar color="var(--ink-4)" size={44} />
-                            )}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => navigate(`/user/${h.helperUserId}`)}
-                                  aria-label={`View ${h.helperName}'s profile`}
-                                  style={{
-                                    background: 'none', border: 'none', padding: '2px 0', margin: 0, cursor: 'pointer',
-                                    fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue-deep)',
-                                    fontFamily: SF, textAlign: 'left', textDecoration: 'underline', textUnderlineOffset: '2px',
-                                  }}
-                                >
-                                  {h.helperName}
-                                </button>
-                                <TrustBadge tier={h.tier} score={h.trustScore} />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => navigate(`/user/${h.helperUserId}`)}
-                                style={{
-                                  display: 'inline-flex', alignItems: 'center', gap: '4px',
-                                  background: 'none', border: 'none', padding: '8px 0 0', margin: 0, cursor: 'pointer',
-                                  minHeight: '32px', fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)', fontFamily: SFText,
-                                }}
-                              >
-                                See their full profile →
-                              </button>
-                            </div>
-                          </div>
-                          {/* The same trust bar the elder and helper see — read-only for family. */}
-                          <TrustJourney
-                            currentTrustLevel={h.currentTrustLevel}
-                            otherUserName={h.helperName}
-                            readOnly
-                          />
-                          {/* Guardian mode: shown only when this parent has actually
-                              asked this family member to write for them. */}
-                          {powersFor(j.elderId).includes('MESSAGE_HELPERS') && h.connectionId && (
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/messages/${h.connectionId}`)}
-                              style={{
-                                display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center',
-                                gap: '8px', minHeight: '44px', marginTop: '12px', padding: '10px 16px',
-                                background: 'var(--blue)', color: '#fff', border: 'none',
-                                borderRadius: '9999px', cursor: 'pointer',
-                                fontSize: '16px', fontWeight: 600, fontFamily: SFText,
-                              }}
-                            >
-                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                              </svg>
-                              Write to {h.helperName} for {j.elderName}
-                            </button>
-                          )}
-                          {/* Guardian mode: take the parent's next step on this
-                              friendship — only if they asked this family member to. */}
-                          {powersFor(j.elderId).includes('ADVANCE_TRUST') && (
-                            <FamilyTrustAdvance
-                              connectionId={h.connectionId}
-                              helperName={h.helperName}
-                              elderName={j.elderName || l.otherUserName}
-                              currentTrustLevel={h.currentTrustLevel}
-                              onChanged={load}
-                            />
-                          )}
-                          {/* Guardian mode: rate this helper for the parent. The
-                              component itself holds the fully-trusted gate. */}
-                          {powersFor(j.elderId).includes('LEAVE_REVIEWS') && (
-                            <FamilyReviewForParent
-                              helper={h}
-                              elderId={j.elderId}
-                              elderName={j.elderName || l.otherUserName}
-                            />
-                          )}
-                          {h.readyToMeet && (
-                            <p style={{
-                              display: 'flex', alignItems: 'center', gap: '6px',
-                              fontSize: '14px', fontWeight: 600, color: 'var(--blue-deep)',
-                              margin: '10px 0 0', lineHeight: 1.4,
-                            }}>
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                              </svg>
-                              They're getting ready to meet in person
-                            </p>
-                          )}
-                          {/* Trust inheritance: your parent's earned trust is the
-                              bridge — message the helper directly, no request. */}
-                          <FamilyHelperConnect
-                            helper={h}
-                            standing={standings.find(s => s.standingConnectionId === h.connectionId)}
-                            standingsLoaded={standingsLoaded}
-                            elderName={l.otherUserName}
-                            onChanged={load}
-                          />
-                          {/* US-004 (Step 3): the shared updates thread — read + reply */}
-                          <FamilyHelperUpdates helper={h} elderName={l.otherUserName} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -578,8 +429,8 @@ export default function FamilyHome() {
 
         {tab === 'news' && (
         <BlurFade delay={5}>
-          <div style={{ marginTop: '28px' }}>
-            <h2 style={{ ...sectionH, marginBottom: '6px' }}>News about your family</h2>
+          <div>
+            <h1 style={{ ...sectionH, margin: '0 0 6px' }}>News about your family</h1>
             <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 14px', lineHeight: 1.5 }}>
               Alerts appear here when something needs your attention — nothing is sent by text or email.
             </p>
