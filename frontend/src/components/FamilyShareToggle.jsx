@@ -56,11 +56,11 @@ export default function FamilyShareToggle({ connectionId, shared: initialShared 
     >
       <span style={{ minWidth: 0 }}>
         <span style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.35 }}>
-          Let my family see this friendship
+          Watching — let my family see this friendship
         </span>
         <span style={{ display: 'block', fontSize: '14px', color: 'var(--ink-slate)', lineHeight: 1.4, marginTop: '2px' }}>
           {shared
-            ? 'Your family can see this friendship.'
+            ? 'Your family can watch how this friendship is going. They cannot change anything here.'
             : 'Kept private from family. Only you can change this.'}
         </span>
       </span>

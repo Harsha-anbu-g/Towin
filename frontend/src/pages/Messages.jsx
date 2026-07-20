@@ -223,8 +223,14 @@ export default function Messages() {
           <span className="chat-back-label">Back</span>
         </button>
 
-        {/* Avatar — real photo or initials */}
-        {otherPhotoUrl ? (
+        {/* Avatar — real photo or initials. A family thread has three people in
+            it, so one person's face at the top would be a lie; it gets the group
+            mark instead. */}
+        {isFamilyThread ? (
+          <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--sky-ghost)', border: '1px solid var(--sky-hairline)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+        ) : otherPhotoUrl ? (
           <div className="chat-avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border)' }}>
             <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
@@ -347,7 +353,11 @@ export default function Messages() {
       }}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', marginTop: '64px' }}>
-            {otherPhotoUrl ? (
+            {isFamilyThread ? (
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--sky-ghost)', border: '1px solid var(--sky-hairline)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+            ) : otherPhotoUrl ? (
               <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 20px', border: '1px solid var(--border)' }}>
                 <img src={otherPhotoUrl} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
@@ -375,6 +385,13 @@ export default function Messages() {
           // WhatsApp-group style, whenever the speaker changes.
           const groupName = isFamilyThread && !isMe ? (m.senderLabel || m.senderName) : null;
           const showGroupName = groupName && (!prevMsg || prevMsg.senderId !== m.senderId);
+          // Whose face sits beside this bubble. A family thread has several
+          // speakers, so it must come from the message itself — painting the
+          // one helper's photo on every bubble is what made the same picture
+          // repeat down the screen. A private chat has exactly one other
+          // person, so the conversation-level photo is right there.
+          const bubblePhotoUrl = isFamilyThread ? (m.senderPhotoUrl || null) : otherPhotoUrl;
+          const bubbleName = isFamilyThread ? (m.senderName || '') : otherName;
 
           return (
             <div key={m.id}>
@@ -414,13 +431,13 @@ export default function Messages() {
                 marginBottom: '2px',
               }}>
                 {!isMe && (
-                  otherPhotoUrl ? (
+                  bubblePhotoUrl ? (
                     <div style={{ width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-                      <img src={otherPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      <img src={bubblePhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
                     <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--slate-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '13px', fontWeight: 700, color: 'var(--ink-slate)', fontFamily: SF }}>
-                      {initials(otherName)}
+                      {initials(bubbleName)}
                     </div>
                   )
                 )}

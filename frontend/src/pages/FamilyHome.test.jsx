@@ -182,202 +182,38 @@ describe('FamilyHome', () => {
     expect(await screen.findByText('1 help request open')).toBeInTheDocument()
   })
 
-  // US-003: shared helper journey cards under each elder card.
-  it('renders a shared helper row with name, trust badge and ladder stage', async () => {
+  // The depth moved to FamilyParent (user call 2026-07-20) — this list now only
+  // has to stay skimmable and offer one clear way in per parent. The shared-helper
+  // and guardian-mode suites live in FamilyParent.test.jsx.
+  it('offers a way into each parent\'s own page, with the friendship count on it', async () => {
     mockGet(alerts, {
-      elders: [
-        {
-          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
-          sharedHelpers: [
-            { connectionId: 'c1', helperUserId: 'h1', helperName: 'Arun', helperPhotoUrl: null, trustScore: 9, tier: 'Reliable', stageIndex: 2, stageLabel: 'Phone Ready', currentTrustLevel: 'PHONE_CALL', readyToMeet: false },
-          ],
-        },
-      ],
+      elders: [{
+        elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
+        sharedHelpers: [
+          { connectionId: 'c1', helperName: 'Arun', currentTrustLevel: 'PHONE_CALL' },
+          { connectionId: 'c2', helperName: 'Priya', currentTrustLevel: 'FIRST_MEET' },
+        ],
+      }],
     })
     renderPage()
-    expect(await screen.findByText('Friendships shared with you')).toBeInTheDocument()
-    expect(screen.getByText('Arun')).toBeInTheDocument()
-    // TrustBadge: tier + score
-    expect(screen.getByText('Reliable')).toBeInTheDocument()
-    expect(screen.getByText('· 9')).toBeInTheDocument()
-    // Ladder stage in plain words (stageIndex is 0-based → Stage 3 of 7)
-    expect(screen.getByText(/stage 3 of 7/i)).toBeInTheDocument()
-    expect(screen.getByText(/phone ready/i)).toBeInTheDocument()
-    // Not ready to meet — no highlight
-    expect(screen.queryByText(/getting ready to meet in person/i)).not.toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /open margaret's page · 2 friendships/i })).toBeInTheDocument()
   })
 
-  it('highlights a helper who is getting ready to meet in person', async () => {
+  it('uses singular wording for a single shared friendship', async () => {
     mockGet(alerts, {
-      elders: [
-        {
-          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
-          sharedHelpers: [
-            { connectionId: 'c2', helperUserId: 'h2', helperName: 'Priya', helperPhotoUrl: null, trustScore: 12, tier: 'Highly Trusted', stageIndex: 5, stageLabel: 'Ready to Meet', currentTrustLevel: 'FIRST_MEET', readyToMeet: true },
-          ],
-        },
-      ],
+      elders: [{
+        elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
+        sharedHelpers: [{ connectionId: 'c1', helperName: 'Arun', currentTrustLevel: 'PHONE_CALL' }],
+      }],
     })
     renderPage()
-    expect(await screen.findByText('Priya')).toBeInTheDocument()
-    expect(screen.getByText(/stage 6 of 7/i)).toBeInTheDocument()
-    expect(screen.getByText(/they're getting ready to meet in person/i)).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /open margaret's page · 1 friendship$/i })).toBeInTheDocument()
   })
 
-  // US-004: the shared updates thread opens from the helper journey card.
-  it('offers Open updates on a helper card at FIRST_MEET or above', async () => {
-    mockGet(alerts, {
-      elders: [
-        {
-          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
-          sharedHelpers: [
-            { connectionId: 'c2', helperName: 'Priya', helperPhotoUrl: null, trustScore: 12, tier: 'Highly Trusted', stageIndex: 5, stageLabel: 'Ready to Meet', readyToMeet: true },
-          ],
-        },
-      ],
-    })
-    renderPage()
-    await screen.findByText('Priya')
-    expect(screen.getByRole('button', { name: /family updates/i })).toBeInTheDocument()
-  })
-
-  it('offers no updates thread below FIRST_MEET (none exists yet)', async () => {
-    mockGet(alerts, {
-      elders: [
-        {
-          elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
-          sharedHelpers: [
-            { connectionId: 'c1', helperName: 'Arun', helperPhotoUrl: null, trustScore: 9, tier: 'Reliable', stageIndex: 2, stageLabel: 'Phone Ready', readyToMeet: false },
-          ],
-        },
-      ],
-    })
-    renderPage()
-    await screen.findByText('Arun')
-    expect(screen.queryByRole('button', { name: /open updates/i })).not.toBeInTheDocument()
-  })
-
-  it('shows the plain-words empty state when the parent has shared no friendships', async () => {
+  it('keeps the trust ladders and guardian actions off this list', async () => {
     renderPage()
     await screen.findByText('Margaret')
-    expect(screen.getByText(/no friendships shared with you yet/i)).toBeInTheDocument()
-    expect(screen.getByText(/your parent chooses what to share/i)).toBeInTheDocument()
-  })
-})
-
-// Guardian mode: every action here is gated on a power the PARENT granted, and
-// every one of them must read as "for Margaret", never as Sarah acting alone.
-describe('FamilyHome — guardian mode actions', () => {
-  const helperAt = (level) => ({
-    connectionId: 'c1', helperUserId: 'h1', helperName: 'Arun', helperPhotoUrl: null,
-    trustScore: 9, tier: 'Reliable', stageIndex: 2, stageLabel: 'Phone Ready',
-    currentTrustLevel: level, readyToMeet: false,
-  })
-
-  const openNeed = { id: 'n1', title: 'A ride to the doctor', description: 'Tuesday morning' }
-
-  // Same shape as the page's own loader, with the granted powers and journey
-  // varied per test.
-  const mockWith = (powers, elder) => {
-    api.get.mockImplementation((url) => {
-      if (url === '/family/links') {
-        return Promise.resolve({
-          data: {
-            activeLinks: [{ id: 'l1', elderId: 'e1', otherUserName: 'Margaret', relationship: 'Daughter', status: 'ACTIVE', iAmElder: false, delegatedPowers: powers }],
-            incomingRequests: [], outgoingRequests: [],
-          },
-        })
-      }
-      if (url === '/family/alerts') return Promise.resolve({ data: { alerts: [] } })
-      if (url === '/family/journey') {
-        return Promise.resolve({
-          data: {
-            elders: [{
-              elderId: 'e1', elderName: 'Margaret', checkedInToday: true, openNeedsCount: 1,
-              openNeeds: [openNeed], sharedHelpers: [], ...elder,
-            }],
-          },
-        })
-      }
-      return Promise.resolve({ data: {} })
-    })
-  }
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-    api.post.mockResolvedValue({ data: {} })
-    api.delete.mockResolvedValue({ data: {} })
-  })
-
-  it('grants nothing when the parent granted nothing', async () => {
-    mockWith([], { sharedHelpers: [helperAt('TRUSTED')] })
-    renderPage()
-    await screen.findByText('A ride to the doctor')
+    expect(screen.queryByText(/friendships shared with you/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /ask for help for margaret/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /close this request for margaret/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /move the next step forward/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /leave a review for margaret/i })).not.toBeInTheDocument()
-  })
-
-  it('posts a new help request for the parent when MANAGE_HELP_REQUESTS is granted', async () => {
-    const user = userEvent.setup()
-    mockWith(['MANAGE_HELP_REQUESTS'])
-    renderPage()
-    await user.click(await screen.findByRole('button', { name: /ask for help for margaret/i }))
-    await user.type(screen.getByLabelText(/what do they need help with/i), 'Shopping on Friday')
-    await user.click(screen.getByRole('button', { name: /send for margaret/i }))
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/needs', expect.objectContaining({
-        title: 'Shopping on Friday',
-        onBehalfOfElderId: 'e1',
-      }))
-    })
-  })
-
-  it('closes one of the parent\'s open requests after a confirm step', async () => {
-    const user = userEvent.setup()
-    mockWith(['MANAGE_HELP_REQUESTS'])
-    renderPage()
-    await user.click(await screen.findByRole('button', { name: /close this request for margaret/i }))
-    // Destructive and done for someone else — never one careless tap.
-    expect(screen.getByText(/close this for margaret\?/i)).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /yes, close it/i }))
-    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/needs/n1'))
-  })
-
-  it('takes the parent\'s next trust step when ADVANCE_TRUST is granted', async () => {
-    const user = userEvent.setup()
-    mockWith(['ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
-    renderPage()
-    await user.click(await screen.findByRole('button', { name: /move the next step forward for margaret/i }))
-    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/trust/c1/confirm'))
-  })
-
-  it('offers no trust step at the top of the ladder', async () => {
-    mockWith(['ADVANCE_TRUST'], { sharedHelpers: [helperAt('TRUSTED')] })
-    renderPage()
-    await screen.findByText('Arun')
-    expect(screen.queryByRole('button', { name: /move the next step forward/i })).not.toBeInTheDocument()
-  })
-
-  it('reviews a fully trusted helper for the parent when LEAVE_REVIEWS is granted', async () => {
-    const user = userEvent.setup()
-    mockWith(['LEAVE_REVIEWS'], { sharedHelpers: [helperAt('TRUSTED')] })
-    renderPage()
-    await user.click(await screen.findByRole('button', { name: /leave a review for margaret/i }))
-    await user.click(screen.getByRole('button', { name: /^4 stars$/i }))
-    await user.click(screen.getByRole('button', { name: /save for margaret/i }))
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/reviews', expect.objectContaining({
-        revieweeId: 'h1', rating: 4, onBehalfOfElderId: 'e1',
-      }))
-    })
-  })
-
-  it('offers no review below fully trusted — the same gate the parent lives under', async () => {
-    mockWith(['LEAVE_REVIEWS'], { sharedHelpers: [helperAt('FIRST_MEET')] })
-    renderPage()
-    await screen.findByText('Arun')
-    expect(screen.queryByRole('button', { name: /leave a review for margaret/i })).not.toBeInTheDocument()
   })
 })

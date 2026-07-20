@@ -78,10 +78,17 @@ export default function DelegatedPowerToggle({ linkId, familyName, powers = [], 
   return (
     <div style={{ marginTop: '14px' }}>
       <p style={{
-        fontSize: '14px', fontWeight: 600, color: 'var(--ink-slate)', fontFamily: SFT,
-        margin: '0 0 8px',
+        fontSize: '16px', fontWeight: 600, color: 'var(--ink)', fontFamily: SFT,
+        margin: '0 0 2px',
       }}>
-        What {name} can do for you
+        Act for me
+      </p>
+      <p style={{
+        fontSize: '14px', color: 'var(--ink-slate)', fontFamily: SFT,
+        margin: '0 0 8px', lineHeight: 1.4,
+      }}>
+        Watching lets {name} see. These let {name} act. Each one stays off until you
+        turn it on, and their name is always on whatever they do.
       </p>
 
       {POWERS.map(p => {
