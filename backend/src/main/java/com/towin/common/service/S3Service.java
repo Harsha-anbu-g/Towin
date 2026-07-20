@@ -84,8 +84,9 @@ public class S3Service {
     // Raw S3 URLs are private (403) — this generates a 7-day signed URL the browser can load.
     public String presignedUrl(String rawUrl) {
         if (rawUrl == null || rawUrl.isBlank()) return null;
+        String key = objectKeyOf(rawUrl);
+        if (key == null) return rawUrl;   // not ours to sign — hand it back untouched
         try {
-            String key = rawUrl.substring(rawUrl.indexOf(".amazonaws.com/") + ".amazonaws.com/".length());
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                     .signatureDuration(Duration.ofDays(7))
                     .getObjectRequest(r -> r.bucket(bucket).key(key))
@@ -98,12 +99,32 @@ public class S3Service {
 
     public void deleteFile(String url) {
         if (url == null || url.isBlank()) return;
+        String key = objectKeyOf(url);
+        if (key == null) return;   // never ours — nothing of ours to delete
         try {
-            String key = url.substring(url.indexOf(".amazonaws.com/") + ".amazonaws.com/".length());
             s3Client.deleteObject(b -> b.bucket(bucket).key(key));
         } catch (Exception e) {
             // Log but don't throw — file may already be deleted
         }
+    }
+
+    /**
+     * The S3 object key inside one of our own URLs, or null when the URL is not
+     * an S3 one at all — a path we ship with the app ("/demo/sarah.jpg"), or
+     * anything hosted elsewhere.
+     *
+     * Worth being explicit about: indexOf returns -1 when the marker is absent,
+     * and the old callers added the marker's length to it regardless, so a
+     * non-S3 path silently yielded a key carved out of its own middle. Signing
+     * that produced a dead URL, and deleting it aimed a delete at a key nobody
+     * asked for. Neither threw, so neither was ever noticed.
+     */
+    private String objectKeyOf(String url) {
+        final String marker = ".amazonaws.com/";
+        int at = url.indexOf(marker);
+        if (at < 0) return null;
+        String key = url.substring(at + marker.length());
+        return key.isBlank() ? null : key;
     }
 
     private String validateExtension(String filename, Map<String, String> allowed) {
