@@ -60,6 +60,14 @@ const mockWith = (powers = [], elder = {}) => {
   })
 }
 
+/**
+ * Everything done in the parent's name now lives behind the "Act for me" tab,
+ * matching the parent's own screen. Watching is what you can see; this is what
+ * you can do.
+ */
+const openActForMe = async (user) =>
+  user.click(await screen.findByRole('tab', { name: /act for me/i }))
+
 const renderPage = () => render(
   <MemoryRouter initialEntries={['/family-home/parent/e1']}>
     <Routes>
@@ -169,19 +177,40 @@ describe('FamilyParent — guardian mode actions', () => {
   })
 
   it('grants nothing when the parent granted nothing', async () => {
+    const user = userEvent.setup()
     mockWith([], { sharedHelpers: [helperAt('TRUSTED')] })
     renderPage()
     await screen.findByText('A ride to the doctor')
+
+    // Checked on the Act for me tab itself, not from Watching where these would
+    // be absent regardless — the point is that the tab is empty, and says why.
+    await openActForMe(user)
+    expect(await screen.findByText(/hasn't asked you to do anything yet/i)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /ask for help for margaret/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /close this request for margaret/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /move the next step forward/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /leave a review for margaret/i })).not.toBeInTheDocument()
   })
 
+  it('keeps the Watching tab read-only, with the doing on the other tab', async () => {
+    const user = userEvent.setup()
+    mockWith(['MESSAGE_HELPERS', 'ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
+    renderPage()
+
+    // Watching shows how they are and who they know — and offers no way to act.
+    await screen.findByText('How they are today')
+    expect(screen.queryByRole('button', { name: /write to arun for margaret/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /move the next step forward/i })).not.toBeInTheDocument()
+
+    await openActForMe(user)
+    expect(await screen.findByRole('button', { name: /write to arun for margaret/i })).toBeInTheDocument()
+  })
+
   it('posts a new help request for the parent when MANAGE_HELP_REQUESTS is granted', async () => {
     const user = userEvent.setup()
     mockWith(['MANAGE_HELP_REQUESTS'])
     renderPage()
+    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /ask for help for margaret/i }))
     await user.type(screen.getByLabelText(/what do they need help with/i), 'Shopping on Friday')
     await user.click(screen.getByRole('button', { name: /send for margaret/i }))
@@ -197,6 +226,7 @@ describe('FamilyParent — guardian mode actions', () => {
     const user = userEvent.setup()
     mockWith(['MANAGE_HELP_REQUESTS'])
     renderPage()
+    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /close this request for margaret/i }))
     // Destructive and done for someone else — never one careless tap.
     expect(screen.getByText(/close this for margaret\?/i)).toBeInTheDocument()
@@ -208,6 +238,7 @@ describe('FamilyParent — guardian mode actions', () => {
     const user = userEvent.setup()
     mockWith(['ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
     renderPage()
+    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /move the next step forward for margaret/i }))
     await waitFor(() => expect(api.post).toHaveBeenCalledWith('/trust/c1/confirm'))
   })
@@ -223,6 +254,7 @@ describe('FamilyParent — guardian mode actions', () => {
     const user = userEvent.setup()
     mockWith(['LEAVE_REVIEWS'], { sharedHelpers: [helperAt('TRUSTED')] })
     renderPage()
+    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /leave a review for margaret/i }))
     await user.click(screen.getByRole('button', { name: /^4 stars$/i }))
     await user.click(screen.getByRole('button', { name: /save for margaret/i }))

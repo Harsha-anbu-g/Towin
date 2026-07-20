@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+import SegmentedTabs from '../components/SegmentedTabs';
 import TrustBadge from '../components/TrustBadge';
 import TrustJourney from '../components/TrustJourney';
 import FamilyHelperUpdates from '../components/FamilyHelperUpdates';
@@ -59,6 +60,10 @@ export default function FamilyParent() {
   const [standings, setStandings] = useState([]);
   const [standingsLoaded, setStandingsLoaded] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // Same two words the parent sees on their own screen. Watching is how they are
+  // doing; Act for me is what they have trusted you to do. Keeping the split and
+  // the vocabulary identical on both sides means a family can talk about it.
+  const [tab, setTab] = useState('watching');
 
   const load = useCallback(() => {
     return Promise.all([
@@ -76,6 +81,7 @@ export default function FamilyParent() {
   const link = (family.activeLinks || []).find(l => !l.iAmElder && l.elderId === elderId);
   const j = journey.find(e => e.elderId === elderId);
   const powers = link?.delegatedPowers || [];
+  const sharedHelpers = j?.sharedHelpers || [];
   const elderName = j?.elderName || link?.otherUserName || 'your parent';
 
   const backBtn = (
@@ -132,10 +138,20 @@ export default function FamilyParent() {
           </div>
         </BlurFade>
 
+        <SegmentedTabs
+          segments={[
+            { id: 'watching', label: 'Watching', count: sharedHelpers.length },
+            { id: 'acting', label: 'Act for me', count: powers.length },
+          ]}
+          value={tab}
+          onChange={setTab}
+          label={`What you can see and do for ${elderName}`}
+        />
+
         {/* How they are today */}
-        {j && (
+        {j && tab === 'watching' && (
           <BlurFade delay={3}>
-            <div style={cardStyle}>
+            <div style={{ ...cardStyle, marginTop: '14px' }}>
               <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>How they are today</h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <span style={{
@@ -171,12 +187,14 @@ export default function FamilyParent() {
                 )}
               </div>
 
-              {/* Seeing their open requests was never a power — acting on them is. */}
+              {/* Seeing their open requests was never a power — acting on them is,
+                  so the read-only view stays here and the managing half lives on
+                  the Act for me tab. */}
               <FamilyNeedsForParent
                 elderId={j.elderId}
                 elderName={elderName}
                 openNeeds={j.openNeeds}
-                canManage={powers.includes('MANAGE_HELP_REQUESTS')}
+                canManage={false}
                 onChanged={load}
               />
             </div>
@@ -184,14 +202,14 @@ export default function FamilyParent() {
         )}
 
         {/* Friendships they chose to share */}
-        {j && (
+        {j && tab === 'watching' && (
           <BlurFade delay={4}>
             <div>
               <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', margin: '22px 0 12px' }}>
                 Friendships shared with you
               </h2>
 
-              {(j.sharedHelpers || []).length === 0 && (
+              {sharedHelpers.length === 0 && (
                 <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
                   <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
                     No friendships shared with you yet. {elderName} chooses what to share.
@@ -199,7 +217,7 @@ export default function FamilyParent() {
                 </div>
               )}
 
-              {(j.sharedHelpers || []).map(h => (
+              {sharedHelpers.map(h => (
                 <div
                   key={h.connectionId}
                   style={{
@@ -258,44 +276,6 @@ export default function FamilyParent() {
                     readOnly
                   />
 
-                  {powers.includes('MESSAGE_HELPERS') && h.connectionId && (
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/messages/${h.connectionId}`)}
-                      style={{
-                        display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center',
-                        gap: '8px', minHeight: '44px', marginTop: '12px', padding: '10px 16px',
-                        background: 'var(--blue)', color: '#fff', border: 'none',
-                        borderRadius: '9999px', cursor: 'pointer',
-                        fontSize: '16px', fontWeight: 600, fontFamily: SFText,
-                      }}
-                    >
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      </svg>
-                      Write to {h.helperName} for {elderName}
-                    </button>
-                  )}
-
-                  {powers.includes('ADVANCE_TRUST') && (
-                    <FamilyTrustAdvance
-                      connectionId={h.connectionId}
-                      helperName={h.helperName}
-                      elderName={elderName}
-                      currentTrustLevel={h.currentTrustLevel}
-                      onChanged={load}
-                    />
-                  )}
-
-                  {powers.includes('LEAVE_REVIEWS') && (
-                    <FamilyReviewForParent
-                      helper={h}
-                      elderId={j.elderId}
-                      elderName={elderName}
-                    />
-                  )}
-
                   {h.readyToMeet && (
                     <p style={{
                       display: 'flex', alignItems: 'center', gap: '6px',
@@ -322,6 +302,114 @@ export default function FamilyParent() {
                   <FamilyHelperUpdates helper={h} elderName={elderName} />
                 </div>
               ))}
+            </div>
+          </BlurFade>
+        )}
+
+        {/* Act for me — only the things they have actually trusted you with.
+            Every one of these acts in their name, so each says whose name it
+            carries rather than leaving you to assume. */}
+        {j && tab === 'acting' && (
+          <BlurFade delay={4}>
+            <div style={{ marginTop: '14px' }}>
+              {powers.length === 0 ? (
+                <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
+                    {elderName} hasn't asked you to do anything yet
+                  </p>
+                  <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
+                    They choose what you can do for them, on their own My Family page.
+                    Until then you can still see how they're doing on the Watching tab.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {powers.includes('MANAGE_HELP_REQUESTS') && (
+                    <div style={cardStyle}>
+                      <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>
+                        Help requests
+                      </h2>
+                      <FamilyNeedsForParent
+                        elderId={j.elderId}
+                        elderName={elderName}
+                        openNeeds={j.openNeeds}
+                        canManage
+                        onChanged={load}
+                      />
+                    </div>
+                  )}
+
+                  {sharedHelpers.length === 0 ? (
+                    <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
+                        {elderName} hasn't shared any friendships with you, so there is
+                        nobody here to act with yet. What they share appears on the
+                        Watching tab.
+                      </p>
+                    </div>
+                  ) : sharedHelpers.map(h => (
+                    <div key={h.connectionId} style={cardStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                        {h.helperPhotoUrl ? (
+                          <img
+                            src={h.helperPhotoUrl}
+                            alt=""
+                            style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                          />
+                        ) : (
+                          <DefaultAvatar color="var(--ink-4)" size={44} />
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
+                            {h.helperName}
+                          </p>
+                          <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0' }}>
+                            Anything you do here is in {elderName}'s name
+                          </p>
+                        </div>
+                      </div>
+
+                      {powers.includes('MESSAGE_HELPERS') && h.connectionId && (
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/messages/${h.connectionId}`)}
+                          style={{
+                            display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center',
+                            gap: '8px', minHeight: '44px', marginTop: '12px', padding: '10px 16px',
+                            background: 'var(--blue)', color: '#fff', border: 'none',
+                            borderRadius: '9999px', cursor: 'pointer',
+                            fontSize: '16px', fontWeight: 600, fontFamily: SFText,
+                          }}
+                        >
+                          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          </svg>
+                          Write to {h.helperName} for {elderName}
+                        </button>
+                      )}
+
+                      {powers.includes('ADVANCE_TRUST') && (
+                        <FamilyTrustAdvance
+                          connectionId={h.connectionId}
+                          helperName={h.helperName}
+                          elderName={elderName}
+                          currentTrustLevel={h.currentTrustLevel}
+                          onChanged={load}
+                        />
+                      )}
+
+                      {powers.includes('LEAVE_REVIEWS') && (
+                        <FamilyReviewForParent
+                          helper={h}
+                          elderId={j.elderId}
+                          elderName={elderName}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </BlurFade>
         )}
