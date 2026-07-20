@@ -45,6 +45,8 @@ export default function Messages() {
   const [sent, setSent] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [otherName, setOtherName] = useState('');
+  // Guardian mode: set only when this chat belongs to a parent I write for.
+  const [actingForName, setActingForName] = useState('');
   const [otherUserId, setOtherUserId] = useState(null);
   const [otherPhotoUrl, setOtherPhotoUrl] = useState(null);
   const [otherTrustScore, setOtherTrustScore] = useState(null);
@@ -69,17 +71,28 @@ export default function Messages() {
             setOtherTrustScore(p.data.trustScore ?? null);
           }).catch(() => {});
         }
-      } else if (isFamilyThread) {
+      } else {
         // Family viewers aren't participants of the connection — resolve the
-        // thread's names through the journey instead.
+        // thread's names through the journey instead. This covers both the
+        // updates thread and a parent's own chat opened by a family member the
+        // parent trusted to write for them.
         api.get('/family/journey').then(j => {
           for (const e of (j.data?.elders || [])) {
             const h = (e.sharedHelpers || []).find(s => s.connectionId === connectionId);
-            if (h) {
+            if (!h) continue;
+            setOtherPhotoUrl(h.helperPhotoUrl || null);
+            if (isFamilyThread) {
               setOtherName(`${e.elderName} & ${h.helperName}`);
-              setOtherPhotoUrl(h.helperPhotoUrl || null);
-              break;
+            } else {
+              // Writing for the parent: the person on screen is their helper,
+              // and the header says plainly whose chat this is.
+              setOtherName(h.helperName || 'User');
+              setOtherUserId(h.helperUserId);
+              setTrustLevel(h.currentTrustLevel);
+              setOtherTrustScore(h.trustScore ?? null);
+              setActingForName(e.elderName);
             }
+            break;
           }
         }).catch(() => {});
       }
@@ -225,6 +238,12 @@ export default function Messages() {
           <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.2px', margin: 0 }}>
             {otherName || 'Conversation'}
           </p>
+          {/* Guardian mode: never let this look like your own chat. */}
+          {actingForName && (
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', fontFamily: SF, margin: '2px 0 0' }}>
+              Writing for {actingForName}
+            </p>
+          )}
           {trustLevel && (
             <div className="chat-trust-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--ink-slate)', flexShrink: 0 }} />
