@@ -8,8 +8,10 @@ import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.emergency.entity.EmergencyContact;
 import com.towin.emergency.repository.EmergencyContactRepository;
+import com.towin.family.entity.FamilyDelegatedPower;
 import com.towin.family.entity.FamilyLink;
 import com.towin.family.repository.FamilyAlertRepository;
+import com.towin.family.repository.FamilyDelegatedPowerRepository;
 import com.towin.family.repository.FamilyLinkRepository;
 import com.towin.messaging.entity.Message;
 import com.towin.messaging.repository.MessageRepository;
@@ -120,6 +122,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final EmergencyContactRepository emergencyContactRepository;
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
+    private final FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     private final ReportRepository reportRepository;
     private final TrustProgressionLogRepository trustProgressionLogRepository;
     private final PasswordEncoder passwordEncoder;
@@ -360,6 +363,21 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Margaret, so the demo shows a linked family member, the elder's +1
         // family trust point, and the Family Home screen with a real elder card.
         ensureFamilyLink(margaret, sarah, "Daughter");
+        // Guardian mode on display: Margaret has asked Sarah to handle three
+        // things for her, so a visitor signing in as Sarah finds the feature
+        // already working rather than a screen of switches nobody has touched.
+        // LEAVE_REVIEWS is deliberately left OFF — the switches are granted one
+        // at a time, not all together, and seeing one turned off is what makes
+        // that plain. It's also the right one to withhold: a review is a public
+        // word about a helper that feeds their trust score, so it's the power a
+        // parent is most likely to keep for herself. (Reviews unlock only at
+        // Fully Trusted anyway, and Margaret's shared friendship with Harsha
+        // sits at Ready to Meet, so granting it would show a power the demo
+        // could never actually use.)
+        ensureDelegatedPowers(margaret, sarah, Set.of(
+                DelegatedPower.MESSAGE_HELPERS,
+                DelegatedPower.MANAGE_HELP_REQUESTS,
+                DelegatedPower.ADVANCE_TRUST));
         // The elder's choice on display: Margaret shares her friendship with
         // Harsha (at Ready to Meet, so family sees the meeting highlight) while
         // her other connections — Tom, Claire, Priya — stay private
@@ -480,6 +498,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureNeed(margaret, "Fix the dripping kitchen tap",
                 "The kitchen tap drips through the night — I'd love help getting it sorted.",
                 NeedCategory.CLEANING, NeedUrgency.NORMAL, NeedStatus.CANCELLED);
+        // Guardian mode, written down: Sarah posted this one FOR her mother, so
+        // it carries her name. It's OPEN and sits in Browse Requests, which
+        // means a helper sees "Asked by Sarah, for Margaret" the moment they
+        // look — nobody has to go hunting for the feature. Written in Sarah's
+        // own voice, because she is the one who typed it.
+        ensureNeed(margaret, sarah, "A lift to Mum's hearing test",
+                "Mum has an appointment on Thursday morning and I can't drive her that day. "
+                        + "A lift there and back would be a great help — she'll be about an hour.",
+                NeedCategory.TRANSPORTATION, NeedUrgency.NORMAL, NeedStatus.OPEN);
         Need chess = ensureNeed(david, "Weekly chess and tea company",
                 "Looking for someone to play chess with on weekend afternoons.",
                 NeedCategory.COMPANIONSHIP, NeedUrgency.NORMAL, NeedStatus.OPEN);
@@ -572,7 +599,8 @@ public class DemoDataSeeder implements ApplicationRunner {
      * account and profile so the persona stays stable across resets. Deletion
      * order respects foreign keys: messages → (per owned need) applications +
      * reviews → applications/reviews/reports by user → needs → trust logs →
-     * connections → emergency contacts → streak. Reviews and applications that
+     * family alerts/delegated powers/links → connections → emergency contacts →
+     * streak. Reviews and applications that
      * reference the user's needs are cleared by need_id first — a review can
      * point at a need without either party being this user — otherwise the
      * needs delete trips reviews_need_id_fkey. Only demo accounts are passed in.
@@ -591,6 +619,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         needRepository.deleteByElderId(id);
         trustProgressionLogRepository.deleteByUserId(id);
         familyAlertRepository.deleteByElderId(id);
+        familyDelegatedPowerRepository.deleteByElderIdOrFamilyUserId(id, id);
         familyLinkRepository.deleteByElderIdOrFamilyUserId(id, id);
         connectionRepository.deleteByUserId(id);
         emergencyContactRepository.deleteByElderId(id);
@@ -951,16 +980,38 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private Need ensureNeed(User elder, String title, String description,
                             NeedCategory category, NeedUrgency urgency, NeedStatus status) {
+        return ensureNeed(elder, null, title, description, category, urgency, status);
+    }
+
+    /** Same request, but written by a family member for the elder (guardian mode).
+     *  The request still belongs to the elder — {@code actedBy} only records who
+     *  did the typing, which is what the "Asked by Sarah, for Margaret" line reads. */
+    private Need ensureNeed(User elder, User actedBy, String title, String description,
+                            NeedCategory category, NeedUrgency urgency, NeedStatus status) {
         Optional<Need> existing = needRepository
                 .findByElderIdOrderByCreatedAtDesc(elder.getId(), org.springframework.data.domain.Pageable.unpaged())
                 .stream().filter(n -> title.equals(n.getTitle())).findFirst();
         if (existing.isPresent()) return existing.get();
         return needRepository.save(Need.builder()
-                .elder(elder).title(title).description(description)
+                .elder(elder).actedBy(actedBy).title(title).description(description)
                 .category(category).urgency(urgency).status(status)
                 .schedule(NeedSchedule.ONE_TIME)
                 .locationLat(elder.getLocationLat()).locationLng(elder.getLocationLng())
                 .build());
+    }
+
+    /** Grant the family member exactly these powers over the elder, adding only
+     *  what's missing so a re-run never duplicates a row (the table also carries
+     *  a unique constraint on elder + family member + power). */
+    private void ensureDelegatedPowers(User elder, User familyUser, Set<DelegatedPower> powers) {
+        Set<DelegatedPower> already = familyDelegatedPowerRepository
+                .findByElderIdAndFamilyUserId(elder.getId(), familyUser.getId())
+                .stream().map(FamilyDelegatedPower::getPower).collect(Collectors.toSet());
+        powers.stream()
+                .filter(p -> !already.contains(p))
+                .forEach(p -> familyDelegatedPowerRepository.save(FamilyDelegatedPower.builder()
+                        .elder(elder).familyUser(familyUser).power(p)
+                        .build()));
     }
 
     private void ensureApplication(Need need, User helper, String message) {

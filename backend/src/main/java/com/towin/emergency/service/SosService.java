@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.FamilyAlertType;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.DisplayNameResolver;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.emergency.entity.EmergencyContact;
 import com.towin.emergency.security.SosRateLimiter;
@@ -125,8 +126,7 @@ public class SosService {
     }
 
     private String displayName(User user) {
-        return user.getFullName() != null && !user.getFullName().isBlank()
-                ? user.getFullName() : user.getUsername();
+        return DisplayNameResolver.fromUser(user);
     }
 
     private void sendSms(String toNumber, String body) {

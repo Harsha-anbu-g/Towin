@@ -5,6 +5,7 @@ import com.towin.common.enums.DelegatedPower;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.DisplayNameResolver;
 import com.towin.common.service.TrustScoreService;
 import com.towin.common.service.UserIdentifierResolver;
 import com.towin.family.dto.FamilyAlertResponse;
@@ -224,8 +225,7 @@ public class FamilyService {
 
     private FamilyAlertResponse toAlertResponse(FamilyAlert alert) {
         User elder = alert.getElder();
-        String elderName = elder.getFullName() != null && !elder.getFullName().isBlank()
-                ? elder.getFullName() : elder.getUsername();
+        String elderName = DisplayNameResolver.fromUser(elder);
         return FamilyAlertResponse.builder()
                 .id(alert.getId())
                 .elderId(elder.getId())
@@ -258,19 +258,10 @@ public class FamilyService {
     }
 
     /** The person's real display name — their profile name (Margaret), then their
-     *  full name, and only the raw username as a last resort. Family should see
-     *  "Margaret", never the login handle "elder". */
+     *  full name. Family should see "Margaret", never the login handle "elder". */
     private String displayName(User user) {
-        return elderProfileRepository.findByUserId(user.getId())
-                .map(com.towin.profile.entity.ElderProfile::getName)
-                .filter(this::notBlank)
-                .or(() -> helperProfileRepository.findByUserId(user.getId())
-                        .map(com.towin.profile.entity.HelperProfile::getName)
-                        .filter(this::notBlank))
-                .orElseGet(() -> notBlank(user.getFullName()) ? user.getFullName() : user.getUsername());
+        return DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, user);
     }
-
-    private boolean notBlank(String s) { return s != null && !s.isBlank(); }
 
     /**
      * The parent decides what this family member may do for them. The delegation

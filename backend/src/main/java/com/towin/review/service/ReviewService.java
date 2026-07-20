@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
 import com.towin.common.repository.UserRepository;
+import com.towin.common.service.DisplayNameResolver;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
 import com.towin.common.enums.DelegatedPower;
@@ -167,10 +168,10 @@ public class ReviewService {
     }
 
     private String resolveDisplayName(User user) {
-        return elderProfileRepository.findByUserId(user.getId())
-                .map(p -> p.getName())
-                .or(() -> helperProfileRepository.findByUserId(user.getId()).map(p -> p.getName()))
-                .orElse(user.getEmail());
+        // Reviews are public — they sit on the helper's profile for anyone to
+        // read. This used to fall back to the reviewer's email address, which
+        // published it to strangers; the shared resolver knows better.
+        return DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, user);
     }
 
     private User getUser(UUID userId) {

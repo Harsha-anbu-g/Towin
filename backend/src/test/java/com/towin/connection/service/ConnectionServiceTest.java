@@ -312,7 +312,9 @@ class ConnectionServiceTest {
                 .filter(r -> r.getId().equals(quiet.getId())).findFirst().orElseThrow();
         assertThat(silent.getLastMessagePreview()).isNull();
         assertThat(silent.getUnreadCount()).isZero();
-        assertThat(silent.getOtherUserName()).isEqualTo(second.getEmail());
+        assertThat(silent.getOtherUserName())
+                .as("no profile and no name: a connection card never shows their email")
+                .isEqualTo("Someone");
 
         // One query per lookup for the whole list — never one per connection.
         // MAIN-scoped (US-006): family updates must never leak into previews or badges.

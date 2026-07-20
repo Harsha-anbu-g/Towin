@@ -18,6 +18,12 @@ public interface FamilyDelegatedPowerRepository extends JpaRepository<FamilyDele
     @Modifying
     void deleteByElderIdAndFamilyUserId(UUID elderId, UUID familyUserId);
 
+    /** Clears every power this person is on either side of. Used by the demo
+     *  reset, so a visitor who granted or revoked a power on a demo account
+     *  doesn't leave that choice behind for the next visitor. */
+    @Modifying
+    void deleteByElderIdOrFamilyUserId(UUID elderId, UUID familyUserId);
+
     @Modifying
     void deleteByElderIdAndFamilyUserIdAndPower(UUID elderId, UUID familyUserId, DelegatedPower power);
 }

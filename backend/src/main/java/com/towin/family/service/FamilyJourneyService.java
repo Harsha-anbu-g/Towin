@@ -5,6 +5,7 @@ import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.NeedStatus;
 import com.towin.common.enums.TrustLevel;
+import com.towin.common.service.DisplayNameResolver;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
@@ -125,10 +126,7 @@ public class FamilyJourneyService {
     }
 
     private String displayName(User user) {
-        return elderProfileRepository.findByUserId(user.getId()).map(ElderProfile::getName)
-                .or(() -> helperProfileRepository.findByUserId(user.getId()).map(HelperProfile::getName))
-                .filter(this::notBlank)
-                .orElseGet(() -> notBlank(user.getFullName()) ? user.getFullName() : user.getUsername());
+        return DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, user);
     }
 
     private String photoUrl(User user) {

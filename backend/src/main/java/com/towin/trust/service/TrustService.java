@@ -13,6 +13,7 @@ import com.towin.trust.dto.TrustActionRequest;
 import com.towin.trust.dto.TrustStatusResponse;
 import com.towin.trust.entity.TrustProgressionLog;
 import com.towin.trust.repository.TrustProgressionLogRepository;
+import com.towin.common.service.DisplayNameResolver;
 import com.towin.common.service.TrustScoreService;
 import com.towin.emergency.service.SosService;
 import com.towin.profile.repository.ElderProfileRepository;
@@ -264,13 +265,7 @@ public class TrustService {
 
     /** The person's own name, resolved the same way reviews and messages do it. */
     private String displayName(User user) {
-        return elderProfileRepository.findByUserId(user.getId())
-                .map(p -> p.getName())
-                .or(() -> helperProfileRepository.findByUserId(user.getId()).map(p -> p.getName()))
-                .filter(name -> name != null && !name.isBlank())
-                .orElseGet(() -> user.getFullName() != null && !user.getFullName().isBlank()
-                        ? user.getFullName()
-                        : user.getUsername());
+        return DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, user);
     }
 
     private void recalculateBoth(Connection connection) {

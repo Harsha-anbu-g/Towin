@@ -14,6 +14,7 @@ import com.towin.connection.dto.RespondToConnectionRequest;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.messaging.repository.MessageRepository;
+import com.towin.common.service.DisplayNameResolver;
 import com.towin.profile.entity.ElderProfile;
 import com.towin.profile.entity.HelperProfile;
 import com.towin.profile.repository.ElderProfileRepository;
@@ -364,20 +365,14 @@ public class ConnectionService {
     // Single-profile resolvers. The list path above batches these lookups instead
     // (findProfileCardsByUserIds), but they stay as the authoritative one-user rules.
     private String resolveDisplayName(User user) {
-        Optional<ElderProfile> elder = elderProfileRepository.findByUserId(user.getId());
-        if (elder.isPresent()) return elder.get().getName();
-
-        Optional<HelperProfile> helper = helperProfileRepository.findByUserId(user.getId());
-        if (helper.isPresent()) return helper.get().getName();
-
-        return plainName(user);
+        return DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, user);
     }
 
-    /** Proper-name fallback for users without a profile: full name → username → email. */
+    /** Proper-name fallback for users without a profile. This used to end at the
+     *  username and then the email address — a connection card would show a
+     *  stranger's email where their name belongs. */
     private String plainName(User user) {
-        if (user.getFullName() != null && !user.getFullName().isBlank()) return user.getFullName();
-        if (user.getUsername() != null && !user.getUsername().isBlank()) return user.getUsername();
-        return user.getEmail();
+        return DisplayNameResolver.fromUser(user);
     }
 
     private String resolvePhotoUrl(User user) {

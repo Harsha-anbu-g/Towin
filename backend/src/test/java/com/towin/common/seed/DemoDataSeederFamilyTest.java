@@ -3,6 +3,7 @@ package com.towin.common.seed;
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.FamilyLinkStatus;
+import com.towin.common.enums.NeedStatus;
 import com.towin.common.enums.TrustLevel;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
@@ -10,8 +11,11 @@ import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.emergency.repository.EmergencyContactRepository;
+import com.towin.common.enums.DelegatedPower;
+import com.towin.family.entity.FamilyDelegatedPower;
 import com.towin.family.entity.FamilyLink;
 import com.towin.family.repository.FamilyAlertRepository;
+import com.towin.family.repository.FamilyDelegatedPowerRepository;
 import com.towin.family.repository.FamilyLinkRepository;
 import com.towin.messaging.repository.MessageRepository;
 import com.towin.need.entity.Need;
@@ -48,6 +52,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -75,6 +80,7 @@ class DemoDataSeederFamilyTest {
     @Mock PlatformTransactionManager transactionManager;
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock FamilyAlertRepository familyAlertRepository;
+    @Mock FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
 
     @InjectMocks DemoDataSeeder seeder;
 
@@ -216,6 +222,68 @@ class DemoDataSeederFamilyTest {
                 || (reviewer.equals(emailB) && reviewee.equals(emailA));
     }
 
+    // ── Guardian mode: the demo shows delegated powers on day one ────────
+
+    private List<FamilyDelegatedPower> savedPowers() {
+        ArgumentCaptor<FamilyDelegatedPower> captor = ArgumentCaptor.forClass(FamilyDelegatedPower.class);
+        verify(familyDelegatedPowerRepository, atLeastOnce()).save(captor.capture());
+        return captor.getAllValues();
+    }
+
+    @Test
+    void grantsSarahTheEverydayPowersOverMargaret() {
+        seeder.run(null);
+
+        List<FamilyDelegatedPower> powers = savedPowers();
+        assertThat(powers).allSatisfy(p -> {
+            assertThat(p.getElder().getEmail()).isEqualTo(DemoDataSeeder.ELDER_DEMO_EMAIL);
+            assertThat(p.getFamilyUser().getEmail()).isEqualTo("demo.sarah@towin.app");
+        });
+        assertThat(powers).extracting(FamilyDelegatedPower::getPower)
+                .as("both the write-to-a-helper and help-request actions are live in the demo")
+                .contains(DelegatedPower.MESSAGE_HELPERS, DelegatedPower.MANAGE_HELP_REQUESTS);
+    }
+
+    @Test
+    void leavesTheReviewPowerOffSoTheSwitchesLookIndividual() {
+        seeder.run(null);
+
+        assertThat(savedPowers()).extracting(FamilyDelegatedPower::getPower)
+                .as("one power stays off, showing they are granted one at a time")
+                .doesNotContain(DelegatedPower.LEAVE_REVIEWS);
+    }
+
+    @Test
+    void grantsNoPowerTwiceWhenTheSeedRunsAgain() {
+        seeder.run(null);
+        List<FamilyDelegatedPower> granted = List.copyOf(savedPowers());
+
+        // Second boot: those grants are on file now, so nothing is written again.
+        lenient().when(familyDelegatedPowerRepository.findByElderIdAndFamilyUserId(any(), any()))
+                .thenReturn(granted);
+        seeder.run(null);
+
+        verify(familyDelegatedPowerRepository, times(granted.size()))
+                .save(any(FamilyDelegatedPower.class));
+    }
+
+    @Test
+    void seedsAHelpRequestSarahWroteForHerMother() {
+        seeder.run(null);
+
+        ArgumentCaptor<Need> captor = ArgumentCaptor.forClass(Need.class);
+        verify(needRepository, atLeastOnce()).save(captor.capture());
+        List<Need> delegated = captor.getAllValues().stream()
+                .filter(n -> n.getActedBy() != null)
+                .toList();
+
+        assertThat(delegated).as("a helper sees 'Asked by Sarah, for Margaret' without clicking").hasSize(1);
+        assertThat(delegated.get(0).getActedBy().getEmail()).isEqualTo("demo.sarah@towin.app");
+        assertThat(delegated.get(0).getElder().getEmail()).isEqualTo(DemoDataSeeder.ELDER_DEMO_EMAIL);
+        assertThat(delegated.get(0).getStatus())
+                .as("open, so it shows in Browse Requests").isEqualTo(NeedStatus.OPEN);
+    }
+
     @Test
     void resetPurgesFamilyRowsBeforeReseeding() {
         ReflectionTestUtils.setField(seeder, "resetEnabled", true);
@@ -226,5 +294,6 @@ class DemoDataSeederFamilyTest {
         verify(transactionManager, never()).rollback(any());
         verify(familyLinkRepository, atLeastOnce()).deleteByElderIdOrFamilyUserId(any(), any());
         verify(familyAlertRepository, atLeastOnce()).deleteByElderId(any());
+        verify(familyDelegatedPowerRepository, atLeastOnce()).deleteByElderIdOrFamilyUserId(any(), any());
     }
 }

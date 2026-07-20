@@ -10,6 +10,7 @@ import com.towin.common.messaging.ConnectionEvent;
 import com.towin.common.messaging.ConnectionEventProducer;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.seed.DemoDataSeeder;
+import com.towin.common.service.DisplayNameResolver;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
@@ -374,7 +375,12 @@ public class NeedService {
 
     private NeedResponse toResponse(Need need, Double distanceKm, boolean includeApplicants,
                                     ApplicationStatus myStatus, Map<UUID, String> elderNames) {
-        String elderName = elderNames.getOrDefault(need.getElder().getId(), need.getElder().getEmail());
+        // Every help request carries the elder's name to whoever is browsing. The
+        // batch lookup above only covers elders with a profile, and the fallback
+        // used to be their email address — so an elder without a profile had their
+        // email shown to every helper in the list.
+        String elderName = elderNames.getOrDefault(
+                need.getElder().getId(), DisplayNameResolver.fromUser(need.getElder()));
 
         List<ApplicantDto> applications = null;
         if (includeApplicants) {
@@ -426,13 +432,7 @@ public class NeedService {
 
     /** The family member's own name, for the "Sarah, for Margaret" label. */
     private String actorName(User actor) {
-        return elderProfileRepository.findByUserId(actor.getId())
-                .map(p -> p.getName())
-                .or(() -> helperProfileRepository.findByUserId(actor.getId()).map(p -> p.getName()))
-                .filter(name -> !name.isBlank())
-                .orElseGet(() -> actor.getFullName() != null && !actor.getFullName().isBlank()
-                        ? actor.getFullName()
-                        : actor.getUsername());
+        return DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, actor);
     }
 
     private double haversineKm(double lat1, double lng1, double lat2, double lng2) {

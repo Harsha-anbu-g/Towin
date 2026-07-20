@@ -336,8 +336,10 @@ class ReviewServiceTest {
         verify(reviewRepository).save(saved.capture());
         assertThat(saved.getValue().getNeed()).isNull();
         verify(trustScoreService).recalculate(revieweeId);
-        // no profile at all: name falls back to the reviewer's email
-        assertThat(response.getReviewerName()).isEqualTo("reviewer@t.com");
+        // No profile and no name on the account. Reviews are public — they sit on
+        // the helper's profile for anyone to read — so the name must never fall
+        // back to the reviewer's email address.
+        assertThat(response.getReviewerName()).isEqualTo("Someone");
     }
 
     @Test
@@ -378,7 +380,9 @@ class ReviewServiceTest {
         assertThat(responses).hasSize(2);
         assertThat(responses.get(0).getReviewerName()).isEqualTo("Martha");
         assertThat(responses.get(0).getRating()).isEqualTo(5);
-        assertThat(responses.get(1).getReviewerName()).isEqualTo("plain@t.com");
+        assertThat(responses.get(1).getReviewerName())
+                .as("a reviewer with no name of any kind is 'Someone', never their email")
+                .isEqualTo("Someone");
         assertThat(responses.get(1).getRating()).isEqualTo(2);
     }
 
