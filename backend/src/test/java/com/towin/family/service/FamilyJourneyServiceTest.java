@@ -119,7 +119,7 @@ class FamilyJourneyServiceTest {
         linkActive(elder);
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of());
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
 
         FamilyJourneyResponse response = service.getJourney(familyUser.getId());
 
@@ -136,7 +136,7 @@ class FamilyJourneyServiceTest {
         linkActive(bothElder);
         when(connectionRepository.findByUserAndStatus(bothElder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of());
-        when(needRepository.countByElderIdAndStatus(bothElder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(bothElder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
 
         FamilyJourneyResponse response = service.getJourney(familyUser.getId());
 
@@ -155,7 +155,7 @@ class FamilyJourneyServiceTest {
                 .thenReturn(List.of(
                         connection(elder, sharedHelper, ConnectionStatus.ACTIVE, true, TrustLevel.MESSAGING),
                         connection(elder, privateHelper, ConnectionStatus.ACTIVE, false, TrustLevel.TRUSTED)));
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
 
         FamilyJourneyResponse response = service.getJourney(familyUser.getId());
 
@@ -171,7 +171,7 @@ class FamilyJourneyServiceTest {
         Connection c = connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.MESSAGING);
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of(c));
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
 
         SharedHelper h = service.getJourney(familyUser.getId())
                 .getElders().get(0).getSharedHelpers().get(0);
@@ -193,7 +193,7 @@ class FamilyJourneyServiceTest {
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of(
                         connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.FIRST_MEET)));
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
 
         SharedHelper h = service.getJourney(familyUser.getId())
                 .getElders().get(0).getSharedHelpers().get(0);
@@ -210,7 +210,7 @@ class FamilyJourneyServiceTest {
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of(
                         connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.TRUSTED)));
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
 
         SharedHelper h = service.getJourney(familyUser.getId())
                 .getElders().get(0).getSharedHelpers().get(0);
@@ -226,7 +226,7 @@ class FamilyJourneyServiceTest {
         linkActive(elder);
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of());
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
         when(streakRepository.findByUserId(elder.getId())).thenReturn(Optional.of(
                 UserStreak.builder().userId(elder.getId()).lastCheckinDate(LocalDate.now()).build()));
 
@@ -239,7 +239,7 @@ class FamilyJourneyServiceTest {
         linkActive(elder);
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of());
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
         when(streakRepository.findByUserId(elder.getId())).thenReturn(Optional.of(
                 UserStreak.builder().userId(elder.getId())
                         .lastCheckinDate(LocalDate.now().minusDays(1)).build()));
@@ -249,14 +249,26 @@ class FamilyJourneyServiceTest {
     }
 
     @Test
-    void openNeedsCountComesFromOpenStatusOnly() {
+    void openNeedsAreShownReadOnlyWithTitleAndDetails() {
         linkActive(elder);
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of());
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(3L);
+        com.towin.need.entity.Need need = com.towin.need.entity.Need.builder()
+                .id(UUID.randomUUID())
+                .title("Help with my tablet")
+                .description("The screen keeps freezing.")
+                .category(com.towin.common.enums.NeedCategory.OTHER)
+                .status(NeedStatus.OPEN)
+                .build();
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN))
+                .thenReturn(List.of(need, need, need));
 
-        assertThat(service.getJourney(familyUser.getId())
-                .getElders().get(0).getOpenNeedsCount()).isEqualTo(3);
+        ElderJourney entry = service.getJourney(familyUser.getId()).getElders().get(0);
+
+        assertThat(entry.getOpenNeedsCount()).isEqualTo(3);
+        assertThat(entry.getOpenNeeds()).hasSize(3);
+        assertThat(entry.getOpenNeeds().get(0).getTitle()).isEqualTo("Help with my tablet");
+        assertThat(entry.getOpenNeeds().get(0).getDescription()).isEqualTo("The screen keeps freezing.");
     }
 
     // --- photo presigning ---
@@ -268,7 +280,7 @@ class FamilyJourneyServiceTest {
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of(
                         connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.MESSAGING)));
-        when(needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN)).thenReturn(0L);
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
         com.towin.profile.entity.HelperProfile hp = new com.towin.profile.entity.HelperProfile();
         hp.setPhotoUrl("raw-photo-key");
         when(helperProfileRepository.findByUserId(helper.getId())).thenReturn(Optional.of(hp));

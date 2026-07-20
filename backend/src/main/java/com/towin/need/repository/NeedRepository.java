@@ -17,6 +17,8 @@ public interface NeedRepository extends JpaRepository<Need, UUID> {
 
     long countByElderIdAndStatus(UUID elderId, NeedStatus status);
 
+    List<Need> findByElderIdAndStatusOrderByCreatedAtDesc(UUID elderId, NeedStatus status);
+
     // JOIN FETCH on both list queries: the elder is read for every row when
     // building responses, so load it in the same query (avoids N+1 selects).
     @Query("SELECT n FROM Need n JOIN FETCH n.elder WHERE n.status = :status AND n.locationLat IS NOT NULL ORDER BY n.createdAt DESC")

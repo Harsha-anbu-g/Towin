@@ -30,6 +30,9 @@ export default function TrustJourney({
   isElder = false,
   onConfirm,
   confirming = false,
+  // Family view: show the same bar the elder and helper see, but no advance
+  // controls and no party-specific "waiting for you" copy — they only watch.
+  readOnly = false,
 }) {
   // Measure the bar's width so the tick/knob can be positioned with
   // transform: translateX(<px>) (GPU) instead of animating 'left' (layout).
@@ -93,7 +96,10 @@ export default function TrustJourney({
   );
 
   let footer;
-  if (isTrusted) {
+  if (readOnly) {
+    // Family watches the same bar, no controls and no first-person prompts.
+    footer = null;
+  } else if (isTrusted) {
     footer = (
       <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '10px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
         You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.

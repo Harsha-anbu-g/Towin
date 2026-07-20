@@ -61,7 +61,18 @@ public class FamilyJourneyService {
         boolean checkedInToday = streakRepository.findByUserId(elder.getId())
                 .map(s -> LocalDate.now().equals(s.getLastCheckinDate()))
                 .orElse(false);
-        long openNeeds = needRepository.countByElderIdAndStatus(elder.getId(), NeedStatus.OPEN);
+
+        // The parent's OPEN help requests, read-only for family (no applicant data).
+        List<FamilyJourneyResponse.OpenNeed> openNeeds = needRepository
+                .findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN).stream()
+                .map(n -> FamilyJourneyResponse.OpenNeed.builder()
+                        .id(n.getId())
+                        .title(n.getTitle())
+                        .category(n.getCategory() == null ? null : n.getCategory().name())
+                        .description(n.getDescription())
+                        .createdAt(n.getCreatedAt())
+                        .build())
+                .toList();
 
         List<SharedHelper> sharedHelpers = connectionRepository
                 .findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE).stream()
@@ -74,7 +85,8 @@ public class FamilyJourneyService {
                 .elderName(displayName(elder))
                 .elderPhotoUrl(photoUrl(elder))
                 .checkedInToday(checkedInToday)
-                .openNeedsCount(openNeeds)
+                .openNeedsCount(openNeeds.size())
+                .openNeeds(openNeeds)
                 .sharedHelpers(sharedHelpers)
                 .build();
     }
@@ -93,6 +105,7 @@ public class FamilyJourneyService {
                 .tier(TrustScoreService.tierFor(score))
                 .stageIndex(level.getValue())
                 .stageLabel(stageLabel(level))
+                .currentTrustLevel(level.name())
                 .readyToMeet(level == TrustLevel.FIRST_MEET)
                 .build();
     }

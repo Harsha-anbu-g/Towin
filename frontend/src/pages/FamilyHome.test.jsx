@@ -96,7 +96,7 @@ describe('FamilyHome', () => {
     const user = userEvent.setup()
     renderPage()
     await screen.findByText('Margaret')
-    await user.click(screen.getByRole('button', { name: /add your parent/i }))
+    await user.click(screen.getByRole('tab', { name: /add parent/i }))
     await user.type(screen.getByLabelText(/username, email or phone/i), 'margaret')
     await user.type(screen.getByLabelText(/relationship/i), 'Daughter')
     await user.click(screen.getByRole('button', { name: /send request/i }))
@@ -189,7 +189,7 @@ describe('FamilyHome', () => {
         {
           elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
           sharedHelpers: [
-            { connectionId: 'c1', helperName: 'Arun', helperPhotoUrl: null, trustScore: 9, tier: 'Reliable', stageIndex: 2, stageLabel: 'Phone Ready', readyToMeet: false },
+            { connectionId: 'c1', helperUserId: 'h1', helperName: 'Arun', helperPhotoUrl: null, trustScore: 9, tier: 'Reliable', stageIndex: 2, stageLabel: 'Phone Ready', currentTrustLevel: 'PHONE_CALL', readyToMeet: false },
           ],
         },
       ],
@@ -213,7 +213,7 @@ describe('FamilyHome', () => {
         {
           elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null, checkedInToday: true, openNeedsCount: 0,
           sharedHelpers: [
-            { connectionId: 'c2', helperName: 'Priya', helperPhotoUrl: null, trustScore: 12, tier: 'Highly Trusted', stageIndex: 5, stageLabel: 'Ready to Meet', readyToMeet: true },
+            { connectionId: 'c2', helperUserId: 'h2', helperName: 'Priya', helperPhotoUrl: null, trustScore: 12, tier: 'Highly Trusted', stageIndex: 5, stageLabel: 'Ready to Meet', currentTrustLevel: 'FIRST_MEET', readyToMeet: true },
           ],
         },
       ],

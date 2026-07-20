@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
 import TrustBadge from '../components/TrustBadge';
+import TrustJourney from '../components/TrustJourney';
 import FamilyHelperUpdates from '../components/FamilyHelperUpdates';
 import FamilyHelperConnect from '../components/FamilyHelperConnect';
 
@@ -99,13 +101,13 @@ function friendlyDate(iso) {
 
 export default function FamilyHome() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [family, setFamily] = useState({ activeLinks: [], incomingRequests: [], outgoingRequests: [] });
   const [alerts, setAlerts] = useState([]);
   const [journey, setJourney] = useState([]);
   // Same section-tab pattern as the elder/helper dashboards (user call 2026-07-19).
   const [tab, setTab] = useState('parents');
   const [loaded, setLoaded] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState({ identifier: '', relationship: '' });
   const [sending, setSending] = useState(false);
   const [formMsg, setFormMsg] = useState('');
@@ -144,7 +146,7 @@ export default function FamilyHome() {
         side: 'elder',
       });
       setForm({ identifier: '', relationship: '' });
-      setShowAddForm(false);
+      setTab('parents');
       toast.success('Request sent. You become family here once they accept.');
       await load();
     } catch (err) {
@@ -184,7 +186,7 @@ export default function FamilyHome() {
       <div style={{ position: 'sticky', top: '60px', zIndex: 'var(--z-sticky)', background: 'var(--canvas)', borderBottom: '1px solid var(--border)' }}>
         <div className="dash-tab-wrap">
           <div className="dash-tab-scroll" role="tablist" aria-label="Family sections">
-            {[['parents', 'My Parents', 0], ['news', 'News', alerts.length]].map(([id, label, badge]) => {
+            {[['parents', 'My Parents', 0], ['add', 'Add Parent', 0], ['news', 'News', alerts.length]].map(([id, label, badge]) => {
               const active = tab === id;
               return (
                 <button
@@ -220,54 +222,11 @@ export default function FamilyHome() {
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 60px' }}>
 
         {tab === 'parents' && (<>
-        {/* Header + add-parent (page title — the big hero card was removed on the user's call, 2026-07-18) */}
+        {/* Page title — the big hero card was removed on the user's call (2026-07-18);
+            adding a parent now lives on its own top tab (user call 2026-07-19). */}
         <BlurFade delay={2}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', margin: '0 0 16px' }}>
-            <h1 style={sectionH}>My Parents</h1>
-            {!showAddForm && (
-              <button onClick={() => { setShowAddForm(true); setFormMsg(''); }} style={{ ...fillBtn, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                + Add your parent
-              </button>
-            )}
-          </div>
+          <h1 style={{ ...sectionH, margin: '0 0 16px' }}>My Parents</h1>
         </BlurFade>
-
-        {/* Add-parent form */}
-        {showAddForm && (
-          <div style={cardStyle}>
-            <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, marginBottom: '6px' }}>
-              Add your parent
-            </p>
-            <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '18px', lineHeight: 1.5 }}>
-              Type their exact ToWin username, email or phone. They must say yes before you see anything.
-            </p>
-            <form onSubmit={sendRequest} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label htmlFor="parent-identifier" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                  Username, email or phone
-                </label>
-                <SmoothInput id="parent-identifier" {...f('identifier')} className="field" placeholder="Exactly as they use it on ToWin" required />
-              </div>
-              <div>
-                <label htmlFor="parent-relationship" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                  Relationship (what you are to them)
-                </label>
-                <SmoothInput id="parent-relationship" {...f('relationship')} className="field" placeholder="Daughter, Son, Niece…" />
-              </div>
-              {formMsg && (
-                <p className="danger-text" style={{ fontSize: 'var(--text-sm)', fontWeight: 500, margin: 0 }}>{formMsg}</p>
-              )}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="submit" disabled={sending} style={{ ...fillBtn, flex: 1, fontSize: '16px' }}>
-                  {sending ? 'Sending…' : 'Send request'}
-                </button>
-                <button type="button" onClick={() => { setShowAddForm(false); setFormMsg(''); }} style={{ ...ghostBtn, flex: 1, fontSize: '16px' }}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
 
         {/* Incoming requests — an elder invited me */}
         {incoming.length > 0 && (
@@ -339,7 +298,7 @@ export default function FamilyHome() {
                   No parent linked yet
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0 }}>
-                  Add your parent above. They must accept before you're linked.
+                  Use the <strong>Add Parent</strong> tab up top. They must accept before you're linked.
                 </p>
               </div>
             )}
@@ -405,6 +364,28 @@ export default function FamilyHome() {
                     </div>
                   )}
 
+                  {/* The parent's OPEN help requests — read-only: family can see what
+                      they asked for, but not act on it (user call 2026-07-19). */}
+                  {j && (j.openNeeds || []).length > 0 && (
+                    <div style={{ marginTop: '18px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 10px' }}>
+                        Their open help requests
+                      </p>
+                      {(j.openNeeds || []).map(n => (
+                        <div key={n.id} style={{ border: '1px solid var(--border)', borderRadius: '14px', padding: '12px 14px', marginBottom: '10px' }}>
+                          <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
+                            {n.title}
+                          </p>
+                          {n.description && (
+                            <p style={{ fontSize: '15px', color: 'var(--ink-3)', margin: '6px 0 0', lineHeight: 1.5 }}>
+                              {n.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* US-003: shared helper journey — only the friendships the parent chose to share */}
                   {j && (
                     <div style={{ marginTop: '18px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
@@ -445,16 +426,39 @@ export default function FamilyHome() {
                             )}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => navigate(`/user/${h.helperUserId}`)}
+                                  aria-label={`View ${h.helperName}'s profile`}
+                                  style={{
+                                    background: 'none', border: 'none', padding: '2px 0', margin: 0, cursor: 'pointer',
+                                    fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--blue-deep)',
+                                    fontFamily: SF, textAlign: 'left', textDecoration: 'underline', textUnderlineOffset: '2px',
+                                  }}
+                                >
                                   {h.helperName}
-                                </p>
+                                </button>
                                 <TrustBadge tier={h.tier} score={h.trustScore} />
                               </div>
-                              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', margin: '4px 0 0' }}>
-                                Stage {h.stageIndex + 1} of 7 · {h.stageLabel}
-                              </p>
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/user/${h.helperUserId}`)}
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                  background: 'none', border: 'none', padding: '8px 0 0', margin: 0, cursor: 'pointer',
+                                  minHeight: '32px', fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)', fontFamily: SFText,
+                                }}
+                              >
+                                See their full profile →
+                              </button>
                             </div>
                           </div>
+                          {/* The same trust bar the elder and helper see — read-only for family. */}
+                          <TrustJourney
+                            currentTrustLevel={h.currentTrustLevel}
+                            otherUserName={h.helperName}
+                            readOnly
+                          />
                           {h.readyToMeet && (
                             <p style={{
                               display: 'flex', alignItems: 'center', gap: '6px',
@@ -492,6 +496,42 @@ export default function FamilyHome() {
 
         {/* Alert feed */}
         </>)}
+
+        {tab === 'add' && (
+        <BlurFade delay={2}>
+          <h1 style={{ ...sectionH, margin: '0 0 16px' }}>Add your parent</h1>
+          <div style={cardStyle}>
+            <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '18px', lineHeight: 1.5 }}>
+              Type their exact ToWin username, email or phone. They must say yes before you see anything.
+            </p>
+            <form onSubmit={sendRequest} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label htmlFor="parent-identifier" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
+                  Username, email or phone
+                </label>
+                <SmoothInput id="parent-identifier" {...f('identifier')} className="field" placeholder="Exactly as they use it on ToWin" required />
+              </div>
+              <div>
+                <label htmlFor="parent-relationship" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
+                  Relationship (what you are to them)
+                </label>
+                <SmoothInput id="parent-relationship" {...f('relationship')} className="field" placeholder="Daughter, Son, Niece…" />
+              </div>
+              {formMsg && (
+                <p className="danger-text" style={{ fontSize: 'var(--text-sm)', fontWeight: 500, margin: 0 }}>{formMsg}</p>
+              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit" disabled={sending} style={{ ...fillBtn, flex: 1, fontSize: '16px' }}>
+                  {sending ? 'Sending…' : 'Send request'}
+                </button>
+                <button type="button" onClick={() => { setTab('parents'); setFormMsg(''); }} style={{ ...ghostBtn, flex: 1, fontSize: '16px' }}>
+                  Back to my parents
+                </button>
+              </div>
+            </form>
+          </div>
+        </BlurFade>
+        )}
 
         {tab === 'news' && (
         <BlurFade delay={5}>
