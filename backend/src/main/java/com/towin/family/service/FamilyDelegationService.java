@@ -1,6 +1,7 @@
 package com.towin.family.service;
 
 import com.towin.common.enums.DelegatedPower;
+import com.towin.connection.entity.Connection;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.exception.ForbiddenException;
 import com.towin.family.entity.FamilyDelegatedPower;
@@ -95,6 +96,44 @@ public class FamilyDelegationService {
         if (!hasPower(callerId, elderId, power)) {
             throw new ForbiddenException("You don't have permission to do this for them");
         }
+    }
+
+    /**
+     * True if this friendship is one the parent has chosen to share with family
+     * ("Watching"). A friendship they kept to themselves is invisible to family,
+     * and — see {@link #hasPowerOn} — untouchable by them too.
+     */
+    public boolean isWatched(Connection connection) {
+        return connection != null && Boolean.TRUE.equals(connection.getSharedWithFamily());
+    }
+
+    /**
+     * The gate for a power exercised on ONE friendship: the grant must hold AND the
+     * parent must be sharing that friendship.
+     *
+     * Watching has to gate doing, not only seeing. Without this, granting a power
+     * once would let a family member act on every friendship the parent has —
+     * including the ones they deliberately kept private. The UI would hide those
+     * friendships while the server quietly accepted a direct request for them, so
+     * "they only see the friendships you choose to share" would be true of seeing
+     * and false of doing. A power is only ever as wide as what the parent shared.
+     *
+     * Not every power is per-friendship: MANAGE_HELP_REQUESTS acts on the parent's
+     * own help requests, which belong to no friendship, so it keeps using
+     * {@link #hasPower}.
+     */
+    @Transactional(readOnly = true)
+    public boolean hasPowerOn(UUID callerId, UUID elderId, DelegatedPower power, Connection connection) {
+        return isWatched(connection) && hasPower(callerId, elderId, power);
+    }
+
+    /** {@link #hasPowerOn} as a gate. Throws 403, naming whichever half is missing. */
+    @Transactional(readOnly = true)
+    public void assertDelegatedOn(UUID callerId, UUID elderId, DelegatedPower power, Connection connection) {
+        if (!isWatched(connection)) {
+            throw new ForbiddenException("They haven't shared this friendship with their family");
+        }
+        assertDelegated(callerId, elderId, power);
     }
 
     /** The elders who have delegated the given power to this family member. */

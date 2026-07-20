@@ -231,15 +231,16 @@ public class TrustService {
      * the caller is simply themselves.
      *
      * Narrow on purpose: someone already on the connection is only ever themselves,
-     * and only a participant who has actually granted ADVANCE_TRUST can be spoken
-     * for. The grant is re-read on every call, so the moment the elder takes it
-     * back the very next step is refused. Nothing here trusts the client.
+     * and only a participant who has actually granted ADVANCE_TRUST on a friendship
+     * they are sharing can be spoken for. The sharing and the grant are re-read on
+     * every call, so the moment the elder takes either back the very next step is
+     * refused. Nothing here trusts the client.
      */
     private User delegatedSeatOn(Connection connection, UUID callerId) {
         if (connection.isParticipant(callerId)) return null;
         return List.of(connection.getUserA(), connection.getUserB()).stream()
-                .filter(participant -> familyDelegationService.hasPower(
-                        callerId, participant.getId(), DelegatedPower.ADVANCE_TRUST))
+                .filter(participant -> familyDelegationService.hasPowerOn(
+                        callerId, participant.getId(), DelegatedPower.ADVANCE_TRUST, connection))
                 .findFirst()
                 .orElse(null);
     }

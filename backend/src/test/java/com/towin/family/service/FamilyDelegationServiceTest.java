@@ -4,6 +4,7 @@ import com.towin.common.entity.User;
 import com.towin.common.enums.DelegatedPower;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.exception.ForbiddenException;
+import com.towin.connection.entity.Connection;
 import com.towin.family.entity.FamilyDelegatedPower;
 import com.towin.family.entity.FamilyLink;
 import com.towin.family.repository.FamilyDelegatedPowerRepository;
@@ -42,13 +43,14 @@ class FamilyDelegationServiceTest {
     @Mock FamilyLinkRepository familyLinkRepository;
     @InjectMocks FamilyDelegationService service;
 
-    private User margaret, sarah;
+    private User margaret, sarah, helper;
     private FamilyLink link;
 
     @BeforeEach
     void setUp() {
         margaret = User.builder().id(UUID.randomUUID()).build();
         sarah = User.builder().id(UUID.randomUUID()).build();
+        helper = User.builder().id(UUID.randomUUID()).build();
         link = FamilyLink.builder()
                 .id(UUID.randomUUID()).elder(margaret).familyUser(sarah)
                 .initiatedBy(sarah).status(FamilyLinkStatus.ACTIVE).build();
@@ -118,6 +120,46 @@ class FamilyDelegationServiceTest {
 
         assertThatThrownBy(() -> service.assertDelegated(sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST))
                 .isInstanceOf(ForbiddenException.class);
+    }
+
+    /**
+     * Watching gates doing, not only seeing. Sarah holds ADVANCE_TRUST over
+     * Margaret in general, but this particular friendship is one Margaret kept to
+     * herself — so the server refuses, and never even asks about the grant.
+     */
+    @Test
+    void aFriendshipTheParentKeptPrivateIsRefusedEvenWithThePower() {
+        Connection privateOne = Connection.builder().userA(margaret).userB(helper)
+                .sharedWithFamily(false).build();
+
+        assertThat(service.hasPowerOn(sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST, privateOne))
+                .isFalse();
+        assertThatThrownBy(() -> service.assertDelegatedOn(
+                sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST, privateOne))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("shared this friendship");
+        verify(powerRepository, never()).existsByElderIdAndFamilyUserIdAndPower(any(), any(), any());
+    }
+
+    /** The same friendship, once shared: grant + Watching both hold, so it passes. */
+    @Test
+    void aSharedFriendshipStillNeedsTheGrantAndPassesWithIt() {
+        Connection sharedOne = Connection.builder().userA(margaret).userB(helper)
+                .sharedWithFamily(true).build();
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(link));
+        when(powerRepository.existsByElderIdAndFamilyUserIdAndPower(
+                margaret.getId(), sarah.getId(), DelegatedPower.ADVANCE_TRUST)).thenReturn(true);
+
+        assertThat(service.hasPowerOn(sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST, sharedOne))
+                .isTrue();
+    }
+
+    /** A missing connection is not an open door. */
+    @Test
+    void noConnectionIsRefused() {
+        assertThat(service.hasPowerOn(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS, null))
+                .isFalse();
     }
 
     @Test

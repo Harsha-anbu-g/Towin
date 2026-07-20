@@ -73,12 +73,13 @@ class TrustOnBehalfTest {
                 .userB(helper)
                 .status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.DISCOVERED)
+                .sharedWithFamily(true)   // Margaret is Watching this friendship
                 .build();
     }
 
     private void sarahMayAdvanceTrust(boolean may) {
-        when(familyDelegationService.hasPower(
-                sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST))
+        when(familyDelegationService.hasPowerOn(
+                sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST, connection))
                 .thenReturn(may);
     }
 
@@ -216,7 +217,7 @@ class TrustOnBehalfTest {
     @Test
     void familyMemberWithoutThePowerIsNotPartOfTheParentsConnection() {
         connectionIsFound();
-        when(familyDelegationService.hasPower(any(), any(), eq(DelegatedPower.ADVANCE_TRUST)))
+        when(familyDelegationService.hasPowerOn(any(), any(), eq(DelegatedPower.ADVANCE_TRUST), any()))
                 .thenReturn(false);
 
         assertThatThrownBy(() -> trustService.confirmTrustLevel(sarah.getId(), connection.getId(), null))
@@ -241,14 +242,14 @@ class TrustOnBehalfTest {
         assertThat(logged.getValue().getConfirmedBy().getId()).isEqualTo(margaret.getId());
         assertThat(logged.getValue().getActedBy()).isNull();
         // Someone already on the connection is only ever themselves — no lookup needed.
-        verify(familyDelegationService, never()).hasPower(any(), any(), any());
+        verify(familyDelegationService, never()).hasPowerOn(any(), any(), any(), any());
     }
 
     @Test
     void thePowerIsRecheckedSoRevokingItStopsTheNextStep() {
         connectionIsFound();
-        when(familyDelegationService.hasPower(
-                sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST))
+        when(familyDelegationService.hasPowerOn(
+                sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST, connection))
                 .thenReturn(true)      // granted for the first step
                 .thenReturn(false);    // Margaret takes it back straight after
         when(userRepository.findById(margaret.getId())).thenReturn(Optional.of(margaret));
@@ -290,7 +291,7 @@ class TrustOnBehalfTest {
         assertThatThrownBy(() -> trustService.pauseProgression(sarah.getId(), connection.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("not part of this connection");
-        verify(familyDelegationService, never()).hasPower(any(), any(), any());
+        verify(familyDelegationService, never()).hasPowerOn(any(), any(), any(), any());
     }
 
     @Test
@@ -306,8 +307,8 @@ class TrustOnBehalfTest {
         trustService.confirmTrustLevel(sarah.getId(), connection.getId(), null);
 
         verify(familyDelegationService, never())
-                .hasPower(any(), any(), eq(DelegatedPower.MANAGE_HELP_REQUESTS));
+                .hasPowerOn(any(), any(), eq(DelegatedPower.MANAGE_HELP_REQUESTS), any());
         verify(familyDelegationService, never())
-                .hasPower(any(), any(), eq(DelegatedPower.LEAVE_REVIEWS));
+                .hasPowerOn(any(), any(), eq(DelegatedPower.LEAVE_REVIEWS), any());
     }
 }

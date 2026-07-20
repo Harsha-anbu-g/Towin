@@ -76,6 +76,7 @@ class MessageOnBehalfTest {
                 .userB(helper)
                 .status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.MESSAGING)
+                .sharedWithFamily(true)   // Margaret is Watching this chat
                 .build();
     }
 
@@ -88,7 +89,7 @@ class MessageOnBehalfTest {
     @Test
     void delegatedFamilyMemberWritesAsTheParentAndIsNamedAsTheAuthor() {
         when(connectionRepository.findById(chatId)).thenReturn(Optional.of(chat));
-        when(familyDelegationService.hasPower(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS))
+        when(familyDelegationService.hasPowerOn(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS, chat))
                 .thenReturn(true);
         when(userRepository.findById(sarah.getId())).thenReturn(Optional.of(sarah));
         when(elderProfileRepository.findByUserId(sarah.getId()))
@@ -110,7 +111,7 @@ class MessageOnBehalfTest {
     @Test
     void familyMemberWithoutThePowerIsStillShutOutOfTheParentsChat() {
         when(connectionRepository.findById(chatId)).thenReturn(Optional.of(chat));
-        when(familyDelegationService.hasPower(any(), any(), any())).thenReturn(false);
+        when(familyDelegationService.hasPowerOn(any(), any(), any(), any())).thenReturn(false);
 
         assertThatThrownBy(() -> messageService.send(
                 chatId, sarah.getId(), MessageChannel.MAIN, saying("let me in")))
@@ -132,13 +133,13 @@ class MessageOnBehalfTest {
         assertThat(saved.getValue().getActedBy()).isNull();
         assertThat(response.getActedByName()).isNull();
         // A participant is only ever themselves — no delegation lookup is needed.
-        verify(familyDelegationService, never()).hasPower(any(), any(), any());
+        verify(familyDelegationService, never()).hasPowerOn(any(), any(), any(), any());
     }
 
     @Test
     void thePowerIsRecheckedOnEveryMessageSoRevokingItStopsTheNextOne() {
         when(connectionRepository.findById(chatId)).thenReturn(Optional.of(chat));
-        when(familyDelegationService.hasPower(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS))
+        when(familyDelegationService.hasPowerOn(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS, chat))
                 .thenReturn(true)      // granted when she sends the first
                 .thenReturn(false);    // Margaret takes it back straight after
         when(userRepository.findById(sarah.getId())).thenReturn(Optional.of(sarah));
@@ -160,6 +161,6 @@ class MessageOnBehalfTest {
         assertThatThrownBy(() -> messageService.send(
                 chatId, sarah.getId(), MessageChannel.FAMILY_UPDATES, saying("hello all")))
                 .isInstanceOf(RuntimeException.class);
-        verify(familyDelegationService, never()).hasPower(any(), any(), any());
+        verify(familyDelegationService, never()).hasPowerOn(any(), any(), any(), any());
     }
 }

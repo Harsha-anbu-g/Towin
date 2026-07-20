@@ -160,10 +160,11 @@ public class MessageService {
      *
      * Deliberately narrow: only a private MAIN chat, only someone who is NOT
      * already a participant (a participant is always just themselves), and only
-     * where that parent has actually granted MESSAGE_HELPERS. hasPower re-reads
-     * the grant and the ACTIVE family link on every call, so revoking a power —
-     * or the link — cuts this off on the very next message. Nothing here trusts
-     * anything the client sent.
+     * where that parent has actually granted MESSAGE_HELPERS on a chat they are
+     * sharing. hasPowerOn re-reads the sharing, the grant and the ACTIVE family
+     * link on every call, so taking back the power — or the link, or Watching on
+     * this one friendship — cuts this off on the very next message. Nothing here
+     * trusts anything the client sent.
      */
     private User delegatedElderOn(UUID connectionId, UUID callerId, MessageChannel channel) {
         if (channel != MessageChannel.MAIN) return null;
@@ -171,8 +172,8 @@ public class MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
         if (conn.isParticipant(callerId)) return null;
         return List.of(conn.getUserA(), conn.getUserB()).stream()
-                .filter(participant -> familyDelegationService.hasPower(
-                        callerId, participant.getId(), DelegatedPower.MESSAGE_HELPERS))
+                .filter(participant -> familyDelegationService.hasPowerOn(
+                        callerId, participant.getId(), DelegatedPower.MESSAGE_HELPERS, conn))
                 .findFirst()
                 .orElse(null);
     }

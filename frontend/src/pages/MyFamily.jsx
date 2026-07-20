@@ -429,7 +429,22 @@ export default function MyFamily() {
 
               {controlsTab === 'acting' && (
                 <div style={{ marginTop: '14px' }}>
-                  {active.map(l => (
+                  {/* Acting inherits watching: a family member can only act on a
+                      friendship you let them watch. With nothing shared there is
+                      nothing to act on, so the switches wait rather than promise
+                      a power that would reach nothing. */}
+                  {!connections.some(c => c.sharedWithFamily) ? (
+                    <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
+                        Turn on Watching first
+                      </p>
+                      <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
+                        Your family can only act on a friendship you let them watch.
+                        Share at least one friendship on the Watching tab, then choose
+                        here what they may do for you.
+                      </p>
+                    </div>
+                  ) : active.map(l => (
                     <div key={l.id} style={cardStyle}>
                       <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
                         {l.otherUserName}

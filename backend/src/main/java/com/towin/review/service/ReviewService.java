@@ -84,6 +84,15 @@ public class ReviewService {
             throw new IllegalArgumentException("You can review each other once you're fully trusted friends");
         }
 
+        // The grant was checked above, before we knew which friendship this was.
+        // Now that we do: the power only reaches the friendships the parent chose
+        // to share. A friendship they kept private cannot be written about in their
+        // name, however much they trust the family member in general.
+        if (writingForElder) {
+            familyDelegationService.assertDelegatedOn(
+                    callerId, reviewerId, DelegatedPower.LEAVE_REVIEWS, connection);
+        }
+
         // A review pinned to a need must also reflect that need: the reviewer was on
         // it, and the person being reviewed was on the other side of it.
         Need need = null;
