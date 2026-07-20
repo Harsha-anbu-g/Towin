@@ -9,6 +9,9 @@ import TrustBadge from '../components/TrustBadge';
 import TrustJourney from '../components/TrustJourney';
 import FamilyHelperUpdates from '../components/FamilyHelperUpdates';
 import FamilyHelperConnect from '../components/FamilyHelperConnect';
+import FamilyNeedsForParent from '../components/FamilyNeedsForParent';
+import FamilyTrustAdvance from '../components/FamilyTrustAdvance';
+import FamilyReviewForParent from '../components/FamilyReviewForParent';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -373,26 +376,16 @@ export default function FamilyHome() {
                     </div>
                   )}
 
-                  {/* The parent's OPEN help requests — read-only: family can see what
-                      they asked for, but not act on it (user call 2026-07-19). */}
-                  {j && (j.openNeeds || []).length > 0 && (
-                    <div style={{ marginTop: '18px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 10px' }}>
-                        Their open help requests
-                      </p>
-                      {(j.openNeeds || []).map(n => (
-                        <div key={n.id} style={{ border: '1px solid var(--border)', borderRadius: '14px', padding: '12px 14px', marginBottom: '10px' }}>
-                          <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
-                            {n.title}
-                          </p>
-                          {n.description && (
-                            <p style={{ fontSize: '15px', color: 'var(--ink-3)', margin: '6px 0 0', lineHeight: 1.5 }}>
-                              {n.description}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                  {/* The parent's OPEN help requests. Seeing them was never a power —
+                      acting on them is, so the buttons wait on MANAGE_HELP_REQUESTS. */}
+                  {j && (
+                    <FamilyNeedsForParent
+                      elderId={j.elderId}
+                      elderName={j.elderName || l.otherUserName}
+                      openNeeds={j.openNeeds}
+                      canManage={powersFor(j.elderId).includes('MANAGE_HELP_REQUESTS')}
+                      onChanged={load}
+                    />
                   )}
 
                   {/* US-003: shared helper journey — only the friendships the parent chose to share */}
@@ -488,6 +481,26 @@ export default function FamilyHome() {
                               </svg>
                               Write to {h.helperName} for {j.elderName}
                             </button>
+                          )}
+                          {/* Guardian mode: take the parent's next step on this
+                              friendship — only if they asked this family member to. */}
+                          {powersFor(j.elderId).includes('ADVANCE_TRUST') && (
+                            <FamilyTrustAdvance
+                              connectionId={h.connectionId}
+                              helperName={h.helperName}
+                              elderName={j.elderName || l.otherUserName}
+                              currentTrustLevel={h.currentTrustLevel}
+                              onChanged={load}
+                            />
+                          )}
+                          {/* Guardian mode: rate this helper for the parent. The
+                              component itself holds the fully-trusted gate. */}
+                          {powersFor(j.elderId).includes('LEAVE_REVIEWS') && (
+                            <FamilyReviewForParent
+                              helper={h}
+                              elderId={j.elderId}
+                              elderName={j.elderName || l.otherUserName}
+                            />
                           )}
                           {h.readyToMeet && (
                             <p style={{

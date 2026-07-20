@@ -59,6 +59,20 @@ public class Connection {
     @Builder.Default
     private Boolean confirmedByB = false;
 
+    // Guardian mode: who really pressed this seat's confirm, when it was not that
+    // seat's own person. A step needs both seats to agree, and the family member
+    // can only ever take the first of the two, so this is what carries "Sarah did
+    // this for Margaret" across to the moment the step actually completes and the
+    // history row is written. Cleared with the flags below, so it can never
+    // linger onto a step nobody helped with.
+    @ManyToOne
+    @JoinColumn(name = "confirm_acted_by_a")
+    private User confirmActedByA;
+
+    @ManyToOne
+    @JoinColumn(name = "confirm_acted_by_b")
+    private User confirmActedByB;
+
     @ManyToOne
     @JoinColumn(name = "is_paused_by")
     private User isPausedBy;
@@ -99,5 +113,28 @@ public class Connection {
     public void setConfirmedByUser(UUID userId, boolean confirmed) {
         if (userA.getId().equals(userId)) confirmedByA = confirmed;
         else confirmedByB = confirmed;
+    }
+
+    /** The family member who pressed this seat's confirm for its owner, or null. */
+    public User getConfirmActedByUser(UUID userId) {
+        return userA.getId().equals(userId) ? confirmActedByA : confirmActedByB;
+    }
+
+    /**
+     * Records who really pressed this seat's confirm. Always called with the
+     * truth — null when the seat's own person pressed it — so someone taking
+     * their own step wipes any earlier stand-in rather than inheriting it.
+     */
+    public void setConfirmActedByUser(UUID userId, User actor) {
+        if (userA.getId().equals(userId)) confirmActedByA = actor;
+        else confirmActedByB = actor;
+    }
+
+    /** Both seats back to "not yet agreed", with no stand-in left over. */
+    public void resetConfirmations() {
+        confirmedByA = false;
+        confirmedByB = false;
+        confirmActedByA = null;
+        confirmActedByB = null;
     }
 }

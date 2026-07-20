@@ -24,6 +24,10 @@ public class TrustStatusResponse {
         private TrustLevel fromLevel;
         private TrustLevel toLevel;
         private UUID confirmedBy;
+        // Guardian mode: the family member who took this step for the person whose
+        // seat it was. Null on every step someone took themselves.
+        private String actedByName;
+        private UUID actedByUserId;
         private String note;
         private LocalDateTime createdAt;
     }

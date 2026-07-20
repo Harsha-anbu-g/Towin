@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class NeedRequest {
 
@@ -27,4 +29,11 @@ public class NeedRequest {
 
     private Double locationLat;
     private Double locationLng;
+
+    /**
+     * Guardian mode: set when a family member is posting this for their parent.
+     * Left empty by everyone posting for themselves. The server checks the parent
+     * really did grant that power — this field only names who the help is for.
+     */
+    private UUID onBehalfOfElderId;
 }

@@ -32,6 +32,16 @@ public class Review {
     @JoinColumn(name = "need_id")
     private Need need;
 
+    /**
+     * Guardian mode: the family member who wrote this review for the elder. Null
+     * means the elder wrote it themselves. The reviewer stays the elder, because
+     * it is their experience of the helper and their trust that backs it — this
+     * only says who put it into words.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "acted_by_user_id")
+    private User actedBy;
+
     @Column(nullable = false)
     private Integer rating;
 

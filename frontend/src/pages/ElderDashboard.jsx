@@ -1068,6 +1068,14 @@ export default function ElderDashboard() {
                           </span>
                         )}
                       </div>
+                      {/* Written by a family member for them — said plainly on their
+                          own screen too, so a request they don't remember writing
+                          never looks like it appeared out of nowhere. */}
+                      {need.actedByName && (
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', margin: '10px 0 0', lineHeight: 1.4 }}>
+                          Asked by {need.actedByName}, for you
+                        </p>
+                      )}
                     </div>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: ns.color, background: ns.bg, padding: '5px 11px', borderRadius: '9999px', letterSpacing: '0.3px', textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 }}>{ns.label}</span>
                   </div>

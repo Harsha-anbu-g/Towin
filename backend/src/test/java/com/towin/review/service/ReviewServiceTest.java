@@ -46,6 +46,7 @@ class ReviewServiceTest {
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock TrustScoreService trustScoreService;
     @Mock ConnectionRepository connectionRepository;
+    @Mock com.towin.family.service.FamilyDelegationService familyDelegationService;
 
     @InjectMocks ReviewService reviewService;
 

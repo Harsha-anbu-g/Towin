@@ -23,4 +23,6 @@ public class NeedResponse {
     private Double distanceKm;
     private LocalDateTime createdAt;
     private List<ApplicantDto> applications;
+    /** Who handled this for the elder, when it wasn't the elder themselves. */
+    private String actedByName;
 }

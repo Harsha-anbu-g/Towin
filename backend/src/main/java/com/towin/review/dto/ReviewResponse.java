@@ -18,4 +18,6 @@ public class ReviewResponse {
     private String comment;
     private Boolean safetyConcern;
     private LocalDateTime createdAt;
+    /** Who wrote this for the reviewer, when it wasn't the reviewer themselves. */
+    private String actedByName;
 }

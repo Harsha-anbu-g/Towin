@@ -36,6 +36,7 @@ class TrustServiceTest {
     @Mock UserRepository userRepository;
     @Mock SosService sosService;
     @Mock TrustScoreService trustScoreService;
+    @Mock com.towin.family.service.FamilyDelegationService familyDelegationService;
     @InjectMocks TrustService trustService;
 
     private User userA;

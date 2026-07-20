@@ -23,6 +23,16 @@ public class Need {
     @JoinColumn(name = "elder_id", nullable = false)
     private User elder;
 
+    /**
+     * Guardian mode: the family member who handled this request for the elder.
+     * Null means the elder did it themselves. The request still belongs to the
+     * elder — helpers answer them, not their daughter — this only says out loud
+     * who is doing the typing.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "acted_by_user_id")
+    private User actedBy;
+
     @Column(nullable = false)
     private String title;
 

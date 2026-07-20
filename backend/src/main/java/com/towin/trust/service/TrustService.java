@@ -3,8 +3,10 @@ package com.towin.trust.service;
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
 import com.towin.common.enums.TrustLevel;
+import com.towin.common.enums.DelegatedPower;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
+import com.towin.family.service.FamilyDelegationService;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
 import com.towin.trust.dto.TrustActionRequest;
@@ -13,6 +15,8 @@ import com.towin.trust.entity.TrustProgressionLog;
 import com.towin.trust.repository.TrustProgressionLogRepository;
 import com.towin.common.service.TrustScoreService;
 import com.towin.emergency.service.SosService;
+import com.towin.profile.repository.ElderProfileRepository;
+import com.towin.profile.repository.HelperProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,28 +36,48 @@ public class TrustService {
     private final UserRepository userRepository;
     private final SosService sosService;
     private final TrustScoreService trustScoreService;
+    private final FamilyDelegationService familyDelegationService;
+    private final ElderProfileRepository elderProfileRepository;
+    private final HelperProfileRepository helperProfileRepository;
 
     @Transactional
-    public TrustStatusResponse confirmTrustLevel(UUID userId, UUID connectionId, TrustActionRequest request) {
-        Connection connection = getActiveConnection(connectionId, userId);
+    public TrustStatusResponse confirmTrustLevel(UUID callerId, UUID connectionId, TrustActionRequest request) {
+        Connection connection = findConnection(connectionId);
 
-        if (connection.isConfirmedByUser(userId)) {
+        // Guardian mode: a family member the elder trusts with ADVANCE_TRUST takes
+        // the elder's seat here. Working out the seat before any other check means
+        // every rule below judges the elder — the same "are you on this connection",
+        // the same "have you already confirmed", the same "whose turn is it" — so a
+        // family member can never take a step the elder could not take themselves.
+        User actingFor = delegatedSeatOn(connection, callerId);
+        UUID seatId = actingFor == null ? callerId : actingFor.getId();
+
+        requireParticipant(connection, seatId);
+        requireActive(connection);
+
+        // Judged against the seat, not the caller: if the elder has already confirmed,
+        // their family member cannot confirm a second time in their name.
+        if (connection.isConfirmedByUser(seatId)) {
             throw new IllegalArgumentException("You have already confirmed the current trust level");
         }
 
-        User user = getUser(userId);
+        User user = getUser(seatId);
 
         // The elder starts each step; the helper can only accept after that.
         // On FAMILY-type connections (family member ↔ helper, Step 4) the
         // connection's initiator holds that seat instead.
-        boolean otherConfirmed = connection.isConfirmedByUser(connection.getOtherUser(userId).getId());
-        if (!otherConfirmed && !holdsInitiatorSeat(connection, user, userId)) {
+        boolean otherConfirmed = connection.isConfirmedByUser(connection.getOtherUser(seatId).getId());
+        if (!otherConfirmed && !holdsInitiatorSeat(connection, user, seatId)) {
             throw new IllegalArgumentException(connection.getType() == com.towin.common.enums.ConnectionType.FAMILY
                     ? "Only the person who started this connection can begin the next step. You can accept it once they do."
                     : "Only the elder can start the next step. You can accept it once they do.");
         }
 
-        connection.setConfirmedByUser(userId, true);
+        connection.setConfirmedByUser(seatId, true);
+        // Remember who really pressed it. Passing null when the elder pressed their
+        // own button matters as much as stamping the family member: it wipes any
+        // earlier stand-in, so nobody is named for a step they had no part in.
+        connection.setConfirmActedByUser(seatId, actingFor == null ? null : getUser(callerId));
 
         boolean bothConfirmed = connection.getConfirmedByA() && connection.getConfirmedByB();
         if (bothConfirmed) {
@@ -64,15 +88,27 @@ public class TrustService {
                 throw new IllegalArgumentException("Already at maximum trust level");
             }
 
+            // A step is only real once both seats have agreed, and a family member
+            // can only ever take the FIRST of those two presses — the elder starts
+            // each step, and this row is written on the helper's reply. So the
+            // person to name is usually the one remembered on the other seat, not
+            // whoever happened to finish it just now. Read both, this seat first.
+            User steppedFor = connection.getConfirmActedByUser(seatId);
+            if (steppedFor == null) {
+                steppedFor = connection.getConfirmActedByUser(connection.getOtherUser(seatId).getId());
+            }
+
             connection.setCurrentTrustLevel(to);
-            connection.setConfirmedByUser(connection.getUserA().getId(), false);
-            connection.setConfirmedByUser(connection.getUserB().getId(), false);
+            connection.resetConfirmations();
 
             TrustProgressionLog logEntry = TrustProgressionLog.builder()
                     .connection(connection)
                     .fromLevel(from)
                     .toLevel(to)
                     .confirmedBy(user)
+                    // Stamped only when a family member took the step for them, so the
+                    // history says who was actually there.
+                    .actedBy(steppedFor)
                     .note(request != null ? request.getNote() : null)
                     .build();
             trustLogRepository.save(logEntry);
@@ -91,7 +127,7 @@ public class TrustService {
         }
 
         connectionRepository.save(connection);
-        return buildStatusResponse(connection, userId);
+        return buildStatusResponse(connection, seatId);
     }
 
     @Transactional
@@ -117,9 +153,15 @@ public class TrustService {
         return buildStatusResponse(connection, userId);
     }
 
-    public TrustStatusResponse getStatus(UUID userId, UUID connectionId) {
-        Connection connection = getConnection(connectionId, userId);
-        return buildStatusResponse(connection, userId);
+    public TrustStatusResponse getStatus(UUID callerId, UUID connectionId) {
+        Connection connection = findConnection(connectionId);
+        // Seeing where the trust has got to is part of moving it along — nobody can
+        // sensibly take the next step blind. So the same family member who may
+        // advance it may read it, from the elder's seat and no wider.
+        User actingFor = delegatedSeatOn(connection, callerId);
+        UUID seatId = actingFor == null ? callerId : actingFor.getId();
+        requireParticipant(connection, seatId);
+        return buildStatusResponse(connection, seatId);
     }
 
     private TrustStatusResponse buildStatusResponse(Connection connection, UUID viewerUserId) {
@@ -142,6 +184,12 @@ public class TrustService {
                         .fromLevel(log.getFromLevel())
                         .toLevel(log.getToLevel())
                         .confirmedBy(log.getConfirmedBy().getId())
+                        // Guardian mode: a step someone took for their parent says so
+                        // here, on every screen that shows the history. A step is a
+                        // real moment between two people, so who was actually at the
+                        // keyboard for it can never be left out.
+                        .actedByName(log.getActedBy() == null ? null : displayName(log.getActedBy()))
+                        .actedByUserId(log.getActedBy() == null ? null : log.getActedBy().getId())
                         .note(log.getNote())
                         .createdAt(log.getCreatedAt())
                         .build()).collect(Collectors.toList()))
@@ -150,19 +198,49 @@ public class TrustService {
 
     private Connection getActiveConnection(UUID connectionId, UUID userId) {
         Connection connection = getConnection(connectionId, userId);
-        if (connection.getStatus() != ConnectionStatus.ACTIVE) {
-            throw new IllegalArgumentException("Connection is not active");
-        }
+        requireActive(connection);
         return connection;
     }
 
     private Connection getConnection(UUID connectionId, UUID userId) {
-        Connection connection = connectionRepository.findById(connectionId)
+        Connection connection = findConnection(connectionId);
+        requireParticipant(connection, userId);
+        return connection;
+    }
+
+    private Connection findConnection(UUID connectionId) {
+        return connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
+    }
+
+    private void requireParticipant(Connection connection, UUID userId) {
         if (!connection.isParticipant(userId)) {
             throw new IllegalArgumentException("You are not part of this connection");
         }
-        return connection;
+    }
+
+    private void requireActive(Connection connection) {
+        if (connection.getStatus() != ConnectionStatus.ACTIVE) {
+            throw new IllegalArgumentException("Connection is not active");
+        }
+    }
+
+    /**
+     * The person on this connection whose seat the caller is taking, or null when
+     * the caller is simply themselves.
+     *
+     * Narrow on purpose: someone already on the connection is only ever themselves,
+     * and only a participant who has actually granted ADVANCE_TRUST can be spoken
+     * for. The grant is re-read on every call, so the moment the elder takes it
+     * back the very next step is refused. Nothing here trusts the client.
+     */
+    private User delegatedSeatOn(Connection connection, UUID callerId) {
+        if (connection.isParticipant(callerId)) return null;
+        return List.of(connection.getUserA(), connection.getUserB()).stream()
+                .filter(participant -> familyDelegationService.hasPower(
+                        callerId, participant.getId(), DelegatedPower.ADVANCE_TRUST))
+                .findFirst()
+                .orElse(null);
     }
 
     private static boolean actsAsElder(User user) {
@@ -182,6 +260,17 @@ public class TrustService {
     private User getUser(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    /** The person's own name, resolved the same way reviews and messages do it. */
+    private String displayName(User user) {
+        return elderProfileRepository.findByUserId(user.getId())
+                .map(p -> p.getName())
+                .or(() -> helperProfileRepository.findByUserId(user.getId()).map(p -> p.getName()))
+                .filter(name -> name != null && !name.isBlank())
+                .orElseGet(() -> user.getFullName() != null && !user.getFullName().isBlank()
+                        ? user.getFullName()
+                        : user.getUsername());
     }
 
     private void recalculateBoth(Connection connection) {

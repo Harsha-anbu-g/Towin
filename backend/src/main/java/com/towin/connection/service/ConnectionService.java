@@ -186,8 +186,7 @@ public class ConnectionService {
                 enforceActiveLimit(connection.getUserB());
             }
             connection.setStatus(ConnectionStatus.ACTIVE);
-            connection.setConfirmedByUser(connection.getUserA().getId(), false);
-            connection.setConfirmedByUser(connection.getUserB().getId(), false);
+            connection.resetConfirmations();
             eventType = ConnectionEvent.Type.REQUEST_ACCEPTED;
         } else {
             connection.setStatus(ConnectionStatus.DECLINED);

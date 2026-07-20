@@ -143,6 +143,14 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
               {need.createdAt ? `, ${postedAgo(need.createdAt)}` : ''}
             </span>
           </div>
+          {/* A request a family member wrote for their parent says so here. The
+              helper is about to answer it, so they should know whose words these
+              are before they reply — the job is still the elder's. */}
+          {need.actedByName && (
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', margin: '8px 0 0', lineHeight: 1.4 }}>
+              Asked by {need.actedByName}, for {need.elderName}
+            </p>
+          )}
         </div>
         <div className="card-actions" style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
           {isCompleted ? (

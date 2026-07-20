@@ -257,6 +257,14 @@ export default function UserProfile() {
                           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', overflowWrap: 'anywhere' }}>
                             {rv.safetyConcern ? 'Anonymous' : (rv.reviewerName || 'Elder')}
                           </span>
+                          {/* Written by a family member for them. Safety reports stay
+                              anonymous — the server sends no name for those, so there
+                              is simply nothing here to show. */}
+                          {rv.actedByName && (
+                            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', overflowWrap: 'anywhere' }}>
+                              written by {rv.actedByName}
+                            </span>
+                          )}
                           <Stars rating={rv.rating} />
                         </div>
                         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', flexShrink: 0 }}>

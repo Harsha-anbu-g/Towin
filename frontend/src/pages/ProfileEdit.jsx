@@ -717,8 +717,16 @@ export default function ProfileEdit() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {reviews.map(r => (
                     <div key={r.id} style={{ border: '1px solid var(--border)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>{r.reviewerName}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', minWidth: 0, overflowWrap: 'anywhere' }}>
+                          {r.reviewerName}
+                          {/* Written by a family member for them. Safety reports stay
+                              anonymous — the server sends no name for those, so there
+                              is simply nothing here to show. */}
+                          {r.actedByName && (
+                            <span style={{ fontWeight: 600, color: 'var(--gold-deep)' }}> · written by {r.actedByName}</span>
+                          )}
+                        </p>
                         <Stars rating={r.rating} />
                       </div>
                       {r.tags?.length > 0 && (

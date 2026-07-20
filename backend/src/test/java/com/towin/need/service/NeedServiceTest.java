@@ -37,6 +37,7 @@ class NeedServiceTest {
     @Mock com.towin.common.service.S3Service s3Service;
     @Mock com.towin.common.service.TrustScoreService trustScoreService;
     @Mock com.towin.connection.repository.ConnectionRepository connectionRepository;
+    @Mock com.towin.family.service.FamilyDelegationService familyDelegationService;
     NeedService needService;
 
     private User elder;
@@ -49,7 +50,8 @@ class NeedServiceTest {
         needService = new NeedService(
                 needRepository, applicationRepository, userRepository,
                 elderProfileRepository, helperProfileRepository, s3Service,
-                trustScoreService, connectionRepository, Optional.empty());
+                trustScoreService, connectionRepository, Optional.empty(),
+                familyDelegationService);
         elder = buildUser(UUID.randomUUID(), UserRole.ELDER);
         elder.setLocationLat(BigDecimal.valueOf(43.65));
         elder.setLocationLng(BigDecimal.valueOf(-79.38));

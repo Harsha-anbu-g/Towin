@@ -6,7 +6,9 @@ import com.towin.common.enums.TrustLevel;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
+import com.towin.common.enums.DelegatedPower;
 import com.towin.connection.repository.ConnectionRepository;
+import com.towin.family.service.FamilyDelegationService;
 import com.towin.need.entity.Need;
 import com.towin.need.repository.NeedApplicationRepository;
 import com.towin.need.repository.NeedRepository;
@@ -36,10 +38,26 @@ public class ReviewService {
     private final HelperProfileRepository helperProfileRepository;
     private final TrustScoreService trustScoreService;
     private final ConnectionRepository connectionRepository;
+    private final FamilyDelegationService familyDelegationService;
 
     @Transactional
-    public ReviewResponse submitReview(UUID reviewerId, ReviewRequest request) {
-        if (reviewerId.equals(request.getRevieweeId())) {
+    public ReviewResponse submitReview(UUID callerId, ReviewRequest request) {
+        // Guardian mode: when the elder has trusted this family member with their
+        // reviews, the review is the ELDER's — their connection, their trust level,
+        // their name on it, their say about the helper. Settling that here, before
+        // any check below, means every gate judges the elder: a family member can
+        // never review someone their parent has not actually met and trusted.
+        boolean writingForElder = request.getOnBehalfOfElderId() != null;
+        UUID reviewerId = callerId;
+        if (writingForElder) {
+            familyDelegationService.assertDelegated(
+                    callerId, request.getOnBehalfOfElderId(), DelegatedPower.LEAVE_REVIEWS);
+            reviewerId = request.getOnBehalfOfElderId();
+        }
+
+        // Both halves matter: nobody reviews themselves, and a family member cannot
+        // use their parent's good name to write a glowing review of themselves.
+        if (reviewerId.equals(request.getRevieweeId()) || callerId.equals(request.getRevieweeId())) {
             throw new IllegalArgumentException("You cannot review yourself");
         }
 
@@ -50,6 +68,7 @@ public class ReviewService {
 
         User reviewer = getUser(reviewerId);
         User reviewee = getUser(request.getRevieweeId());
+        User actedBy = writingForElder ? getUser(callerId) : null;
 
         // Only fully trusted friends may review each other. A review feeds the trust
         // score, so without this gate it could be gamed (fake 5-stars to inflate a
@@ -88,6 +107,7 @@ public class ReviewService {
         Review review = Review.builder()
                 .reviewer(reviewer)
                 .reviewee(reviewee)
+                .actedBy(actedBy)
                 .need(need)
                 .rating(request.getRating())
                 .tags(request.getTags())
@@ -126,10 +146,18 @@ public class ReviewService {
             reviewerName = "Anonymous";
         }
 
+        // Guardian mode: name whoever wrote this for the reviewer — but never on a
+        // safety report. Those are deliberately anonymous, and naming the daughter
+        // who typed it would point straight back at the person it protects.
+        String actedByName = review.getActedBy() != null && !Boolean.TRUE.equals(review.getSafetyConcern())
+                ? resolveDisplayName(review.getActedBy())
+                : null;
+
         return ReviewResponse.builder()
                 .id(review.getId())
                 .reviewerId(review.getReviewer().getId())
                 .reviewerName(reviewerName)
+                .actedByName(actedByName)
                 .rating(review.getRating())
                 .tags(review.getTags())
                 .comment(review.getComment())

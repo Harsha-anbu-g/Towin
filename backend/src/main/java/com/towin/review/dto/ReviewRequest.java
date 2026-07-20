@@ -25,4 +25,11 @@ public class ReviewRequest {
     private String comment;
 
     private boolean safetyConcern = false;
+
+    /**
+     * Guardian mode: set when a family member is writing this for their parent.
+     * Left empty by everyone writing their own. The server checks the parent
+     * really did grant that power — this field only names who it is for.
+     */
+    private UUID onBehalfOfElderId;
 }

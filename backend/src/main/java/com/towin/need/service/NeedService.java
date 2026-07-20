@@ -13,7 +13,9 @@ import com.towin.common.seed.DemoDataSeeder;
 import com.towin.common.service.S3Service;
 import com.towin.common.service.TrustScoreService;
 import com.towin.connection.entity.Connection;
+import com.towin.common.enums.DelegatedPower;
 import com.towin.connection.repository.ConnectionRepository;
+import com.towin.family.service.FamilyDelegationService;
 import com.towin.need.dto.ApplicantDto;
 import com.towin.need.dto.ApplyRequest;
 import com.towin.need.dto.NeedRequest;
@@ -56,9 +58,23 @@ public class NeedService {
     private final TrustScoreService trustScoreService;
     private final ConnectionRepository connectionRepository;
     private final Optional<ConnectionEventProducer> connectionEventProducer;
+    private final FamilyDelegationService familyDelegationService;
 
     @Transactional
-    public NeedResponse postNeed(UUID elderId, NeedRequest request) {
+    public NeedResponse postNeed(UUID callerId, NeedRequest request) {
+        // Guardian mode: a family member the parent trusts with their help requests
+        // may post one for them. The request belongs to the parent — helpers see it
+        // as the parent's, it sits with the parent's other requests, and it uses the
+        // parent's home address — so nothing about how it works changes. The family
+        // member is simply named as the one who wrote it.
+        User actedBy = null;
+        UUID elderId = callerId;
+        if (request.getOnBehalfOfElderId() != null) {
+            familyDelegationService.assertDelegated(
+                    callerId, request.getOnBehalfOfElderId(), DelegatedPower.MANAGE_HELP_REQUESTS);
+            elderId = request.getOnBehalfOfElderId();
+            actedBy = getUser(callerId);
+        }
         User elder = getUser(elderId);
 
         BigDecimal lat = request.getLocationLat() != null
@@ -70,6 +86,7 @@ public class NeedService {
 
         Need need = Need.builder()
                 .elder(elder)
+                .actedBy(actedBy)
                 .title(request.getTitle())
                 .category(request.getCategory())
                 .description(request.getDescription())
@@ -158,6 +175,17 @@ public class NeedService {
         if (need.getStatus() != NeedStatus.OPEN) {
             throw new IllegalArgumentException("Need is not open for applications");
         }
+        // Guardian mode: the family member who looks after this parent's help
+        // requests sits on the deciding side of them, so she must not also stand on
+        // the answering side. Narrow on purpose — it asks about this one need's
+        // owner and this one power, so an ordinary helper (who holds no power at
+        // all) is never even a question, and a family member without the power can
+        // still offer to help her parent like anyone else.
+        if (familyDelegationService.hasPower(
+                helperId, need.getElder().getId(), DelegatedPower.MANAGE_HELP_REQUESTS)) {
+            throw new IllegalArgumentException(
+                    "You look after this request for them, so you can't also answer it yourself.");
+        }
         if (applicationRepository.existsByNeedIdAndHelperId(needId, helperId)) {
             throw new IllegalArgumentException("You have already applied to this need");
         }
@@ -172,11 +200,25 @@ public class NeedService {
     }
 
     @Transactional
-    public NeedResponse acceptHelper(UUID elderId, UUID needId, UUID helperId) {
+    public NeedResponse acceptHelper(UUID callerId, UUID needId, UUID helperId) {
         Need need = getNeed(needId);
-        if (!need.getElder().getId().equals(elderId)) {
-            throw new IllegalArgumentException("Only the elder who posted this need can accept a helper");
+        User actingFor = authorizeRequestOwner(need, callerId,
+                "Only the elder who posted this need can accept a helper");
+        // Guardian mode, the one thing a family member must never do: choose
+        // themselves. Without this, someone trusted only with the parent's help
+        // requests could write a request, offer to help with it, pick herself, and
+        // mark it done — inventing a finished job, a connection to her own parent
+        // and the trust that comes with it, with nobody else ever involved.
+        // Who comes into your home is the parent's own decision, and a family
+        // member must never be on both sides of it.
+        if (actingFor != null && helperId.equals(callerId)) {
+            throw new IllegalArgumentException(
+                    "You can't pick yourself to help. Choosing who comes to help is theirs to decide.");
         }
+        // Everything below is the elder's, never the caller's: the new connection is
+        // between the elder and the helper. A family member accepting for their
+        // parent must not quietly put themselves on that connection instead.
+        UUID elderId = need.getElder().getId();
         if (need.getStatus() != NeedStatus.OPEN) {
             throw new IllegalArgumentException("Need is not open");
         }
@@ -210,8 +252,7 @@ public class NeedService {
         if (connection.getCurrentTrustLevel() == null) {
             connection.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         }
-        connection.setConfirmedByUser(need.getElder().getId(), false);
-        connection.setConfirmedByUser(helper.getId(), false);
+        connection.resetConfirmations();
         Connection savedConn = connectionRepository.save(connection);
 
         connectionEventProducer.ifPresent(p -> p.send(ConnectionEvent.builder()
@@ -226,17 +267,19 @@ public class NeedService {
 
     public NeedResponse getOne(UUID callerId, UUID needId) {
         Need need = getNeed(needId);
-        // Only the posting elder may see the applicant list (names + free-text messages).
-        boolean isOwner = need.getElder().getId().equals(callerId);
+        // Only the posting elder may see the applicant list (names + free-text
+        // messages) — and the family member they trusted to pick a helper for them,
+        // who cannot choose one without reading who applied.
+        boolean isOwner = need.getElder().getId().equals(callerId)
+                || familyDelegationService.hasPower(
+                        callerId, need.getElder().getId(), DelegatedPower.MANAGE_HELP_REQUESTS);
         return toResponse(need, null, isOwner);
     }
 
     @Transactional
-    public void cancelNeed(UUID elderId, UUID needId) {
+    public void cancelNeed(UUID callerId, UUID needId) {
         Need need = getNeed(needId);
-        if (!need.getElder().getId().equals(elderId)) {
-            throw new IllegalArgumentException("Only the posting elder can cancel this need");
-        }
+        authorizeRequestOwner(need, callerId, "Only the posting elder can cancel this need");
         if (need.getStatus() == NeedStatus.COMPLETED) {
             throw new IllegalArgumentException("Cannot cancel a completed need");
         }
@@ -259,11 +302,9 @@ public class NeedService {
     }
 
     @Transactional
-    public NeedResponse complete(UUID elderId, UUID needId) {
+    public NeedResponse complete(UUID callerId, UUID needId) {
         Need need = getNeed(needId);
-        if (!need.getElder().getId().equals(elderId)) {
-            throw new IllegalArgumentException("Only the posting elder can mark a need as complete");
-        }
+        authorizeRequestOwner(need, callerId, "Only the posting elder can mark a need as complete");
         if (need.getStatus() != NeedStatus.ASSIGNED) {
             throw new IllegalArgumentException("Need must be assigned before it can be completed");
         }
@@ -276,6 +317,28 @@ public class NeedService {
                 .ifPresent(a -> trustScoreService.recalculate(a.getHelper().getId()));
 
         return response;
+    }
+
+    /**
+     * Who is allowed to run this request: the elder who posted it, or a family
+     * member they have trusted with their help requests. Returns the family member
+     * when someone is acting for the elder, and null when the elder is doing it
+     * themselves — so the caller knows whether a family member is at the keyboard.
+     *
+     * This is the guard, and only the guard. It never writes anything on the
+     * request: "written by" belongs to whoever actually wrote it (set once, in
+     * postNeed), and later accepting or completing it must not rewrite that.
+     *
+     * The grant is re-read here on every single action rather than remembered, so
+     * the moment the elder takes the power back the very next action is refused.
+     */
+    private User authorizeRequestOwner(Need need, UUID callerId, String refusal) {
+        if (need.getElder().getId().equals(callerId)) return null;
+        if (familyDelegationService.hasPower(
+                callerId, need.getElder().getId(), DelegatedPower.MANAGE_HELP_REQUESTS)) {
+            return getUser(callerId);
+        }
+        throw new IllegalArgumentException(refusal);
     }
 
     private boolean isDemoAccount(User user) {
@@ -353,7 +416,23 @@ public class NeedService {
                 .distanceKm(distanceKm != null ? Math.round(distanceKm * 10.0) / 10.0 : null)
                 .createdAt(need.getCreatedAt())
                 .applications(applications)
+                // Guardian mode: say plainly who wrote this for the elder. It rides on
+                // every response, so a delegated request can never reach a helper
+                // without the "who really wrote this" label attached. Only ever the
+                // writer — accepting or completing the request later never changes it.
+                .actedByName(need.getActedBy() == null ? null : actorName(need.getActedBy()))
                 .build();
+    }
+
+    /** The family member's own name, for the "Sarah, for Margaret" label. */
+    private String actorName(User actor) {
+        return elderProfileRepository.findByUserId(actor.getId())
+                .map(p -> p.getName())
+                .or(() -> helperProfileRepository.findByUserId(actor.getId()).map(p -> p.getName()))
+                .filter(name -> !name.isBlank())
+                .orElseGet(() -> actor.getFullName() != null && !actor.getFullName().isBlank()
+                        ? actor.getFullName()
+                        : actor.getUsername());
     }
 
     private double haversineKm(double lat1, double lng1, double lat2, double lng2) {
