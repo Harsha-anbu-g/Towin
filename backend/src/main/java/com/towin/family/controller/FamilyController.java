@@ -6,6 +6,7 @@ import com.towin.family.dto.FamilyAlertsResponse;
 import com.towin.family.dto.FamilyJourneyResponse;
 import com.towin.family.dto.FamilyLinkResponse;
 import com.towin.family.dto.FamilyLinksResponse;
+import com.towin.family.dto.FamilyPowersRequest;
 import com.towin.family.dto.FamilyRequest;
 import com.towin.family.dto.FamilyRespondRequest;
 import com.towin.family.dto.FamilyStandingsResponse;
@@ -98,6 +99,24 @@ public class FamilyController {
     public ResponseEntity<FamilyLinkResponse> setPrimary(Authentication auth, @PathVariable UUID linkId) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(familyService.setPrimary(userId, linkId));
+    }
+
+    /**
+     * Guardian mode: the parent sets, in full, what this family member may do for
+     * them. Send every power they should keep; anything left out is taken back,
+     * and an empty list means they can only look again.
+     *
+     * The caller is taken from the token, never the body, so only the parent's
+     * own session can change this — a family member cannot grant themselves
+     * anything by posting here.
+     */
+    @PutMapping("/links/{linkId}/powers")
+    public ResponseEntity<FamilyLinkResponse> setPowers(
+            Authentication auth,
+            @PathVariable UUID linkId,
+            @RequestBody FamilyPowersRequest request) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyService.setDelegatedPowers(userId, linkId, request.getPowers()));
     }
 
     @GetMapping("/links")

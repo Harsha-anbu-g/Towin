@@ -29,6 +29,7 @@ class FamilyServiceRespondRevokePrimaryTest {
     @Mock com.towin.family.repository.FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;
     @Mock com.towin.common.service.TrustScoreService trustScoreService;
+    @Mock FamilyDelegationService familyDelegationService;
     @Mock com.towin.profile.repository.ElderProfileRepository elderProfileRepository;
     @Mock com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
 
@@ -42,7 +43,7 @@ class FamilyServiceRespondRevokePrimaryTest {
     void setUp() {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
-                elderProfileRepository, helperProfileRepository);
+                familyDelegationService, elderProfileRepository, helperProfileRepository);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
         stranger = buildUser("steve_stranger", UserRole.HELPER);

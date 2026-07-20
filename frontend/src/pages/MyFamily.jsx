@@ -5,6 +5,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
+import DelegatedPowerToggle from '../components/DelegatedPowerToggle';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -176,7 +177,7 @@ export default function MyFamily() {
             <ul style={{ margin: 0, padding: '0 0 0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>Your family can see you're safe.</li>
               <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>They only see the friendships you choose to share.</li>
-              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>They can never post or act for you.</li>
+              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>They can only do something for you if you ask them to, and their name is always on it.</li>
               <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>You can remove anyone at any time.</li>
             </ul>
             <p style={{ fontSize: '16px', color: 'var(--gold-deep)', fontWeight: 600, margin: '14px 0 0' }}>
@@ -360,6 +361,15 @@ export default function MyFamily() {
                     Remove
                   </button>
                 </div>
+                <DelegatedPowerToggle
+                  linkId={l.id}
+                  familyName={l.otherUserName}
+                  powers={l.delegatedPowers || []}
+                  onSaved={updated => setFamily(prev => ({
+                    ...prev,
+                    activeLinks: (prev.activeLinks || []).map(x => x.id === l.id ? { ...x, ...updated } : x),
+                  }))}
+                />
               </div>
             ))}
           </div>

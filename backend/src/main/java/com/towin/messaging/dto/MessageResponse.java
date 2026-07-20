@@ -25,4 +25,11 @@ public class MessageResponse {
     private String senderName;
     private String senderPhotoUrl;
     private String senderLabel;
+    // Guardian mode: the family member who wrote this on the sender's behalf.
+    // Null on every message someone sent for themselves. The chat renders it as
+    // "Sarah, for Margaret" so a delegated message is never mistaken for the
+    // parent's own words.
+    private String actedByName;
+    /** So the writer's own screen still shows their message as theirs. */
+    private UUID actedByUserId;
 }

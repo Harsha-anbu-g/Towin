@@ -65,7 +65,9 @@ describe('MyFamily', () => {
     await screen.findByText('Sarah')
     expect(screen.getByText(/can see you're safe/i)).toBeInTheDocument()
     expect(screen.getByText(/only see the friendships you choose to share/i)).toBeInTheDocument()
-    expect(screen.getByText(/never post or act for you/i)).toBeInTheDocument()
+    // Guardian mode replaced the old "they can never act for you" promise: they
+    // can, but only if the elder asks them to, and never anonymously.
+    expect(screen.getByText(/only do something for you if you ask them to/i)).toBeInTheDocument()
     expect(screen.getByText(/remove anyone at any time/i)).toBeInTheDocument()
     expect(screen.getByText(/one point total, however many/i)).toBeInTheDocument()
   })

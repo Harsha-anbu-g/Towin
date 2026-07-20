@@ -1,6 +1,7 @@
 package com.towin.family.service;
 
 import com.towin.common.entity.User;
+import com.towin.common.enums.DelegatedPower;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.UserRole;
 import com.towin.common.repository.UserRepository;
@@ -21,8 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -43,6 +46,7 @@ public class FamilyService {
     private final FamilyAlertRepository familyAlertRepository;
     private final UserRepository userRepository;
     private final TrustScoreService trustScoreService;
+    private final FamilyDelegationService familyDelegationService;
     private final com.towin.profile.repository.ElderProfileRepository elderProfileRepository;
     private final com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
 
@@ -268,6 +272,19 @@ public class FamilyService {
 
     private boolean notBlank(String s) { return s != null && !s.isBlank(); }
 
+    /**
+     * The parent decides what this family member may do for them. The delegation
+     * service does the checking (elder seat, active link) and the reconciling;
+     * this just hands back the link so the screen shows the new state at once.
+     */
+    @Transactional
+    public FamilyLinkResponse setDelegatedPowers(UUID callerId, UUID linkId, Set<DelegatedPower> powers) {
+        familyDelegationService.setPowers(callerId, linkId, powers);
+        FamilyLink link = familyLinkRepository.findById(linkId)
+                .orElseThrow(() -> new IllegalArgumentException("Family link not found"));
+        return toResponse(link, callerId);
+    }
+
     private List<FamilyLinkResponse> toResponses(List<FamilyLink> links, UUID viewerUserId) {
         return links.stream().map(l -> toResponse(l, viewerUserId)).toList();
     }
@@ -288,6 +305,11 @@ public class FamilyService {
                 .iAmElder(iAmElder)
                 .createdAt(link.getCreatedAt())
                 .respondedAt(link.getRespondedAt())
+                // Only an active link can carry powers; a pending or revoked one
+                // reports an empty set so a stale grant is never shown as live.
+                .delegatedPowers(link.getStatus() == FamilyLinkStatus.ACTIVE
+                        ? familyDelegationService.grantedPowers(link.getElder().getId(), link.getFamilyUser().getId())
+                        : EnumSet.noneOf(DelegatedPower.class))
                 .build();
     }
 }

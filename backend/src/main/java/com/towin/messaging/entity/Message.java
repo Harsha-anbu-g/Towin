@@ -28,6 +28,17 @@ public class Message {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
+    /**
+     * Guardian mode: the family member who actually wrote this, when they sent it
+     * on the sender's behalf. Null means the sender wrote it themselves. The
+     * sender stays the parent so the chat and its trust gates are unchanged —
+     * this is what makes the helper read "Sarah, for Margaret" rather than a
+     * message that silently looks like the parent typed it.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "acted_by_user_id")
+    private User actedBy;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 

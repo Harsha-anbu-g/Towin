@@ -52,6 +52,8 @@ class MessageServiceTest {
     S3Service s3Service;
     @Mock
     com.towin.family.service.FamilyStandingService familyStandingService;
+    @Mock
+    com.towin.family.service.FamilyDelegationService familyDelegationService;
     @InjectMocks
     MessageService messageService;
 

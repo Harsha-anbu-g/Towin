@@ -115,6 +115,15 @@ export default function FamilyHome() {
   const [standings, setStandings] = useState([]);
   const [standingsLoaded, setStandingsLoaded] = useState(false);
 
+  /**
+   * Guardian mode: what this parent has asked me to do for them. Read straight
+   * from the link the server sent, so a power the parent has taken back stops
+   * showing on the next load — and the server checks again anyway before it
+   * lets any of it through.
+   */
+  const powersFor = (elderId) =>
+    (family.activeLinks || []).find(l => l.elderId === elderId)?.delegatedPowers || [];
+
   const load = useCallback(() => {
     return Promise.all([
       api.get('/family/links').then(r => setFamily(r.data)).catch(() => {}),
@@ -459,6 +468,27 @@ export default function FamilyHome() {
                             otherUserName={h.helperName}
                             readOnly
                           />
+                          {/* Guardian mode: shown only when this parent has actually
+                              asked this family member to write for them. */}
+                          {powersFor(j.elderId).includes('MESSAGE_HELPERS') && h.connectionId && (
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/messages/${h.connectionId}`)}
+                              style={{
+                                display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center',
+                                gap: '8px', minHeight: '44px', marginTop: '12px', padding: '10px 16px',
+                                background: 'var(--blue)', color: '#fff', border: 'none',
+                                borderRadius: '9999px', cursor: 'pointer',
+                                fontSize: '16px', fontWeight: 600, fontFamily: SFText,
+                              }}
+                            >
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                              </svg>
+                              Write to {h.helperName} for {j.elderName}
+                            </button>
+                          )}
                           {h.readyToMeet && (
                             <p style={{
                               display: 'flex', alignItems: 'center', gap: '6px',

@@ -58,6 +58,7 @@ class FamilyUpdatesChannelTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock S3Service s3Service;
+    @Mock com.towin.family.service.FamilyDelegationService familyDelegationService;
     @InjectMocks MessageService messageService;
 
     private User elder;

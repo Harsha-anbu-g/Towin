@@ -2,6 +2,7 @@ package com.towin.messaging.service;
 
 import com.towin.common.entity.User;
 import com.towin.common.enums.ConnectionStatus;
+import com.towin.common.enums.DelegatedPower;
 import com.towin.common.enums.FamilyLinkStatus;
 import com.towin.common.enums.MessageChannel;
 import com.towin.common.enums.TrustLevel;
@@ -42,10 +43,14 @@ public class MessageService {
     private final HelperProfileRepository helperProfileRepository;
     private final S3Service s3Service;
     private final com.towin.family.service.FamilyStandingService familyStandingService;
+    private final com.towin.family.service.FamilyDelegationService familyDelegationService;
 
     public Page<MessageResponse> getHistory(UUID connectionId, UUID userId,
                                             MessageChannel channel, Pageable pageable) {
-        Connection conn = getAuthorizedConnection(connectionId, userId, channel);
+        // Reading the parent's chat is part of writing in it — you cannot answer a
+        // helper sensibly without the thread in front of you.
+        User actingFor = delegatedElderOn(connectionId, userId, channel);
+        Connection conn = getAuthorizedConnection(connectionId, seatOf(actingFor, userId), channel);
         // Page 0 returns the newest messages (so long conversations don't hide
         // recent activity). The client reverses each page to display oldest→newest.
         return messageRepository
@@ -56,7 +61,12 @@ public class MessageService {
     @Transactional
     public MessageResponse send(UUID connectionId, UUID senderId,
                                 MessageChannel channel, MessageRequest request) {
-        Connection conn = getAuthorizedConnection(connectionId, senderId, channel);
+        // Guardian mode: a family member the parent has trusted with MESSAGE_HELPERS
+        // writes from the parent's seat. Authorizing as the parent (rather than
+        // adding a bypass) means the delegate inherits exactly the parent's reach —
+        // every trust gate, share switch and family gate below applies unchanged.
+        User actingFor = delegatedElderOn(connectionId, senderId, channel);
+        Connection conn = getAuthorizedConnection(connectionId, seatOf(actingFor, senderId), channel);
         if (conn.getStatus() != ConnectionStatus.ACTIVE) {
             throw new IllegalStateException("Can only message an active connection");
         }
@@ -70,11 +80,14 @@ public class MessageService {
                 && conn.getCurrentTrustLevel().getValue() < TrustLevel.MESSAGING.getValue()) {
             throw new IllegalStateException("Trust level too low to message");
         }
-        User sender = resolveSender(conn, senderId);
+        User sender = resolveSender(conn, seatOf(actingFor, senderId));
 
         Message message = Message.builder()
                 .connection(conn)
                 .sender(sender)
+                // Stamped only when someone wrote for someone else, so the helper
+                // is told who is really typing.
+                .actedBy(actingFor == null ? null : resolveSender(conn, senderId))
                 .content(request.getContent())
                 .type(request.getType())
                 .channel(channel)
@@ -99,6 +112,10 @@ public class MessageService {
 
     @Transactional
     public void markSeen(UUID connectionId, UUID userId) {
+        // A family member reading for the parent does not make the parent's unread
+        // messages read — she has not seen them. Nothing is stamped, and nothing
+        // is thrown either, because the chat polls this every few seconds.
+        if (delegatedElderOn(connectionId, userId, MessageChannel.MAIN) != null) return;
         getAuthorizedConnection(connectionId, userId, MessageChannel.MAIN);
         // Authorization first, then one UPDATE — the chat polls this every 5 seconds,
         // so it must not load the conversation to stamp it row by row.
@@ -129,6 +146,34 @@ public class MessageService {
             return conn;
         }
         throw new IllegalStateException("Not a participant of this connection");
+    }
+
+    /** Whose seat to authorize from: the parent's when acting for them, else your own. */
+    private UUID seatOf(User actingFor, UUID callerId) {
+        return actingFor == null ? callerId : actingFor.getId();
+    }
+
+    /**
+     * The parent this caller is writing for on this chat, or null when they are
+     * simply themselves.
+     *
+     * Deliberately narrow: only a private MAIN chat, only someone who is NOT
+     * already a participant (a participant is always just themselves), and only
+     * where that parent has actually granted MESSAGE_HELPERS. hasPower re-reads
+     * the grant and the ACTIVE family link on every call, so revoking a power —
+     * or the link — cuts this off on the very next message. Nothing here trusts
+     * anything the client sent.
+     */
+    private User delegatedElderOn(UUID connectionId, UUID callerId, MessageChannel channel) {
+        if (channel != MessageChannel.MAIN) return null;
+        Connection conn = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
+        if (conn.isParticipant(callerId)) return null;
+        return List.of(conn.getUserA(), conn.getUserB()).stream()
+                .filter(participant -> familyDelegationService.hasPower(
+                        callerId, participant.getId(), DelegatedPower.MESSAGE_HELPERS))
+                .findFirst()
+                .orElse(null);
     }
 
     private boolean familyGateHolds(Connection conn) {
@@ -166,6 +211,17 @@ public class MessageService {
                 .flagged(m.isFlagged())
                 .createdAt(m.getCreatedAt())
                 .channel(m.getChannel());
+        // Guardian mode: say plainly who typed it whenever that is not the sender.
+        // This travels on every channel — a delegated message must never be able
+        // to reach anyone without the "who really wrote this" label attached.
+        if (m.getActedBy() != null) {
+            // senderName travels too: the label is "<writer>, writing for <sender>",
+            // and naming the sender rather than "the other person in this chat"
+            // keeps it true on the writer's screen as well as the helper's.
+            builder.actedByName(displayName(m.getActedBy()))
+                    .actedByUserId(m.getActedBy().getId())
+                    .senderName(displayName(m.getSender()));
+        }
         if (m.getChannel() == MessageChannel.FAMILY_UPDATES) {
             // Name + photo + plain relationship words only — never phone/email
             // (Step 3 locked rule 3: no contact-detail leakage to family).

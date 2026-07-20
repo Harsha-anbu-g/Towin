@@ -347,7 +347,9 @@ export default function Messages() {
         )}
 
         {messages.map((m, idx) => {
-          const isMe = m.senderId === myUserId;
+          // Guardian mode: a message I wrote for my parent is still mine on my
+          // own screen, even though it was sent from their seat.
+          const isMe = m.senderId === myUserId || m.actedByUserId === myUserId;
           const prevMsg = messages[idx - 1];
           const showDateSep = !prevMsg || new Date(m.createdAt).toDateString() !== new Date(prevMsg.createdAt).toDateString();
           // Group style (family thread): name the speaker above their bubble,
@@ -357,6 +359,17 @@ export default function Messages() {
 
           return (
             <div key={m.id}>
+              {/* Guardian mode: this rides on the message itself, from the server,
+                  so who really wrote it survives a refresh and cannot be dropped. */}
+              {m.actedByName && (
+                <p style={{
+                  fontSize: '13px', fontWeight: 600, color: 'var(--gold-deep)', fontFamily: SFText,
+                  margin: '10px 0 2px', textAlign: isMe ? 'right' : 'left',
+                  padding: isMe ? '0 14px 0 0' : '0 0 0 14px',
+                }}>
+                  {m.actedByUserId === myUserId ? 'You' : m.actedByName}, writing for {m.senderName || 'them'}
+                </p>
+              )}
               {showGroupName && (
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blue-deep)', fontFamily: SFText, margin: '10px 0 2px 14px' }}>
                   {groupName}
