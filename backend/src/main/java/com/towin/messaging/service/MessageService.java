@@ -8,6 +8,7 @@ import com.towin.common.enums.MessageChannel;
 import com.towin.common.enums.TrustLevel;
 import com.towin.common.repository.UserRepository;
 import com.towin.common.service.DisplayNameResolver;
+import com.towin.common.service.ProfilePhotoResolver;
 import com.towin.common.service.S3Service;
 import com.towin.connection.entity.Connection;
 import com.towin.connection.repository.ConnectionRepository;
@@ -247,11 +248,8 @@ public class MessageService {
     }
 
     private String photoUrl(User user) {
-        return elderProfileRepository.findByUserId(user.getId()).map(ElderProfile::getPhotoUrl)
-                .or(() -> helperProfileRepository.findByUserId(user.getId()).map(HelperProfile::getPhotoUrl))
-                .filter(this::notBlank)
-                .map(s3Service::presignedUrl)
-                .orElse(null);
+        String raw = ProfilePhotoResolver.resolve(elderProfileRepository, helperProfileRepository, user);
+        return raw == null ? null : s3Service.presignedUrl(raw);
     }
 
     private boolean notBlank(String s) { return s != null && !s.isBlank(); }

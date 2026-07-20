@@ -39,6 +39,14 @@ public class User {
     @Column(name = "full_name", length = 120)
     private String fullName;
 
+    /**
+     * The account's own photo — the fallback for anyone with no elder or helper
+     * profile to carry one, which is every family account. Profiles still win
+     * where they exist; see ProfilePhotoResolver.
+     */
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(columnDefinition = "user_role")

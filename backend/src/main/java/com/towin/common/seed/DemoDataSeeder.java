@@ -84,6 +84,9 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(prefix = "app.demo", name = "seed-enabled", havingValue = "true", matchIfMissing = true)
 public class DemoDataSeeder implements ApplicationRunner {
 
+    /** Served by the frontend from public/demo, not S3 — see S3Service.presignedUrl. */
+    private static final String SARAH_PHOTO = "/demo/sarah.jpg";
+
     public static final String ELDER_DEMO_EMAIL  = "elder@gmail.com";
     public static final String HELPER_DEMO_EMAIL = "helper@gmail.com";
 
@@ -197,8 +200,12 @@ public class DemoDataSeeder implements ApplicationRunner {
         User sarah    = ensureUser("demo.sarah@towin.app",   "+14165550112", UserRole.FAMILY, "DemoSarah!2026");
         // FAMILY accounts have no elder/helper profile, so the updates thread renders
         // User.fullName — keep Sarah's a warm first name, not "demo_sarah".
-        if (!"Sarah".equals(sarah.getFullName())) {
+        // Her face as well as her name. The photo ships with the frontend rather
+        // than living in S3, so it survives the demo reset that runs a few minutes
+        // after every visitor — a photo uploaded once by hand would not.
+        if (!"Sarah".equals(sarah.getFullName()) || !SARAH_PHOTO.equals(sarah.getPhotoUrl())) {
             sarah.setFullName("Sarah");
+            sarah.setPhotoUrl(SARAH_PHOTO);
             sarah = userRepository.save(sarah);
         }
 
