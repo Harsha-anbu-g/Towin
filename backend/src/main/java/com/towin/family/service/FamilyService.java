@@ -43,6 +43,8 @@ public class FamilyService {
     private final FamilyAlertRepository familyAlertRepository;
     private final UserRepository userRepository;
     private final TrustScoreService trustScoreService;
+    private final com.towin.profile.repository.ElderProfileRepository elderProfileRepository;
+    private final com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
 
     @Transactional
     public FamilyLinkResponse createRequest(UUID callerId, FamilyRequest request) {
@@ -251,6 +253,21 @@ public class FamilyService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
     }
 
+    /** The person's real display name — their profile name (Margaret), then their
+     *  full name, and only the raw username as a last resort. Family should see
+     *  "Margaret", never the login handle "elder". */
+    private String displayName(User user) {
+        return elderProfileRepository.findByUserId(user.getId())
+                .map(com.towin.profile.entity.ElderProfile::getName)
+                .filter(this::notBlank)
+                .or(() -> helperProfileRepository.findByUserId(user.getId())
+                        .map(com.towin.profile.entity.HelperProfile::getName)
+                        .filter(this::notBlank))
+                .orElseGet(() -> notBlank(user.getFullName()) ? user.getFullName() : user.getUsername());
+    }
+
+    private boolean notBlank(String s) { return s != null && !s.isBlank(); }
+
     private List<FamilyLinkResponse> toResponses(List<FamilyLink> links, UUID viewerUserId) {
         return links.stream().map(l -> toResponse(l, viewerUserId)).toList();
     }
@@ -263,7 +280,7 @@ public class FamilyService {
                 .elderId(link.getElder().getId())
                 .familyUserId(link.getFamilyUser().getId())
                 .otherUserId(other.getId())
-                .otherUserName(other.getUsername())
+                .otherUserName(displayName(other))
                 .relationship(link.getRelationship())
                 .isPrimary(link.getIsPrimary())
                 .status(link.getStatus())

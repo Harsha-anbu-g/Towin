@@ -33,6 +33,8 @@ class FamilyServiceTrustRecalcTest {
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;
     @Mock TrustScoreService trustScoreService;
+    @Mock com.towin.profile.repository.ElderProfileRepository elderProfileRepository;
+    @Mock com.towin.profile.repository.HelperProfileRepository helperProfileRepository;
 
     FamilyService familyService;
 
@@ -42,7 +44,8 @@ class FamilyServiceTrustRecalcTest {
     @BeforeEach
     void setUp() {
         familyService = new FamilyService(
-                familyLinkRepository, familyAlertRepository, userRepository, trustScoreService);
+                familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
+                elderProfileRepository, helperProfileRepository);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
     }

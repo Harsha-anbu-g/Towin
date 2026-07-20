@@ -312,35 +312,6 @@ export default function Register() {
   const [legalOpen, setLegalOpen] = useState(null);
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [guestLoading, setGuestLoading] = useState('');
-
-  const DEMO = {
-    ELDER:  { identifier: 'elder',  password: '12345678' },
-    HELPER: { identifier: 'helper', password: '123456789' },
-  };
-
-  const handleGuest = async (role) => {
-    setGuestLoading(role);
-    setError('');
-    try {
-      const { data } = await api.post('/auth/login', DEMO[role]);
-      login(data.token);
-      // Everyone lands on the daily check-in first — elder and helper alike.
-      navigate(
-        data.role === 'ADMIN' ? '/admin' : '/streaks',
-        { replace: true }
-      );
-    } catch (err) {
-      setError(
-        err?.response?.status === 429
-          ? (err.response.data?.message || 'Too many attempts. Please try again later.')
-          : 'Could not start demo session. Please try again.'
-      );
-    } finally {
-      setGuestLoading('');
-    }
-  };
-
   const eyeBtn = {
     position: 'absolute', right: '2px', top: '50%', transform: 'translateY(-50%)',
     background: 'none', border: 'none', cursor: 'pointer',
@@ -393,75 +364,9 @@ export default function Register() {
       <div className="auth-form" style={{ flexDirection: 'column', paddingBottom: 0 }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 0, padding: '32px 0' }}>
         <div style={{ width: '100%', maxWidth: '420px' }}>
-          {/* Demo accounts — same quick way in as the login page (user call 2026-07-19) */}
+          {/* Demo accounts — one shared block, same quick way in as the login page.
+              (The old inline duplicate was removed 2026-07-19.) */}
           <DemoAccounts />
-          {/* Demo accounts — shown first so users don't miss it (matches Login) */}
-          <div style={{
-            marginBottom: '20px', background: 'var(--blue-wash)',
-            border: '1.5px solid var(--blue)', borderRadius: '16px',
-            padding: '18px 18px 16px',
-            position: 'relative',
-          }}>
-            <span style={{
-              position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)',
-              background: 'var(--action-fill)', color: 'var(--action-ink)',
-              fontSize: '13px', fontWeight: 700, letterSpacing: '0.8px',
-              padding: '3px 12px', borderRadius: '9999px',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              textTransform: 'uppercase',
-            }}>
-              DEMO
-            </span>
-            <p style={{
-              fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 4px',
-            }}>
-              Just want to see how it works?
-            </p>
-            <p style={{
-              fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', textAlign: 'center',
-              fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-              margin: '0 0 14px', lineHeight: 1.5,
-            }}>
-              Look around with a sample account, no account needed.
-            </p>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {[
-                { role: 'ELDER', label: 'Try as an Elder', sub: 'Margaret, 72' },
-                { role: 'HELPER', label: 'Try as a Helper', sub: 'Harsha, 23' },
-              ].map(({ role, label, sub }) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => handleGuest(role)}
-                  disabled={!!guestLoading}
-                  style={{
-                    flex: 1,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    background: 'var(--canvas)',
-                    border: '1.5px solid var(--blue-soft)',
-                    borderRadius: '11px',
-                    padding: '12px 10px',
-                    cursor: guestLoading ? 'not-allowed' : 'pointer',
-                    opacity: guestLoading && guestLoading !== role ? 0.5 : 1,
-                    textAlign: 'center',
-                    transition: 'border-color 0.15s, background 0.15s',
-                    fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
-                  }}
-                  onMouseEnter={e => { if (!guestLoading) e.currentTarget.style.borderColor = 'var(--blue)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--blue-soft)'; }}
-                >
-                  <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)' }}>
-                    {guestLoading === role ? 'Opening…' : label}
-                  </span>
-                  <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>
-                    {sub}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Form card — same shell as Login */}
           <div className="auth-card" style={{
