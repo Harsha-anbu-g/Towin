@@ -4,7 +4,6 @@ import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
-import SegmentedTabs from '../components/SegmentedTabs';
 import TrustBadge from '../components/TrustBadge';
 import TrustJourney from '../components/TrustJourney';
 import FamilyHelperUpdates from '../components/FamilyHelperUpdates';
@@ -62,10 +61,6 @@ export default function FamilyParent() {
   const [standings, setStandings] = useState([]);
   const [standingsLoaded, setStandingsLoaded] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  // Same two words the parent sees on their own screen. Watching is how they are
-  // doing; Act for me is what they have trusted you to do. Keeping the split and
-  // the vocabulary identical on both sides means a family can talk about it.
-  const [tab, setTab] = useState('watching');
   const [openingChat, setOpeningChat] = useState(false);
 
   const load = useCallback(() => {
@@ -172,18 +167,8 @@ export default function FamilyParent() {
           </div>
         </BlurFade>
 
-        <SegmentedTabs
-          segments={[
-            { id: 'watching', label: 'Watching', count: sharedHelpers.length },
-            { id: 'acting', label: 'Act for me', count: powers.length },
-          ]}
-          value={tab}
-          onChange={setTab}
-          label={`What you can see and do for ${elderName}`}
-        />
-
         {/* How they are today */}
-        {j && tab === 'watching' && (
+        {j && (
           <BlurFade delay={3}>
             <div style={{ ...cardStyle, marginTop: '14px' }}>
               <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>How {elderName} is today</h2>
@@ -221,22 +206,26 @@ export default function FamilyParent() {
                 )}
               </div>
 
-              {/* Seeing their open requests was never a power — acting on them is,
-                  so the read-only view stays here and the managing half lives on
-                  the Act for me tab. */}
+              {/* Seeing their open requests was never a power; acting on them is.
+                  Both live here now — the list reads only unless the parent has
+                  granted MANAGE_HELP_REQUESTS, and the server re-checks that grant
+                  before any change goes through. */}
               <FamilyNeedsForParent
                 elderId={j.elderId}
                 elderName={elderName}
                 openNeeds={j.openNeeds}
-                canManage={false}
+                canManage={powers.includes('MANAGE_HELP_REQUESTS')}
                 onChanged={load}
               />
             </div>
           </BlurFade>
         )}
 
-        {/* Friendships they chose to share */}
-        {j && tab === 'watching' && (
+        {/* Friendships they chose to share — one card each, holding both what you
+            can see and, where the parent has trusted you, what you can do in their
+            name. Seeing and doing used to live on separate tabs (user call
+            2026-07-21: make it one). */}
+        {j && (
           <BlurFade delay={4}>
             <div>
               <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', margin: '22px 0 12px' }}>
@@ -251,7 +240,15 @@ export default function FamilyParent() {
                 </div>
               )}
 
-              {sharedHelpers.map(h => (
+              {sharedHelpers.map(h => {
+                // The doing is folded in beside the seeing now. Each control only
+                // shows when the parent granted that power AND the ladder is at the
+                // point it applies — the same gate each component holds on its own,
+                // so the "in their name" note never sits above an empty space.
+                const canAdvance = powers.includes('ADVANCE_TRUST') && h.currentTrustLevel !== 'TRUSTED';
+                const canReview = powers.includes('LEAVE_REVIEWS') && h.currentTrustLevel === 'TRUSTED' && !!h.helperUserId;
+                const canAct = canAdvance || canReview;
+                return (
                 <div
                   key={h.connectionId}
                   style={{
@@ -334,76 +331,15 @@ export default function FamilyParent() {
                   />
 
                   <FamilyHelperUpdates helper={h} elderName={elderName} />
-                </div>
-              ))}
-            </div>
-          </BlurFade>
-        )}
 
-        {/* Act for me — only the things they have actually trusted you with.
-            Every one of these acts in their name, so each says whose name it
-            carries rather than leaving you to assume. */}
-        {j && tab === 'acting' && (
-          <BlurFade delay={4}>
-            <div style={{ marginTop: '14px' }}>
-              {powers.length === 0 ? (
-                <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                    {elderName} hasn't asked you to do anything yet
-                  </p>
-                  <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                    {elderName} chooses what you can do, on their own My Family page.
-                    Until then you can still see how {elderName} is doing on the Watching tab.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {powers.includes('MANAGE_HELP_REQUESTS') && (
-                    <div style={cardStyle}>
-                      <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>
-                        Help requests
-                      </h2>
-                      <FamilyNeedsForParent
-                        elderId={j.elderId}
-                        elderName={elderName}
-                        openNeeds={j.openNeeds}
-                        canManage
-                        onChanged={load}
-                      />
-                    </div>
-                  )}
-
-                  {sharedHelpers.length === 0 ? (
-                    <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                        {elderName} hasn't shared any friendships with you, so there is
-                        nobody here to act with yet. What {elderName} shares appears on
-                        the Watching tab.
+                  {/* Act for me — only what the parent has actually trusted you
+                      with, in their name, right beside the friendship it acts on. */}
+                  {canAct && (
+                    <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+                      <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--gold-deep)', fontFamily: SFText, margin: '0 0 4px', lineHeight: 1.5 }}>
+                        Anything you do here is in {elderName}&apos;s name
                       </p>
-                    </div>
-                  ) : sharedHelpers.map(h => (
-                    <div key={h.connectionId} style={cardStyle}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-                        {h.helperPhotoUrl ? (
-                          <img
-                            src={h.helperPhotoUrl}
-                            alt=""
-                            style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                          />
-                        ) : (
-                          <DefaultAvatar color="var(--ink-4)" size={44} />
-                        )}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
-                            {h.helperName}
-                          </p>
-                          <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0' }}>
-                            Anything you do here is in {elderName}'s name
-                          </p>
-                        </div>
-                      </div>
-
-                      {powers.includes('ADVANCE_TRUST') && (
+                      {canAdvance && (
                         <FamilyTrustAdvance
                           connectionId={h.connectionId}
                           helperName={h.helperName}
@@ -412,8 +348,7 @@ export default function FamilyParent() {
                           onChanged={load}
                         />
                       )}
-
-                      {powers.includes('LEAVE_REVIEWS') && (
+                      {canReview && (
                         <FamilyReviewForParent
                           helper={h}
                           elderId={j.elderId}
@@ -421,9 +356,10 @@ export default function FamilyParent() {
                         />
                       )}
                     </div>
-                  ))}
-                </>
-              )}
+                  )}
+                </div>
+                );
+              })}
             </div>
           </BlurFade>
         )}

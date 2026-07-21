@@ -37,6 +37,11 @@ const links = {
 
 const renderPage = () => render(<MemoryRouter><MyFamily /></MemoryRouter>)
 
+// The page opens on the family list; Controls and How it works are top-level tabs
+// now (user call 2026-07-21). Click into a tab before asserting on its contents.
+const openControls = async (user) =>
+  user.click(await screen.findByRole('tab', { name: /^controls$/i }))
+
 describe('MyFamily', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -61,8 +66,11 @@ describe('MyFamily', () => {
   })
 
   it('states the plain-words promises and the trust line', async () => {
+    const user = userEvent.setup()
     renderPage()
     await screen.findByText('Sarah')
+    // The promises moved to the How it works tab (user call 2026-07-21).
+    await user.click(screen.getByRole('tab', { name: /how it works/i }))
     expect(screen.getByText(/can see you're safe/i)).toBeInTheDocument()
     expect(screen.getByText(/only see the friendships you choose to share/i)).toBeInTheDocument()
     // Guardian mode replaced the old "they can never act for you" promise: they
@@ -175,16 +183,18 @@ describe('MyFamily — Controls', () => {
     mockGet()
   })
 
-  it('heads the section Controls and offers both tabs', async () => {
+  it('offers both Watching and Act for me tabs inside Controls', async () => {
+    const user = userEvent.setup()
     renderPage()
-    expect(await screen.findByRole('heading', { name: 'Controls' })).toBeInTheDocument()
+    await openControls(user)
     expect(screen.getByRole('tab', { name: /watching/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /act for me/i })).toBeInTheDocument()
   })
 
   it('opens on Watching, listing each live friendship with its own switch', async () => {
+    const user = userEvent.setup()
     renderPage()
-    await screen.findByRole('heading', { name: 'Controls' })
+    await openControls(user)
     expect(screen.getByText('Harsha')).toBeInTheDocument()
     expect(screen.getByText('Priya')).toBeInTheDocument()
     // An ended friendship is not something you can share.
@@ -195,7 +205,7 @@ describe('MyFamily — Controls', () => {
   it('flips a friendship to watched through the visibility endpoint', async () => {
     const user = userEvent.setup()
     renderPage()
-    await screen.findByRole('heading', { name: 'Controls' })
+    await openControls(user)
     const switches = screen.getAllByRole('switch', { name: /let my family see this friendship/i })
     await user.click(switches[0])
     await waitFor(() => {
@@ -206,7 +216,7 @@ describe('MyFamily — Controls', () => {
   it('shows the Act for me switches per family member, all off by default', async () => {
     const user = userEvent.setup()
     renderPage()
-    await screen.findByRole('heading', { name: 'Controls' })
+    await openControls(user)
     await user.click(screen.getByRole('tab', { name: /act for me/i }))
     const powerSwitches = await screen.findAllByRole('switch', { name: /sarah/i })
     expect(powerSwitches).toHaveLength(3)
@@ -218,7 +228,7 @@ describe('MyFamily — Controls', () => {
     mockGet(['MANAGE_HELP_REQUESTS'])
     api.put = vi.fn().mockResolvedValue({ data: { delegatedPowers: ['MANAGE_HELP_REQUESTS', 'LEAVE_REVIEWS'] } })
     renderPage()
-    await screen.findByRole('heading', { name: 'Controls' })
+    await openControls(user)
     await user.click(screen.getByRole('tab', { name: /act for me/i }))
     await user.click(await screen.findByRole('switch', { name: /leave a review for you — sarah/i }))
     await waitFor(() => {

@@ -1,6 +1,7 @@
 // One parent's own page — the shared friendships and every guardian-mode action.
 // These moved off FamilyHome when the list got too crowded (user call 2026-07-20);
-// the behaviour they lock down is unchanged.
+// the two tabs were then merged into one scrolling page (user call 2026-07-21),
+// so seeing and doing sit together. The behaviour they lock down is unchanged.
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -59,14 +60,6 @@ const mockWith = (powers = [], elder = {}) => {
     return Promise.resolve({ data: {} })
   })
 }
-
-/**
- * Everything done in the parent's name now lives behind the "Act for me" tab,
- * matching the parent's own screen. Watching is what you can see; this is what
- * you can do.
- */
-const openActForMe = async (user) =>
-  user.click(await screen.findByRole('tab', { name: /act for me/i }))
 
 const renderPage = () => render(
   <MemoryRouter initialEntries={['/family-home/parent/e1']}>
@@ -176,41 +169,37 @@ describe('FamilyParent — guardian mode actions', () => {
     api.delete.mockResolvedValue({ data: {} })
   })
 
-  it('grants nothing when the parent granted nothing', async () => {
-    const user = userEvent.setup()
+  it('offers no way to act when the parent granted nothing', async () => {
     mockWith([], { sharedHelpers: [helperAt('TRUSTED')] })
     renderPage()
-    await screen.findByText('A ride to the doctor')
 
-    // Checked on the Act for me tab itself, not from Watching where these would
-    // be absent regardless — the point is that the tab is empty, and says why.
-    await openActForMe(user)
-    expect(await screen.findByText(/hasn't asked you to do anything yet/i)).toBeInTheDocument()
+    // Everything is on one page now: the open requests still read, the friendship
+    // still shows — but with no grant there is no button, and no "in their name"
+    // line sitting above an empty space.
+    await screen.findByText('A ride to the doctor')
+    await screen.findByText('Arun')
+    expect(screen.queryByText(/anything you do here is in margaret's name/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /ask for help for margaret/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /close this request for margaret/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /move the next step forward/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /leave a review for margaret/i })).not.toBeInTheDocument()
   })
 
-  it('keeps the Watching tab read-only, with the doing on the other tab', async () => {
-    const user = userEvent.setup()
+  it('shows the doing beside the seeing, in the parent\'s name, on one page', async () => {
     mockWith(['ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
     renderPage()
 
-    // Watching shows how they are and who they know — and offers no way to act.
+    // No tab to open: how they are and what you can do for them share the page,
+    // and everything you can do reads as done in the parent's name.
     await screen.findByText('How Margaret is today')
-    expect(screen.queryByText(/anything you do here is in margaret's name/i)).not.toBeInTheDocument()
-
-    // The doing lives on Act for me, and everything there acts in the parent's name.
-    await openActForMe(user)
     expect(await screen.findByText(/anything you do here is in margaret's name/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /move the next step forward for margaret/i })).toBeInTheDocument()
   })
 
   it('posts a new help request for the parent when MANAGE_HELP_REQUESTS is granted', async () => {
     const user = userEvent.setup()
     mockWith(['MANAGE_HELP_REQUESTS'])
     renderPage()
-    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /ask for help for margaret/i }))
     await user.type(screen.getByLabelText(/what does margaret need help with/i), 'Shopping on Friday')
     await user.click(screen.getByRole('button', { name: /send for margaret/i }))
@@ -226,7 +215,6 @@ describe('FamilyParent — guardian mode actions', () => {
     const user = userEvent.setup()
     mockWith(['MANAGE_HELP_REQUESTS'])
     renderPage()
-    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /close this request for margaret/i }))
     // Destructive and done for someone else — never one careless tap.
     expect(screen.getByText(/close this for margaret\?/i)).toBeInTheDocument()
@@ -238,7 +226,6 @@ describe('FamilyParent — guardian mode actions', () => {
     const user = userEvent.setup()
     mockWith(['ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
     renderPage()
-    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /move the next step forward for margaret/i }))
     await waitFor(() => expect(api.post).toHaveBeenCalledWith('/trust/c1/confirm'))
   })
@@ -254,7 +241,6 @@ describe('FamilyParent — guardian mode actions', () => {
     const user = userEvent.setup()
     mockWith(['LEAVE_REVIEWS'], { sharedHelpers: [helperAt('TRUSTED')] })
     renderPage()
-    await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /leave a review for margaret/i }))
     await user.click(screen.getByRole('button', { name: /^4 stars$/i }))
     await user.click(screen.getByRole('button', { name: /save for margaret/i }))

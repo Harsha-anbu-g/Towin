@@ -86,6 +86,10 @@ export default function MyFamily() {
   const navigate = useNavigate();
   const [pendingRemove, setPendingRemove] = useState(null);
   const [removing, setRemoving] = useState(false);
+  // The whole page is three plain areas now — Controls, My family, How it works —
+  // instead of one long scroll (user call 2026-07-21). Land on the family list;
+  // Controls sits first in the strip but would be empty before anyone is linked.
+  const [tab, setTab] = useState('members');
   // Controls: the two things family can be given — seeing, and doing.
   // They were on separate screens, which made it look like only one existed
   // (user call 2026-07-20).
@@ -194,12 +198,39 @@ export default function MyFamily() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
 
-      {/* Big hero card removed on the user's call, 2026-07-18 — the list header below is the page title. */}
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 60px' }}>
 
-        {/* Plain-words promises */}
+        {/* Page title */}
         <BlurFade delay={2}>
-          <div style={{ ...cardStyle, padding: '24px' }}>
+          <h1 style={sectionH}>
+            My Family
+            <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
+              ({seatCount}/{FAMILY_MAX})
+            </span>
+          </h1>
+        </BlurFade>
+
+        {/* One page, three plain areas — Controls (what family may see and do),
+            My family (who they are), and How it works (the promises). It was one
+            long scroll before (user call 2026-07-21). Tab order is the user's;
+            the family list is the landing so a first visit isn't an empty tab. */}
+        <div style={{ margin: '18px 0 0' }}>
+          <SegmentedTabs
+            segments={[
+              { id: 'controls', label: 'Controls' },
+              { id: 'members', label: 'My family', count: incoming.length, notify: incoming.length > 0 },
+              { id: 'how', label: 'How it works' },
+            ]}
+            value={tab}
+            onChange={setTab}
+            label="Your family: controls, who they are, and how it works"
+          />
+        </div>
+
+        {/* How it works — the plain-words promises. */}
+        {tab === 'how' && (
+        <BlurFade delay={3}>
+          <div style={{ ...cardStyle, padding: '24px', marginTop: '18px' }}>
             <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>How family works here</h2>
             <ul style={{ margin: 0, padding: '0 0 0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>Your family can see you're safe.</li>
@@ -213,16 +244,14 @@ export default function MyFamily() {
             </p>
           </div>
         </BlurFade>
+        )}
 
-        {/* Header + add */}
+        {/* ── My family: who's linked, who's asked, and adding more ─────────── */}
+        {tab === 'members' && (
+        <>
         <BlurFade delay={3}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', margin: '18px 0 16px' }}>
-            <h1 style={sectionH}>
-              My Family
-              <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
-                ({seatCount}/{FAMILY_MAX})
-              </span>
-            </h1>
+            <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)' }}>People in your family</h2>
             {canAdd && !showAddForm && (
               <button onClick={() => { setShowAddForm(true); setFormMsg(''); }} style={{ ...fillBtn, whiteSpace: 'nowrap', flexShrink: 0 }}>
                 + Add a family member
@@ -408,15 +437,25 @@ export default function MyFamily() {
             ))}
           </div>
         </BlurFade>
+        </>
+        )}
 
-        {/* ── Controls ─────────────────────────────────────────────────────
-            Two different things, side by side at last: what family may SEE
-            (Watching, one switch per friendship) and what they may DO
-            (Act for me, one set of switches per family member). */}
-        {active.length > 0 && (
-          <BlurFade delay={6}>
-            <div style={{ marginTop: '28px' }}>
-              <h2 style={{ ...sectionH, marginBottom: '4px' }}>Controls</h2>
+        {/* ── Controls: what family may see and do. Keeps its own Watching /
+            Act-for-me split as one strip inside this tab. ─────────────────── */}
+        {tab === 'controls' && (
+          <BlurFade delay={3}>
+            {active.length === 0 ? (
+              <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center', marginTop: '18px' }}>
+                <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
+                  Add a family member first
+                </p>
+                <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
+                  Once someone is in your family, you choose here what they can see
+                  and what they can do for you. Everything starts off.
+                </p>
+              </div>
+            ) : (
+            <div style={{ marginTop: '18px' }}>
               <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 14px', lineHeight: 1.5 }}>
                 Watching is what your family can see. Act for me is what they can do.
                 Both start off, and only you can change them.
@@ -499,6 +538,7 @@ export default function MyFamily() {
                 </div>
               )}
             </div>
+            )}
           </BlurFade>
         )}
       </div>
