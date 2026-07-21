@@ -339,10 +339,24 @@ public class ConnectionService {
         java.time.LocalDateTime lastAt = last != null ? (java.time.LocalDateTime) last[2] : null;
         int unread = unreadCounts.getOrDefault(connection.getId(), 0L).intValue();
 
+        // A helper looking at a family member's chat sees whose family they are, so
+        // a message from Sarah reads "Sarah (Margaret's family)" and never a stranger.
+        // A FAMILY↔helper chat records "Family of <elder>" when it is first opened;
+        // a parent↔family chat carries no such note, so no label appears there.
+        String otherContext = null;
+        if (connection.getType() == com.towin.common.enums.ConnectionType.FAMILY
+                && other.getRole() == UserRole.FAMILY
+                && connection.getRequestMessage() != null
+                && connection.getRequestMessage().startsWith("Family of ")) {
+            otherContext = connection.getRequestMessage().substring("Family of ".length()).trim() + "'s family";
+        }
+
         return ConnectionResponse.builder()
                 .id(connection.getId())
                 .otherUserId(other.getId())
                 .otherUserName(otherName)
+                .otherUserRole(other.getRole())
+                .otherUserContext(otherContext)
                 .type(connection.getType())
                 .status(connection.getStatus())
                 .currentTrustLevel(connection.getCurrentTrustLevel())

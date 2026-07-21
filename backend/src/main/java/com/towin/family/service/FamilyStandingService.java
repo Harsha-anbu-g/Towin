@@ -167,6 +167,50 @@ public class FamilyStandingService {
         return connectionRepository.save(chat).getId();
     }
 
+    /**
+     * Open (or reopen) the private chat between an elder and their linked family
+     * member — the parent↔family conversation. Either seat may open it; the single
+     * consent is an ACTIVE family link joining them, re-checked here and again on
+     * every message (MessageService). Returns the FAMILY-type connection's id. No
+     * "Family of …" note is stamped, so the helper-style "(X's family)" label never
+     * appears on a parent↔family chat — the two already know who each other are.
+     */
+    @Transactional
+    public UUID openFamilyMemberChat(UUID callerId, UUID otherUserId) {
+        if (callerId.equals(otherUserId) || !familyLinkExists(callerId, otherUserId)) {
+            throw new IllegalStateException("You can only message someone in your family here.");
+        }
+        User caller = userRepository.findById(callerId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User other = userRepository.findById(otherUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Connection existing = connectionRepository.findBetweenUsers(callerId, otherUserId).orElse(null);
+        // A live non-FAMILY connection between the two (unusual for elder↔family, but
+        // safe to honour) is handed back rather than duplicated.
+        if (existing != null && existing.getType() != ConnectionType.FAMILY
+                && existing.getStatus() == ConnectionStatus.ACTIVE) {
+            return existing.getId();
+        }
+        Connection chat = existing != null ? existing : Connection.builder()
+                .userA(caller)
+                .userB(other)
+                .initiatedBy(caller)
+                .build();
+        chat.setType(ConnectionType.FAMILY);
+        chat.setStatus(ConnectionStatus.ACTIVE);
+        if (chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        return connectionRepository.save(chat).getId();
+    }
+
+    /** An ACTIVE family link joins the two people, in either seat. */
+    private boolean familyLinkExists(UUID a, UUID b) {
+        return familyLinkRepository.findByElderIdAndFamilyUserId(a, b)
+                        .filter(l -> l.getStatus() == FamilyLinkStatus.ACTIVE).isPresent()
+                || familyLinkRepository.findByElderIdAndFamilyUserId(b, a)
+                        .filter(l -> l.getStatus() == FamilyLinkStatus.ACTIVE).isPresent();
+    }
+
     /** Pause or revoke (family side); state == null resumes a paused standing. */
     @Transactional
     public void setControl(UUID familyUserId, UUID standingConnectionId, FamilyStandingState state) {

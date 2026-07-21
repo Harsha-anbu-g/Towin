@@ -240,8 +240,8 @@ class DemoDataSeederFamilyTest {
             assertThat(p.getFamilyUser().getEmail()).isEqualTo("demo.sarah@towin.app");
         });
         assertThat(powers).extracting(FamilyDelegatedPower::getPower)
-                .as("both the write-to-a-helper and help-request actions are live in the demo")
-                .contains(DelegatedPower.MESSAGE_HELPERS, DelegatedPower.MANAGE_HELP_REQUESTS);
+                .as("the help-request and trust actions are live in the demo")
+                .contains(DelegatedPower.MANAGE_HELP_REQUESTS, DelegatedPower.ADVANCE_TRUST);
     }
 
     @Test

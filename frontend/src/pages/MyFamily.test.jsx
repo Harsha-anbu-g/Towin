@@ -209,21 +209,21 @@ describe('MyFamily — Controls', () => {
     await screen.findByRole('heading', { name: 'Controls' })
     await user.click(screen.getByRole('tab', { name: /act for me/i }))
     const powerSwitches = await screen.findAllByRole('switch', { name: /sarah/i })
-    expect(powerSwitches).toHaveLength(4)
+    expect(powerSwitches).toHaveLength(3)
     powerSwitches.forEach(s => expect(s).toHaveAttribute('aria-checked', 'false'))
   })
 
   it('grants one power without disturbing the others', async () => {
     const user = userEvent.setup()
-    mockGet(['MESSAGE_HELPERS'])
-    api.put = vi.fn().mockResolvedValue({ data: { delegatedPowers: ['MESSAGE_HELPERS', 'LEAVE_REVIEWS'] } })
+    mockGet(['MANAGE_HELP_REQUESTS'])
+    api.put = vi.fn().mockResolvedValue({ data: { delegatedPowers: ['MANAGE_HELP_REQUESTS', 'LEAVE_REVIEWS'] } })
     renderPage()
     await screen.findByRole('heading', { name: 'Controls' })
     await user.click(screen.getByRole('tab', { name: /act for me/i }))
     await user.click(await screen.findByRole('switch', { name: /leave a review for you — sarah/i }))
     await waitFor(() => {
       expect(api.put).toHaveBeenCalledWith('/family/links/l1/powers', {
-        powers: expect.arrayContaining(['MESSAGE_HELPERS', 'LEAVE_REVIEWS']),
+        powers: expect.arrayContaining(['MANAGE_HELP_REQUESTS', 'LEAVE_REVIEWS']),
       })
     })
   })

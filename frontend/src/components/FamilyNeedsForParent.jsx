@@ -106,7 +106,7 @@ export default function FamilyNeedsForParent({
   return (
     <div style={{ marginTop: '18px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 10px' }}>
-        Their open help requests
+        {parent}&apos;s open help requests
       </p>
 
       {canManage && (
@@ -229,7 +229,7 @@ export default function FamilyNeedsForParent({
 
           <div>
             <label htmlFor={`need-title-${elderId}`} style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-              What do they need help with?
+              What does {parent} need help with?
             </label>
             <input
               id={`need-title-${elderId}`}
@@ -276,7 +276,7 @@ export default function FamilyNeedsForParent({
 
           <div>
             <p id={`need-urg-${elderId}`} style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 8px' }}>
-              How soon do they need it?
+              How soon does {parent} need it?
             </p>
             <div role="radiogroup" aria-labelledby={`need-urg-${elderId}`} style={{ display: 'flex', gap: '8px' }}>
               {URGENCIES.map(([key, label]) => (

@@ -382,7 +382,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         // sits at Ready to Meet, so granting it would show a power the demo
         // could never actually use.)
         ensureDelegatedPowers(margaret, sarah, Set.of(
-                DelegatedPower.MESSAGE_HELPERS,
                 DelegatedPower.MANAGE_HELP_REQUESTS,
                 DelegatedPower.ADVANCE_TRUST));
         // The elder's choice on display: Margaret shares her friendship with
@@ -476,6 +475,20 @@ public class DemoDataSeeder implements ApplicationRunner {
                 msg(sarah, "Hi Harsha! Mum says you're the chess player. Thank you for the wifi rescue."),
                 msg(james, "Happy to help, Sarah. She's already promised to beat me on Saturday."),
                 msg(sarah, "She will. Text me if she needs anything for the visit.")));
+        // Parent↔family private chat (2026-07-21): Margaret and her daughter Sarah
+        // message each other directly, gated only by their family link. No "Family
+        // of …" note, so no helper-style label. Seeded open so the new "Family"
+        // inbox section shows on both their screens on day one.
+        Connection margaretSarah = ensureConnection(margaret, sarah, ConnectionStatus.ACTIVE,
+                TrustLevel.DISCOVERED, sarah, null);
+        if (margaretSarah.getType() != ConnectionType.FAMILY) {
+            margaretSarah.setType(ConnectionType.FAMILY);
+            connectionRepository.save(margaretSarah);
+        }
+        seedMessagesIfEmpty(margaretSarah, 200, List.of(
+                msg(sarah, "Morning Mum! Did Harsha get the chess board sorted for Saturday?"),
+                msg(margaret, "He did, love. I'm going to win this time. Are you coming for lunch?"),
+                msg(sarah, "Wouldn't miss it. I'll bring the cake.")));
         seedMessagesIfEmpty(cJamesRose, 900, List.of(
                 msg(james, "Hello Rose! I'd be glad to help with anything you need."),
                 msg(rose, "Hello Harsha! So kind of you. I could use a hand with a few things.")));

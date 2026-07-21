@@ -8,8 +8,6 @@ package com.towin.common.enums;
  * member can never grant themselves anything.
  */
 public enum DelegatedPower {
-    /** Send messages in the elder's own chats with their helpers. */
-    MESSAGE_HELPERS,
     /** Post and close the elder's help requests. */
     MANAGE_HELP_REQUESTS,
     /** Move the trust ladder forward on the elder's seat. */

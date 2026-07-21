@@ -59,14 +59,14 @@ class FamilyDelegationServiceTest {
     @Test
     void elderGrantsAndRevokesPowersInOneReconcile() {
         when(familyLinkRepository.findById(link.getId())).thenReturn(Optional.of(link));
-        // Currently holds MESSAGE_HELPERS; elder wants MANAGE_HELP_REQUESTS + ADVANCE_TRUST.
+        // Currently holds LEAVE_REVIEWS; elder wants MANAGE_HELP_REQUESTS + ADVANCE_TRUST.
         when(powerRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
-                .thenReturn(List.of(FamilyDelegatedPower.builder().power(DelegatedPower.MESSAGE_HELPERS).build()));
+                .thenReturn(List.of(FamilyDelegatedPower.builder().power(DelegatedPower.LEAVE_REVIEWS).build()));
 
         service.setPowers(margaret.getId(), link.getId(),
                 EnumSet.of(DelegatedPower.MANAGE_HELP_REQUESTS, DelegatedPower.ADVANCE_TRUST));
 
-        verify(powerRepository).deleteByElderIdAndFamilyUserIdAndPower(margaret.getId(), sarah.getId(), DelegatedPower.MESSAGE_HELPERS);
+        verify(powerRepository).deleteByElderIdAndFamilyUserIdAndPower(margaret.getId(), sarah.getId(), DelegatedPower.LEAVE_REVIEWS);
         verify(powerRepository, never()).deleteByElderIdAndFamilyUserIdAndPower(eq(margaret.getId()), eq(sarah.getId()), eq(DelegatedPower.MANAGE_HELP_REQUESTS));
         verify(powerRepository, org.mockito.Mockito.times(2)).save(any(FamilyDelegatedPower.class));
     }
@@ -80,13 +80,13 @@ class FamilyDelegationServiceTest {
         when(familyLinkRepository.findById(link.getId())).thenReturn(Optional.of(link));
         when(powerRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
                 .thenReturn(List.of(
-                        FamilyDelegatedPower.builder().power(DelegatedPower.MESSAGE_HELPERS).build(),
+                        FamilyDelegatedPower.builder().power(DelegatedPower.MANAGE_HELP_REQUESTS).build(),
                         FamilyDelegatedPower.builder().power(DelegatedPower.LEAVE_REVIEWS).build()));
 
         Set<DelegatedPower> remaining = service.setPowers(margaret.getId(), link.getId(), new LinkedHashSet<>());
 
         assertThat(remaining).isEmpty();
-        verify(powerRepository).deleteByElderIdAndFamilyUserIdAndPower(margaret.getId(), sarah.getId(), DelegatedPower.MESSAGE_HELPERS);
+        verify(powerRepository).deleteByElderIdAndFamilyUserIdAndPower(margaret.getId(), sarah.getId(), DelegatedPower.MANAGE_HELP_REQUESTS);
         verify(powerRepository).deleteByElderIdAndFamilyUserIdAndPower(margaret.getId(), sarah.getId(), DelegatedPower.LEAVE_REVIEWS);
         verify(powerRepository, never()).save(any());
     }
@@ -106,10 +106,10 @@ class FamilyDelegationServiceTest {
     void hasPowerRequiresBothAnActiveLinkAndTheGrant() {
         when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
                 .thenReturn(Optional.of(link));
-        when(powerRepository.existsByElderIdAndFamilyUserIdAndPower(margaret.getId(), sarah.getId(), DelegatedPower.MESSAGE_HELPERS))
+        when(powerRepository.existsByElderIdAndFamilyUserIdAndPower(margaret.getId(), sarah.getId(), DelegatedPower.ADVANCE_TRUST))
                 .thenReturn(true);
 
-        assertThat(service.hasPower(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS)).isTrue();
+        assertThat(service.hasPower(sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST)).isTrue();
     }
 
     @Test
@@ -158,7 +158,7 @@ class FamilyDelegationServiceTest {
     /** A missing connection is not an open door. */
     @Test
     void noConnectionIsRefused() {
-        assertThat(service.hasPowerOn(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS, null))
+        assertThat(service.hasPowerOn(sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST, null))
                 .isFalse();
     }
 
@@ -168,6 +168,6 @@ class FamilyDelegationServiceTest {
         when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
                 .thenReturn(Optional.of(link));
 
-        assertThat(service.hasPower(sarah.getId(), margaret.getId(), DelegatedPower.MESSAGE_HELPERS)).isFalse();
+        assertThat(service.hasPower(sarah.getId(), margaret.getId(), DelegatedPower.ADVANCE_TRUST)).isFalse();
     }
 }

@@ -87,7 +87,7 @@ describe('FamilyParent', () => {
   it('heads the page with the parent and how they are today', async () => {
     renderPage()
     expect(await screen.findByRole('heading', { name: 'Margaret' })).toBeInTheDocument()
-    expect(screen.getByText(/you're their daughter/i)).toBeInTheDocument()
+    expect(screen.getByText(/you're margaret's daughter/i)).toBeInTheDocument()
     expect(screen.getByText(/checked in today/i)).toBeInTheDocument()
   })
 
@@ -129,7 +129,7 @@ describe('FamilyParent', () => {
     renderPage()
     expect(await screen.findByText('Priya')).toBeInTheDocument()
     expect(screen.getByText(/stage 6 of 7/i)).toBeInTheDocument()
-    expect(screen.getByText(/they're getting ready to meet in person/i)).toBeInTheDocument()
+    expect(screen.getByText(/priya is getting ready to meet in person/i)).toBeInTheDocument()
   })
 
   it('offers the family updates thread at FIRST_MEET or above', async () => {
@@ -194,16 +194,16 @@ describe('FamilyParent — guardian mode actions', () => {
 
   it('keeps the Watching tab read-only, with the doing on the other tab', async () => {
     const user = userEvent.setup()
-    mockWith(['MESSAGE_HELPERS', 'ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
+    mockWith(['ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
     renderPage()
 
     // Watching shows how they are and who they know — and offers no way to act.
-    await screen.findByText('How they are today')
-    expect(screen.queryByRole('button', { name: /write to arun for margaret/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /move the next step forward/i })).not.toBeInTheDocument()
+    await screen.findByText('How Margaret is today')
+    expect(screen.queryByText(/anything you do here is in margaret's name/i)).not.toBeInTheDocument()
 
+    // The doing lives on Act for me, and everything there acts in the parent's name.
     await openActForMe(user)
-    expect(await screen.findByRole('button', { name: /write to arun for margaret/i })).toBeInTheDocument()
+    expect(await screen.findByText(/anything you do here is in margaret's name/i)).toBeInTheDocument()
   })
 
   it('posts a new help request for the parent when MANAGE_HELP_REQUESTS is granted', async () => {
@@ -212,7 +212,7 @@ describe('FamilyParent — guardian mode actions', () => {
     renderPage()
     await openActForMe(user)
     await user.click(await screen.findByRole('button', { name: /ask for help for margaret/i }))
-    await user.type(screen.getByLabelText(/what do they need help with/i), 'Shopping on Friday')
+    await user.type(screen.getByLabelText(/what does margaret need help with/i), 'Shopping on Friday')
     await user.click(screen.getByRole('button', { name: /send for margaret/i }))
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/needs', expect.objectContaining({

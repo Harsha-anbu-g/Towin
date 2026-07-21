@@ -160,7 +160,7 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
         </button>
       </div>
       <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText, margin: '8px 0 0', lineHeight: 1.5 }}>
-        {parent} always sees that you two can talk. If they stop sharing this friendship, the chat closes.
+        {parent} always sees that you two can talk. If {parent} stops sharing this friendship, the chat closes.
       </p>
     </div>
   );

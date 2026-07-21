@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -81,6 +82,8 @@ export default function MyFamily() {
   const [sending, setSending] = useState(false);
   const [formMsg, setFormMsg] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const [chatBusyId, setChatBusyId] = useState(null);
+  const navigate = useNavigate();
   const [pendingRemove, setPendingRemove] = useState(null);
   const [removing, setRemoving] = useState(false);
   // Controls: the two things family can be given — seeing, and doing.
@@ -100,6 +103,20 @@ export default function MyFamily() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Open (or reopen) the private chat with a family member. The family link is the
+  // only permission; the server checks it and returns the conversation to open.
+  const messageMember = async (l) => {
+    if (chatBusyId) return;
+    setChatBusyId(l.id);
+    try {
+      const r = await api.post(`/family/chat/${l.otherUserId}`);
+      navigate(`/messages/${r.data}`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Could not open the chat. Please try again.');
+      setChatBusyId(null);
+    }
+  };
 
   const active = family.activeLinks || [];
   const incoming = family.incomingRequests || [];
@@ -362,6 +379,22 @@ export default function MyFamily() {
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+                  <button
+                    onClick={() => messageMember(l)}
+                    disabled={chatBusyId === l.id}
+                    style={{
+                      flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                      minHeight: '44px', padding: '9px 16px', background: 'var(--blue)', color: '#fff',
+                      border: 'none', borderRadius: '9999px', cursor: chatBusyId === l.id ? 'default' : 'pointer',
+                      fontSize: '15px', fontWeight: 600, fontFamily: SF, opacity: chatBusyId === l.id ? 0.6 : 1,
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    {chatBusyId === l.id ? 'Opening…' : 'Message'}
+                  </button>
                   {!l.isPrimary && (
                     <button onClick={() => makePrimary(l.id)} disabled={busyId === l.id} style={{ ...ghostBtn, flex: 1, color: 'var(--gold-deep)', borderColor: 'var(--gold-line)' }}>
                       Make main contact

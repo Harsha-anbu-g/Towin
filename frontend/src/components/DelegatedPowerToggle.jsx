@@ -18,12 +18,6 @@ const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
  */
 const POWERS = [
   {
-    key: 'MESSAGE_HELPERS',
-    title: 'Write to your helpers for you',
-    on: name => `${name} can write in your chats. Your helper always sees the message came from ${name}, writing for you.`,
-    off: name => `Off. ${name} cannot open or write in your chats.`,
-  },
-  {
     key: 'MANAGE_HELP_REQUESTS',
     title: 'Ask for help for you',
     on: name => `${name} can ask for help for you, and close a request you no longer need. Helpers always see ${name} asked for you.`,

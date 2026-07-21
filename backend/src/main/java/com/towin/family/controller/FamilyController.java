@@ -61,6 +61,14 @@ public class FamilyController {
         return ResponseEntity.ok(familyStandingService.materializeChat(userId, connectionId));
     }
 
+    /** Open (or reopen) the private chat with a family-linked person — the
+     *  parent↔family conversation. Returns the chat connection id. */
+    @PostMapping("/chat/{otherUserId}")
+    public ResponseEntity<UUID> openFamilyChat(Authentication auth, @PathVariable UUID otherUserId) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyStandingService.openFamilyMemberChat(userId, otherUserId));
+    }
+
     @PostMapping("/standings/{connectionId}/pause")
     public ResponseEntity<Void> pauseStanding(Authentication auth, @PathVariable UUID connectionId) {
         familyStandingService.setControl(UUID.fromString(auth.getName()), connectionId, FamilyStandingState.PAUSED);

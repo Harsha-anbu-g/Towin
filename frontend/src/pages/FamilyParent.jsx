@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
+import { useToast } from '../context/useToast';
 import SegmentedTabs from '../components/SegmentedTabs';
 import TrustBadge from '../components/TrustBadge';
 import TrustJourney from '../components/TrustJourney';
@@ -55,6 +56,7 @@ const sectionH = {
 export default function FamilyParent() {
   const { elderId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [family, setFamily] = useState({ activeLinks: [] });
   const [journey, setJourney] = useState([]);
   const [standings, setStandings] = useState([]);
@@ -64,6 +66,7 @@ export default function FamilyParent() {
   // doing; Act for me is what they have trusted you to do. Keeping the split and
   // the vocabulary identical on both sides means a family can talk about it.
   const [tab, setTab] = useState('watching');
+  const [openingChat, setOpeningChat] = useState(false);
 
   const load = useCallback(() => {
     return Promise.all([
@@ -76,6 +79,20 @@ export default function FamilyParent() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Open (or reopen) the private chat with the parent. The link is the only
+  // permission; the server checks it and hands back the conversation to open.
+  const messageParent = async () => {
+    if (openingChat) return;
+    setOpeningChat(true);
+    try {
+      const r = await api.post(`/family/chat/${elderId}`);
+      navigate(`/messages/${r.data}`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Could not open the chat. Please try again.');
+      setOpeningChat(false);
+    }
+  };
 
   // Only the family side of the link — this page never renders my own elder seat.
   const link = (family.activeLinks || []).find(l => !l.iAmElder && l.elderId === elderId);
@@ -112,7 +129,7 @@ export default function FamilyParent() {
               This parent is no longer linked to you
             </p>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0 }}>
-              They may have removed the link. Go back to see who you are linked with now.
+              This link may have been removed. Go back to see who you are linked with now.
             </p>
           </div>
         </div>
@@ -132,9 +149,26 @@ export default function FamilyParent() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <h1 style={{ ...sectionH }}>{elderName}</h1>
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '2px 0 0' }}>
-                {link?.relationship ? `You're their ${link.relationship.toLowerCase()}` : 'Your family member'}
+                {link?.relationship ? `You're ${elderName}'s ${link.relationship.toLowerCase()}` : 'Your family member'}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={messageParent}
+              disabled={openingChat}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0,
+                minHeight: '44px', padding: '9px 16px', background: 'var(--blue)', color: '#fff',
+                border: 'none', borderRadius: '9999px', cursor: openingChat ? 'default' : 'pointer',
+                fontSize: '15px', fontWeight: 600, fontFamily: SFText, opacity: openingChat ? 0.6 : 1,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              {openingChat ? 'Opening…' : `Message ${elderName}`}
+            </button>
           </div>
         </BlurFade>
 
@@ -152,7 +186,7 @@ export default function FamilyParent() {
         {j && tab === 'watching' && (
           <BlurFade delay={3}>
             <div style={{ ...cardStyle, marginTop: '14px' }}>
-              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>How they are today</h2>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>How {elderName} is today</h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -287,7 +321,7 @@ export default function FamilyParent() {
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
-                      They're getting ready to meet in person
+                      {h.helperName} is getting ready to meet in person
                     </p>
                   )}
 
@@ -318,8 +352,8 @@ export default function FamilyParent() {
                     {elderName} hasn't asked you to do anything yet
                   </p>
                   <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                    They choose what you can do for them, on their own My Family page.
-                    Until then you can still see how they're doing on the Watching tab.
+                    {elderName} chooses what you can do, on their own My Family page.
+                    Until then you can still see how {elderName} is doing on the Watching tab.
                   </p>
                 </div>
               ) : (
@@ -343,8 +377,8 @@ export default function FamilyParent() {
                     <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
                         {elderName} hasn't shared any friendships with you, so there is
-                        nobody here to act with yet. What they share appears on the
-                        Watching tab.
+                        nobody here to act with yet. What {elderName} shares appears on
+                        the Watching tab.
                       </p>
                     </div>
                   ) : sharedHelpers.map(h => (
@@ -368,26 +402,6 @@ export default function FamilyParent() {
                           </p>
                         </div>
                       </div>
-
-                      {powers.includes('MESSAGE_HELPERS') && h.connectionId && (
-                        <button
-                          type="button"
-                          onClick={() => navigate(`/messages/${h.connectionId}`)}
-                          style={{
-                            display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center',
-                            gap: '8px', minHeight: '44px', marginTop: '12px', padding: '10px 16px',
-                            background: 'var(--blue)', color: '#fff', border: 'none',
-                            borderRadius: '9999px', cursor: 'pointer',
-                            fontSize: '16px', fontWeight: 600, fontFamily: SFText,
-                          }}
-                        >
-                          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                          </svg>
-                          Write to {h.helperName} for {elderName}
-                        </button>
-                      )}
 
                       {powers.includes('ADVANCE_TRUST') && (
                         <FamilyTrustAdvance

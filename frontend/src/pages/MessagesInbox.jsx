@@ -54,6 +54,32 @@ const Avatar = ({ name, size = 52 }) => (
   </div>
 );
 
+const headingStyle = {
+  fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+  color: 'var(--ink-4)', fontFamily: SFText, margin: '0 4px 8px',
+};
+const listCardStyle = {
+  background: 'var(--canvas)', border: '1px solid var(--border)',
+  borderRadius: '18px', overflow: 'hidden', marginBottom: '16px',
+};
+const rowStyle = (isLast) => ({
+  width: '100%', background: 'transparent', border: 'none',
+  borderBottom: isLast ? 'none' : '1px solid var(--border)',
+  padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px',
+  cursor: 'pointer', textAlign: 'left', fontFamily: SFText, minHeight: '44px',
+});
+
+// The inbox is grouped by who each chat is with. A helper's chat with a family
+// member, and a family member's chat with their parent, both belong under
+// "Family". Order is fixed; empty sections never render.
+const SECTION_ORDER = ['Elders', 'Helpers', 'Family'];
+function sectionOf(c) {
+  if (c.otherUserRole === 'HELPER') return 'Helpers';
+  if (c.otherUserRole === 'FAMILY') return 'Family';
+  if (c.type === 'FAMILY') return 'Family';   // a parent↔family chat, the family member's side
+  return 'Elders';
+}
+
 export default function MessagesInbox() {
   const navigate = useNavigate();
   const [connections, setConnections] = useState([]);
@@ -86,7 +112,7 @@ export default function MessagesInbox() {
     .filter(c => c.status === 'ACTIVE' && c.sharedWithFamily
       && (c.currentTrustLevel === 'FIRST_MEET' || c.currentTrustLevel === 'TRUSTED'))
     .map(c => ({ id: c.id, title: `You & ${c.otherUserName}`, photo: null }));
-  const familyThreads = [
+  const groupThreads = [
     ...participantThreads,
     ...journeyThreads.filter(t => !participantThreads.some(p => p.id === t.id)),
   ];
@@ -103,8 +129,117 @@ export default function MessagesInbox() {
   const filtered = q
     ? active.filter(c =>
         (c.otherUserName || '').toLowerCase().includes(q) ||
+        (c.otherUserContext || '').toLowerCase().includes(q) ||
         (c.lastMessagePreview || '').toLowerCase().includes(q))
     : active;
+
+  const buckets = { Elders: [], Helpers: [], Family: [] };
+  for (const c of filtered) buckets[sectionOf(c)].push(c);
+  const hasAnyConversation = active.length > 0 || groupThreads.length > 0;
+
+  const groupRow = (t, i, arr) => (
+    <button
+      key={t.id}
+      onClick={() => navigate(`/messages/${t.id}?channel=family`)}
+      style={rowStyle(i === arr.length - 1)}
+    >
+      <span style={{
+        width: '46px', height: '46px', borderRadius: '50%', flexShrink: 0,
+        background: 'var(--blue-wash)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue-deep)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </span>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)' }}>
+          Family updates
+        </span>
+        <span style={{ display: 'block', fontSize: '14px', color: 'var(--ink-3)', marginTop: '2px' }}>
+          {t.title} — everyone reads the same notes
+        </span>
+      </span>
+    </button>
+  );
+
+  const convRow = (c, i, arr) => {
+    const trustLabel = TRUST_LABELS[c.currentTrustLevel];
+    return (
+      <button
+        key={c.id}
+        onClick={() => navigate(`/messages/${c.id}`)}
+        style={{ ...rowStyle(i === arr.length - 1), transition: 'background 0.15s' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-wash)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <Avatar name={c.otherUserName} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
+            {/* flexWrap: on narrow screens the trust pill drops under the name
+                instead of squeezing it. */}
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px 8px', minWidth: 0, flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '16px', fontWeight: c.unreadCount > 0 ? 700 : 600,
+                color: 'var(--ink)', fontFamily: SF,
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>
+                {c.otherUserName || 'User'}
+                {/* A helper sees whose family this person is: "Sarah (Margaret's family)". */}
+                {c.otherUserContext && (
+                  <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}> ({c.otherUserContext})</span>
+                )}
+              </span>
+              {trustLabel && (
+                <span className="inbox-trust-pill" style={{
+                  fontSize: '13px', fontWeight: 600, fontFamily: SFText,
+                  color: 'var(--blue-deep)', background: 'var(--surface)',
+                  border: '1px solid var(--border)', borderRadius: '9999px',
+                  padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
+                  letterSpacing: '0.1px',
+                }}>
+                  {trustLabel}
+                </span>
+              )}
+            </span>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', flexShrink: 0, fontFamily: SFText }}>
+              {timeAgo(c.lastMessageAt)}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+            <p style={{
+              fontSize: '14px', margin: 0,
+              color: c.unreadCount > 0 ? 'var(--ink)' : 'var(--ink-3)',
+              fontWeight: c.unreadCount > 0 ? 500 : 400,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {c.lastMessagePreview || 'No messages yet'}
+            </p>
+            {c.unreadCount > 0 && (
+              <span style={{
+                background: 'var(--action-fill)', color: 'var(--action-ink)',
+                fontSize: '13px', fontWeight: 600, fontFamily: SFText,
+                borderRadius: '9999px', padding: '2px 7px',
+                flexShrink: 0, minWidth: '20px', textAlign: 'center',
+              }}>
+                {c.unreadCount}
+              </span>
+            )}
+          </div>
+        </div>
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="none" style={{ flexShrink: 0, marginLeft: '4px' }}>
+          <path d="M1.5 1L8.5 8L1.5 15" stroke="#c0c0c5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+    );
+  };
+
+  const renderSection = (title, rows, renderRow) => rows.length === 0 ? null : (
+    <div key={title}>
+      <h2 style={headingStyle}>{title}</h2>
+      <div style={listCardStyle}>{rows.map((r, i) => renderRow(r, i, rows))}</div>
+    </div>
+  );
 
   return (
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
@@ -145,7 +280,7 @@ export default function MessagesInbox() {
           </div>
         )}
 
-        {!loading && active.length === 0 && (
+        {!loading && !hasAnyConversation && (
           <BlurFade delay={2}>
             <div style={{
               background: 'var(--canvas)',
@@ -183,48 +318,7 @@ export default function MessagesInbox() {
           </BlurFade>
         )}
 
-        {/* Family updates — the shared group notes live in Messages now (user call 2026-07-19). */}
-        {!loading && familyThreads.length > 0 && (
-          <BlurFade delay={1}>
-            <div style={{
-              background: 'var(--canvas)', border: '1px solid var(--border)',
-              borderRadius: '18px', overflow: 'hidden', marginBottom: '16px',
-            }}>
-              {familyThreads.map((t, i) => (
-                <button
-                  key={t.id}
-                  onClick={() => navigate(`/messages/${t.id}?channel=family`)}
-                  style={{
-                    width: '100%', background: 'transparent', border: 'none',
-                    borderBottom: i === familyThreads.length - 1 ? 'none' : '1px solid var(--border)',
-                    padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px',
-                    cursor: 'pointer', textAlign: 'left', fontFamily: SFText, minHeight: '44px',
-                  }}
-                >
-                  <span style={{
-                    width: '46px', height: '46px', borderRadius: '50%', flexShrink: 0,
-                    background: 'var(--blue-wash)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue-deep)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                  </span>
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)' }}>
-                      Family updates
-                    </span>
-                    <span style={{ display: 'block', fontSize: '14px', color: 'var(--ink-3)', marginTop: '2px' }}>
-                      {t.title} — everyone reads the same notes
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </BlurFade>
-        )}
-
-        {!loading && active.length > 0 && (
+        {!loading && hasAnyConversation && (
           <>
             {/* Search */}
             <BlurFade delay={1}>
@@ -252,7 +346,11 @@ export default function MessagesInbox() {
               </div>
             </BlurFade>
 
-            {filtered.length === 0 ? (
+            {/* Groups first, then one-to-one chats grouped by who they're with. */}
+            {renderSection('Groups', q ? [] : groupThreads, groupRow)}
+            {SECTION_ORDER.map(name => renderSection(name, buckets[name], convRow))}
+
+            {q && filtered.length === 0 && (
               <div style={{
                 background: 'var(--canvas)', border: '1px solid var(--border)',
                 borderRadius: '18px', padding: '40px 24px', textAlign: 'center',
@@ -260,95 +358,6 @@ export default function MessagesInbox() {
                 <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
                   No conversations match “{query.trim()}”.
                 </p>
-              </div>
-            ) : (
-              <div style={{
-                background: 'var(--canvas)',
-                border: '1px solid var(--border)',
-                borderRadius: '18px',
-                overflow: 'hidden',
-              }}>
-                {filtered.map((c, i) => {
-                  const trustLabel = TRUST_LABELS[c.currentTrustLevel];
-                  return (
-                  <BlurFade key={c.id} delay={1 + i * 0.3}>
-                    <button
-                      onClick={() => navigate(`/messages/${c.id}`)}
-                      style={{
-                        width: '100%',
-                        background: 'transparent',
-                        border: 'none',
-                        borderBottom: i === filtered.length - 1 ? 'none' : '1px solid var(--border)',
-                        padding: '14px 18px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '14px',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontFamily: SFText,
-                        transition: 'background 0.15s',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-wash)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <Avatar name={c.otherUserName} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
-                          {/* flexWrap: on narrow screens the trust pill drops under the
-                              name instead of squeezing it — keeps the pill at the 13px
-                              floor without truncating names. */}
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px 8px', minWidth: 0, flexWrap: 'wrap' }}>
-                            <span style={{
-                              fontSize: '16px', fontWeight: c.unreadCount > 0 ? 700 : 600,
-                              color: 'var(--ink)', fontFamily: SF,
-                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                            }}>
-                              {c.otherUserName || 'User'}
-                            </span>
-                            {trustLabel && (
-                              <span className="inbox-trust-pill" style={{
-                                fontSize: '13px', fontWeight: 600, fontFamily: SFText,
-                                color: 'var(--blue-deep)', background: 'var(--surface)',
-                                border: '1px solid var(--border)', borderRadius: '9999px',
-                                padding: '1px 8px', whiteSpace: 'nowrap', flexShrink: 0,
-                                letterSpacing: '0.1px',
-                              }}>
-                                {trustLabel}
-                              </span>
-                            )}
-                          </span>
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', flexShrink: 0, fontFamily: SFText }}>
-                            {timeAgo(c.lastMessageAt)}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                          <p style={{
-                            fontSize: '14px', margin: 0,
-                            color: c.unreadCount > 0 ? 'var(--ink)' : 'var(--ink-3)',
-                            fontWeight: c.unreadCount > 0 ? 500 : 400,
-                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                          }}>
-                            {c.lastMessagePreview || 'No messages yet'}
-                          </p>
-                          {c.unreadCount > 0 && (
-                            <span style={{
-                              background: 'var(--action-fill)', color: 'var(--action-ink)',
-                              fontSize: '13px', fontWeight: 600, fontFamily: SFText,
-                              borderRadius: '9999px', padding: '2px 7px',
-                              flexShrink: 0, minWidth: '20px', textAlign: 'center',
-                            }}>
-                              {c.unreadCount}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <svg width="10" height="16" viewBox="0 0 10 16" fill="none" style={{ flexShrink: 0, marginLeft: '4px' }}>
-                        <path d="M1.5 1L8.5 8L1.5 15" stroke="#c0c0c5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-                  </BlurFade>
-                  );
-                })}
               </div>
             )}
           </>
