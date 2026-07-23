@@ -6,7 +6,7 @@
 
 Youngers who help, elders who get help — and both win.
 
-**[🚀 Try the live demo →](https://towin.vercel.app)** · **[🎥 Watch the video →](https://lnkd.in/p/gWXjNXcX)**
+**[🚀 Try the live demo →](https://www.towinly.com)** · **[🎥 Watch the video →](https://lnkd.in/p/gWXjNXcX)**
 
 *No signup needed — open the sign-in page and click **Try as an Elder** or **Try as a Helper**.*
 
@@ -135,7 +135,7 @@ ToWin/
 
 ## 🗺 Architecture
 
-Every diagram below is generated from the **real ToWin code** — controllers, entities, enums, and deploy setup. Prefer to explore hands-on? **[Open the live architecture viewer →](https://portfolioharsha.vercel.app/architecture.html)** — scroll to zoom, drag to pan. The full set (14 diagrams, plus editable sources) lives in **[docs/diagrams/](docs/diagrams/)**. Click any image to open it full-size.
+Every diagram below is generated from the **real ToWin code** — controllers, entities, enums, and deploy setup. Prefer to explore hands-on? **[Open the live architecture viewer →](https://harshavardhanag.com/architecture.html)** — scroll to zoom, drag to pan. The full set (14 diagrams, plus editable sources) lives in **[docs/diagrams/](docs/diagrams/)**. Click any image to open it full-size.
 
 ### The big picture
 
