@@ -284,7 +284,7 @@ export default function Feedback() {
           {/* Portfolio link */}
           <a
             className="fb-card fb-portfolio"
-            href="https://portfolioharsha.vercel.app/"
+            href="https://harshavardhanag.com/"
             target="_blank" rel="noopener noreferrer"
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
