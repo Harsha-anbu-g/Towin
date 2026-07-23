@@ -3,7 +3,7 @@
 How the live site is wired up, what each piece costs, and how to redeploy or recover.
 
 **Current state**
-- Frontend → Vercel: <https://towin.vercel.app>
+- Frontend → Vercel: <https://www.towinly.com> (apex `towinly.com` redirects here; `towin.vercel.app` still resolves)
 - Backend → Railway: <https://backend-production-cef3.up.railway.app>
 - Postgres → Railway (private network, with public proxy on `zephyr.proxy.rlwy.net`)
 - Redis → not deployed (in-memory cache instead)
@@ -64,7 +64,7 @@ SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=<rotated secret>
 JWT_SECRET=${JWT_SECRET}   # set in Railway environment variables — never commit the actual value
 JWT_EXPIRATION_MS=86400000
-CORS_ALLOWED_ORIGINS=https://towin.vercel.app,https://*-harsha-anbu-gs-projects.vercel.app
+CORS_ALLOWED_ORIGINS=https://www.towinly.com,https://towinly.com,https://towin.vercel.app
 APP_KAFKA_ENABLED=false   # explicit
 # APP_REDIS_ENABLED unset  → defaults to false, ConcurrentMapCacheManager is used
 AWS_ACCESS_KEY=dummy      # placeholder until S3 is wired up
