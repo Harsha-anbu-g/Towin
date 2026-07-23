@@ -65,6 +65,8 @@ SPRING_DATASOURCE_PASSWORD=<rotated secret>
 JWT_SECRET=${JWT_SECRET}   # set in Railway environment variables — never commit the actual value
 JWT_EXPIRATION_MS=86400000
 CORS_ALLOWED_ORIGINS=https://www.towinly.com,https://towinly.com,https://towin.vercel.app
+APP_VERIFY_BASE_URL=https://www.towinly.com          # base of email verify + password reset links
+APP_OAUTH_FRONTEND_REDIRECT=https://www.towinly.com  # where Google sign-in lands after the backend callback
 APP_KAFKA_ENABLED=false   # explicit
 # APP_REDIS_ENABLED unset  → defaults to false, ConcurrentMapCacheManager is used
 AWS_ACCESS_KEY=dummy      # placeholder until S3 is wired up
@@ -76,7 +78,9 @@ TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=
 ```
 
-CORS includes the Vercel production domain plus a wildcard for preview deployments under the same Vercel account.
+CORS lists three explicit origins: the custom domain, its apex, and the old `towin.vercel.app` (kept alive so links on already-submitted resumes still work). There is no preview-deployment wildcard.
+
+The three domain-bearing variables above must all change together if the domain ever changes again. Google sign-in is started by the backend (`/oauth2/authorization/google`), so the redirect URI registered in Google Cloud Console points at the Railway backend and does **not** need updating when the frontend domain changes.
 
 ### Deploy command
 
