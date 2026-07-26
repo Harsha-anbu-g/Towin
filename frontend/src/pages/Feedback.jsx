@@ -116,11 +116,11 @@ export default function Feedback() {
 
       {/* ── Brand header ── */}
       <div className="fb-brand">
-        <img src="/logo.png" alt="ToWin logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <img src="/logo.png" alt="Towinly logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <span style={{
           fontFamily: SF, fontSize: '24px', fontWeight: 600,
           letterSpacing: '-0.374px', color: 'var(--green-deep)',
-        }}>ToWin</span>
+        }}>Towinly</span>
       </div>
 
       <div className="fb-shell">
@@ -133,7 +133,7 @@ export default function Feedback() {
             padding: '14px 20px', marginBottom: '16px',
           }}>
             <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0, lineHeight: 1.55 }}>
-              <strong>ToWin is an early prototype.</strong> You&apos;re trying a work in
+              <strong>Towinly is an early prototype.</strong> You&apos;re trying a work in
               progress. A full mobile app is planned for the future. Your feedback
               here directly shapes what gets built.
             </p>
@@ -144,7 +144,7 @@ export default function Feedback() {
                 Thank you
               </h2>
               <p style={{ fontFamily: SFText, fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
-                Your feedback means a lot. It genuinely helps make ToWin better.
+                Your feedback means a lot. It genuinely helps make Towinly better.
               </p>
             </div>
           ) : (
@@ -258,7 +258,7 @@ export default function Feedback() {
             <div style={{ height: '1px', background: 'var(--border)', margin: '0 0 16px' }} />
 
             <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)', fontWeight: 600, margin: '0 0 6px', lineHeight: 1.5 }}>
-              This isn't a university project. ToWin is my future startup.
+              This isn't a university project. Towinly is my future startup.
             </p>
             <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)', margin: '0 0 20px', lineHeight: 1.6 }}>
               I'm building something real, and your feedback is what shapes it. Love the idea? Want to connect? Let's talk!

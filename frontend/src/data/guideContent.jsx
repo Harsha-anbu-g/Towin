@@ -105,24 +105,24 @@ export const STEPS = [
     navLabel: 'Welcome',
     render: () => (
       <>
-        <StepTitle>Welcome to ToWin</StepTitle>
+        <StepTitle>Welcome to Towinly</StepTitle>
         <Lead>
-          ToWin is a community that brings older people and younger helpers together,
+          Towinly is a community that brings older people and younger helpers together,
           so no one feels alone and everyday help is easy to find.
         </Lead>
         <SubHead>Why we built it</SubHead>
         <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink)', lineHeight: 1.6, margin: 0 }}>
           Many older people have no safe, trusted way to meet new friends or get a hand with
-          daily tasks. ToWin gives them one, built around trust that grows one small step
+          daily tasks. Towinly gives them one, built around trust that grows one small step
           at a time, so no one ever has to rush or feel unsafe.
         </p>
-        <SubHead>Who ToWin is for</SubHead>
+        <SubHead>Who Towinly is for</SubHead>
         <CardGrid>
           <MiniCard title="Elder">An older person looking for friendship, company, or help with daily tasks.</MiniCard>
           <MiniCard title="Helper">A younger person who gives time, company, and a hand with everyday things.</MiniCard>
         </CardGrid>
         <NoteBox>
-          Choose how you'll use ToWin with the tabs above. You can switch between
+          Choose how you'll use Towinly with the tabs above. You can switch between
           Elder and Helper anytime.
         </NoteBox>
       </>
@@ -143,7 +143,7 @@ export const STEPS = [
             'Grow your Trust Score and earn reviews each time you help.',
           ]} />
           <NoteBox>
-            Switch to the <strong>Elder</strong> tab above to see how ToWin looks
+            Switch to the <strong>Elder</strong> tab above to see how Towinly looks
             from the other side.
           </NoteBox>
         </>
@@ -160,7 +160,7 @@ export const STEPS = [
             'Add emergency contacts and use the SOS button any time you need help fast.',
           ]} />
           <NoteBox>
-            Switch to the <strong>Helper</strong> tab above to see how ToWin looks
+            Switch to the <strong>Helper</strong> tab above to see how Towinly looks
             from the other side.
           </NoteBox>
         </>
@@ -242,7 +242,7 @@ export const STEPS = [
       <>
         <StepTitle>Daily Streaks</StepTitle>
         <Lead>
-          Showing up matters. Each day you visit ToWin, tap "I'm here today" to mark the day.
+          Showing up matters. Each day you visit Towinly, tap "I'm here today" to mark the day.
         </Lead>
         <Bullets items={[
           'Your current streak counts the days you have checked in, one after another.',
@@ -267,7 +267,7 @@ export const STEPS = [
           in the corner of the screen and ask in your own words.
         </Lead>
         <Bullets items={[
-          'Ask how anything on ToWin works, like "How does the Trust Journey work?"',
+          'Ask how anything on Towinly works, like "How does the Trust Journey work?"',
           'When you are logged in, ask about your own account, like "What is my trust score?" or "How is my streak going?"',
           'Not sure what to do next? Ask "What should I do today?" and it will point the way.',
           'Tap "Read aloud" under any answer to hear it spoken out loud.',
@@ -277,17 +277,17 @@ export const STEPS = [
         <NoteBox>
           The tortoise only answers questions. It never changes anything on your
           account, and it never shares your details with anyone else. If it can't
-          help, use the Feedback button and the ToWin team will step in.
+          help, use the Feedback button and the Towinly team will step in.
         </NoteBox>
       </>
     ),
   },
   {
     id: 'feel',
-    navLabel: 'The ToWin feel',
+    navLabel: 'The Towinly feel',
     render: () => (
       <>
-        <StepTitle>The ToWin feel</StepTitle>
+        <StepTitle>The Towinly feel</StepTitle>
         <Lead>
           Every screen is made to feel calm, clear, and never rushed.
         </Lead>
@@ -308,7 +308,7 @@ export const STEPS = [
         <StepTitle>You're ready</StepTitle>
         <Lead>
           Build your profile, connect with people near you, grow trust step by step,
-          and meet safely. That's ToWin.
+          and meet safely. That's Towinly.
         </Lead>
         <button
           onClick={() => navigate(isLoggedIn ? '/dashboard' : '/register')}

@@ -39,7 +39,7 @@ describe('ThemeContext', () => {
     await user.click(screen.getByRole('button'));
     expect(screen.getByText('theme:dark')).toBeInTheDocument();
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(localStorage.getItem('towin-theme')).toBe('dark');
+    expect(localStorage.getItem('towinly-theme')).toBe('dark');
   });
 
   it('toggling back to light clears the attribute and stores light', async () => {
@@ -49,18 +49,29 @@ describe('ThemeContext', () => {
     await user.click(screen.getByRole('button'));
     expect(screen.getByText('theme:light')).toBeInTheDocument();
     expect(document.documentElement.dataset.theme).toBeUndefined();
-    expect(localStorage.getItem('towin-theme')).toBe('light');
+    expect(localStorage.getItem('towinly-theme')).toBe('light');
   });
 
   it('signed-in user with a saved dark choice starts in dark', () => {
-    localStorage.setItem('towin-theme', 'dark');
+    localStorage.setItem('towinly-theme', 'dark');
     renderThemed({ signedIn: true });
     expect(screen.getByText('theme:dark')).toBeInTheDocument();
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
-  it('signed-OUT visitor is forced to light even with a saved dark choice', () => {
+  it('a dark choice saved under the pre-rename key still applies (legacy fallback)', async () => {
+    const user = userEvent.setup();
     localStorage.setItem('towin-theme', 'dark');
+    renderThemed({ signedIn: true });
+    expect(screen.getByText('theme:dark')).toBeInTheDocument();
+    // Any new choice is written to the new key only.
+    await user.click(screen.getByRole('button'));
+    expect(localStorage.getItem('towinly-theme')).toBe('light');
+    expect(localStorage.getItem('towin-theme')).toBe('dark');
+  });
+
+  it('signed-OUT visitor is forced to light even with a saved dark choice', () => {
+    localStorage.setItem('towinly-theme', 'dark');
     renderThemed({ signedIn: false });
     expect(screen.getByText('theme:light')).toBeInTheDocument();
     expect(document.documentElement.dataset.theme).toBeUndefined();
@@ -69,7 +80,7 @@ describe('ThemeContext', () => {
   it('a stray pre-paint dark attribute is cleared when signed out', () => {
     // index.html should not set this while signed out, but if it ever leaks
     // through the provider must scrub it back to light on the public pages.
-    localStorage.setItem('towin-theme', 'dark');
+    localStorage.setItem('towinly-theme', 'dark');
     document.documentElement.dataset.theme = 'dark';
     renderThemed({ signedIn: false });
     expect(screen.getByText('theme:light')).toBeInTheDocument();

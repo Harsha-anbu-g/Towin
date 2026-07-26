@@ -120,7 +120,7 @@ jobs:
             -Dsonar.host.url="${SONAR_HOST_URL}" \
             -Dsonar.token="${SONAR_TOKEN}" \
             -Dsonar.projectKey=towin-backend \
-            -Dsonar.projectName="ToWin Backend" \
+            -Dsonar.projectName="Towinly Backend" \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
       - name: Set up Node.js

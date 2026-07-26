@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🐢 ToWin
+# 🐢 Towinly
 
 ### It takes two To Win.
 
@@ -14,16 +14,16 @@ Youngers who help, elders who get help — and both win.
 
 ---
 
-## 🤝 What is ToWin?
+## 🤝 What is Towinly?
 
-ToWin brings together **two kinds of people** — and you pick which one you are when you create your account:
+Towinly brings together **two kinds of people** — and you pick which one you are when you create your account:
 
 - **Elder** — an older person looking for friendship, company, or help with daily tasks.
 - **Helper** — a younger person who gives time, company, and a hand with everyday things.
 
 ### Help is hard to find alone
 
-Small daily things — like shopping, a ride, or someone to talk to — take energy that elders don't always have. On ToWin, an elder simply asks. Helpers nearby see the request and come to help with whatever is needed.
+Small daily things — like shopping, a ride, or someone to talk to — take energy that elders don't always have. On Towinly, an elder simply asks. Helpers nearby see the request and come to help with whatever is needed.
 
 ### Trust is earned, not given
 
@@ -37,7 +37,7 @@ Letting someone new into your life is a big step. So every member has a **Trust 
 
 ### How trust grows — the Trust Ladder
 
-Like a tree growing roots, every friendship on ToWin grows slowly, through **7 simple stages**:
+Like a tree growing roots, every friendship on Towinly grows slowly, through **7 simple stages**:
 
 > **Just Connected → Messaging → Phone Ready → Video Ready → Verified → Ready to Meet → Fully Trusted**
 
@@ -47,7 +47,7 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
 
 > Elders have **time and money**, but need energy and company.
 > Helpers have **energy and time**, but need money and care.
-> **ToWin is where they meet and share — and both win.**
+> **Towinly is where they meet and share — and both win.**
 
 ---
 
@@ -84,7 +84,7 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
   </tr>
   <tr>
     <td><img src="docs/screenshots/Streak.png" alt="Daily check-in streak" /></td>
-    <td><img src="docs/screenshots/how-it-works.png" alt="How ToWin works guide" /></td>
+    <td><img src="docs/screenshots/how-it-works.png" alt="How Towinly works guide" /></td>
   </tr>
 </table>
 
@@ -124,7 +124,7 @@ Like a tree growing roots, every friendship on ToWin grows slowly, through **7 s
 ## 📁 Project structure
 
 ```
-ToWin/
+Towinly/
 ├── backend/      Spring Boot API (auth, trust, needs, messaging, streaks…)
 ├── frontend/     React + Vite SPA
 ├── docs/         Deployment runbook, specs, screenshots, architecture diagrams
@@ -135,7 +135,7 @@ ToWin/
 
 ## 🗺 Architecture
 
-Every diagram below is generated from the **real ToWin code** — controllers, entities, enums, and deploy setup. Prefer to explore hands-on? **[Open the live architecture viewer →](https://harshavardhanag.com/architecture.html)** — scroll to zoom, drag to pan. The full set (14 diagrams, plus editable sources) lives in **[docs/diagrams/](docs/diagrams/)**. Click any image to open it full-size.
+Every diagram below is generated from the **real Towinly code** — controllers, entities, enums, and deploy setup. Prefer to explore hands-on? **[Open the live architecture viewer →](https://harshavardhanag.com/architecture.html)** — scroll to zoom, drag to pan. The full set (14 diagrams, plus editable sources) lives in **[docs/diagrams/](docs/diagrams/)**. Click any image to open it full-size.
 
 ### The big picture
 
@@ -203,7 +203,7 @@ As your total grows, you move up tiers:
 
 ## 🔒 Security
 
-ToWin was reviewed against the **OWASP Top 10 (2021)** and scanned with **SonarQube** (SAST), **Snyk** (SCA + SAST), and **npm audit**. Highlights:
+Towinly was reviewed against the **OWASP Top 10 (2021)** and scanned with **SonarQube** (SAST), **Snyk** (SCA + SAST), and **npm audit**. Highlights:
 
 - **Access control** — identity is always derived from the verified JWT (never the request body); resource ownership is re-checked in the service layer (IDOR defense), and a per-request `isActive` check revokes suspended accounts instantly.
 - **Auth & abuse limits** — OAuth 2.0 social login (Google), BCrypt password hashing, brute-force lockouts on login and OTP, IP rate limits on registration, and a per-user limiter on paid SMS sends to stop cost abuse.
@@ -216,7 +216,7 @@ ToWin was reviewed against the **OWASP Top 10 (2021)** and scanned with **SonarQ
 ## 📚 More docs
 
 - **[Deployment runbook](docs/DEPLOYMENT.md)** — hosting, env vars, dump/restore, recovery
-- **[Business pitch](docs/ToWin-Business-Pitch.docx)** · **[Technical doc](docs/ToWin-Technical-Documentation.docx)**
+- **[Business pitch](docs/Towinly-Business-Pitch.docx)** · **[Technical doc](docs/Towinly-Technical-Documentation.docx)**
 
 <div align="center">
 <br>

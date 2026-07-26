@@ -668,7 +668,7 @@ export default function Landing() {
                     alt=""
                     style={{ width: 32, height: 32, objectFit: 'contain' }}
                   />
-                  ToWin
+                  Towinly
                 </span>
                 <Link to="/login" style={{
                   fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
@@ -774,7 +774,7 @@ export default function Landing() {
                 alt=""
                 style={{ width: 34, height: 34, objectFit: 'contain' }}
               />
-              ToWin
+              Towinly
             </span>
             <Link to="/login" style={{
               fontFamily: SF, fontSize: '16px', fontWeight: 600, color: SKY,

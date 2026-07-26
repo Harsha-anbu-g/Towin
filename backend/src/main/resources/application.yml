@@ -77,7 +77,7 @@ app:
     frontend-redirect: ${APP_OAUTH_FRONTEND_REDIRECT:http://localhost:5173}
   mail:
     from: ${MAIL_FROM:${MAIL_USERNAME:}}
-    from-name: ${MAIL_FROM_NAME:ToWin}
+    from-name: ${MAIL_FROM_NAME:Towinly}
     verify-base-url: ${APP_VERIFY_BASE_URL:http://localhost:5173}
     brevo-api-key: ${BREVO_API_KEY:}
   kafka:
@@ -108,7 +108,7 @@ posthog:
 
 nominatim:
   base-url: ${NOMINATIM_BASE_URL:https://nominatim.openstreetmap.org}
-  user-agent: ${NOMINATIM_USER_AGENT:ToWin/1.0 (agharsha.anbu@gmail.com)}
+  user-agent: ${NOMINATIM_USER_AGENT:Towinly/1.0 (agharsha.anbu@gmail.com)}
 
 # Postal-code geocoder (free, no key). OSM/Nominatim can't resolve Canadian
 # postcodes and mislocates bare US zips, so postcode-shaped queries go here first.

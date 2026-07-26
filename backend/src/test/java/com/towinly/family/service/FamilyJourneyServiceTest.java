@@ -1,0 +1,294 @@
+package com.towinly.family.service;
+
+import com.towinly.common.entity.User;
+import com.towinly.common.enums.ConnectionStatus;
+import com.towinly.common.enums.FamilyLinkStatus;
+import com.towinly.common.enums.NeedStatus;
+import com.towinly.common.enums.TrustLevel;
+import com.towinly.common.enums.UserRole;
+import com.towinly.common.service.S3Service;
+import com.towinly.connection.entity.Connection;
+import com.towinly.connection.repository.ConnectionRepository;
+import com.towinly.family.dto.FamilyJourneyResponse;
+import com.towinly.family.dto.FamilyJourneyResponse.ElderJourney;
+import com.towinly.family.dto.FamilyJourneyResponse.SharedHelper;
+import com.towinly.family.entity.FamilyLink;
+import com.towinly.family.repository.FamilyLinkRepository;
+import com.towinly.need.repository.NeedRepository;
+import com.towinly.profile.repository.ElderProfileRepository;
+import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.streak.entity.UserStreak;
+import com.towinly.streak.repository.UserStreakRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+
+/**
+ * Step 2 US-001: family follows the parent's trust journey — SHARED connections
+ * only, read-only, elder-level check-in + open-needs status.
+ */
+@ExtendWith(MockitoExtension.class)
+class FamilyJourneyServiceTest {
+
+    @Mock FamilyLinkRepository familyLinkRepository;
+    @Mock ConnectionRepository connectionRepository;
+    @Mock UserStreakRepository streakRepository;
+    @Mock NeedRepository needRepository;
+    @Mock ElderProfileRepository elderProfileRepository;
+    @Mock HelperProfileRepository helperProfileRepository;
+    @Mock S3Service s3Service;
+
+    FamilyJourneyService service;
+
+    private User elder;
+    private User familyUser;
+
+    @BeforeEach
+    void setUp() {
+        service = new FamilyJourneyService(
+                familyLinkRepository, connectionRepository, streakRepository,
+                needRepository, elderProfileRepository, helperProfileRepository, s3Service);
+        elder = buildUser("margaret_elder", UserRole.ELDER, 24.0);
+        familyUser = buildUser("sarah_daughter", UserRole.FAMILY, 0.0);
+        lenient().when(elderProfileRepository.findByUserId(any())).thenReturn(Optional.empty());
+        lenient().when(helperProfileRepository.findByUserId(any())).thenReturn(Optional.empty());
+        lenient().when(streakRepository.findByUserId(any())).thenReturn(Optional.empty());
+    }
+
+    private User buildUser(String username, UserRole role, double trustScore) {
+        return User.builder()
+                .id(UUID.randomUUID())
+                .username(username)
+                .email(username + "@test.com")
+                .fullName(username.replace('_', ' '))
+                .role(role)
+                .trustScore(trustScore)
+                .build();
+    }
+
+    private void linkActive(User theElder) {
+        FamilyLink link = FamilyLink.builder()
+                .id(UUID.randomUUID())
+                .elder(theElder)
+                .familyUser(familyUser)
+                .initiatedBy(theElder)
+                .status(FamilyLinkStatus.ACTIVE)
+                .build();
+        when(familyLinkRepository.findByFamilyUserIdAndStatus(familyUser.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(link));
+    }
+
+    private Connection connection(User a, User b, ConnectionStatus status,
+                                  boolean shared, TrustLevel level) {
+        return Connection.builder()
+                .id(UUID.randomUUID())
+                .userA(a).userB(b)
+                .initiatedBy(a)
+                .status(status)
+                .sharedWithFamily(shared)
+                .currentTrustLevel(level)
+                .build();
+    }
+
+    // --- link gating ---
+
+    @Test
+    void emptyArrayWhenCallerHasNoActiveLinks() {
+        when(familyLinkRepository.findByFamilyUserIdAndStatus(familyUser.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of());
+
+        FamilyJourneyResponse response = service.getJourney(familyUser.getId());
+
+        assertThat(response.getElders()).isEmpty();
+    }
+
+    @Test
+    void oneEntryPerActiveLinkedElder() {
+        linkActive(elder);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of());
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+
+        FamilyJourneyResponse response = service.getJourney(familyUser.getId());
+
+        assertThat(response.getElders()).hasSize(1);
+        ElderJourney entry = response.getElders().get(0);
+        assertThat(entry.getElderId()).isEqualTo(elder.getId());
+        assertThat(entry.getElderName()).isEqualTo("margaret elder");
+        assertThat(entry.getSharedHelpers()).isEmpty();
+    }
+
+    @Test
+    void elderSeatMayBeRoleBoth() {
+        User bothElder = buildUser("bob_both", UserRole.BOTH, 10.0);
+        linkActive(bothElder);
+        when(connectionRepository.findByUserAndStatus(bothElder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of());
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(bothElder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+
+        FamilyJourneyResponse response = service.getJourney(familyUser.getId());
+
+        assertThat(response.getElders()).hasSize(1);
+        assertThat(response.getElders().get(0).getElderId()).isEqualTo(bothElder.getId());
+    }
+
+    // --- share gating ---
+
+    @Test
+    void onlySharedActiveConnectionsAppear_privateOnesEntirelyAbsent() {
+        linkActive(elder);
+        User sharedHelper = buildUser("harry_helper", UserRole.HELPER, 30.0);
+        User privateHelper = buildUser("paula_private", UserRole.HELPER, 12.0);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(
+                        connection(elder, sharedHelper, ConnectionStatus.ACTIVE, true, TrustLevel.MESSAGING),
+                        connection(elder, privateHelper, ConnectionStatus.ACTIVE, false, TrustLevel.TRUSTED)));
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+
+        FamilyJourneyResponse response = service.getJourney(familyUser.getId());
+
+        List<SharedHelper> helpers = response.getElders().get(0).getSharedHelpers();
+        assertThat(helpers).hasSize(1);
+        assertThat(helpers.get(0).getHelperName()).isEqualTo("harry helper");
+    }
+
+    @Test
+    void sharedHelperCarriesScoreTierStageAndConnectionId() {
+        linkActive(elder);
+        User helper = buildUser("harry_helper", UserRole.HELPER, 47.0);
+        Connection c = connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.MESSAGING);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(c));
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+
+        SharedHelper h = service.getJourney(familyUser.getId())
+                .getElders().get(0).getSharedHelpers().get(0);
+
+        assertThat(h.getConnectionId()).isEqualTo(c.getId());
+        assertThat(h.getTrustScore()).isEqualTo(47);
+        assertThat(h.getTier()).isEqualTo("Highly Trusted");
+        assertThat(h.getStageIndex()).isEqualTo(TrustLevel.MESSAGING.getValue());
+        assertThat(h.getStageLabel()).isEqualTo("Messaging");
+        assertThat(h.isReadyToMeet()).isFalse();
+    }
+
+    // --- ready-to-meet flag ---
+
+    @Test
+    void readyToMeetIsTrueExactlyAtFirstMeet() {
+        linkActive(elder);
+        User helper = buildUser("harry_helper", UserRole.HELPER, 30.0);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(
+                        connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.FIRST_MEET)));
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+
+        SharedHelper h = service.getJourney(familyUser.getId())
+                .getElders().get(0).getSharedHelpers().get(0);
+
+        assertThat(h.isReadyToMeet()).isTrue();
+        assertThat(h.getStageLabel()).isEqualTo("Ready to Meet");
+        assertThat(h.getStageIndex()).isEqualTo(TrustLevel.FIRST_MEET.getValue());
+    }
+
+    @Test
+    void fullyTrustedIsNotReadyToMeet() {
+        linkActive(elder);
+        User helper = buildUser("harry_helper", UserRole.HELPER, 30.0);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(
+                        connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.TRUSTED)));
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+
+        SharedHelper h = service.getJourney(familyUser.getId())
+                .getElders().get(0).getSharedHelpers().get(0);
+
+        assertThat(h.isReadyToMeet()).isFalse();
+        assertThat(h.getStageLabel()).isEqualTo("Fully Trusted");
+    }
+
+    // --- elder-level status: check-in + open needs ---
+
+    @Test
+    void checkedInTodayTrueWhenLastCheckinIsToday() {
+        linkActive(elder);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of());
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+        when(streakRepository.findByUserId(elder.getId())).thenReturn(Optional.of(
+                UserStreak.builder().userId(elder.getId()).lastCheckinDate(LocalDate.now()).build()));
+
+        assertThat(service.getJourney(familyUser.getId())
+                .getElders().get(0).isCheckedInToday()).isTrue();
+    }
+
+    @Test
+    void checkedInTodayFalseWhenLastCheckinIsYesterdayOrMissing() {
+        linkActive(elder);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of());
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+        when(streakRepository.findByUserId(elder.getId())).thenReturn(Optional.of(
+                UserStreak.builder().userId(elder.getId())
+                        .lastCheckinDate(LocalDate.now().minusDays(1)).build()));
+
+        assertThat(service.getJourney(familyUser.getId())
+                .getElders().get(0).isCheckedInToday()).isFalse();
+    }
+
+    @Test
+    void openNeedsAreShownReadOnlyWithTitleAndDetails() {
+        linkActive(elder);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of());
+        com.towinly.need.entity.Need need = com.towinly.need.entity.Need.builder()
+                .id(UUID.randomUUID())
+                .title("Help with my tablet")
+                .description("The screen keeps freezing.")
+                .category(com.towinly.common.enums.NeedCategory.OTHER)
+                .status(NeedStatus.OPEN)
+                .build();
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN))
+                .thenReturn(List.of(need, need, need));
+
+        ElderJourney entry = service.getJourney(familyUser.getId()).getElders().get(0);
+
+        assertThat(entry.getOpenNeedsCount()).isEqualTo(3);
+        assertThat(entry.getOpenNeeds()).hasSize(3);
+        assertThat(entry.getOpenNeeds().get(0).getTitle()).isEqualTo("Help with my tablet");
+        assertThat(entry.getOpenNeeds().get(0).getDescription()).isEqualTo("The screen keeps freezing.");
+    }
+
+    // --- photo presigning ---
+
+    @Test
+    void photoUrlsArePresignedWhenProfilePhotoExists() {
+        linkActive(elder);
+        User helper = buildUser("harry_helper", UserRole.HELPER, 30.0);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(
+                        connection(elder, helper, ConnectionStatus.ACTIVE, true, TrustLevel.MESSAGING)));
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN)).thenReturn(List.of());
+        com.towinly.profile.entity.HelperProfile hp = new com.towinly.profile.entity.HelperProfile();
+        hp.setPhotoUrl("raw-photo-key");
+        when(helperProfileRepository.findByUserId(helper.getId())).thenReturn(Optional.of(hp));
+        when(s3Service.presignedUrl("raw-photo-key")).thenReturn("https://signed/photo");
+
+        SharedHelper h = service.getJourney(familyUser.getId())
+                .getElders().get(0).getSharedHelpers().get(0);
+
+        assertThat(h.getHelperPhotoUrl()).isEqualTo("https://signed/photo");
+    }
+}

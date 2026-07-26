@@ -9,7 +9,7 @@ spring:
 
 logging:
   level:
-    com.towin: DEBUG
+    com.towinly: DEBUG
 
 springdoc:
   api-docs:

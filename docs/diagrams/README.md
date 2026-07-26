@@ -1,6 +1,6 @@
 # Architecture diagrams — learn by reading your own app
 
-Five diagram types, each drawn from the **real ToWin code** (controllers, entities,
+Five diagram types, each drawn from the **real Towinly code** (controllers, entities,
 enums, deploy setup). Learn the syntax here, then edit and re-render.
 
 | # | File | Diagram type | What it shows |

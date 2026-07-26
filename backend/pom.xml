@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.towin</groupId>
+    <groupId>com.towinly</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>backend</name>
-    <description>ToWin - Connecting elderly people with each other and with young helpers</description>
+    <description>Towinly - Connecting elderly people with each other and with young helpers</description>
 
     <properties>
         <java.version>21</java.version>

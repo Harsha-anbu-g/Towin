@@ -1,0 +1,25 @@
+package com.towinly.common.messaging;
+
+import com.towinly.common.config.KafkaConfig;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+@Slf4j
+@Component
+@ConditionalOnProperty(prefix = "app.kafka", name = "enabled", havingValue = "true", matchIfMissing = false)
+public class ConnectionEventConsumer {
+
+    @KafkaListener(topics = KafkaConfig.TOPIC_CONNECTION_EVENTS, groupId = "towinly-notifications")
+    public void handle(ConnectionEvent event) {
+        switch (event.getType()) {
+            case REQUEST_SENT ->
+                log.info("Notify user {} — new connection request (connection={})", event.getRecipientId(), event.getConnectionId());
+            case REQUEST_ACCEPTED ->
+                log.info("Notify user {} — request accepted (connection={})", event.getRecipientId(), event.getConnectionId());
+            case REQUEST_DECLINED ->
+                log.info("Notify user {} — request declined (connection={})", event.getRecipientId(), event.getConnectionId());
+        }
+    }
+}

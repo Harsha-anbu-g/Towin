@@ -281,14 +281,14 @@ export default function MyFamily({ embedded = false }) {
               Add a family member
             </p>
             <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '18px', lineHeight: 1.5 }}>
-              Type their exact ToWin username, email or phone. They must say yes before anything is shared.
+              Type their exact Towinly username, email or phone. They must say yes before anything is shared.
             </p>
             <form onSubmit={sendRequest} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label htmlFor="family-identifier" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
                   Username, email or phone
                 </label>
-                <SmoothInput id="family-identifier" {...f('identifier')} className="field" placeholder="Exactly as they use it on ToWin" required />
+                <SmoothInput id="family-identifier" {...f('identifier')} className="field" placeholder="Exactly as they use it on Towinly" required />
               </div>
               <div>
                 <label htmlFor="family-relationship" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>

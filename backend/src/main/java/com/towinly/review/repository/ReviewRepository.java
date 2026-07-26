@@ -1,0 +1,35 @@
+package com.towinly.review.repository;
+
+import com.towinly.review.entity.Review;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface ReviewRepository extends JpaRepository<Review, UUID> {
+
+    List<Review> findByRevieweeIdOrderByCreatedAtDesc(UUID revieweeId);
+
+    List<Review> findByReviewerIdOrderByCreatedAtDesc(UUID reviewerId);
+
+    boolean existsByNeedIdAndReviewerId(UUID needId, UUID reviewerId);
+
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.reviewee.id = :userId")
+    Double findAverageRatingByRevieweeId(@Param("userId") UUID userId);
+
+    @Query("SELECT COALESCE(SUM(r.rating), 0) FROM Review r WHERE r.reviewee.id = :userId")
+    int sumRatingsByRevieweeId(@Param("userId") UUID userId);
+
+    long countByRevieweeIdAndSafetyConcernTrue(UUID revieweeId);
+
+    List<Review> findBySafetyConcernTrue();
+
+    // Paged variant for the admin panel — the list must not grow without a bound.
+    List<Review> findBySafetyConcernTrue(org.springframework.data.domain.Pageable pageable);
+
+    void deleteByReviewerIdOrRevieweeId(UUID reviewerId, UUID revieweeId);
+
+    void deleteByNeedId(UUID needId);
+}

@@ -1,0 +1,163 @@
+package com.towinly.profile.service;
+
+import com.towinly.common.entity.User;
+import com.towinly.common.enums.UserRole;
+import com.towinly.common.enums.VerificationStatus;
+import com.towinly.common.repository.UserRepository;
+import com.towinly.profile.dto.ElderProfileRequest;
+import com.towinly.profile.entity.ElderProfile;
+import com.towinly.profile.repository.ElderProfileRepository;
+import com.towinly.profile.repository.HelperProfileRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.Optional;
+import java.util.UUID;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ProfileServiceTest {
+
+    @Mock UserRepository userRepository;
+    @Mock ElderProfileRepository elderProfileRepository;
+    @Mock HelperProfileRepository helperProfileRepository;
+    @Mock com.towinly.common.service.TrustScoreService trustScoreService;
+    @Mock com.towinly.geocoding.GeocodingService geocodingService;
+    @Mock com.towinly.common.service.S3Service s3Service;
+    @InjectMocks ProfileService profileService;
+
+    @Test
+    void shouldCreateElderProfile() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .email("test@test.com")
+                .phone("+1234567890")
+                .passwordHash("hash")
+                .role(UserRole.ELDER)
+                .trustScore(0.0)
+                .verificationStatus(VerificationStatus.NONE)
+                .isActive(true)
+                .build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(elderProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(elderProfileRepository.save(any(ElderProfile.class))).thenAnswer(i -> i.getArgument(0));
+
+        ElderProfileRequest request = new ElderProfileRequest();
+        request.setName("John Elder");
+        request.setAge(72);
+
+        assertThatNoException().isThrownBy(
+                () -> profileService.createOrUpdateElderProfile(userId, request));
+
+        verify(elderProfileRepository).save(any(ElderProfile.class));
+    }
+
+    @Test
+    void updateLocationSetsCityFromGeocoder() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).isActive(true).build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(geocodingService.reverseGeocode(43.65, -79.38)).thenReturn("Toronto");
+
+        profileService.updateLocation(userId, 43.65, -79.38, null);
+
+        assertThat(user.getCity()).isEqualTo("Toronto");
+        assertThat(user.getLocationLat().doubleValue()).isEqualTo(43.65);
+    }
+
+    @Test
+    void updateLocationStillSavesCoordsWhenGeocodeFails() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).city("OldCity").isActive(true).build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(geocodingService.reverseGeocode(anyDouble(), anyDouble())).thenReturn(null);
+
+        profileService.updateLocation(userId, 1.0, 2.0, null);
+
+        assertThat(user.getLocationLat().doubleValue()).isEqualTo(1.0);
+        assertThat(user.getCity()).isEqualTo("OldCity"); // unchanged on null
+    }
+
+    @Test
+    void strangerView_hidesEmailDobPhoneAndAccountMeta() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .username("johne")
+                .email("private@test.com")
+                .phone("+1234567890")
+                .passwordHash("hash")
+                .authProvider("GOOGLE")
+                .dateOfBirth(java.time.LocalDate.of(1950, 3, 14))
+                .role(UserRole.ELDER)
+                .trustScore(40.0)
+                .verificationStatus(VerificationStatus.NONE)
+                .isActive(true)
+                .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(elderProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        var response = profileService.getProfile(userId, false);
+
+        assertThat(response.getEmail()).isNull();
+        assertThat(response.getDateOfBirth()).isNull();
+        assertThat(response.getPhone()).isNull();
+        assertThat(response.getAuthProvider()).isNull();
+        assertThat(response.isHasPassword()).isFalse();
+        // Public fields still come through untouched.
+        assertThat(response.getUsername()).isEqualTo("johne");
+        assertThat(response.getTrustScore()).isEqualTo(40);
+    }
+
+    @Test
+    void selfView_keepsEmailDobAndPhone() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .username("johne")
+                .email("private@test.com")
+                .phone("+1234567890")
+                .passwordHash("hash")
+                .authProvider("GOOGLE")
+                .dateOfBirth(java.time.LocalDate.of(1950, 3, 14))
+                .role(UserRole.ELDER)
+                .trustScore(40.0)
+                .verificationStatus(VerificationStatus.NONE)
+                .isActive(true)
+                .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(elderProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        var response = profileService.getProfile(userId, true);
+
+        assertThat(response.getEmail()).isEqualTo("private@test.com");
+        assertThat(response.getDateOfBirth()).isEqualTo("1950-03-14");
+        assertThat(response.getPhone()).isEqualTo("+1234567890");
+        assertThat(response.getAuthProvider()).isEqualTo("GOOGLE");
+        assertThat(response.isHasPassword()).isTrue();
+    }
+
+    @Test
+    void shouldThrowWhenUserNotFound() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        ElderProfileRequest request = new ElderProfileRequest();
+        request.setName("John");
+        request.setAge(70);
+
+        assertThatThrownBy(() -> profileService.createOrUpdateElderProfile(userId, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("User not found");
+    }
+}

@@ -1,4 +1,4 @@
-# 1. Flowchart — how a request flows through ToWin
+# 1. Flowchart — how a request flows through Towinly
 
 **Syntax you learn here:** `flowchart TB` (top-bottom) or `LR` (left-right),
 nodes `A[box]`, `B([rounded])`, `C[(database)]`, arrows `-->`, labels `-- text -->`,

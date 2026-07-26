@@ -1,9 +1,9 @@
-# 4. State — the lifecycles inside ToWin
+# 4. State — the lifecycles inside Towinly
 
 **Syntax you learn here:** `stateDiagram-v2`, `[*]` for start/end,
 `A --> B : what causes it`, and `note right of`.
 
-All three are real enums from `com.towin.common.enums`.
+All three are real enums from `com.towinly.common.enums`.
 
 ## Need lifecycle (`NeedStatus`)
 

@@ -459,7 +459,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
 .tortoise-mark.logo-mark--intro {
   transform: translateX(var(--intro-shift, 0px));   /* centred over the lockup */
 }
-/* "ToWin" is hidden behind its own clipped edge and slides in — a wipe done with
+/* "Towinly" is hidden behind its own clipped edge and slides in — a wipe done with
    transform (GPU) not clip-path (repaint). The outer span reserves the text's
    width; the inner is translated out of it to the left. */
 .logo-wordmark {
@@ -505,7 +505,7 @@ button, a, [role="button"], input, textarea, select, label, summary {
   animation: intro-pop 200ms var(--ease-arrive) forwards;
   animation-delay: calc(2000ms + var(--i) * 70ms);
 }
-/* 2.65s  the mark slides left into place as "ToWin" wipes in to fill the space
+/* 2.65s  the mark slides left into place as "Towinly" wipes in to fill the space
    it vacates — the wordmark reads as pushing it aside. */
 .tortoise-mark.logo-mark--intro.is-running {
   animation: intro-recenter 460ms var(--ease-arrive) 2650ms forwards;

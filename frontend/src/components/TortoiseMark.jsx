@@ -3,7 +3,7 @@ import { DRAW, CELLS, VIEWBOX, STROKE } from './tortoiseMarkPaths';
 import { useLogoIntro } from './useLogoIntro';
 
 /**
- * The ToWin tortoise, as vector geometry rather than a raster.
+ * The Towinly tortoise, as vector geometry rather than a raster.
  *
  * Traced from the original artwork (assets/logos/final logo.PNG) and verified
  * against it — mean edge error 0.91px on the artwork's own 1254px canvas. The
@@ -60,7 +60,7 @@ export default function TortoiseMark({
 }
 
 /**
- * The slide-1 hero lockup — the tortoise mark and the "ToWin" wordmark as one
+ * The slide-1 hero lockup — the tortoise mark and the "Towinly" wordmark as one
  * unit — wired to play the intro on the first landing view of a session.
  *
  * The gate hook is called once, here, and drives both halves: the mark draws
@@ -76,7 +76,7 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, m
   const [running, setRunning] = useState(false);
 
   // While it draws, the tortoise sits centred over the whole lockup; when
-  // "ToWin" arrives it slides back left into place, so the wordmark reads as
+  // "Towinly" arrives it slides back left into place, so the wordmark reads as
   // pushing it aside. The slide distance is half of (gap + wordmark width) —
   // measured, so it stays exact at any mark size or rendered text width.
   useLayoutEffect(() => {
@@ -115,7 +115,7 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, m
         size={size}
         animated={play}
         running={running}
-        title="ToWin tortoise logo"
+        title="Towinly tortoise logo"
         style={{ objectFit: 'contain', ...(play ? { '--intro-shift': `${shift}px` } : null) }}
       />
       {/* The wipe is done with overflow + a translated inner span (transform,
@@ -125,7 +125,7 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, m
         className={play ? `logo-wordmark${running ? ' is-writing' : ''}` : undefined}
         style={wordStyle}
       >
-        <span className="logo-wordmark-inner">ToWin</span>
+        <span className="logo-wordmark-inner">Towinly</span>
       </span>
     </div>
   );

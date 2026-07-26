@@ -21,8 +21,8 @@ function PublicHeader() {
         fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: 'var(--green-deep)',
         letterSpacing: '-0.4px', textDecoration: 'none',
       }}>
-        <img src="/logo.png" alt="ToWin logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
-        ToWin
+        <img src="/logo.png" alt="Towinly logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+        Towinly
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
         <Link to="/login" style={{ fontFamily: SF, fontSize: '16px', color: 'var(--ink-slate)', textDecoration: 'none' }}>

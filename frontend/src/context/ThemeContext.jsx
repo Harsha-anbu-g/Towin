@@ -9,12 +9,17 @@ import { useAuth } from './useAuth';
 // back in. We never follow the OS preference: older users shouldn't have the
 // app change look on its own. The inline script in index.html mirrors this
 // (dark before first paint only when a token is present) to avoid a flash.
-const STORAGE_KEY = 'towin-theme';
+const STORAGE_KEY = 'towinly-theme';
+// Pre-rename key (the app used to be called ToWin). Read as a fallback so
+// members who saved a choice before the rename keep it; writes go to the
+// new key only.
+const LEGACY_STORAGE_KEY = 'towin-theme';
 const THEME_COLOR = { light: '#4FA3CE', dark: '#201f1d' };
 
 function readSavedPreference() {
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light';
+    const saved = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
+    return saved === 'dark' ? 'dark' : 'light';
   } catch {
     return 'light'; // private mode / storage blocked
   }

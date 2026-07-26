@@ -94,7 +94,7 @@ export default function FinishSetup() {
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-          <img src="/tortoise-logo-alpha.png" alt="ToWin" style={{ width: 48, height: 48, objectFit: 'contain' }} />
+          <img src="/tortoise-logo-alpha.png" alt="Towinly" style={{ width: 48, height: 48, objectFit: 'contain' }} />
         </div>
 
         <h2 style={{

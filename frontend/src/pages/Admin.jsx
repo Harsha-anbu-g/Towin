@@ -15,7 +15,7 @@ const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 // Section nav — each entry is one screen of the console.
 const NAV = [
-  { id: 'Users', label: 'Users', icon: UsersIcon, blurb: 'Every account on ToWin. Search, suspend, or remove.' },
+  { id: 'Users', label: 'Users', icon: UsersIcon, blurb: 'Every account on Towinly. Search, suspend, or remove.' },
   { id: 'Verifications', label: 'Verifications', icon: ShieldCheck, blurb: 'People waiting for their ID check.' },
   { id: 'Reports', label: 'Reports', icon: Flag, blurb: 'Things people flagged. Look at these first.' },
   { id: 'Reviews', label: 'Reviews', icon: Star, blurb: 'What people said after helping each other.' },
@@ -439,8 +439,8 @@ export default function Admin() {
       fontSize: '20px', fontWeight: 600, fontFamily: SF, letterSpacing: '-0.374px',
       color: 'var(--green-deep)',
     }}>
-      <img src="/logo.png" alt="ToWin logo" style={{ width: 32, height: 32, objectFit: 'contain' }} />
-      ToWin
+      <img src="/logo.png" alt="Towinly logo" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+      Towinly
       <span style={{
         fontSize: '13px', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
         color: 'var(--blue-deep)', background: 'var(--blue-tint)', borderRadius: '9999px', padding: '3px 9px',

@@ -50,7 +50,7 @@ export default function CheckEmail() {
         padding: '12px 16px', marginBottom: 28, fontSize: 'var(--text-sm)', lineHeight: 1.5, textAlign: 'left',
       }}>
         📁 <strong>Can't find it?</strong> Please check your <strong>Spam</strong> or <strong>Junk</strong> folder —
-        the ToWin email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox.
+        the Towinly email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox.
       </div>
 
       <button onClick={resend} disabled={sending} style={primaryBtn}>

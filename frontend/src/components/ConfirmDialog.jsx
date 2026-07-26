@@ -9,7 +9,7 @@ const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
  * Covers several usability heuristics in one place:
  *  - Error prevention (H5): confirm before a consequential action.
  *  - User control & freedom (H3): Cancel button, backdrop click, and Esc all back out.
- *  - Consistency & standards (H4): every confirm in ToWin looks and behaves the same.
+ *  - Consistency & standards (H4): every confirm in Towinly looks and behaves the same.
  *  - Flexibility & efficiency (H7): Esc to cancel, Enter to confirm for keyboard users.
  *
  * Controlled component — render it with `open` and handle `onConfirm` / `onCancel`.

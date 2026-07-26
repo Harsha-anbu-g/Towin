@@ -1,13 +1,13 @@
 # Design
 
-Visual system for ToWin ("editorial tech journal on warm paper"). Source of truth for tokens: `frontend/src/index.css`. User-approved 2026-07-05.
+Visual system for Towinly ("editorial tech journal on warm paper"). Source of truth for tokens: `frontend/src/index.css`. User-approved 2026-07-05.
 
 ## Theme
 
 Light, warm, editorial. Warm parchment canvas with white cards; elevation via hairline borders and surface contrast — **no drop shadows** on cards. A whisper of sky in page-level gradients. Never dark canvas **by default**.
 
 **Night mode (added 2026-07-05, user-requested):** an opt-in dark theme behind the NavBar
-account-menu / drawer toggle ("Night mode"), persisted in `localStorage("towin-theme")`,
+account-menu / drawer toggle ("Night mode"), persisted in `localStorage("towinly-theme")`,
 applied as `[data-theme="dark"]` on `<html>` (pre-paint script in `frontend/index.html`,
 owned by `src/context/ThemeContext.jsx` after mount). Light stays the only default; the OS
 preference is never followed (elder predictability). The night palette is the same warm

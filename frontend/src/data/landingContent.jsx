@@ -2,7 +2,7 @@
 // Landing.jsx renders SLIDES[index].render() inside the slide shell.
 //
 // Design system ("The Patient Path"): the six slides read as a guided, numbered
-// walk — one step at a time, the way trust grows on ToWin. Each slide is anchored
+// walk — one step at a time, the way trust grows on Towinly. Each slide is anchored
 // by a Chapter marker (0N · label); the shell echoes it as a trail in the footer.
 //
 // Typography carries the redesign: Newsreader (serif) at weight 400 for the big
@@ -268,7 +268,7 @@ function StageLadder({ stages }) {
                 color: SLATE, flexShrink: 0,
               }}>
                 {isGoal
-                  ? <img src="/logo.png" alt="ToWin" draggable="false"
+                  ? <img src="/logo.png" alt="Towinly" draggable="false"
                       loading="lazy" decoding="async"
                       style={{ width: 26, height: 26, objectFit: 'contain', transform: 'rotate(90deg)' }} />
                   : (() => { const I = STAGE_ICONS[s]; return I ? <I size={15} strokeWidth={2.2} /> : i + 1; })()}
@@ -320,7 +320,7 @@ export const SLIDES = [
 
         {/* Brand lockup — the mark and wordmark read as one unit (wordmark stays sans).
             On every landing view it plays the intro: the tortoise draws itself in
-            centred, then "ToWin" wipes in from the left and pushes it into place.
+            centred, then "Towinly" wipes in from the left and pushes it into place.
             Nothing else on the page moves; reduced-motion renders it finished. */}
         <IntroBrandLockup
           size={82}
@@ -363,7 +363,7 @@ export const SLIDES = [
       <Slide>
         <Chapter n={2} label="Who it's for" align="center" />
         <Title align="center">Two kinds of people</Title>
-        <Lead align="center">Everyone on ToWin is one of these two.</Lead>
+        <Lead align="center">Everyone on Towinly is one of these two.</Lead>
         <div style={{ height: '24px' }} />
         <CardGrid>
           <MiniCard title="Elder" icon={Armchair}>
@@ -402,7 +402,7 @@ export const SLIDES = [
         </div>
         <div style={{ height: '18px' }} />
         <Body align="center">
-          On ToWin, an elder simply asks. Helpers nearby see the request and
+          On Towinly, an elder simply asks. Helpers nearby see the request and
           come to help with whatever is needed.
         </Body>
       </Slide>
@@ -466,7 +466,7 @@ export const SLIDES = [
             Rooting (<span style={{ color: GOLD }}>Trust</span> Ladder): how trust grows
           </Title>
           <Lead align="left">
-            Like a tree growing roots, every friendship on ToWin grows slowly,
+            Like a tree growing roots, every friendship on Towinly grows slowly,
             through 7 simple stages.
           </Lead>
           <div style={{ height: '18px' }} />
@@ -490,7 +490,7 @@ export const SLIDES = [
     id: 'why',
     render: () => (
       <Slide>
-        <Chapter n={6} label="Why ToWin" align="center" />
+        <Chapter n={6} label="Why Towinly" align="center" />
         <Title align="center">Both sides win</Title>
         <Lead align="center">
           Today&apos;s elders use phones, shop online, and pay online. Tomorrow
@@ -517,7 +517,7 @@ export const SLIDES = [
           letterSpacing: '-0.01em', lineHeight: 1.4, textAlign: 'center',
           maxWidth: '54ch', margin: '16px auto 0', textWrap: 'balance',
         }}>
-          ToWin is where they meet and share, and&nbsp;<span style={{ fontStyle: 'italic' }}>both</span>&nbsp;win.
+          Towinly is where they meet and share, and&nbsp;<span style={{ fontStyle: 'italic' }}>both</span>&nbsp;win.
         </p>
       </Slide>
     ),

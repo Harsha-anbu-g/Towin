@@ -812,7 +812,7 @@ export default function ProfileEdit() {
 
       <ConfirmDialog
         open={confirmSignOut}
-        title="Sign out of ToWin?"
+        title="Sign out of Towinly?"
         message="You can sign back in any time with your username and password."
         confirmLabel="Sign Out"
         cancelLabel="Stay Signed In"

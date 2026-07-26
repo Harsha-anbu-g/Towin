@@ -1,0 +1,299 @@
+package com.towinly.common.seed;
+
+import com.towinly.common.entity.User;
+import com.towinly.common.enums.ConnectionStatus;
+import com.towinly.common.enums.FamilyLinkStatus;
+import com.towinly.common.enums.NeedStatus;
+import com.towinly.common.enums.TrustLevel;
+import com.towinly.common.enums.UserRole;
+import com.towinly.common.repository.UserRepository;
+import com.towinly.common.service.TrustScoreService;
+import com.towinly.connection.entity.Connection;
+import com.towinly.connection.repository.ConnectionRepository;
+import com.towinly.emergency.repository.EmergencyContactRepository;
+import com.towinly.common.enums.DelegatedPower;
+import com.towinly.family.entity.FamilyDelegatedPower;
+import com.towinly.family.entity.FamilyLink;
+import com.towinly.family.repository.FamilyAlertRepository;
+import com.towinly.family.repository.FamilyDelegatedPowerRepository;
+import com.towinly.family.repository.FamilyLinkRepository;
+import com.towinly.messaging.repository.MessageRepository;
+import com.towinly.need.entity.Need;
+import com.towinly.need.repository.NeedApplicationRepository;
+import com.towinly.need.repository.NeedRepository;
+import com.towinly.profile.repository.ElderProfileRepository;
+import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.report.repository.ReportRepository;
+import com.towinly.review.entity.Review;
+import com.towinly.review.repository.ReviewRepository;
+import com.towinly.streak.entity.UserStreak;
+import com.towinly.streak.repository.UserStreakRepository;
+import com.towinly.trust.repository.TrustProgressionLogRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+/**
+ * US-014: the demo shows the family feature working — a demo FAMILY account
+ * (Sarah, Margaret's daughter) with an ACTIVE link to the demo elder, one demo
+ * elder connection shared with family and another kept private.
+ */
+@ExtendWith(MockitoExtension.class)
+class DemoDataSeederFamilyTest {
+
+    @Mock UserRepository userRepository;
+    @Mock ElderProfileRepository elderProfileRepository;
+    @Mock HelperProfileRepository helperProfileRepository;
+    @Mock ConnectionRepository connectionRepository;
+    @Mock MessageRepository messageRepository;
+    @Mock NeedRepository needRepository;
+    @Mock NeedApplicationRepository needApplicationRepository;
+    @Mock ReviewRepository reviewRepository;
+    @Mock UserStreakRepository userStreakRepository;
+    @Mock EmergencyContactRepository emergencyContactRepository;
+    @Mock ReportRepository reportRepository;
+    @Mock TrustProgressionLogRepository trustProgressionLogRepository;
+    @Mock PasswordEncoder passwordEncoder;
+    @Mock TrustScoreService trustScoreService;
+    @Mock PlatformTransactionManager transactionManager;
+    @Mock FamilyLinkRepository familyLinkRepository;
+    @Mock FamilyAlertRepository familyAlertRepository;
+    @Mock FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
+
+    @InjectMocks DemoDataSeeder seeder;
+
+    @BeforeEach
+    void stubHappyPath() {
+        // Additive mode (no purge) unless a test flips it back on.
+        ReflectionTestUtils.setField(seeder, "resetEnabled", false);
+
+        lenient().when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+        lenient().when(passwordEncoder.encode(anyString())).thenReturn("HASH");
+        lenient().when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            if (u.getId() == null) u.setId(UUID.randomUUID());
+            return u;
+        });
+        lenient().when(connectionRepository.save(any(Connection.class))).thenAnswer(inv -> {
+            Connection c = inv.getArgument(0);
+            if (c.getId() == null) c.setId(UUID.randomUUID());
+            return c;
+        });
+        lenient().when(needRepository.save(any(Need.class))).thenAnswer(inv -> {
+            Need n = inv.getArgument(0);
+            if (n.getId() == null) n.setId(UUID.randomUUID());
+            return n;
+        });
+        lenient().when(needRepository.findByElderIdOrderByCreatedAtDesc(any(), any()))
+                .thenReturn(Page.empty());
+    }
+
+    private User savedUser(String email) {
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository, atLeastOnce()).save(captor.capture());
+        return captor.getAllValues().stream()
+                .filter(u -> email.equals(u.getEmail()))
+                .findFirst().orElse(null);
+    }
+
+    @Test
+    void seedsSarahAsFamilyRoleDemoAccount() {
+        seeder.run(null);
+
+        verify(transactionManager, never()).rollback(any());
+        User sarah = savedUser("demo.sarah@towin.app");
+        assertThat(sarah).as("demo FAMILY account seeded").isNotNull();
+        assertThat(sarah.getRole()).isEqualTo(UserRole.FAMILY);
+        assertThat(DemoDataSeeder.DEMO_EMAILS).contains("demo.sarah@towin.app");
+    }
+
+    @Test
+    void seedsActiveDaughterLinkToDemoElder() {
+        seeder.run(null);
+
+        ArgumentCaptor<FamilyLink> captor = ArgumentCaptor.forClass(FamilyLink.class);
+        verify(familyLinkRepository, atLeastOnce()).save(captor.capture());
+        FamilyLink link = captor.getValue();
+        assertThat(link.getElder().getEmail()).isEqualTo(DemoDataSeeder.ELDER_DEMO_EMAIL);
+        assertThat(link.getFamilyUser().getEmail()).isEqualTo("demo.sarah@towin.app");
+        assertThat(link.getStatus()).isEqualTo(FamilyLinkStatus.ACTIVE);
+        assertThat(link.getRelationship()).isEqualTo("Daughter");
+        assertThat(link.getRespondedAt()).as("accepted links carry responded_at").isNotNull();
+    }
+
+    @Test
+    void sharesOneElderConnectionAndKeepsAnotherPrivate() {
+        seeder.run(null);
+
+        ArgumentCaptor<Connection> captor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionRepository, atLeastOnce()).save(captor.capture());
+        List<Connection> margaretConnections = captor.getAllValues().stream()
+                .filter(c -> DemoDataSeeder.ELDER_DEMO_EMAIL.equals(c.getUserA().getEmail()))
+                .distinct()
+                .toList();
+
+        List<Connection> shared = margaretConnections.stream()
+                .filter(c -> Boolean.TRUE.equals(c.getSharedWithFamily())).toList();
+        List<Connection> kept = margaretConnections.stream()
+                .filter(c -> !Boolean.TRUE.equals(c.getSharedWithFamily())).toList();
+        assertThat(shared).as("one elder connection is shared with family").isNotEmpty();
+        assertThat(kept).as("another elder connection stays private").isNotEmpty();
+    }
+
+    // ── US-004: demo shows the journey on day one ────────────────────────
+
+    private List<Connection> savedMargaretConnections() {
+        ArgumentCaptor<Connection> captor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionRepository, atLeastOnce()).save(captor.capture());
+        return captor.getAllValues().stream()
+                .filter(c -> DemoDataSeeder.ELDER_DEMO_EMAIL.equals(c.getUserA().getEmail()))
+                .distinct()
+                .toList();
+    }
+
+    @Test
+    void sharedConnectionSitsAtReadyToMeet() {
+        seeder.run(null);
+
+        List<Connection> shared = savedMargaretConnections().stream()
+                .filter(c -> Boolean.TRUE.equals(c.getSharedWithFamily())).toList();
+        assertThat(shared).as("exactly one shared connection").hasSize(1);
+        assertThat(shared.get(0).getCurrentTrustLevel())
+                .as("shared friendship shows the ready-to-meet highlight on day one")
+                .isEqualTo(TrustLevel.FIRST_MEET);
+        assertThat(shared.get(0).getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+    }
+
+    @Test
+    void margaretHasCheckedInToday() {
+        seeder.run(null);
+
+        User margaret = savedUser(DemoDataSeeder.ELDER_DEMO_EMAIL);
+        ArgumentCaptor<UserStreak> captor = ArgumentCaptor.forClass(UserStreak.class);
+        verify(userStreakRepository, atLeastOnce()).save(captor.capture());
+        UserStreak margaretStreak = captor.getAllValues().stream()
+                .filter(s -> margaret.getId().equals(s.getUserId()))
+                .findFirst().orElse(null);
+        assertThat(margaretStreak).as("Margaret's streak is seeded").isNotNull();
+        assertThat(margaretStreak.getLastCheckinDate())
+                .as("check-in chip is green on day one")
+                .isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    void noReviewsBetweenMargaretAndHerSharedHelper() {
+        seeder.run(null);
+
+        // Reviews unlock only at TRUSTED; Margaret ↔ Harsha (the shared
+        // friendship) sit at FIRST_MEET, so the seed must not plant reviews the
+        // app could never create.
+        ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
+        verify(reviewRepository, atLeastOnce()).save(captor.capture());
+        assertThat(captor.getAllValues())
+                .noneMatch(r -> involves(r, DemoDataSeeder.ELDER_DEMO_EMAIL, DemoDataSeeder.HELPER_DEMO_EMAIL));
+    }
+
+    private boolean involves(Review r, String emailA, String emailB) {
+        String reviewer = r.getReviewer().getEmail();
+        String reviewee = r.getReviewee().getEmail();
+        return (reviewer.equals(emailA) && reviewee.equals(emailB))
+                || (reviewer.equals(emailB) && reviewee.equals(emailA));
+    }
+
+    // ── Guardian mode: the demo shows delegated powers on day one ────────
+
+    private List<FamilyDelegatedPower> savedPowers() {
+        ArgumentCaptor<FamilyDelegatedPower> captor = ArgumentCaptor.forClass(FamilyDelegatedPower.class);
+        verify(familyDelegatedPowerRepository, atLeastOnce()).save(captor.capture());
+        return captor.getAllValues();
+    }
+
+    @Test
+    void grantsSarahTheEverydayPowersOverMargaret() {
+        seeder.run(null);
+
+        List<FamilyDelegatedPower> powers = savedPowers();
+        assertThat(powers).allSatisfy(p -> {
+            assertThat(p.getElder().getEmail()).isEqualTo(DemoDataSeeder.ELDER_DEMO_EMAIL);
+            assertThat(p.getFamilyUser().getEmail()).isEqualTo("demo.sarah@towin.app");
+        });
+        assertThat(powers).extracting(FamilyDelegatedPower::getPower)
+                .as("the help-request and trust actions are live in the demo")
+                .contains(DelegatedPower.MANAGE_HELP_REQUESTS, DelegatedPower.ADVANCE_TRUST);
+    }
+
+    @Test
+    void leavesTheReviewPowerOffSoTheSwitchesLookIndividual() {
+        seeder.run(null);
+
+        assertThat(savedPowers()).extracting(FamilyDelegatedPower::getPower)
+                .as("one power stays off, showing they are granted one at a time")
+                .doesNotContain(DelegatedPower.LEAVE_REVIEWS);
+    }
+
+    @Test
+    void grantsNoPowerTwiceWhenTheSeedRunsAgain() {
+        seeder.run(null);
+        List<FamilyDelegatedPower> granted = List.copyOf(savedPowers());
+
+        // Second boot: those grants are on file now, so nothing is written again.
+        lenient().when(familyDelegatedPowerRepository.findByElderIdAndFamilyUserId(any(), any()))
+                .thenReturn(granted);
+        seeder.run(null);
+
+        verify(familyDelegatedPowerRepository, times(granted.size()))
+                .save(any(FamilyDelegatedPower.class));
+    }
+
+    @Test
+    void seedsAHelpRequestSarahWroteForHerMother() {
+        seeder.run(null);
+
+        ArgumentCaptor<Need> captor = ArgumentCaptor.forClass(Need.class);
+        verify(needRepository, atLeastOnce()).save(captor.capture());
+        List<Need> delegated = captor.getAllValues().stream()
+                .filter(n -> n.getActedBy() != null)
+                .toList();
+
+        assertThat(delegated).as("a helper sees 'Asked by Sarah, for Margaret' without clicking").hasSize(1);
+        assertThat(delegated.get(0).getActedBy().getEmail()).isEqualTo("demo.sarah@towin.app");
+        assertThat(delegated.get(0).getElder().getEmail()).isEqualTo(DemoDataSeeder.ELDER_DEMO_EMAIL);
+        assertThat(delegated.get(0).getStatus())
+                .as("open, so it shows in Browse Requests").isEqualTo(NeedStatus.OPEN);
+    }
+
+    @Test
+    void resetPurgesFamilyRowsBeforeReseeding() {
+        ReflectionTestUtils.setField(seeder, "resetEnabled", true);
+        lenient().when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+
+        seeder.run(null);
+
+        verify(transactionManager, never()).rollback(any());
+        verify(familyLinkRepository, atLeastOnce()).deleteByElderIdOrFamilyUserId(any(), any());
+        verify(familyAlertRepository, atLeastOnce()).deleteByElderId(any());
+        verify(familyDelegatedPowerRepository, atLeastOnce()).deleteByElderIdOrFamilyUserId(any(), any());
+    }
+}

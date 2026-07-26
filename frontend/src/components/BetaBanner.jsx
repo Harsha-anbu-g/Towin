@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const STORAGE_KEY = 'towin_beta_banner_dismissed';
+const STORAGE_KEY = 'towinly_beta_banner_dismissed';
 
 export default function BetaBanner() {
   const [visible, setVisible] = useState(
@@ -32,7 +32,7 @@ export default function BetaBanner() {
       boxSizing: 'border-box',
     }}>
       <span>
-        ToWin is in beta testing. Your feedback helps us improve.{' '}
+        Towinly is in beta testing. Your feedback helps us improve.{' '}
         <button
           onClick={() => navigate('/feedback')}
           style={{

@@ -4,7 +4,7 @@
 `<<interface>>` and `<<enumeration>>` tags, generics with `~T~` (i.e. `List~Need~`),
 and the arrows: `--|>` extends, `-->` has/uses, `..>` depends on.
 
-All names are real — from `com.towin.need`.
+All names are real — from `com.towinly.need`.
 
 ```mermaid
 classDiagram

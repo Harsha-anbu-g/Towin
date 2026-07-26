@@ -1,13 +1,13 @@
-# ToWin — Design System
+# Towinly — Design System
 
-> The source of truth for ToWin's look and feel. This describes the **actual**
+> The source of truth for Towinly's look and feel. This describes the **actual**
 > implemented design (see [src/index.css](src/index.css)), not an aspiration.
 > An earlier version of this file was an analysis of Apple.com; it is preserved
 > as `DESIGN.apple-reference.md` for reference only and is **not** our system.
 
 ## Brand in one breath
 
-ToWin connects older adults with trusted helpers. The feeling is **calm, warm,
+Towinly connects older adults with trusted helpers. The feeling is **calm, warm,
 and reassuring** — never busy or clinical. Tagline: **"It takes two To Win."**
 
 - **Mascot / logo:** a turtle (tortoise) — patient, steady, dependable.
@@ -46,7 +46,7 @@ substitute the blue for trust labels.
 `--red #cc0000` (errors/destructive) · `--amber #b05000` (warnings).
 
 ### Gradients & depth — yes, we use them
-Unlike a flat Apple-style system, ToWin's calm/zen feel **does** use soft
+Unlike a flat Apple-style system, Towinly's calm/zen feel **does** use soft
 gradients and gentle shadows:
 - Auth pages: layered radial gradients in sky-blue and leaf-green washes.
 - `AuroraBackground`: slow drifting blobs behind hero moments.

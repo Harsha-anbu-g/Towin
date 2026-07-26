@@ -200,8 +200,8 @@ export default function NavBar() {
           minHeight: '44px', minWidth: '44px', // elderly-first tap-target floor
           marginRight: isMobile ? 0 : '32px',
         }}>
-          <img src="/logo.png" alt="ToWin logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
-          {!isMobile && 'ToWin'}
+          <img src="/logo.png" alt="Towinly logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
+          {!isMobile && 'Towinly'}
         </Link>
 
         {/* Desktop nav */}
@@ -485,7 +485,7 @@ export default function NavBar() {
 
       <ConfirmDialog
         open={confirmSignOut}
-        title="Log out of ToWin?"
+        title="Log out of Towinly?"
         message="You can log back in any time with your email and password."
         confirmLabel="Log Out"
         cancelLabel="Stay Logged In"

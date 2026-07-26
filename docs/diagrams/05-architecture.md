@@ -8,12 +8,12 @@ This is the real deploy: frontend on Vercel, backend on Railway.
 
 ```mermaid
 C4Context
-    title ToWin — system context
+    title Towinly — system context
 
     Person(elder, "Elder", "Posts needs, builds trusted connections")
     Person(helper, "Helper", "Finds elders nearby, offers help")
 
-    System_Boundary(towin, "ToWin") {
+    System_Boundary(towinly, "Towinly") {
         System(fe, "React frontend", "Vite + React 19, hosted on Vercel")
         System(be, "Spring Boot API", "Java 21, 16 feature slices, hosted on Railway")
         SystemDb(db, "PostgreSQL", "users, needs, connections, messages, trust")

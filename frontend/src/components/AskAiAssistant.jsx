@@ -21,7 +21,7 @@ const GREETING = {
   role: 'assistant',
   intro: true,
   content:
-    "Hello! I'm the ToWin tortoise. Ask me anything about how ToWin works, or " +
+    "Hello! I'm the Towinly tortoise. Ask me anything about how Towinly works, or " +
     "if you're logged in, about your own account like your trust score or streak.",
 };
 
@@ -151,7 +151,7 @@ export default function AskAiAssistant() {
           role: 'assistant',
           content:
             "Sorry, I couldn't answer just now. Please try again in a moment, or use " +
-            'the Feedback button and the ToWin team will help.',
+            'the Feedback button and the Towinly team will help.',
         },
       ]);
     } finally {
@@ -172,7 +172,7 @@ export default function AskAiAssistant() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          aria-label="Ask AI, the ToWin helper"
+          aria-label="Ask AI, the Towinly helper"
           className="ask-ai-fab"
           style={{
             
@@ -245,7 +245,7 @@ export default function AskAiAssistant() {
                   Ask AI
                 </p>
                 <p style={{ margin: 0, fontFamily: SF, fontSize: 'var(--text-xs, 13px)', color: 'var(--ink-slate)' }}>
-                  Your ToWin helper
+                  Your Towinly helper
                 </p>
               </div>
               <button

@@ -1,0 +1,24 @@
+package com.towinly.auth.dto;
+
+import com.towinly.common.enums.UserRole;
+import jakarta.validation.constraints.*;
+import lombok.Data;
+import java.time.LocalDate;
+
+@Data
+public class RegisterRequest {
+    @NotBlank @Pattern(regexp = "^[a-z0-9_]{3,20}$", message = "Username must be 3-20 characters: lowercase letters, numbers, underscores only")
+    private String username;
+
+    @NotBlank @Size(min = 8, message = "Password must be at least 8 characters")
+    private String password;
+
+    @NotBlank @Email(message = "Enter a valid email address")
+    private String email;
+
+    @NotNull
+    private UserRole role;
+
+    @Past(message = "Date of birth must be in the past")
+    private LocalDate dateOfBirth;
+}

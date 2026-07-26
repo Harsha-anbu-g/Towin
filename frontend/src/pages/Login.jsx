@@ -66,14 +66,14 @@ function HeroPanel() {
           boxShadow: '0 2px 10px rgba(20,55,80,0.22)',
           flexShrink: 0,
         }}>
-          <img src="/tortoise-logo-alpha.png" alt="ToWin logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+          <img src="/tortoise-logo-alpha.png" alt="Towinly logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
         </span>
         <p style={{
           fontSize: '21px', fontWeight: 600, color: '#ffffff', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
           margin: 0,
         }}>
-          ToWin
+          Towinly
         </p>
       </Link>
 
@@ -323,7 +323,7 @@ export default function Login() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px',
             }}>
-              Log in to your ToWin account.
+              Log in to your Towinly account.
             </p>
 
             {/* Session expired notice — explains why they're back here (H9) */}

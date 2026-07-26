@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 // A token is any string that changes when the item becomes notification-worthy
 // (e.g. `${connectionId}:${status}` so a pending→active accept shows as new).
 export function useSeenIds(userId, category) {
-  const storageKey = `towin_seen_${userId || 'anon'}_${category}`;
+  const storageKey = `towinly_seen_${userId || 'anon'}_${category}`;
 
   const [seen, setSeen] = useState(() => {
     try {

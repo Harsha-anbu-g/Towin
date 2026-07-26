@@ -1,4 +1,4 @@
-# 3. Entity Relationship — the ToWin database
+# 3. Entity Relationship — the Towinly database
 
 **Syntax you learn here:** `erDiagram`, entities as blocks with typed fields,
 and relationship lines: `||` exactly one, `o|` zero or one, `o{` zero or many.

@@ -14,7 +14,7 @@ product
 
 ## Product Purpose
 
-ToWin connects elders with trusted younger helpers nearby — "It takes two To Win." The core mechanic is **trust built slowly**: a visible Trust Score (max 15 points per connection: profile +3, seven-step Trust Ladder +7, reviews +5) and a mutual-consent ladder (Just Connected → Fully Trusted) that gates personal-info sharing. Success = elders feel safe enough to say yes, and helpers feel their reliability is seen and rewarded.
+Towinly connects elders with trusted younger helpers nearby — "It takes two To Win." The core mechanic is **trust built slowly**: a visible Trust Score (max 15 points per connection: profile +3, seven-step Trust Ladder +7, reviews +5) and a mutual-consent ladder (Just Connected → Fully Trusted) that gates personal-info sharing. Success = elders feel safe enough to say yes, and helpers feel their reliability is seen and rewarded.
 
 ## Brand Personality
 

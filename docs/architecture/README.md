@@ -23,12 +23,12 @@ this map with zero extra work.
 For reading the API without running the backend. These files are **local only —
 gitignored** (they expose the full API surface, so they don't belong on GitHub):
 
-- **`towin-api-docs.html`** ← the **exact same Swagger UI as `localhost:8080`**, as a
+- **`towinly-api-docs.html`** ← the **exact same Swagger UI as `localhost:8080`**, as a
   single self-contained file (swagger-ui CSS + JS + the OpenAPI spec all inlined).
   **Open it in any browser, fully offline** — no server, no CDN. Same topbar, same
   green Authorize button, all 16 controllers and endpoints. (Try-it-out can't reach a
   live server offline, but every endpoint, schema, and auth detail is browsable.)
-- **`towin-openapi.json`** / **`towin-openapi.yaml`** — the raw spec. Import into
+- **`towinly-openapi.json`** / **`towinly-openapi.yaml`** — the raw spec. Import into
   Postman, Insomnia, IntelliJ's HTTP client, or paste at https://editor.swagger.io.
 
 Regenerate (after the API changes) with the backend running on :8080:

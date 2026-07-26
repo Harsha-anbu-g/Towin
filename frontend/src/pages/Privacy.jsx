@@ -15,7 +15,7 @@ export default function Privacy() {
 
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 600, marginBottom: 12 }}>What we collect</h2>
-        <p>ToWin collects the information you provide when you create an account (username, date of birth, role), information you add to your profile (name, bio, photo, phone number), and messages you exchange with other users. We also collect your device's approximate location when you choose to share it.</p>
+        <p>Towinly collects the information you provide when you create an account (username, date of birth, role), information you add to your profile (name, bio, photo, phone number), and messages you exchange with other users. We also collect your device's approximate location when you choose to share it.</p>
       </section>
 
       <section style={{ marginBottom: 32 }}>
