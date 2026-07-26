@@ -41,18 +41,26 @@ const FULLY_TRUSTED_STAGE = 6;
 
 const firstName = (name) => (name || '').trim().split(' ')[0] || 'They';
 
-/* ── Score: a plain number — it keeps growing, so no bounded ring ─────────── */
-function ScoreRing({ score }) {
+/* ── The trust seal: the running total, framed as a warm gold plaque. It's a
+      seal, not a ring or a bar — the score keeps growing, so nothing here
+      implies a max. Gold echoes the "Trust" in the page title. ────────────── */
+function ScoreSeal({ score }) {
   return (
     <div style={{
-      width: '120px', flexShrink: 0,
+      width: '116px', height: '116px', flexShrink: 0,
+      borderRadius: '22px',
+      background: 'linear-gradient(155deg, var(--gold-wash-2) 0%, var(--gold-wash) 100%)',
+      border: '1px solid var(--gold-line)',
+      // Inset top highlight catches the light so the seal reads as a raised
+      // object, not a flat swatch — no drop shadow (elevation stays hairline).
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
     }}>
-      <span style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 400, color: INK, lineHeight: 1, letterSpacing: '-0.02em' }}>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: '46px', fontWeight: 400, color: INK, lineHeight: 1, letterSpacing: '-0.02em' }}>
         {score}
       </span>
-      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', color: FAINT, marginTop: '4px' }}>
+      <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--gold-deep)', marginTop: '5px', letterSpacing: '0.02em' }}>
         points
       </span>
     </div>
@@ -152,8 +160,8 @@ function ScoreSummary({ data }) {
   const people = data.customers ?? [];
   return (
     <div style={{ ...card, padding: '20px', marginBottom: '16px' }}>
-      <div className="score-card-row" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-        <ScoreRing score={score} />
+      <div className="score-card-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+        <ScoreSeal score={score} />
         <div style={{ flex: 1, minWidth: '220px' }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center',
@@ -164,13 +172,17 @@ function ScoreSummary({ data }) {
           }}>
             {data.tier}
           </div>
-          <h2 style={{ fontFamily: SFD, fontSize: 'var(--text-base)', fontWeight: 700, color: INK, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
-            {score} points
+          {/* The headline names the goal, not the number again — the seal already
+              shows the total, so restating it here read as auto-generated filler. */}
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, color: INK, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+            {next
+              ? <>{toNext} {toNext === 1 ? 'point' : 'points'} to {next.name}</>
+              : <>You've reached the top tier</>}
           </h2>
           <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.55 }}>
             {next
-              ? <>You're {toNext} {toNext === 1 ? 'point' : 'points'} away from {next.name}. Every person you help fully adds up to 15 points.</>
-              : <>You've reached the top tier. Keep helping — every person still adds up to 15 points.</>}
+              ? <>Every person you help fully adds up to 15 points.</>
+              : <>Keep helping — every person still adds up to 15 points.</>}
           </p>
           <HelperStack people={people} />
         </div>
