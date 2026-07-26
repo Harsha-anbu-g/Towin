@@ -73,7 +73,10 @@ const sectionH = {
   margin: 0,
 };
 
-export default function MyFamily() {
+// embedded: rendered inside the elder dashboard's My Family tab panel — the
+// dashboard supplies the page shell (NavBar, width, padding), so this renders
+// content only. Standalone /family keeps its own shell for direct links.
+export default function MyFamily({ embedded = false }) {
   const { toast } = useToast();
   const [family, setFamily] = useState({ activeLinks: [], incomingRequests: [], outgoingRequests: [] });
   const [loaded, setLoaded] = useState(false);
@@ -100,8 +103,10 @@ export default function MyFamily() {
     return Promise.all([
       api.get('/family/links').then(r => setFamily(r.data)).catch(() => {}),
       // My own friendships — each one carries its own Watching switch.
+      // FAMILY-type connections are the family chats themselves (e.g. with a
+      // daughter), not friendships to share, so they get no switch here.
       api.get('/connections')
-        .then(r => setConnections((r.data || []).filter(c => c.status === 'ACTIVE')))
+        .then(r => setConnections((r.data || []).filter(c => c.status === 'ACTIVE' && c.type !== 'FAMILY')))
         .catch(() => {}),
     ]).finally(() => setLoaded(true));
   }, []);
@@ -195,14 +200,16 @@ export default function MyFamily() {
   const f = (key) => ({ value: form[key], onChange: e => setForm(p => ({ ...p, [key]: e.target.value })) });
 
   return (
-    <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
-      <NavBar />
+    <div style={embedded ? { fontFamily: SFText } : { minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
+      {!embedded && <NavBar />}
 
-      <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 60px' }}>
+      <div style={embedded ? undefined : { maxWidth: '640px', margin: '0 auto', padding: '32px 24px 60px' }}>
 
-        {/* Page title */}
+        {/* Page title — embedded matches the dashboard's serif panel headings */}
         <BlurFade delay={2}>
-          <h1 style={sectionH}>
+          <h1 style={embedded
+            ? { fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }
+            : sectionH}>
             My Family
             <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
               ({seatCount}/{FAMILY_MAX})

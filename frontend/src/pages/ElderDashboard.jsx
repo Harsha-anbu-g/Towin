@@ -16,6 +16,7 @@ import SmoothInput from '../components/SmoothInput';
 import { useAuth } from '../context/useAuth';
 import Avatar from '../components/ui/Avatar';
 import { useSeenIds } from '../lib/useSeenIds';
+import MyFamily from './MyFamily';
 
 function TabBadge({ count }) {
   if (!count) return null;
@@ -142,6 +143,11 @@ function TabIcon({ id, active }) {
       <line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
   );
+  if (id === 'family') return (
+    <svg {...svgProps}>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  );
   return null;
 }
 
@@ -172,9 +178,6 @@ export default function ElderDashboard() {
   // tab. A refresh keeps the current section because it reloads the URL as-is
   // rather than going through this handler.
   const setTab = (next) => {
-    // "My Family" lives at the top of the dashboard (user call 2026-07-19) but
-    // is its own page — the tab is a doorway, not a panel.
-    if (next === 'family') { navigate('/family'); return; }
     setSearchParams(prev => {
       const p = new URLSearchParams(prev);
       p.set('tab', next);
@@ -457,21 +460,25 @@ export default function ElderDashboard() {
     finally { setSubmittingReview(false); }
   }
 
+  // Family chats ride on FAMILY-type connections (a daughter's private chat is
+  // a Connection too, for messaging) — they are not helper friendships, so
+  // every helper-facing list on this page starts from this filtered set.
+  const helperConns = connections.filter(c => c.type !== 'FAMILY');
   // Only ACTIVE connections count as "Connected" — a pending request must not
   // show the Connected badge in Find New Helpers.
-  const connectedHelperIds = new Set(connections.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
+  const connectedHelperIds = new Set(helperConns.filter(c => c.status === 'ACTIVE').map(c => c.otherUserId));
   // Reviewing is the reward at the top of the trust ladder: only fully trusted
   // friends may rate each other. Finishing a request together is not a shortcut
   // past it, so the review UI on a completed request checks this too — and
   // ReviewService enforces the same rule server-side.
   const fullyTrustedHelperIds = new Set(
-    connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').map(c => c.otherUserId)
+    helperConns.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').map(c => c.otherUserId)
   );
-  const incomingRequests = connections.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
-  const sentRequests = connections.filter(c => c.status === 'PENDING' && c.initiatedByMe);
+  const incomingRequests = helperConns.filter(c => c.status === 'PENDING' && !c.initiatedByMe);
+  const sentRequests = helperConns.filter(c => c.status === 'PENDING' && c.initiatedByMe);
   const requestedHelperIds = new Set(sentRequests.map(c => c.otherUserId));
 
-  const connTokens = connections.filter(c => c.status === 'ACTIVE').map(c => `${c.id}:${c.status}`);
+  const connTokens = helperConns.filter(c => c.status === 'ACTIVE').map(c => `${c.id}:${c.status}`);
   const applicantTokens = myNeeds.flatMap(n => (n.applications || []).map(a => `${n.id}:${a.helperId}`));
   const connBadge = seenConn.unseenCount(connTokens);
   const requestsBadge = seenApplicants.unseenCount(applicantTokens);
@@ -493,8 +500,8 @@ export default function ElderDashboard() {
 
   // ── My Helpers — classify connections by trust state ──
   const helperCounts = {
-    active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
-    building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
+    active:   helperConns.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
+    building: helperConns.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
   };
   const helpersDefault = 'active';
   const activeHelpersSeg = helpersSeg ?? helpersDefault;
@@ -502,7 +509,7 @@ export default function ElderDashboard() {
     { id: 'active',   label: 'Trusted Helpers', count: helperCounts.active },
     { id: 'building', label: 'Building Trust',  count: helperCounts.building },
   ];
-  const activeConnections = connections.filter(c => c.status === 'ACTIVE');
+  const activeConnections = helperConns.filter(c => c.status === 'ACTIVE');
   const visibleConnections = [...activeConnections].filter(c => {
     if (activeHelpersSeg === 'active')   return c.currentTrustLevel === 'TRUSTED';
     return c.currentTrustLevel !== 'TRUSTED';
@@ -847,6 +854,15 @@ export default function ElderDashboard() {
                 </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* My Family tab — a real panel like its neighbors, so the tab bar
+              stays put instead of jumping to another page (user call 2026-07-26,
+              reverses the 2026-07-19 doorway). /family still serves direct links. */}
+          {tab === 'family' && (
+            <div role="tabpanel" aria-labelledby="dash-tab-family">
+              <MyFamily embedded />
             </div>
           )}
 
