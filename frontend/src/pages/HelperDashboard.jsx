@@ -518,9 +518,12 @@ export default function HelperDashboard() {
   }
 
   // ── My Elders — classify connections by trust state (mirrors the elder view) ──
+  // Family coordination connections never show as their own card — they render
+  // as a row under the elder they belong to (matched via /family/behind-me).
+  const elderConnections = connections.filter(c => c.type !== 'FAMILY');
   const elderCounts = {
-    active:   connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
-    building: connections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
+    active:   elderConnections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
+    building: elderConnections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
   };
   // Always open on Active — a helper's home base is their established elders.
   // Pending connection requests now live in their own top-level Requests tab.
@@ -530,7 +533,7 @@ export default function HelperDashboard() {
     { id: 'active',   label: 'Trusted Elders', count: elderCounts.active },
     { id: 'building', label: 'Building Trust', count: elderCounts.building },
   ];
-  const visibleConnections = [...connections].filter(c => {
+  const visibleConnections = [...elderConnections].filter(c => {
     if (activeEldersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
     return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
   }).sort(sortConnections);
@@ -824,20 +827,6 @@ export default function HelperDashboard() {
                     </div>
                   )}
 
-                  {/* Family connections skip the trust ladder entirely: they are
-                      coordination-only, materialized automatically from the elder's
-                      shared trust — no request, no accept — and open while that
-                      friendship stays shared. */}
-                  {conn.status === 'ACTIVE' && conn.type === 'FAMILY' && (
-                    <p style={{
-                      fontSize: 'var(--text-sm)', color: 'var(--ink-slate)',
-                      fontFamily: 'inherit', margin: '10px 0 0',
-                    }}>
-                      You and {conn.otherUserName || 'they'} are connected through the trust you built
-                      with the person you help. You can message each other while that friendship stays shared.
-                    </p>
-                  )}
-
                   {/* Trust Journey — only on active connections */}
                   {conn.status === 'ACTIVE' && conn.type !== 'FAMILY' && (
                     <TrustJourney
@@ -863,7 +852,12 @@ export default function HelperDashboard() {
                       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: '0 0 8px' }}>
                         {conn.otherUserName ? `${conn.otherUserName}'s family` : 'Their family'}
                       </p>
-                      {familyBehind.filter(f => f.connectionId === conn.id).map(f => (
+                      {familyBehind.filter(f => f.connectionId === conn.id).map(f => {
+                        // The family coordination connection (auto-materialized while
+                        // the elder shares this friendship) carries the chat.
+                        const famConn = connections.find(c =>
+                          c.type === 'FAMILY' && c.status === 'ACTIVE' && c.otherUserId === f.familyUserId);
+                        return (
                         <div key={f.familyUserId} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
                           {f.familyPhotoUrl ? (
                             <img src={f.familyPhotoUrl} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
@@ -872,7 +866,7 @@ export default function HelperDashboard() {
                               {(f.familyName || '?').charAt(0)}
                             </span>
                           )}
-                          <div style={{ minWidth: 0 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
                               {f.familyName}
                               {f.relationship ? (
@@ -882,11 +876,20 @@ export default function HelperDashboard() {
                               ) : null}
                             </p>
                             <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '2px 0 0', lineHeight: 1.4 }}>
-                              Can see how this friendship is going and may message you.
+                              {famConn
+                                ? <>You can message each other while this friendship stays shared.</>
+                                : <>Can see how this friendship is going and may message you.</>}
                             </p>
                           </div>
+                          {famConn && (
+                            <button onClick={() => navigate(`/messages/${famConn.id}`)} style={{ height: '44px', padding: '0 16px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0 }}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                              Message
+                            </button>
+                          )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
