@@ -164,6 +164,8 @@ class FamilyServiceRespondRevokePrimaryTest {
         assertThat(active.getRevokedAt()).isNotNull();
         assertThat(active.getIsPrimary()).isFalse();
         verify(familyLinkRepository).save(active);
+        // Unlinking ends consent: grants and open asks are cleared with the link.
+        verify(familyDelegationService).revokeAll(active.getElder().getId(), active.getFamilyUser().getId());
     }
 
     @Test

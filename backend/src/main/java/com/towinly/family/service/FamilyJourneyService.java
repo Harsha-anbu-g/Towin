@@ -59,9 +59,10 @@ public class FamilyJourneyService {
     }
 
     private ElderJourney toElderJourney(User elder) {
-        boolean checkedInToday = streakRepository.findByUserId(elder.getId())
-                .map(s -> LocalDate.now().equals(s.getLastCheckinDate()))
-                .orElse(false);
+        LocalDate lastCheckin = streakRepository.findByUserId(elder.getId())
+                .map(s -> s.getLastCheckinDate())
+                .orElse(null);
+        boolean checkedInToday = LocalDate.now().equals(lastCheckin);
 
         // The parent's OPEN help requests, read-only for family (no applicant data).
         List<FamilyJourneyResponse.OpenNeed> openNeeds = needRepository
@@ -86,6 +87,7 @@ public class FamilyJourneyService {
                 .elderName(displayName(elder))
                 .elderPhotoUrl(photoUrl(elder))
                 .checkedInToday(checkedInToday)
+                .lastCheckinDate(lastCheckin)
                 .openNeedsCount(openNeeds.size())
                 .openNeeds(openNeeds)
                 .sharedHelpers(sharedHelpers)

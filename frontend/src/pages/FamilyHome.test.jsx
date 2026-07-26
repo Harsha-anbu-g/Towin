@@ -217,3 +217,41 @@ describe('FamilyHome', () => {
     expect(screen.queryByRole('button', { name: /ask for help for margaret/i })).not.toBeInTheDocument()
   })
 })
+
+// The reassurance band (2026-07-26): the one-line "is Mum okay" answer the
+// My Parents cards lead with. Urgent beats quiet; quiet comes from the
+// check-in date, never the lingering INACTIVITY alert.
+describe('FamilyHome — reassurance band', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    api.post.mockResolvedValue({ data: {} })
+  })
+
+  it('leads with all-looks-well when the parent checked in today', async () => {
+    mockGet([], journey)
+    render(<MemoryRouter><FamilyHome /></MemoryRouter>)
+    expect(await screen.findByText(/all looks well — margaret checked in today/i)).toBeInTheDocument()
+  })
+
+  it('turns quiet when the last check-in is days old', async () => {
+    const old = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)
+    mockGet([], {
+      elders: [{
+        elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null,
+        checkedInToday: false, lastCheckinDate: old, openNeedsCount: 0, sharedHelpers: [],
+      }],
+    })
+    render(<MemoryRouter><FamilyHome /></MemoryRouter>)
+    expect(await screen.findByText(/it's been quiet — margaret hasn't checked in/i)).toBeInTheDocument()
+  })
+
+  it('a fresh urgent alert beats everything else', async () => {
+    const fresh = [{
+      id: 'a9', elderId: 'e1', elderName: 'Margaret', type: 'SOS',
+      body: 'Margaret pressed SOS.', createdAt: new Date(Date.now() - 3600000).toISOString(),
+    }]
+    mockGet(fresh, journey)
+    render(<MemoryRouter><FamilyHome /></MemoryRouter>)
+    expect(await screen.findByText(/asked for urgent help — see news/i)).toBeInTheDocument()
+  })
+})

@@ -160,6 +160,10 @@ public class FamilyService {
         link.setRevokedAt(LocalDateTime.now());
         link.setIsPrimary(false);
         familyLinkRepository.save(link);
+        // Unlinking ends consent: clear every granted power and open ask for
+        // this pair, or a later re-link would silently resurrect old grants
+        // the elder never re-approved.
+        familyDelegationService.revokeAll(link.getElder().getId(), link.getFamilyUser().getId());
         if (wasActive) {
             // US-008: revoked links stop counting — recompute drops the point.
             trustScoreService.recalculate(link.getElder().getId());
@@ -301,6 +305,17 @@ public class FamilyService {
                 .delegatedPowers(link.getStatus() == FamilyLinkStatus.ACTIVE
                         ? familyDelegationService.grantedPowers(link.getElder().getId(), link.getFamilyUser().getId())
                         : EnumSet.noneOf(DelegatedPower.class))
+                // Consent flow: open asks ride the same payload — the elder's
+                // approval cards and the family side's waiting state both read
+                // this, so neither screen needs another fetch.
+                .pendingPowerRequests(link.getStatus() == FamilyLinkStatus.ACTIVE
+                        ? familyDelegationService.pendingRequests(link.getElder().getId(), link.getFamilyUser().getId()).stream()
+                                .map(r -> FamilyLinkResponse.PendingPowerRequest.builder()
+                                        .id(r.getId())
+                                        .power(r.getPower())
+                                        .build())
+                                .toList()
+                        : List.of())
                 .build();
     }
 }

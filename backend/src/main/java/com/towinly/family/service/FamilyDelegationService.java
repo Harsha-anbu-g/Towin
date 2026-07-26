@@ -3,15 +3,19 @@ package com.towinly.family.service;
 import com.towinly.common.enums.DelegatedPower;
 import com.towinly.connection.entity.Connection;
 import com.towinly.common.enums.FamilyLinkStatus;
+import com.towinly.common.enums.PowerRequestStatus;
 import com.towinly.common.exception.ForbiddenException;
 import com.towinly.family.entity.FamilyDelegatedPower;
 import com.towinly.family.entity.FamilyLink;
+import com.towinly.family.entity.FamilyPowerRequest;
 import com.towinly.family.repository.FamilyDelegatedPowerRepository;
 import com.towinly.family.repository.FamilyLinkRepository;
+import com.towinly.family.repository.FamilyPowerRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +37,11 @@ public class FamilyDelegationService {
 
     private final FamilyDelegatedPowerRepository powerRepository;
     private final FamilyLinkRepository familyLinkRepository;
+    private final FamilyPowerRequestRepository requestRepository;
+
+    /** How long a family member waits to re-ask after ANY answered request —
+     *  declines throttle nagging, and approve-then-revoke is throttled too. */
+    static final int REQUEST_COOLDOWN_DAYS = 7;
 
     /** The powers this elder has delegated to this family member. */
     @Transactional(readOnly = true)
@@ -76,6 +85,15 @@ public class FamilyDelegationService {
                         .familyUser(link.getFamilyUser())
                         .power(p)
                         .build());
+                // A direct grant answers an open ask for the same power — the
+                // approval card must not linger once the switch is already on.
+                requestRepository.findByElderIdAndFamilyUserIdAndPowerAndStatus(
+                                elderId, familyUserId, p, PowerRequestStatus.PENDING)
+                        .ifPresent(r -> {
+                            r.setStatus(PowerRequestStatus.APPROVED);
+                            r.setRespondedAt(LocalDateTime.now());
+                            requestRepository.save(r);
+                        });
             }
         }
         return want;
@@ -143,5 +161,99 @@ public class FamilyDelegationService {
                 .map(l -> l.getElder().getId())
                 .filter(elderId -> powerRepository.existsByElderIdAndFamilyUserIdAndPower(elderId, familyUserId, power))
                 .toList();
+    }
+
+    /**
+     * Consent flow (2026-07-26): the family side of an ACTIVE link asks for one
+     * power. Asking never grants — it only puts a card in front of the elder.
+     * One open ask per power, and any answered ask starts a cooldown before the
+     * same power can be asked for again.
+     */
+    @Transactional
+    public FamilyPowerRequest requestPower(UUID callerId, UUID linkId, DelegatedPower power) {
+        FamilyLink link = familyLinkRepository.findById(linkId)
+                .orElseThrow(() -> new IllegalArgumentException("Family link not found"));
+        if (!link.getFamilyUser().getId().equals(callerId)) {
+            throw new ForbiddenException("Only the family member can ask for this");
+        }
+        if (link.getStatus() != FamilyLinkStatus.ACTIVE) {
+            throw new IllegalStateException("This family link isn't active any more");
+        }
+        UUID elderId = link.getElder().getId();
+        if (powerRepository.existsByElderIdAndFamilyUserIdAndPower(elderId, callerId, power)) {
+            throw new IllegalArgumentException("They already let you do this");
+        }
+        if (requestRepository.findByElderIdAndFamilyUserIdAndPowerAndStatus(
+                elderId, callerId, power, PowerRequestStatus.PENDING).isPresent()) {
+            throw new IllegalArgumentException("You've already asked — they haven't decided yet");
+        }
+        boolean coolingDown = requestRepository
+                .findTopByElderIdAndFamilyUserIdAndPowerAndStatusInOrderByRespondedAtDesc(
+                        elderId, callerId, power,
+                        List.of(PowerRequestStatus.APPROVED, PowerRequestStatus.DECLINED))
+                .map(r -> r.getRespondedAt() != null
+                        && r.getRespondedAt().isAfter(LocalDateTime.now().minusDays(REQUEST_COOLDOWN_DAYS)))
+                .orElse(false);
+        if (coolingDown) {
+            throw new IllegalArgumentException("You asked about this recently — you can ask again in a few days");
+        }
+        return requestRepository.save(FamilyPowerRequest.builder()
+                .elder(link.getElder())
+                .familyUser(link.getFamilyUser())
+                .power(power)
+                .build());
+    }
+
+    /**
+     * The elder answers an ask. The link is re-checked ACTIVE inside this
+     * transaction so an unlink racing an approve can never leave a grant behind
+     * for a pair that is no longer family.
+     */
+    @Transactional
+    public void respondToRequest(UUID callerId, UUID requestId, boolean accept) {
+        FamilyPowerRequest request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+        if (!request.getElder().getId().equals(callerId)) {
+            throw new ForbiddenException("Only the parent can answer this");
+        }
+        if (request.getStatus() != PowerRequestStatus.PENDING) {
+            throw new IllegalStateException("This request has already been answered");
+        }
+        boolean linked = familyLinkRepository
+                .findByElderIdAndFamilyUserId(request.getElder().getId(), request.getFamilyUser().getId())
+                .filter(l -> l.getStatus() == FamilyLinkStatus.ACTIVE)
+                .isPresent();
+        if (!linked) {
+            throw new IllegalStateException("This person is no longer linked to you");
+        }
+        request.setStatus(accept ? PowerRequestStatus.APPROVED : PowerRequestStatus.DECLINED);
+        request.setRespondedAt(LocalDateTime.now());
+        requestRepository.save(request);
+        if (accept && !powerRepository.existsByElderIdAndFamilyUserIdAndPower(
+                request.getElder().getId(), request.getFamilyUser().getId(), request.getPower())) {
+            powerRepository.save(FamilyDelegatedPower.builder()
+                    .elder(request.getElder())
+                    .familyUser(request.getFamilyUser())
+                    .power(request.getPower())
+                    .build());
+        }
+    }
+
+    /** The open asks for one pair — rides on the links payload for both seats. */
+    @Transactional(readOnly = true)
+    public List<FamilyPowerRequest> pendingRequests(UUID elderId, UUID familyUserId) {
+        return requestRepository.findByElderIdAndFamilyUserIdAndStatus(
+                elderId, familyUserId, PowerRequestStatus.PENDING);
+    }
+
+    /**
+     * Unlinking ends consent: every grant and every open ask for the pair goes.
+     * Without this, revoke → re-link → accept silently resurrected every old
+     * power with no new consent from the elder.
+     */
+    @Transactional
+    public void revokeAll(UUID elderId, UUID familyUserId) {
+        powerRepository.deleteByElderIdAndFamilyUserId(elderId, familyUserId);
+        requestRepository.deleteByElderIdAndFamilyUserIdAndStatus(elderId, familyUserId, PowerRequestStatus.PENDING);
     }
 }

@@ -258,3 +258,63 @@ describe('FamilyParent — guardian mode actions', () => {
     expect(screen.queryByRole('button', { name: /leave a review for margaret/i })).not.toBeInTheDocument()
   })
 })
+
+// Consent flow (2026-07-26): the "What I can do" list — every power shows as
+// on, waiting, or askable, and asking never grants anything by itself.
+describe('FamilyParent — what I can do (consent flow)', () => {
+  const mockAsks = (powers = [], pending = []) => {
+    api.get.mockImplementation((url) => {
+      if (url === '/family/links') {
+        return Promise.resolve({
+          data: {
+            activeLinks: [{
+              id: 'l1', elderId: 'e1', otherUserName: 'Margaret', relationship: 'Daughter',
+              status: 'ACTIVE', iAmElder: false, delegatedPowers: powers,
+              pendingPowerRequests: pending.map((p, i) => ({ id: `pr${i}`, power: p })),
+            }],
+            incomingRequests: [], outgoingRequests: [],
+          },
+        })
+      }
+      if (url === '/family/journey') {
+        return Promise.resolve({
+          data: {
+            elders: [{
+              elderId: 'e1', elderName: 'Margaret', elderPhotoUrl: null,
+              checkedInToday: true, openNeedsCount: 0, openNeeds: [], sharedHelpers: [],
+            }],
+          },
+        })
+      }
+      if (url === '/family/standings') return Promise.resolve({ data: { standings: [] } })
+      return Promise.resolve({ data: {} })
+    })
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    api.post.mockResolvedValue({ data: {} })
+  })
+
+  it('lists every power with its state: on, waiting, or askable', async () => {
+    mockAsks(['MANAGE_HELP_REQUESTS'], ['LEAVE_REVIEWS'])
+    renderPage()
+    expect(await screen.findByText(/what i can do for margaret/i)).toBeInTheDocument()
+    expect(screen.getByText('On')).toBeInTheDocument()
+    expect(screen.getByText('Waiting')).toBeInTheDocument()
+    // The waiting state says who decides and where (waiting-state rule).
+    expect(screen.getByText(/waiting for margaret to decide/i)).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /ask margaret/i })).toHaveLength(1)
+  })
+
+  it('asking sends the power request; the server, not the click, decides', async () => {
+    const user = userEvent.setup()
+    mockAsks([], [])
+    renderPage()
+    const asks = await screen.findAllByRole('button', { name: /ask margaret/i })
+    await user.click(asks[0])
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/links/l1/power-requests', { power: 'MANAGE_HELP_REQUESTS' })
+    })
+  })
+})

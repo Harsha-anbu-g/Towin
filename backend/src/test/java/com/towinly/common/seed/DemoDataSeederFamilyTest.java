@@ -81,6 +81,7 @@ class DemoDataSeederFamilyTest {
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
+    @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
 
     @InjectMocks DemoDataSeeder seeder;
 
@@ -295,5 +296,31 @@ class DemoDataSeederFamilyTest {
         verify(familyLinkRepository, atLeastOnce()).deleteByElderIdOrFamilyUserId(any(), any());
         verify(familyAlertRepository, atLeastOnce()).deleteByElderId(any());
         verify(familyDelegatedPowerRepository, atLeastOnce()).deleteByElderIdOrFamilyUserId(any(), any());
+        verify(familyPowerRequestRepository, atLeastOnce()).deleteByElderIdOrFamilyUserId(any(), any());
+    }
+
+    @Test
+    void seedsSarahsPendingAskForTheReviewPower() {
+        seeder.run(null);
+
+        ArgumentCaptor<com.towinly.family.entity.FamilyPowerRequest> captor =
+                ArgumentCaptor.forClass(com.towinly.family.entity.FamilyPowerRequest.class);
+        verify(familyPowerRequestRepository, atLeastOnce()).save(captor.capture());
+        assertThat(captor.getAllValues()).anySatisfy(r -> {
+            assertThat(r.getPower()).isEqualTo(DelegatedPower.LEAVE_REVIEWS);
+            assertThat(r.getStatus()).isEqualTo(com.towinly.common.enums.PowerRequestStatus.PENDING);
+            assertThat(r.getFamilyUser().getEmail()).isEqualTo("demo.sarah@towin.app");
+        });
+    }
+
+    @Test
+    void seedsOneFirstMeetAlertSoNewsIsNeverEmpty() {
+        seeder.run(null);
+
+        ArgumentCaptor<com.towinly.family.entity.FamilyAlert> captor =
+                ArgumentCaptor.forClass(com.towinly.family.entity.FamilyAlert.class);
+        verify(familyAlertRepository, atLeastOnce()).save(captor.capture());
+        assertThat(captor.getAllValues()).anySatisfy(a ->
+                assertThat(a.getType()).isEqualTo("FIRST_MEET"));
     }
 }

@@ -12,6 +12,9 @@ public interface FamilyDelegatedPowerRepository extends JpaRepository<FamilyDele
 
     List<FamilyDelegatedPower> findByElderIdAndFamilyUserId(UUID elderId, UUID familyUserId);
 
+    /** GDPR export: every grant this person sits on either side of. */
+    List<FamilyDelegatedPower> findByElderIdOrFamilyUserId(UUID elderId, UUID familyUserId);
+
     /** The gate every delegated action uses: does this family member hold this power for this elder? */
     boolean existsByElderIdAndFamilyUserIdAndPower(UUID elderId, UUID familyUserId, DelegatedPower power);
 

@@ -183,15 +183,15 @@ describe('MyFamily — Controls', () => {
     mockGet()
   })
 
-  it('offers both Watching and Act for me tabs inside Controls', async () => {
+  it('offers both Sharing and Act for me tabs inside Controls', async () => {
     const user = userEvent.setup()
     renderPage()
     await openControls(user)
-    expect(screen.getByRole('tab', { name: /watching/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /sharing/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /act for me/i })).toBeInTheDocument()
   })
 
-  it('opens on Watching, listing each live friendship with its own switch', async () => {
+  it('opens on Sharing, listing each live friendship with its own switch', async () => {
     const user = userEvent.setup()
     renderPage()
     await openControls(user)
@@ -235,6 +235,55 @@ describe('MyFamily — Controls', () => {
       expect(api.put).toHaveBeenCalledWith('/family/links/l1/powers', {
         powers: expect.arrayContaining(['MANAGE_HELP_REQUESTS', 'LEAVE_REVIEWS']),
       })
+    })
+  })
+})
+
+// Consent flow (2026-07-26): a family member asks for a power; the elder
+// answers on a plain yes/no card that reuses the switch's own words.
+describe('MyFamily — power asks (consent flow)', () => {
+  const askLinks = {
+    activeLinks: [{
+      id: 'l1', otherUserName: 'Sarah', relationship: 'Daughter', isPrimary: true,
+      status: 'ACTIVE', initiatedByMe: true, iAmElder: true,
+      delegatedPowers: [],
+      pendingPowerRequests: [{ id: 'pr1', power: 'LEAVE_REVIEWS' }],
+    }],
+    incomingRequests: [], outgoingRequests: [],
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    api.get.mockImplementation((url) =>
+      url === '/family/links'
+        ? Promise.resolve({ data: askLinks })
+        : Promise.resolve({ data: [] }))
+    api.post.mockResolvedValue({ data: {} })
+  })
+
+  it("shows the ask as a plain yes/no card in the switch's own words", async () => {
+    renderPage()
+    expect(await screen.findByText(/sarah asks: leave a review for you/i)).toBeInTheDocument()
+    expect(screen.getByText(/if you say yes/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^yes$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument()
+  })
+
+  it('saying yes answers through the power-request endpoint', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(await screen.findByRole('button', { name: /^yes$/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/power-requests/pr1/respond', { accept: true })
+    })
+  })
+
+  it('not now declines without granting anything', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(await screen.findByRole('button', { name: /not now/i }))
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/family/power-requests/pr1/respond', { accept: false })
     })
   })
 })

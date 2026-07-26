@@ -89,6 +89,33 @@ const sectionH = {
   margin: 0,
 };
 
+/* Reassurance: the one-line answer to "is Mum okay" that this page leads with.
+   Priority: an urgent alert beats quiet, quiet beats the check-in chip. "Quiet"
+   comes from the check-in date itself, NOT the INACTIVITY alert — that alert
+   lingers for days after a parent starts checking in again, and a stale "quiet"
+   band beside a green "checked in today" chip would read as a broken page. */
+const QUIET_AFTER_DAYS = 5; // matches the server's inactivity threshold
+
+function reassuranceFor(elderName, j, alerts, elderId) {
+  const now = Date.now();
+  const sos = (alerts || []).some(a =>
+    a.type === 'SOS' && a.elderId === elderId &&
+    now - new Date(a.createdAt).getTime() < 48 * 3600 * 1000);
+  if (sos) {
+    return { kind: 'urgent', color: 'var(--red-deep)', text: `${elderName} asked for urgent help — see News.` };
+  }
+  if (j?.lastCheckinDate) {
+    const days = Math.floor((now - new Date(j.lastCheckinDate).getTime()) / 86400000);
+    if (days >= QUIET_AFTER_DAYS) {
+      return { kind: 'quiet', color: 'var(--gold-deep)', text: `It's been quiet — ${elderName} hasn't checked in for a few days.` };
+    }
+  }
+  if (j?.checkedInToday) {
+    return { kind: 'well', color: 'var(--green-deep)', text: `All looks well — ${elderName} checked in today.` };
+  }
+  return { kind: 'none', color: 'var(--ink-3)', text: 'No check-in yet today.' };
+}
+
 function friendlyDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -299,8 +326,23 @@ export default function FamilyHome() {
             {elders.map(l => {
               const j = journey.find(e => e.elderId === l.elderId);
               const sharedCount = (j?.sharedHelpers || []).length;
+              const band = reassuranceFor(l.otherUserName, j, alerts, l.elderId);
               return (
                 <div key={l.id} style={cardStyle}>
+                  {/* "Is Mum okay" — the band the whole page leads with. */}
+                  <div style={{
+                    margin: '0 0 14px', padding: '10px 14px', borderRadius: '12px',
+                    background: band.kind === 'well'
+                      ? 'var(--green-wash)'
+                      : `color-mix(in srgb, ${band.color} 7%, transparent)`,
+                    border: band.kind === 'well'
+                      ? '1px solid var(--green-line)'
+                      : `1px solid color-mix(in srgb, ${band.color} 30%, transparent)`,
+                  }}>
+                    <p style={{ fontSize: '16px', fontWeight: 600, color: band.color, margin: 0, lineHeight: 1.4, fontFamily: SF }}>
+                      {band.text}
+                    </p>
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <DefaultAvatar color="var(--blue)" size={52} />
                     <div style={{ flex: 1, minWidth: 0 }}>

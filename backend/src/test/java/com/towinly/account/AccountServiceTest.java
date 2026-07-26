@@ -63,6 +63,8 @@ class AccountServiceTest {
     @Mock TrustProgressionLogRepository trustProgressionLogRepository;
     @Mock com.towinly.family.repository.FamilyLinkRepository familyLinkRepository;
     @Mock com.towinly.family.repository.FamilyAlertRepository familyAlertRepository;
+    @Mock com.towinly.family.repository.FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
+    @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
     @Mock S3Service s3Service;
 
     @InjectMocks AccountService accountService;

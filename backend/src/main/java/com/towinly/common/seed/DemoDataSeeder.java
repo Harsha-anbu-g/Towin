@@ -126,6 +126,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
     private final FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
+    private final com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
     private final ReportRepository reportRepository;
     private final TrustProgressionLogRepository trustProgressionLogRepository;
     private final PasswordEncoder passwordEncoder;
@@ -370,25 +371,31 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Margaret, so the demo shows a linked family member, the elder's +1
         // family trust point, and the Family Home screen with a real elder card.
         ensureFamilyLink(margaret, sarah, "Daughter");
-        // Guardian mode on display: Margaret has asked Sarah to handle three
+        // Guardian mode on display: Margaret has said yes to Sarah handling two
         // things for her, so a visitor signing in as Sarah finds the feature
         // already working rather than a screen of switches nobody has touched.
-        // LEAVE_REVIEWS is deliberately left OFF — the switches are granted one
-        // at a time, not all together, and seeing one turned off is what makes
-        // that plain. It's also the right one to withhold: a review is a public
-        // word about a helper that feeds their trust score, so it's the power a
-        // parent is most likely to keep for herself. (Reviews unlock only at
-        // Fully Trusted anyway, and Margaret's shared friendship with Harsha
-        // sits at Ready to Meet, so granting it would show a power the demo
-        // could never actually use.)
         ensureDelegatedPowers(margaret, sarah, Set.of(
                 DelegatedPower.MANAGE_HELP_REQUESTS,
                 DelegatedPower.ADVANCE_TRUST));
+        // Consent flow on display: LEAVE_REVIEWS is not granted — Sarah has
+        // ASKED for it and Margaret hasn't decided, so a visitor signing in as
+        // Margaret finds a real approval card waiting on her My family tab.
+        // Reviews stay unusable in the demo either way (they unlock at Fully
+        // Trusted; Margaret ↔ Harsha sit at Ready to Meet), so the card itself
+        // is the payoff — and a review is a public word about a helper, which
+        // makes it exactly the ask a parent would think over rather than wave
+        // through.
+        ensureFamilyPowerRequest(margaret, sarah, DelegatedPower.LEAVE_REVIEWS);
         // The elder's choice on display: Margaret shares her friendship with
         // Harsha (at Ready to Meet, so family sees the meeting highlight) while
         // her other connections — Tom, Claire, Priya — stay private
         // (shared_with_family keeps its FALSE default).
         markSharedWithFamily(cMargaretHarsha);
+        // One piece of family news so Sarah's News tab is never empty: the
+        // shared friendship sits at Ready to Meet, so the first-meeting alert
+        // is the true story (same wording SosService writes in production).
+        ensureFamilyAlert(margaret, FamilyAlertType.FIRST_MEET,
+                "Planned a first in-person meeting with Harsha.");
 
         // One-time repair for DBs seeded before the default changed: earlier seeds
         // set both confirm flags true on active connections, an impossible state
@@ -640,6 +647,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         trustProgressionLogRepository.deleteByUserId(id);
         familyAlertRepository.deleteByElderId(id);
         familyDelegatedPowerRepository.deleteByElderIdOrFamilyUserId(id, id);
+        familyPowerRequestRepository.deleteByElderIdOrFamilyUserId(id, id);
         familyLinkRepository.deleteByElderIdOrFamilyUserId(id, id);
         connectionRepository.deleteByUserId(id);
         emergencyContactRepository.deleteByElderId(id);
@@ -1032,6 +1040,35 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .forEach(p -> familyDelegatedPowerRepository.save(FamilyDelegatedPower.builder()
                         .elder(elder).familyUser(familyUser).power(p)
                         .build()));
+    }
+
+    /** Consent flow: seed one PENDING ask so the elder's approval card shows.
+     *  Skips when the power is already granted or ANY request row exists for
+     *  the pair + power — in additive mode a visitor's answer (and the cooldown
+     *  story it starts) must never be overwritten by the next boot. */
+    private void ensureFamilyPowerRequest(User elder, User familyUser, DelegatedPower power) {
+        if (familyDelegatedPowerRepository.existsByElderIdAndFamilyUserIdAndPower(
+                elder.getId(), familyUser.getId(), power)) return;
+        boolean anyRequest = familyPowerRequestRepository
+                .findByElderIdOrFamilyUserId(elder.getId(), familyUser.getId())
+                .stream().anyMatch(r -> r.getPower() == power
+                        && r.getElder().getId().equals(elder.getId())
+                        && r.getFamilyUser().getId().equals(familyUser.getId()));
+        if (anyRequest) return;
+        familyPowerRequestRepository.save(com.towinly.family.entity.FamilyPowerRequest.builder()
+                .elder(elder).familyUser(familyUser).power(power)
+                .build());
+    }
+
+    /** One family alert so the News tab is never empty. Guarded by elder + type:
+     *  the News badge counts rows, so an additive re-boot must not append twins. */
+    private void ensureFamilyAlert(User elder, FamilyAlertType type, String body) {
+        boolean exists = familyAlertRepository.findByElderIdOrderByCreatedAtDesc(elder.getId())
+                .stream().anyMatch(a -> type.name().equals(a.getType()));
+        if (exists) return;
+        familyAlertRepository.save(com.towinly.family.entity.FamilyAlert.builder()
+                .elder(elder).type(type.name()).body(body)
+                .build());
     }
 
     private void ensureApplication(Need need, User helper, String message) {

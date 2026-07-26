@@ -6,10 +6,12 @@ import com.towinly.family.dto.FamilyAlertsResponse;
 import com.towinly.family.dto.FamilyJourneyResponse;
 import com.towinly.family.dto.FamilyLinkResponse;
 import com.towinly.family.dto.FamilyLinksResponse;
+import com.towinly.family.dto.FamilyPowerAskRequest;
 import com.towinly.family.dto.FamilyPowersRequest;
 import com.towinly.family.dto.FamilyRequest;
 import com.towinly.family.dto.FamilyRespondRequest;
 import com.towinly.family.dto.FamilyStandingsResponse;
+import com.towinly.family.service.FamilyDelegationService;
 import com.towinly.family.service.FamilyJourneyService;
 import com.towinly.family.service.FamilyService;
 import com.towinly.family.service.FamilyStandingService;
@@ -29,6 +31,7 @@ public class FamilyController {
     private final FamilyService familyService;
     private final FamilyJourneyService familyJourneyService;
     private final FamilyStandingService familyStandingService;
+    private final FamilyDelegationService familyDelegationService;
 
     @PostMapping("/requests")
     public ResponseEntity<FamilyLinkResponse> createRequest(
@@ -125,6 +128,31 @@ public class FamilyController {
             @RequestBody FamilyPowersRequest request) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(familyService.setDelegatedPowers(userId, linkId, request.getPowers()));
+    }
+
+    /**
+     * Consent flow: the family side of a link asks for one power. Asking never
+     * grants anything — it only puts a card in front of the parent, who answers
+     * on their own screen. The caller is taken from the token, never the body.
+     */
+    @PostMapping("/links/{linkId}/power-requests")
+    public ResponseEntity<Void> requestPower(
+            Authentication auth,
+            @PathVariable UUID linkId,
+            @Valid @RequestBody FamilyPowerAskRequest request) {
+        familyDelegationService.requestPower(UUID.fromString(auth.getName()), linkId, request.getPower());
+        return ResponseEntity.noContent().build();
+    }
+
+    /** The parent answers an ask. Yes writes the grant; no just closes the card. */
+    @PostMapping("/power-requests/{requestId}/respond")
+    public ResponseEntity<Void> respondToPowerRequest(
+            Authentication auth,
+            @PathVariable UUID requestId,
+            @Valid @RequestBody FamilyRespondRequest request) {
+        familyDelegationService.respondToRequest(
+                UUID.fromString(auth.getName()), requestId, Boolean.TRUE.equals(request.getAccept()));
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/links")

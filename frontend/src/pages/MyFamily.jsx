@@ -8,6 +8,7 @@ import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
 import SegmentedTabs from '../components/SegmentedTabs';
 import DelegatedPowerToggle from '../components/DelegatedPowerToggle';
+import { POWERS } from '../components/familyPowers';
 import FamilyShareToggle from '../components/FamilyShareToggle';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -130,6 +131,10 @@ export default function MyFamily({ embedded = false }) {
   const active = family.activeLinks || [];
   const incoming = family.incomingRequests || [];
   const outgoing = family.outgoingRequests || [];
+  // Consent flow: open asks from family members, flattened across active links.
+  // Each one becomes an approval card on the My family tab.
+  const powerAsks = active.flatMap(l =>
+    (l.pendingPowerRequests || []).map(r => ({ ...r, link: l })));
   // The backend cap counts everyone already linked plus every open request.
   const seatCount = active.length + incoming.length + outgoing.length;
   const canAdd = seatCount < FAMILY_MAX;
@@ -157,6 +162,17 @@ export default function MyFamily({ embedded = false }) {
     try {
       await api.post(`/family/requests/${id}/respond`, { accept });
       toast.success(accept ? 'They are now part of your family here.' : 'Request declined.');
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Something went wrong. Please try again.');
+    } finally { setBusyId(null); }
+  }
+
+  async function respondToAsk(id, accept) {
+    setBusyId(id);
+    try {
+      await api.post(`/family/power-requests/${id}/respond`, { accept });
+      toast.success(accept ? 'Done — they can do this for you now.' : 'Okay — nothing changes.');
       await load();
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Something went wrong. Please try again.');
@@ -225,7 +241,7 @@ export default function MyFamily({ embedded = false }) {
           <SegmentedTabs
             segments={[
               { id: 'controls', label: 'Controls' },
-              { id: 'members', label: 'My family', count: incoming.length, notify: incoming.length > 0 },
+              { id: 'members', label: 'My family', count: incoming.length + powerAsks.length, notify: incoming.length + powerAsks.length > 0 },
               { id: 'how', label: 'How it works' },
             ]}
             value={tab}
@@ -309,6 +325,52 @@ export default function MyFamily({ embedded = false }) {
               </div>
             </form>
           </div>
+        )}
+
+        {/* Consent flow: a family member asked for a power. The card explains a
+            yes in the same words the Controls switch uses, so saying yes here
+            and flipping the switch there are visibly the same decision. */}
+        {powerAsks.length > 0 && (
+          <BlurFade delay={4}>
+            <div style={{ margin: '8px 0 16px' }}>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>They're asking you</h2>
+              {powerAsks.map(a => {
+                const p = POWERS.find(x => x.key === a.power);
+                const name = a.link.otherUserName;
+                return (
+                  <div key={a.id} style={cardStyle}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <DefaultAvatar color="var(--gold-deep)" size={48} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
+                          {name} asks: {p ? p.title.toLowerCase() : 'a new power'}
+                        </p>
+                        <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '2px 0 0', lineHeight: 1.5 }}>
+                          {p ? `If you say yes: ${p.on(name)} ` : ''}
+                          It's your choice, and you can turn it off again any time.
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+                      <button
+                        onClick={() => respondToAsk(a.id, true)}
+                        disabled={busyId === a.id}
+                        style={{
+                          ...ghostBtn, flex: 1,
+                          color: 'var(--blue-deep)', borderColor: 'var(--blue-soft)',
+                        }}
+                      >
+                        Yes
+                      </button>
+                      <button onClick={() => respondToAsk(a.id, false)} disabled={busyId === a.id} style={{ ...ghostBtn, flex: 1 }}>
+                        Not now
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </BlurFade>
         )}
 
         {/* Incoming requests */}
@@ -464,13 +526,13 @@ export default function MyFamily({ embedded = false }) {
             ) : (
             <div style={{ marginTop: '18px' }}>
               <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 14px', lineHeight: 1.5 }}>
-                Watching is what your family can see. Act for me is what they can do.
+                Sharing is what your family can see. Act for me is what they can do.
                 Both start off, and only you can change them.
               </p>
 
               <SegmentedTabs
                 segments={[
-                  { id: 'watching', label: 'Watching', count: connections.filter(c => c.sharedWithFamily).length },
+                  { id: 'watching', label: 'Sharing', count: connections.filter(c => c.sharedWithFamily).length },
                   { id: 'acting', label: 'Act for me', count: active.filter(l => (l.delegatedPowers || []).length > 0).length },
                 ]}
                 value={controlsTab}
@@ -484,14 +546,14 @@ export default function MyFamily({ embedded = false }) {
                     <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
                         You have no friendships yet. Once you do, you choose here which ones
-                        your family can watch.
+                        your family can see.
                       </p>
                     </div>
                   ) : (
                     <div style={cardStyle}>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 12px', lineHeight: 1.5 }}>
                         Everyone in your family sees the friendships you turn on here.
-                        They can watch how it is going — they cannot change anything.
+                        They can see how it is going — they cannot change anything.
                       </p>
                       {connections.map(c => (
                         <div key={c.id} style={{ marginBottom: '10px' }}>
@@ -515,11 +577,11 @@ export default function MyFamily({ embedded = false }) {
                   {!connections.some(c => c.sharedWithFamily) ? (
                     <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
                       <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                        Turn on Watching first
+                        Share a friendship first
                       </p>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                        Your family can only act on a friendship you let them watch.
-                        Share at least one friendship on the Watching tab, then choose
+                        Your family can only act on a friendship you share with them.
+                        Turn on at least one friendship on the Sharing tab, then choose
                         here what they may do for you.
                       </p>
                     </div>

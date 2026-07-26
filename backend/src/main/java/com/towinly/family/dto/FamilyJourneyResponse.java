@@ -3,6 +3,7 @@ package com.towinly.family.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class FamilyJourneyResponse {
         private String elderName;
         private String elderPhotoUrl;      // presigned, short-lived
         private boolean checkedInToday;    // streaks: last check-in date == today
+        private LocalDate lastCheckinDate; // ISO yyyy-MM-dd; null if they've never checked in
         private long openNeedsCount;       // elder's OPEN help requests
         private List<OpenNeed> openNeeds;  // the actual OPEN requests, read-only for family
         private List<SharedHelper> sharedHelpers;

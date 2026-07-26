@@ -19,6 +19,7 @@ import org.springframework.util.StreamUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,6 +37,18 @@ public class AssistantService {
 
     /** How many recent turns we forward — enough to hold a real back-and-forth. */
     private static final int MAX_HISTORY = 20;
+
+    /**
+     * Characters of conversation we will pay to send, across the question and all
+     * history together. The per-field caps in {@link ChatRequest} bound each value
+     * on its own; this bounds their sum, which is what the bill is actually charged
+     * on. Oldest turns are dropped first, so a long genuine chat degrades into a
+     * shorter memory instead of failing.
+     */
+    private static final int MAX_CONVERSATION_CHARS = 12_000;
+
+    /** Personal facts are short labels; anything longer is not a name or a city. */
+    private static final int MAX_PERSONAL_FIELD_CHARS = 120;
 
     private static final String FALLBACK =
             "Sorry, I can't answer just now. Please try again in a moment. "
@@ -91,20 +104,61 @@ public class AssistantService {
                     + "personal question (like their trust score or streak), kindly tell them to log in first.";
         }
 
-        List<ChatMessage> conversation = new ArrayList<>();
-        if (request.getHistory() != null) {
-            List<ChatMessage> h = request.getHistory();
-            for (ChatMessage m : h.subList(Math.max(0, h.size() - MAX_HISTORY), h.size())) {
-                if (m.getContent() != null && !m.getContent().isBlank()
-                        && ("user".equals(m.getRole()) || "assistant".equals(m.getRole()))) {
-                    conversation.add(m);
-                }
-            }
+        String question = PromptSanitizer.clean(request.getMessage(), ChatRequest.MAX_MESSAGE_CHARS);
+        if (question.isBlank()) {
+            // Everything they sent was strippable — i.e. the "question" was nothing but
+            // hidden characters. There is no genuine question here to answer.
+            log.warn("Ask AI: rejected a question that was entirely hidden characters (userId={})", userId);
+            return "Sorry, I couldn't read that question. Could you type it again in plain words?";
         }
-        conversation.add(new ChatMessage("user", request.getMessage()));
+        if (PromptSanitizer.hasHiddenCharacters(request.getMessage())) {
+            log.warn("Ask AI: stripped hidden characters from a question (userId={})", userId);
+        }
+
+        List<ChatMessage> conversation = buildConversation(request, question);
 
         Optional<String> reply = groqClient.complete(systemPrompt, conversation);
         return reply.orElse(FALLBACK);
+    }
+
+    /**
+     * The turns we actually pay to send: the sanitised question, preceded by as much
+     * recent history as the character budget allows.
+     *
+     * <p>History arrives from the browser on every request, so none of it is trusted.
+     * Roles are re-checked here even though {@link ChatMessage} already constrains
+     * them — validation guards the HTTP edge, this guards the call to Groq, and the
+     * two are worth keeping independent. Turns are taken newest-first so that when
+     * the budget runs out it is the oldest context that is lost, then flipped back
+     * into chronological order for the model.
+     */
+    private List<ChatMessage> buildConversation(ChatRequest request, String question) {
+        List<ChatMessage> recent = new ArrayList<>();
+        int budget = MAX_CONVERSATION_CHARS - question.length();
+
+        List<ChatMessage> history = request.getHistory();
+        if (history != null) {
+            List<ChatMessage> window = history.subList(Math.max(0, history.size() - MAX_HISTORY), history.size());
+            for (int i = window.size() - 1; i >= 0; i--) {
+                ChatMessage m = window.get(i);
+                if (!"user".equals(m.getRole()) && !"assistant".equals(m.getRole())) {
+                    continue;
+                }
+                String content = PromptSanitizer.clean(m.getContent(), ChatMessage.MAX_CONTENT_CHARS);
+                if (content.isBlank()) {
+                    continue; // an empty turn carries nothing; it must not truncate older ones
+                }
+                if (content.length() > budget) {
+                    break; // out of budget — everything older is dropped with it
+                }
+                budget -= content.length();
+                recent.add(new ChatMessage(m.getRole(), content));
+            }
+            Collections.reverse(recent);
+        }
+
+        recent.add(new ChatMessage("user", question));
+        return recent;
     }
 
     /**
@@ -118,18 +172,18 @@ public class AssistantService {
             ProfileResponse p = profileService.getProfile(userId);
             if (p != null) {
                 if (notBlank(p.getName())) {
-                    sb.append("- First name: ").append(firstName(p.getName())).append('\n');
+                    sb.append("- First name: ").append(safeFact(firstName(p.getName()))).append('\n');
                 }
-                if (notBlank(p.getRole())) sb.append("- Role: ").append(p.getRole()).append('\n');
+                if (notBlank(p.getRole())) sb.append("- Role: ").append(safeFact(p.getRole())).append('\n');
                 if (p.getTrustScore() != null) {
                     sb.append("- Trust score: ").append(p.getTrustScore());
-                    if (notBlank(p.getTrustTier())) sb.append(" (tier: ").append(p.getTrustTier()).append(')');
+                    if (notBlank(p.getTrustTier())) sb.append(" (tier: ").append(safeFact(p.getTrustTier())).append(')');
                     sb.append('\n');
                 }
                 if (notBlank(p.getVerificationStatus())) {
-                    sb.append("- Identity verification: ").append(p.getVerificationStatus()).append('\n');
+                    sb.append("- Identity verification: ").append(safeFact(p.getVerificationStatus())).append('\n');
                 }
-                if (notBlank(p.getCity())) sb.append("- City: ").append(p.getCity()).append('\n');
+                if (notBlank(p.getCity())) sb.append("- City: ").append(safeFact(p.getCity())).append('\n');
             }
 
             StreakResponse s = streakService.getStreak(userId);
@@ -208,6 +262,20 @@ public class AssistantService {
 
     private static boolean notBlank(String s) {
         return s != null && !s.isBlank();
+    }
+
+    /**
+     * Makes a profile value safe to interpolate into the system prompt.
+     *
+     * <p>Their name and city are whatever they typed into their profile, and this
+     * block is the privileged part of the prompt — the part the model trusts most.
+     * Someone who sets their display name to a line of instructions would otherwise
+     * have that line delivered with the authority of our own rules, which is a far
+     * better position than typing it into the chat box. Newlines go too: a fact
+     * spanning lines could open what looks like a new instruction section.
+     */
+    private static String safeFact(String value) {
+        return PromptSanitizer.clean(value, MAX_PERSONAL_FIELD_CHARS).replace('\n', ' ');
     }
 
     private static String firstName(String name) {

@@ -8,34 +8,13 @@ const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
    transform only (the knob slides), reduced motion → shorter, not zero. */
 const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
-/**
- * Guardian mode — the parent decides, one thing at a time, what a family member
- * may do for them.
- *
- * Written as a list so the remaining powers drop in without new UI. Each switch
- * sends the WHOLE set the parent wants to keep, matching the endpoint's replace
- * semantics: an unticked power is simply absent, so nothing is left half-on.
- */
-const POWERS = [
-  {
-    key: 'MANAGE_HELP_REQUESTS',
-    title: 'Ask for help for you',
-    on: name => `${name} can ask for help for you, and close a request you no longer need. Helpers always see ${name} asked for you.`,
-    off: name => `Off. ${name} can see your help requests but cannot change them.`,
-  },
-  {
-    key: 'ADVANCE_TRUST',
-    title: 'Move a friendship forward for you',
-    on: name => `${name} can take your next step with a helper. The step still counts as yours, and your helper sees ${name} took it for you.`,
-    off: name => `Off. ${name} can watch how a friendship is going but cannot move it on.`,
-  },
-  {
-    key: 'LEAVE_REVIEWS',
-    title: 'Leave a review for you',
-    on: name => `${name} can rate a helper you fully trust. The review is yours, with ${name}'s name on it as the person who wrote it.`,
-    off: name => `Off. ${name} cannot leave a review for you.`,
-  },
-];
+/* Guardian mode — the parent decides, one thing at a time, what a family member
+   may do for them. The powers live in familyPowers.js so this switch list, the
+   elder's approval cards and the family side's "what I can do" list all speak
+   the same words. Each switch sends the WHOLE set the parent wants to keep,
+   matching the endpoint's replace semantics: an unticked power is simply
+   absent, so nothing is left half-on. */
+import { POWERS } from './familyPowers';
 
 export default function DelegatedPowerToggle({ linkId, familyName, powers = [], onSaved }) {
   const { toast } = useToast();
@@ -81,7 +60,7 @@ export default function DelegatedPowerToggle({ linkId, familyName, powers = [], 
         fontSize: '14px', color: 'var(--ink-slate)', fontFamily: SFT,
         margin: '0 0 8px', lineHeight: 1.4,
       }}>
-        Watching lets {name} see. These let {name} act. Each one stays off until you
+        Sharing lets {name} see. These let {name} act. Each one stays off until you
         turn it on, and their name is always on whatever they do.
       </p>
 

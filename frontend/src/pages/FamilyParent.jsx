@@ -11,6 +11,7 @@ import FamilyHelperConnect from '../components/FamilyHelperConnect';
 import FamilyNeedsForParent from '../components/FamilyNeedsForParent';
 import FamilyTrustAdvance from '../components/FamilyTrustAdvance';
 import FamilyReviewForParent from '../components/FamilyReviewForParent';
+import { POWERS } from '../components/familyPowers';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -62,6 +63,7 @@ export default function FamilyParent() {
   const [standingsLoaded, setStandingsLoaded] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [openingChat, setOpeningChat] = useState(false);
+  const [askingPower, setAskingPower] = useState(null);
 
   const load = useCallback(() => {
     return Promise.all([
@@ -93,6 +95,22 @@ export default function FamilyParent() {
   const link = (family.activeLinks || []).find(l => !l.iAmElder && l.elderId === elderId);
   const j = journey.find(e => e.elderId === elderId);
   const powers = link?.delegatedPowers || [];
+  // Consent flow: powers I've asked for that are still waiting on their answer.
+  const pendingAsks = (link?.pendingPowerRequests || []).map(r => r.power);
+
+  const askFor = async (powerKey) => {
+    if (!link || askingPower) return;
+    setAskingPower(powerKey);
+    try {
+      await api.post(`/family/links/${link.id}/power-requests`, { power: powerKey });
+      toast.success(`Asked. ${elderName} decides on their My Family page.`);
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Could not send the ask. Please try again.');
+    } finally {
+      setAskingPower(null);
+    }
+  };
   const sharedHelpers = j?.sharedHelpers || [];
   const elderName = j?.elderName || link?.otherUserName || 'your parent';
 
@@ -166,6 +184,85 @@ export default function FamilyParent() {
             </button>
           </div>
         </BlurFade>
+
+        {/* What I can do — consent flow. Each power is on, waiting, or askable.
+            Asking never grants anything; it puts a plain yes/no card in front of
+            the parent, in the same words their Controls switches use. */}
+        {link && (
+          <BlurFade delay={3}>
+            <div style={{ ...cardStyle, marginTop: '14px' }}>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '4px' }}>
+                What I can do for {elderName}
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '0 0 4px', lineHeight: 1.5 }}>
+                {elderName} decides each of these, and anything you do carries your name.
+              </p>
+              {POWERS.map(p => {
+                const isGranted = powers.includes(p.key);
+                const isWaiting = pendingAsks.includes(p.key);
+                return (
+                  <div key={p.key} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--hairline)',
+                  }}>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', fontFamily: SFText, margin: 0 }}>
+                        {p.title}
+                      </p>
+                      <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0', lineHeight: 1.45 }}>
+                        {isGranted
+                          ? `${elderName} lets you do this.`
+                          : isWaiting
+                            ? `You asked. Waiting for ${elderName} to decide — they answer on their My Family page.`
+                            : p.key === 'LEAVE_REVIEWS'
+                              ? `Not on yet — you can ask ${elderName}. Reviews unlock when a friendship is fully trusted.`
+                              : `Not on yet — you can ask ${elderName}.`}
+                      </p>
+                    </div>
+                    {isGranted ? (
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0,
+                        fontSize: '14px', fontWeight: 600, color: 'var(--green-deep)',
+                        background: 'color-mix(in srgb, var(--green-deep) 8%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--green-deep) 25%, transparent)',
+                        borderRadius: '9999px', padding: '5px 12px', whiteSpace: 'nowrap',
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                        On
+                      </span>
+                    ) : isWaiting ? (
+                      <span style={{
+                        flexShrink: 0, fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)',
+                        background: 'var(--chip-neutral)', border: '1px solid var(--border)',
+                        borderRadius: '9999px', padding: '5px 12px', whiteSpace: 'nowrap',
+                      }}>
+                        Waiting
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => askFor(p.key)}
+                        disabled={askingPower !== null}
+                        style={{
+                          flexShrink: 0, minHeight: '44px', padding: '9px 16px',
+                          background: 'none', color: 'var(--blue-deep)',
+                          border: '1px solid var(--blue-soft)', borderRadius: '9999px',
+                          fontSize: '15px', fontWeight: 600, fontFamily: SFText,
+                          cursor: askingPower ? 'wait' : 'pointer', whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {askingPower === p.key ? 'Asking…' : `Ask ${elderName}`}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </BlurFade>
+        )}
 
         {/* How they are today */}
         {j && (

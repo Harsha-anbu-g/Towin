@@ -54,6 +54,8 @@ public class AccountService {
     private final TrustProgressionLogRepository trustProgressionLogRepository;
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
+    private final com.towinly.family.repository.FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
+    private final com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
 
     private final com.towinly.common.service.S3Service s3Service;
 
@@ -79,6 +81,10 @@ public class AccountService {
         needRepository.deleteByElderId(userId);
         emergencyContactRepository.deleteByElderId(userId);
         familyAlertRepository.deleteByElderId(userId);
+        // The DB would cascade these off the user row, but the purge stays the
+        // single source of truth for what leaves with an account.
+        familyDelegatedPowerRepository.deleteByElderIdOrFamilyUserId(userId, userId);
+        familyPowerRequestRepository.deleteByElderIdOrFamilyUserId(userId, userId);
         familyLinkRepository.deleteByElderIdOrFamilyUserId(userId, userId);
         trustProgressionLogRepository.deleteByUserId(userId);
         connectionRepository.deleteByUserId(userId);
@@ -142,6 +148,29 @@ public class AccountService {
         // Elder-keyed: non-elders simply get an empty list here.
         out.put("familyAlerts", familyAlertRepository.findByElderIdOrderByCreatedAtDesc(userId)
                 .stream().map(this::familyAlertSummary).collect(Collectors.toList()));
+
+        // Personal data on both seats: what an elder handed out, and what a
+        // family member holds or asked for.
+        out.put("delegatedPowers", familyDelegatedPowerRepository.findByElderIdOrFamilyUserId(userId, userId)
+                .stream().map(p -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("power", p.getPower() != null ? p.getPower().name() : null);
+                    m.put("elderId", p.getElder().getId());
+                    m.put("familyUserId", p.getFamilyUser().getId());
+                    m.put("createdAt", p.getCreatedAt());
+                    return m;
+                }).collect(Collectors.toList()));
+        out.put("powerRequests", familyPowerRequestRepository.findByElderIdOrFamilyUserId(userId, userId)
+                .stream().map(r -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("power", r.getPower() != null ? r.getPower().name() : null);
+                    m.put("status", r.getStatus() != null ? r.getStatus().name() : null);
+                    m.put("elderId", r.getElder().getId());
+                    m.put("familyUserId", r.getFamilyUser().getId());
+                    m.put("createdAt", r.getCreatedAt());
+                    m.put("respondedAt", r.getRespondedAt());
+                    return m;
+                }).collect(Collectors.toList()));
 
         return out;
     }

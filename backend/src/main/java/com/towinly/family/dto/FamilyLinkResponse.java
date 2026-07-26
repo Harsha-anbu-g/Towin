@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,6 +37,20 @@ public class FamilyLinkResponse {
      * member needs to see what they may do.
      */
     private Set<DelegatedPower> delegatedPowers;
+
+    /**
+     * Consent flow: the family member's open asks on this link. Both seats see
+     * them — the elder renders approval cards, the family side a waiting state.
+     * Always empty unless the link is active.
+     */
+    private List<PendingPowerRequest> pendingPowerRequests;
+
+    @Getter
+    @Builder
+    public static class PendingPowerRequest {
+        private UUID id;
+        private DelegatedPower power;
+    }
 
     /**
      * Explicit getter (Lombok skips generating its own) so the JSON field is

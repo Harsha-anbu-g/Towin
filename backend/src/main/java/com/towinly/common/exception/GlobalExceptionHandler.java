@@ -72,6 +72,10 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("You are not part of this family link",     "You are not part of this family link.");
         SAFE_MESSAGES.put("You can't respond to your own family request", "You can't respond to your own request.");
         SAFE_MESSAGES.put("This family request is no longer pending", "This request is no longer waiting for an answer.");
+        // Consent flow: asking for a power
+        SAFE_MESSAGES.put("They already let you do this",             "They already let you do this.");
+        SAFE_MESSAGES.put("You've already asked",                     "You've already asked — they haven't decided yet.");
+        SAFE_MESSAGES.put("You asked about this recently",            "You asked about this recently — you can ask again in a few days.");
         SAFE_MESSAGES.put("Only the person who sent this request can cancel it",
                 "Only the person who sent this request can cancel it.");
         SAFE_MESSAGES.put("This family link has already ended",       "This family link has already ended.");
