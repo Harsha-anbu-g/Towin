@@ -4,6 +4,7 @@ import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
+import SegmentedTabs from '../components/SegmentedTabs';
 import { parseServerDate } from '../lib/utils';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -54,10 +55,6 @@ const Avatar = ({ name, size = 52 }) => (
   </div>
 );
 
-const headingStyle = {
-  fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-  color: 'var(--ink-4)', fontFamily: SFText, margin: '0 4px 8px',
-};
 const listCardStyle = {
   background: 'var(--canvas)', border: '1px solid var(--border)',
   borderRadius: '18px', overflow: 'hidden', marginBottom: '16px',
@@ -86,6 +83,7 @@ export default function MessagesInbox() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [journeyThreads, setJourneyThreads] = useState([]);
+  const [tab, setTab] = useState(null);
 
   useEffect(() => {
     api.get('/connections')
@@ -164,7 +162,9 @@ export default function MessagesInbox() {
   );
 
   const convRow = (c, i, arr) => {
-    const trustLabel = TRUST_LABELS[c.currentTrustLevel];
+    // Family chats have no trust ladder — a parent↔child link never shows a
+    // trust stage like "Just Connected" (user call 2026-07-26).
+    const trustLabel = sectionOf(c) === 'Family' ? null : TRUST_LABELS[c.currentTrustLevel];
     return (
       <button
         key={c.id}
@@ -234,12 +234,15 @@ export default function MessagesInbox() {
     );
   };
 
-  const renderSection = (title, rows, renderRow) => rows.length === 0 ? null : (
-    <div key={title}>
-      <h2 style={headingStyle}>{title}</h2>
-      <div style={listCardStyle}>{rows.map((r, i) => renderRow(r, i, rows))}</div>
-    </div>
-  );
+  // One group of chats on screen at a time, switched with tabs at the top —
+  // same segmented-tab pattern as the Family page's Controls / My family tabs
+  // (user call 2026-07-26). Only groups with a conversation get a tab.
+  const sections = [
+    { id: 'groups', label: 'Groups', rows: q ? [] : groupThreads, renderRow: groupRow },
+    ...SECTION_ORDER.map(name => ({ id: name.toLowerCase(), label: name, rows: buckets[name], renderRow: convRow })),
+  ].filter(s => s.rows.length > 0);
+  const activeTab = sections.some(s => s.id === tab) ? tab : sections[0]?.id;
+  const currentSection = sections.find(s => s.id === activeTab);
 
   return (
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
@@ -247,8 +250,6 @@ export default function MessagesInbox() {
 
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, var(--blue-wash) 0%, var(--surface) 100%)',
-          borderBottom: '1px solid var(--sky-line)',
           padding: 'clamp(28px, 6vw, 48px) 20px clamp(20px, 4vw, 32px)',
           textAlign: 'center',
         }}>
@@ -347,8 +348,23 @@ export default function MessagesInbox() {
             </BlurFade>
 
             {/* Groups first, then one-to-one chats grouped by who they're with. */}
-            {renderSection('Groups', q ? [] : groupThreads, groupRow)}
-            {SECTION_ORDER.map(name => renderSection(name, buckets[name], convRow))}
+            {sections.length > 0 && (
+              <>
+                <div style={{ marginBottom: '18px' }}>
+                  <SegmentedTabs
+                    segments={sections.map(s => ({ id: s.id, label: s.label }))}
+                    value={activeTab}
+                    onChange={setTab}
+                    label="Filter conversations by who they're with"
+                  />
+                </div>
+                {currentSection && (
+                  <div style={listCardStyle}>
+                    {currentSection.rows.map((r, i) => currentSection.renderRow(r, i, currentSection.rows))}
+                  </div>
+                )}
+              </>
+            )}
 
             {q && filtered.length === 0 && (
               <div style={{

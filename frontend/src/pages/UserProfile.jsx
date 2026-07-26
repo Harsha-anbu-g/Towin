@@ -29,7 +29,7 @@ function VerifiedChip({ label }) {
   return (
     <span style={{
       fontSize: 'var(--text-xs)', fontWeight: 600,
-      background: 'var(--green-tint)', color: 'var(--green-deep)',
+      background: 'transparent', color: 'var(--green-deep)',
       border: '1px solid var(--green-line)',
       borderRadius: '9999px', padding: '3px 10px 3px 8px', whiteSpace: 'nowrap',
       display: 'inline-flex', alignItems: 'center', gap: '5px',

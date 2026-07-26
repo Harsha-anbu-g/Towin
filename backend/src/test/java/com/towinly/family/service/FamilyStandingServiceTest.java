@@ -282,4 +282,68 @@ class FamilyStandingServiceTest {
         assertThat(s).isNotNull();
         assertThat(s.getHelperUserId()).isEqualTo(harsha.getId());
     }
+
+    // ── familyBehind: the helper's mirror of the same derivation ──
+
+    private void linkSarahBehindMargaret() {
+        lenient().when(familyLinkRepository.findByElderIdAndStatus(margaret.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(FamilyLink.builder()
+                        .elder(margaret).familyUser(sarah).initiatedBy(sarah)
+                        .relationship("Daughter").status(FamilyLinkStatus.ACTIVE).build()));
+    }
+
+    @Test
+    void helperSeesFamilyBehindASharedFriendship() {
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        linkSarahBehindMargaret();
+
+        var entries = service.familyBehind(harsha.getId()).getEntries();
+
+        assertThat(entries).hasSize(1);
+        assertThat(entries.get(0).getConnectionId()).isEqualTo(sharedConnection.getId());
+        assertThat(entries.get(0).getElderName()).isEqualTo("Margaret");
+        assertThat(entries.get(0).getFamilyName()).isEqualTo("Sarah");
+        assertThat(entries.get(0).getRelationship()).isEqualTo("Daughter");
+    }
+
+    @Test
+    void helperSeesNothingBehindAPrivateFriendship() {
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(connection(TrustLevel.TRUSTED, false)));
+        linkSarahBehindMargaret();
+
+        assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
+
+    @Test
+    void helperSeesNothingBelowMessaging() {
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(connection(TrustLevel.DISCOVERED, true)));
+        linkSarahBehindMargaret();
+
+        assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
+
+    @Test
+    void familyChatRowsDeriveNoFamilyBehindEntries() {
+        Connection coordination = connection(TrustLevel.TRUSTED, true);
+        coordination.setType(ConnectionType.FAMILY);
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(coordination));
+
+        assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
+
+    @Test
+    void revokedStandingHidesTheFamilyMemberFromTheHelper() {
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        linkSarahBehindMargaret();
+        when(controlRepository.findByFamilyUserIdAndElderConnectionId(sarah.getId(), sharedConnection.getId()))
+                .thenReturn(Optional.of(FamilyStandingControl.builder()
+                        .state(FamilyStandingState.REVOKED).build()));
+
+        assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
 }

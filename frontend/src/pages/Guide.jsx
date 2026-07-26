@@ -65,6 +65,7 @@ function RoleTab({ role, setRole }) {
     <div style={{ display: 'flex', gap: '10px', marginBottom: '22px' }}>
       <RoleTabButton value="ELDER" label="I'm an Elder" role={role} setRole={setRole} />
       <RoleTabButton value="HELPER" label="I'm a Helper" role={role} setRole={setRole} />
+      <RoleTabButton value="FAMILY" label="I'm Family" role={role} setRole={setRole} />
     </div>
   );
 }
@@ -108,7 +109,9 @@ export default function Guide() {
   const isLoggedIn = !!user;
 
   const [step, setStep] = useState(0);
-  const [role, setRole] = useState(user?.role === 'HELPER' ? 'HELPER' : 'ELDER');
+  const [role, setRole] = useState(
+    user?.role === 'HELPER' ? 'HELPER' : user?.role === 'FAMILY' ? 'FAMILY' : 'ELDER'
+  );
 
   const total = STEPS.length;
   const current = STEPS[step];

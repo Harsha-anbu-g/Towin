@@ -37,10 +37,13 @@ const links = {
 
 const renderPage = () => render(<MemoryRouter><MyFamily /></MemoryRouter>)
 
-// The page opens on the family list; Controls and How it works are top-level tabs
-// now (user call 2026-07-21). Click into a tab before asserting on its contents.
+// The page opens on Controls by default now (user call 2026-07-26); My family
+// and How it works are top-level tabs. Click into a tab before asserting on
+// its contents.
 const openControls = async (user) =>
   user.click(await screen.findByRole('tab', { name: /^controls$/i }))
+const openMembers = async (user) =>
+  user.click(await screen.findByRole('tab', { name: /^my family$/i }))
 
 describe('MyFamily', () => {
   beforeEach(() => {
@@ -51,8 +54,10 @@ describe('MyFamily', () => {
   })
 
   it('loads and shows family, incoming and outgoing requests', async () => {
+    const user = userEvent.setup()
     renderPage()
     expect(api.get).toHaveBeenCalledWith('/family/links')
+    await openMembers(user)
     expect(await screen.findByText('Sarah')).toBeInTheDocument()
     expect(screen.getByText('Arun')).toBeInTheDocument()
     // incoming request names the person and offers both outcomes
@@ -68,9 +73,8 @@ describe('MyFamily', () => {
   it('states the plain-words promises and the trust line', async () => {
     const user = userEvent.setup()
     renderPage()
-    await screen.findByText('Sarah')
-    // The promises moved to the How it works tab (user call 2026-07-21).
-    await user.click(screen.getByRole('tab', { name: /how it works/i }))
+    // The promises live on the How it works tab (user call 2026-07-21).
+    await user.click(await screen.findByRole('tab', { name: /how it works/i }))
     expect(screen.getByText(/can see you're safe/i)).toBeInTheDocument()
     expect(screen.getByText(/only see the friendships you choose to share/i)).toBeInTheDocument()
     // Guardian mode replaced the old "they can never act for you" promise: they
@@ -83,6 +87,7 @@ describe('MyFamily', () => {
   it('sends a family request with the exact identifier', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await screen.findByText('Sarah')
     await user.click(screen.getByRole('button', { name: /add a family member/i }))
     await user.type(screen.getByLabelText(/username, email or phone/i), 'arun_kumar')
@@ -98,6 +103,7 @@ describe('MyFamily', () => {
   it('accepts an incoming request', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await screen.findByText('Meena')
     await user.click(screen.getByRole('button', { name: /accept/i }))
     await waitFor(() => {
@@ -108,6 +114,7 @@ describe('MyFamily', () => {
   it('declines an incoming request with Not now', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await screen.findByText('Meena')
     await user.click(screen.getByRole('button', { name: /not now/i }))
     await waitFor(() => {
@@ -118,6 +125,7 @@ describe('MyFamily', () => {
   it('removes a family member after confirming', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await screen.findByText('Arun')
     // second Remove belongs to Arun (non-primary card)
     await user.click(screen.getAllByRole('button', { name: /^remove$/i })[1])
@@ -130,6 +138,7 @@ describe('MyFamily', () => {
   it('cancels an outgoing pending request', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await screen.findByText('Ravi')
     await user.click(screen.getByRole('button', { name: /cancel request/i }))
     await waitFor(() => {
@@ -140,6 +149,7 @@ describe('MyFamily', () => {
   it('marks the primary and can move it', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await screen.findByText('Sarah')
     expect(screen.getByText('Main contact')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /make main contact/i }))
@@ -262,7 +272,9 @@ describe('MyFamily — power asks (consent flow)', () => {
   })
 
   it("shows the ask as a plain yes/no card in the switch's own words", async () => {
+    const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     expect(await screen.findByText(/sarah asks: leave a review for you/i)).toBeInTheDocument()
     expect(screen.getByText(/if you say yes/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^yes$/i })).toBeInTheDocument()
@@ -272,6 +284,7 @@ describe('MyFamily — power asks (consent flow)', () => {
   it('saying yes answers through the power-request endpoint', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await user.click(await screen.findByRole('button', { name: /^yes$/i }))
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/family/power-requests/pr1/respond', { accept: true })
@@ -281,6 +294,7 @@ describe('MyFamily — power asks (consent flow)', () => {
   it('not now declines without granting anything', async () => {
     const user = userEvent.setup()
     renderPage()
+    await openMembers(user)
     await user.click(await screen.findByRole('button', { name: /not now/i }))
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/family/power-requests/pr1/respond', { accept: false })

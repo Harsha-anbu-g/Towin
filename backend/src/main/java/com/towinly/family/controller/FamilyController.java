@@ -3,6 +3,7 @@ package com.towinly.family.controller;
 import com.towinly.common.enums.FamilyStandingState;
 import com.towinly.family.dto.ElderTransparencyResponse;
 import com.towinly.family.dto.FamilyAlertsResponse;
+import com.towinly.family.dto.FamilyBehindResponse;
 import com.towinly.family.dto.FamilyJourneyResponse;
 import com.towinly.family.dto.FamilyLinkResponse;
 import com.towinly.family.dto.FamilyLinksResponse;
@@ -55,6 +56,14 @@ public class FamilyController {
     public ResponseEntity<FamilyStandingsResponse> standings(Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(familyStandingService.standingsFor(userId));
+    }
+
+    /** Helper seat: the family members who stand behind each of my elder
+     *  friendships — so a helper knows who may watch and reach out. */
+    @GetMapping("/behind-me")
+    public ResponseEntity<FamilyBehindResponse> behindMe(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(familyStandingService.familyBehind(userId));
     }
 
     /** Open (or reopen) the chat behind a standing; returns the chat connection id. */

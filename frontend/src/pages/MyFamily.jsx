@@ -9,6 +9,7 @@ import SmoothInput from '../components/SmoothInput';
 import SegmentedTabs from '../components/SegmentedTabs';
 import DelegatedPowerToggle from '../components/DelegatedPowerToggle';
 import { POWERS } from '../components/familyPowers';
+import { SHARING_GIVES } from '../components/sharingGives';
 import FamilyShareToggle from '../components/FamilyShareToggle';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -91,9 +92,9 @@ export default function MyFamily({ embedded = false }) {
   const [pendingRemove, setPendingRemove] = useState(null);
   const [removing, setRemoving] = useState(false);
   // The whole page is three plain areas now — Controls, My family, How it works —
-  // instead of one long scroll (user call 2026-07-21). Land on the family list;
-  // Controls sits first in the strip but would be empty before anyone is linked.
-  const [tab, setTab] = useState('members');
+  // instead of one long scroll (user call 2026-07-21). Lands on Controls by
+  // default (user call 2026-07-26).
+  const [tab, setTab] = useState('controls');
   // Controls: the two things family can be given — seeing, and doing.
   // They were on separate screens, which made it look like only one existed
   // (user call 2026-07-20).
@@ -551,9 +552,19 @@ export default function MyFamily({ embedded = false }) {
                     </div>
                   ) : (
                     <div style={cardStyle}>
+                      <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
+                        Everyone in your family gets the friendships you turn on here.
+                        On a shared friendship they can:
+                      </p>
+                      <ul style={{ margin: '0 0 12px', paddingLeft: '22px' }}>
+                        {SHARING_GIVES.map(g => (
+                          <li key={g.key} style={{ fontSize: '16px', color: 'var(--ink-3)', lineHeight: 1.5, marginBottom: '4px' }}>
+                            {g.elder()}
+                          </li>
+                        ))}
+                      </ul>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 12px', lineHeight: 1.5 }}>
-                        Everyone in your family sees the friendships you turn on here.
-                        They can see how it is going — they cannot change anything.
+                        Turn a friendship off any time — your family loses all of this straight away.
                       </p>
                       {connections.map(c => (
                         <div key={c.id} style={{ marginBottom: '10px' }}>

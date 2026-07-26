@@ -12,6 +12,7 @@ import com.towinly.common.service.S3Service;
 import com.towinly.connection.entity.Connection;
 import com.towinly.connection.repository.ConnectionRepository;
 import com.towinly.family.dto.ElderTransparencyResponse;
+import com.towinly.family.dto.FamilyBehindResponse;
 import com.towinly.family.dto.FamilyStandingsResponse;
 import com.towinly.family.dto.FamilyStandingsResponse.Standing;
 import com.towinly.family.entity.FamilyLink;
@@ -63,6 +64,35 @@ public class FamilyStandingService {
         familyLinkRepository.findByFamilyUserIdAndStatus(familyUserId, FamilyLinkStatus.ACTIVE)
                 .forEach(link -> collectStandings(familyUserId, link.getElder(), standings));
         return FamilyStandingsResponse.builder().standings(standings).build();
+    }
+
+    /**
+     * The helper's mirror of standingsFor: who stands behind MY elder
+     * friendships. Same gates via the same toStanding derivation, so the
+     * helper learns exactly who could already reach them — never more.
+     */
+    @Transactional(readOnly = true)
+    public FamilyBehindResponse familyBehind(UUID helperUserId) {
+        List<FamilyBehindResponse.Entry> entries = new ArrayList<>();
+        for (Connection c : connectionRepository.findByUserAndStatus(helperUserId, ConnectionStatus.ACTIVE)) {
+            if (c.getType() == ConnectionType.FAMILY) continue;
+            User elder = c.getOtherUser(helperUserId);
+            for (FamilyLink link : familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE)) {
+                Standing standing = toStanding(link.getFamilyUser().getId(), elder, c);
+                if (standing == null) continue;
+                entries.add(FamilyBehindResponse.Entry.builder()
+                        .connectionId(c.getId())
+                        .elderUserId(elder.getId())
+                        .elderName(displayName(elder))
+                        .familyUserId(link.getFamilyUser().getId())
+                        .familyName(displayName(link.getFamilyUser()))
+                        .familyPhotoUrl(photoUrl(link.getFamilyUser()))
+                        .relationship(link.getRelationship())
+                        .chatConnectionId(standing.getChatConnectionId())
+                        .build());
+            }
+        }
+        return FamilyBehindResponse.builder().entries(entries).build();
     }
 
     /** The derivation for one elder↔helper connection, or null if no standing. */

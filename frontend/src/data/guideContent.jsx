@@ -120,10 +120,11 @@ export const STEPS = [
         <CardGrid>
           <MiniCard title="Elder">An older person looking for friendship, company, or help with daily tasks.</MiniCard>
           <MiniCard title="Helper">A younger person who gives time, company, and a hand with everyday things.</MiniCard>
+          <MiniCard title="Family">A son, daughter, or relative who watches over their elder and helps from anywhere.</MiniCard>
         </CardGrid>
         <NoteBox>
           Choose how you'll use Towinly with the tabs above. You can switch between
-          Elder and Helper anytime.
+          Elder, Helper, and Family anytime.
         </NoteBox>
       </>
     ),
@@ -132,7 +133,24 @@ export const STEPS = [
     id: 'features',
     navLabel: 'What you can do',
     render: ({ role }) => (
-      role === 'HELPER' ? (
+      role === 'FAMILY' ? (
+        <>
+          <StepTitle>What you can do as Family</StepTitle>
+          <Lead>As Family, you stay close to your parent's life here — always with their say-so.</Lead>
+          <Bullets items={[
+            'Link to your parent. They must say yes before you see anything.',
+            'See that they checked in today, so you know they are okay.',
+            'Follow the friendships they choose to share with you — and only those.',
+            'Read the small updates thread on a shared friendship, together with your parent and their helper.',
+            'Message their helpers directly, through the trust your parent has built.',
+            'Ask for permission to act for them — request help, move a friendship forward, or leave a review in their name.',
+          ]} />
+          <NoteBox>
+            Your parent stays in charge: every friendship starts private, every power
+            starts off, and they can change their mind at any time.
+          </NoteBox>
+        </>
+      ) : role === 'HELPER' ? (
         <>
           <StepTitle>What you can do as a Helper</StepTitle>
           <Lead>As a Helper, you offer your time and reach the elders who need it most.</Lead>

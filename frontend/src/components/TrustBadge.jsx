@@ -2,7 +2,7 @@ const TRUST = 'var(--ink-slate)';
 
 const TIER_COLORS = {
   // Top tier earns the leaf-green achievement color (matches "Fully Trusted").
-  'Community Champion': { bg: 'var(--green-tint)', color: 'var(--green-deep)', border: 'var(--green-line)' },
+  'Community Champion': { bg: 'var(--grey-fill)', color: 'var(--green-deep)', border: 'var(--green-line)' },
   'Highly Trusted':     { bg: 'var(--grey-fill)', color: TRUST, border: 'var(--hairline-2)' },
   'Reliable':           { bg: 'var(--grey-fill)', color: TRUST, border: 'var(--hairline-2)' },
   'Getting Started':    { bg: 'var(--grey-fill)', color: TRUST, border: 'var(--hairline-2)' },

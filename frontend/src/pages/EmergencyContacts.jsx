@@ -100,11 +100,8 @@ export default function EmergencyContacts() {
     <div style={{ minHeight: '100svh', background: 'var(--surface-pearl)', fontFamily: SFText }}>
       <NavBar />
 
-      {/* Hero tile — calm sky-blue, matches dashboard theme */}
       <BlurFade delay={1}>
         <div style={{
-          background: 'linear-gradient(180deg, var(--blue-wash) 0%, var(--surface) 100%)',
-          borderBottom: '1px solid var(--sky-line)',
           padding: 'clamp(32px, 7vw, 64px) 20px clamp(24px, 5vw, 48px)',
           textAlign: 'center',
         }}>

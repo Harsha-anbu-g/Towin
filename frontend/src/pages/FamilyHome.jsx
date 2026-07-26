@@ -333,7 +333,7 @@ export default function FamilyHome() {
                   <div style={{
                     margin: '0 0 14px', padding: '10px 14px', borderRadius: '12px',
                     background: band.kind === 'well'
-                      ? 'var(--green-wash)'
+                      ? 'transparent'
                       : `color-mix(in srgb, ${band.color} 7%, transparent)`,
                     border: band.kind === 'well'
                       ? '1px solid var(--green-line)'
@@ -355,7 +355,7 @@ export default function FamilyHome() {
                     </div>
                     <span style={{
                       fontSize: '14px', fontWeight: 600, color: 'var(--green-deep)',
-                      background: 'color-mix(in srgb, var(--green-deep) 8%, transparent)',
+                      background: 'transparent',
                       border: '1px solid color-mix(in srgb, var(--green-deep) 25%, transparent)',
                       borderRadius: '9999px', padding: '6px 14px', whiteSpace: 'nowrap', flexShrink: 0,
                     }}>
@@ -371,7 +371,7 @@ export default function FamilyHome() {
                         fontSize: '14px', fontWeight: 600,
                         color: j.checkedInToday ? 'var(--green-deep)' : 'var(--ink-3)',
                         background: j.checkedInToday
-                          ? 'color-mix(in srgb, var(--green-deep) 8%, transparent)'
+                          ? 'transparent'
                           : 'color-mix(in srgb, var(--ink-3) 7%, transparent)',
                         border: j.checkedInToday
                           ? '1px solid color-mix(in srgb, var(--green-deep) 25%, transparent)'

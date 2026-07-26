@@ -113,7 +113,7 @@ function postedAgo(iso) {
 function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile }) {
   const mine = need.myApplicationStatus;                 // null | PENDING | ACCEPTED | REJECTED
   const isCompleted = need.status === 'COMPLETED';
-  const greenPill = { height: '40px', display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '0 18px', background: 'var(--green-tint)', color: 'var(--green-deep)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 };
+  const greenPill = { height: '40px', display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '0 18px', background: 'var(--surface-2)', color: 'var(--green-deep)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 };
   const check = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-deep)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
   return (
     <div style={{
@@ -225,6 +225,7 @@ export default function HelperDashboard() {
   const seenConn = useSeenIds(user?.userId, 'connections');
   const seenNeeds = useSeenIds(user?.userId, 'needs');
   const [connections, setConnections] = useState([]);
+  const [familyBehind, setFamilyBehind] = useState([]);
   const [needs, setNeeds] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [elders, setElders] = useState([]);
@@ -288,6 +289,10 @@ export default function HelperDashboard() {
     if (!silent) setLoading(true);
     try { const r = await api.get('/connections'); setConnections(r.data); } catch { /* transient load error — keep last list, spinner clears below */ }
     finally { if (!silent) setLoading(false); }
+    // Who stands behind each elder friendship — derived server-side from the
+    // elder's share switch, so the card only ever names people who could
+    // already reach this helper.
+    try { const fb = await api.get('/family/behind-me'); setFamilyBehind(fb.data.entries || []); } catch { /* keep last list */ }
   }
   async function loadElders(loc) {
     setDiscovering(true);
@@ -848,6 +853,42 @@ export default function HelperDashboard() {
 
                   {/* Updates for the family — only while the elder shares this friendship (US-003) */}
                   <HelperFamilyUpdates conn={conn} />
+
+                  {/* The family standing behind this friendship — same server-side
+                      derivation as their side, so this names exactly the people
+                      who can already see it and message this helper. */}
+                  {conn.status === 'ACTIVE' && conn.type !== 'FAMILY'
+                    && familyBehind.some(f => f.connectionId === conn.id) && (
+                    <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '12px' }}>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: '0 0 8px' }}>
+                        {conn.otherUserName ? `${conn.otherUserName}'s family` : 'Their family'}
+                      </p>
+                      {familyBehind.filter(f => f.connectionId === conn.id).map(f => (
+                        <div key={f.familyUserId} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                          {f.familyPhotoUrl ? (
+                            <img src={f.familyPhotoUrl} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                          ) : (
+                            <span aria-hidden style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--blue-wash)', color: 'var(--blue-deep)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', fontWeight: 700, flexShrink: 0 }}>
+                              {(f.familyName || '?').charAt(0)}
+                            </span>
+                          )}
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
+                              {f.familyName}
+                              {f.relationship ? (
+                                <span style={{ fontWeight: 400, color: 'var(--ink-slate)' }}>
+                                  {' '}— {conn.otherUserName ? `${conn.otherUserName}'s` : 'their'} {f.relationship.toLowerCase()}
+                                </span>
+                              ) : null}
+                            </p>
+                            <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '2px 0 0', lineHeight: 1.4 }}>
+                              Can see how this friendship is going and may message you.
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 );
               })}
@@ -1054,7 +1095,7 @@ export default function HelperDashboard() {
                       </div>
                       <div className="card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
                         {alreadyConnected ? (
-                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--green-tint)', color: 'var(--green-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
+                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--surface-2)', color: 'var(--green-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
                         ) : requested ? (
                           <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: 'var(--ink-slate)' }}>Requested</span>
                         ) : errorMsg ? (

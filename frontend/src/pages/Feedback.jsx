@@ -127,17 +127,6 @@ export default function Feedback() {
 
         {/* ── LEFT: Feedback form ── */}
         <div>
-          {/* Prototype notice */}
-          <div style={{
-            background: 'var(--blue-wash)', border: '1px solid var(--blue-soft)', borderRadius: '14px',
-            padding: '14px 20px', marginBottom: '16px',
-          }}>
-            <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0, lineHeight: 1.55 }}>
-              <strong>Towinly is an early prototype.</strong> You&apos;re trying a work in
-              progress. A full mobile app is planned for the future. Your feedback
-              here directly shapes what gets built.
-            </p>
-          </div>
           {submitted ? (
             <div className="fb-card" style={{ textAlign: 'center', padding: '64px 36px' }}>
               <h2 style={{ fontFamily: SF, fontSize: 'var(--text-xl)', fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>

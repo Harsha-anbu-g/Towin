@@ -229,9 +229,11 @@ export default function NavBar() {
               display: 'flex', alignItems: 'center', gap: '7px',
               fontSize: '16px', fontFamily: SF, fontWeight: 600,
               /* US-004: gold-deep chip — AA text in both states/themes;
-                 active text color lives in .trust-chip-active (CSS themes it) */
+                 active text color lives in .trust-chip-active (CSS themes it).
+                 No fill when inactive — the wash background read badly (user
+                 call 2026-07-26); the gold border alone marks the chip. */
               color: trustActive ? undefined : 'var(--gold-deep)',
-              background: trustActive ? 'var(--gold-deep)' : 'var(--gold-wash)',
+              background: trustActive ? 'var(--gold-deep)' : 'transparent',
               border: `1.5px solid ${trustActive ? 'var(--gold-deep)' : 'var(--gold-line)'}`,
               borderRadius: '9999px', padding: '6px 16px',
               minHeight: '44px', // elderly-first tap-target floor

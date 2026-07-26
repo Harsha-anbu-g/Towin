@@ -66,7 +66,10 @@ export default function Messages() {
         // A helper sees whose family this person is: "Sarah (Margaret's family)".
         setOtherContext(conn.otherUserContext || '');
         setOtherUserId(conn.otherUserId);
-        setTrustLevel(conn.currentTrustLevel);
+        // Family links have no trust ladder — a chat with your parent or child
+        // never shows a trust stage like "Just Connected" (user call 2026-07-26).
+        const isFamilyLink = conn.type === 'FAMILY' || conn.otherUserRole === 'FAMILY';
+        if (!isFamilyLink) setTrustLevel(conn.currentTrustLevel);
         if (conn.otherUserId) {
           api.get(`/profile/${conn.otherUserId}`).then(p => {
             setOtherPhotoUrl(p.data.photoUrl || null);

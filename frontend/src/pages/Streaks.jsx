@@ -165,11 +165,8 @@ export default function Streaks() {
         flex: 1, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'flex-start',
         background: 'var(--surface-pearl)', padding: '28px 36px',
-        maxHeight: '100svh', overflowY: 'auto',
       }}>
-        {/* margin auto centers when there's room, but never clips when there isn't —
-            the action buttons must stay reachable on every screen height. */}
-        <div style={{ width: '100%', maxWidth: '420px', margin: 'auto 0' }}>
+        <div style={{ width: '100%', maxWidth: '420px' }}>
 
           {/* Greeting */}
           <p className="streaks-greeting" style={{
@@ -321,15 +318,13 @@ export default function Streaks() {
             )}
           </div>
 
-          {/* Action — pinned to the panel's bottom edge while scrolling, so the
-              way onward is always on screen (user report 2026-07-19). */}
+          {/* Action */}
           {!loading && (
-            <div style={{ position: 'sticky', bottom: 0, background: 'var(--surface-pearl)', padding: '10px 0 6px' }}>
-            {alreadyDone ? (
+            alreadyDone ? (
               /* Already checked in — show two options */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{
-                  background: 'var(--green-tint)', border: '1px solid var(--green-line)',
+                  border: '1px solid var(--green-line)',
                   borderRadius: '14px', padding: '14px 20px',
                   textAlign: 'center',
                 }}>
@@ -399,8 +394,7 @@ export default function Streaks() {
                   </button>
                 </div>
               </div>
-            )}
-            </div>
+            )
           )}
 
         </div>

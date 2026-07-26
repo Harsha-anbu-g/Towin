@@ -98,7 +98,7 @@ const catLabel = (c) => CATEGORY[c] || c;
 const NEED_STATUS = {
   OPEN:      { label: 'Looking for Help', color: 'var(--ink-slate)', bg: 'var(--chip-neutral)' },
   ASSIGNED:  { label: 'Helper Found',     color: 'var(--blue-deep)', bg: 'var(--blue-tint)' },
-  COMPLETED: { label: 'Completed',        color: 'var(--green-deep)', bg: 'var(--green-tint)' },
+  COMPLETED: { label: 'Completed',        color: 'var(--green-deep)', bg: 'var(--surface-2)' },
   CANCELLED: { label: 'Cancelled',        color: 'var(--ink-slate)', bg: 'var(--surface-2)' },
 };
 
@@ -1003,7 +1003,7 @@ export default function ElderDashboard() {
                           </div>
                           <div className="card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
                             {alreadyConnected ? (
-                              <span style={{ fontSize: 'var(--text-xs)', background: 'var(--green-tint)', color: 'var(--green-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
+                              <span style={{ fontSize: 'var(--text-xs)', background: 'var(--surface-2)', color: 'var(--green-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
                             ) : (alreadyRequested || sent === 'Requested') ? (
                               <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: 'var(--ink-slate)' }}>Requested</span>
                             ) : sent ? (

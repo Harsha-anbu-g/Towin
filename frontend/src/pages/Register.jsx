@@ -8,7 +8,7 @@ import DemoAccounts from '../components/DemoAccounts';
 
 const TERMS_CONTENT = [
   { h: '1. Welcome to Towinly',
-    p: 'Towinly is a community platform that connects elders with helpers for companionship, errands, and everyday support. By creating an account, you agree to these Terms of Service. This is a placeholder document for the prototype. Final terms will be reviewed by counsel before launch.' },
+    p: 'Towinly is a community platform that connects elders with helpers for companionship, errands, and everyday support. By creating an account, you agree to these Terms of Service. This is a placeholder document. Final terms will be reviewed by counsel before launch.' },
   { h: '2. Eligibility',
     p: 'You must be at least 18 years old to use Towinly. By registering, you confirm that the information you provide is accurate and that you will keep it up to date. Accounts created with false information may be suspended at any time.' },
   { h: '3. Your account',
@@ -103,7 +103,7 @@ function LegalModal({ title, sections, onClose }) {
             fontSize: '13px', color: 'var(--ink-4)', textTransform: 'uppercase',
             letterSpacing: '0.5px', fontWeight: 600, margin: '0 0 18px',
           }}>
-            Placeholder document, prototype only
+            Placeholder document
           </p>
           {sections.map(s => (
             <div key={s.h} style={{ marginBottom: '20px' }}>
