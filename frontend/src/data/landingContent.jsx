@@ -1,7 +1,7 @@
 // Landing story — all copy for the / entry slides lives here.
 // Landing.jsx renders SLIDES[index].render() inside the slide shell.
 //
-// Design system ("The Patient Path"): the six slides read as a guided, numbered
+// Design system ("The Patient Path"): the seven slides read as a guided, numbered
 // walk — one step at a time, the way trust grows on Towinly. Each slide is anchored
 // by a Chapter marker (0N · label); the shell echoes it as a trail in the footer.
 //
@@ -14,6 +14,7 @@
 import {
   Armchair, HandHeart, ShoppingBag, Car, MessageCircle,
   BadgeCheck, TrendingUp, Star, Link2, Phone, Video, Share2, Coffee,
+  Users, Eye, Bell,
 } from 'lucide-react';
 import { IntroBrandLockup } from '../components/TortoiseMark';
 
@@ -362,8 +363,8 @@ export const SLIDES = [
     render: () => (
       <Slide>
         <Chapter n={2} label="Who it's for" align="center" />
-        <Title align="center">Two kinds of people</Title>
-        <Lead align="center">Everyone on Towinly is one of these two.</Lead>
+        <Title align="center">Three kinds of people</Title>
+        <Lead align="center">Everyone on Towinly is one of these three.</Lead>
         <div style={{ height: '24px' }} />
         <CardGrid>
           <MiniCard title="Elder" icon={Armchair}>
@@ -371,6 +372,9 @@ export const SLIDES = [
           </MiniCard>
           <MiniCard title="Helper" icon={HandHeart}>
             A younger person who gives time, company, and a hand with everyday things.
+          </MiniCard>
+          <MiniCard title="Family" icon={Users}>
+            A relative who stays close, sees how their elder&apos;s friendships grow, and helps when needed.
           </MiniCard>
         </CardGrid>
       </Slide>
@@ -487,10 +491,43 @@ export const SLIDES = [
     ),
   },
   {
+    id: 'family',
+    readMs: 3200,
+    render: () => (
+      <Slide>
+        <Chapter n={6} label="Family stays close" align="center" />
+        <Title align="center">Family can watch over</Title>
+        <Lead align="center">
+          An elder can invite up to five family members to stay close and
+          step in if they are ever needed.
+        </Lead>
+        {/* Compact cards + tight spacers: this slide must fit one screen with
+            no scrolling inside the deck (user rule). */}
+        <div style={{ height: '14px' }} />
+        <CardGrid>
+          <MiniCard title="See the journey" compact icon={Eye}>
+            Watch each friendship climb its seven steps.
+          </MiniCard>
+          <MiniCard title="Hear right away" compact icon={Bell}>
+            Alerts the moment something needs attention.
+          </MiniCard>
+          <MiniCard title="Help decide" compact icon={Users}>
+            Look at a new helper and share their view.
+          </MiniCard>
+        </CardGrid>
+        <div style={{ height: '12px' }} />
+        <NoteBox>
+          The elder is always in charge — one switch turns family sharing on
+          or off, at any time.
+        </NoteBox>
+      </Slide>
+    ),
+  },
+  {
     id: 'why',
     render: () => (
       <Slide>
-        <Chapter n={6} label="Why Towinly" align="center" />
+        <Chapter n={7} label="Why Towinly" align="center" />
         <Title align="center">Both sides win</Title>
         <Lead align="center">
           Today&apos;s elders use phones, shop online, and pay online. Tomorrow
