@@ -48,10 +48,14 @@ export default function FamilyTrustAdvance({
         type="button"
         onClick={advance}
         disabled={busy}
+        /* Outlined, not filled: the card already has one filled primary
+           (Message the helper). A rare action taken on someone else's behalf
+           should not be the loudest thing on the page. */
         style={{
           display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center',
           gap: '8px', minHeight: '44px', padding: '10px 16px',
-          background: 'var(--blue)', color: '#fff', border: 'none',
+          background: 'transparent', color: 'var(--blue-deep)',
+          border: '1.5px solid var(--blue-soft)',
           borderRadius: '9999px', cursor: busy ? 'default' : 'pointer',
           opacity: busy ? 0.6 : 1,
           fontSize: '16px', fontWeight: 600, fontFamily: SFText,

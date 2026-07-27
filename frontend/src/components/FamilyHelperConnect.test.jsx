@@ -72,18 +72,48 @@ describe('FamilyHelperConnect (trust inheritance)', () => {
     )
   })
 
+  it('keeps Pause, Remove and the fine print behind Manage, so Message leads', () => {
+    render(<FamilyHelperConnect helper={helper()} standing={standing()} elderName="Margaret" />)
+
+    expect(screen.queryByRole('button', { name: 'Pause' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/if margaret stops sharing this friendship/i)).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /manage this chat/i }))
+
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument()
+    expect(screen.getByText(/if margaret stops sharing this friendship/i)).toBeInTheDocument()
+  })
+
   it('revokes through the standings endpoint after the person confirms', async () => {
     api.post.mockResolvedValueOnce({})
-    vi.spyOn(window, 'confirm').mockReturnValueOnce(true)
     const onChanged = vi.fn()
     render(<FamilyHelperConnect helper={helper()} standing={standing()} elderName="Margaret" onChanged={onChanged} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /remove/i }))
+    fireEvent.click(screen.getByRole('button', { name: /manage this chat/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+
+    // The app's own dialog, not a browser confirm() — losing a chat is worth a
+    // clear question with a way back out.
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /yes, remove/i }))
 
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/family/standings/conn-1/revoke')
     )
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
+  })
+
+  it('backs out of Remove without touching the connection', () => {
+    render(<FamilyHelperConnect helper={helper()} standing={standing()} elderName="Margaret" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /manage this chat/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    fireEvent.click(screen.getByRole('button', { name: /keep it/i }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(api.post).not.toHaveBeenCalled()
   })
 
   it('offers to bring back a removed connection once standings have loaded', () => {

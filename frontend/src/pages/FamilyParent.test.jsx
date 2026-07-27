@@ -1,7 +1,9 @@
 // One parent's own page — the shared friendships and every guardian-mode action.
 // These moved off FamilyHome when the list got too crowded (user call 2026-07-20);
-// the two tabs were then merged into one scrolling page (user call 2026-07-21),
-// so seeing and doing sit together. The behaviour they lock down is unchanged.
+// the two tabs were then merged into one scrolling page (user call 2026-07-21);
+// and that one page became three tabs, one job each, when the scroll got too
+// long (user call 2026-07-26). The behaviour they lock down is unchanged — only
+// which tab a thing lives on.
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -69,6 +71,10 @@ const renderPage = () => render(
   </MemoryRouter>,
 )
 
+// The page lands on Friendships; these move to the other two tabs.
+const openTab = async (user, name) =>
+  user.click(await screen.findByRole('tab', { name }))
+
 describe('FamilyParent', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -77,11 +83,23 @@ describe('FamilyParent', () => {
     mockWith()
   })
 
-  it('heads the page with the parent and how they are today', async () => {
+  it('heads the page with the parent, and keeps the check-in visible on every tab', async () => {
     renderPage()
     expect(await screen.findByRole('heading', { name: 'Margaret' })).toBeInTheDocument()
     expect(screen.getByText(/you're margaret's daughter/i)).toBeInTheDocument()
+    // The chip lives in the header, not on a tab — "are they alright?" is the
+    // one answer that must never hide behind a click.
     expect(screen.getByText(/checked in today/i)).toBeInTheDocument()
+  })
+
+  it('splits the page into three tabs and lands on Friendships', async () => {
+    renderPage()
+    expect(await screen.findByRole('tab', { name: 'Friendships' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: /^today/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'What I can do' })).toBeInTheDocument()
+    // One job per tab: the other two tabs' work is not on screen yet.
+    expect(screen.queryByText(/how margaret is today/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/what i can do for margaret/i)).not.toBeInTheDocument()
   })
 
   it('says plainly when the parent is no longer linked', async () => {
@@ -170,36 +188,43 @@ describe('FamilyParent — guardian mode actions', () => {
   })
 
   it('offers no way to act when the parent granted nothing', async () => {
+    const user = userEvent.setup()
     mockWith([], { sharedHelpers: [helperAt('TRUSTED')] })
     renderPage()
 
-    // Everything is on one page now: the open requests still read, the friendship
-    // still shows — but with no grant there is no button, and no "in their name"
-    // line sitting above an empty space.
-    await screen.findByText('A ride to the doctor')
+    // The friendship still shows and the open requests still read — but with no
+    // grant there is no button, and no "acting for them" line above empty space.
     await screen.findByText('Arun')
-    expect(screen.queryByText(/anything you do here is in margaret's name/i)).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /ask for help for margaret/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /close this request for margaret/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/acting for margaret/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /move the next step forward/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /leave a review for margaret/i })).not.toBeInTheDocument()
+
+    await openTab(user, /^today/i)
+    await screen.findByText('A ride to the doctor')
+    expect(screen.queryByRole('button', { name: /ask for help for margaret/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /close this request for margaret/i })).not.toBeInTheDocument()
   })
 
-  it('shows the doing beside the seeing, in the parent\'s name, on one page', async () => {
+  it('puts the doing beside the friendship it acts on, marked as done for the parent', async () => {
+    const user = userEvent.setup()
     mockWith(['ADVANCE_TRUST'], { sharedHelpers: [helperAt('PHONE_CALL')] })
     renderPage()
 
-    // No tab to open: how they are and what you can do for them share the page,
-    // and everything you can do reads as done in the parent's name.
-    await screen.findByText('How Margaret is today')
-    expect(await screen.findByText(/anything you do here is in margaret's name/i)).toBeInTheDocument()
+    // Friendships is the landing tab, so the step sits right under the ladder
+    // it moves, labelled as taken for the parent.
+    expect(await screen.findByText(/acting for margaret/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /move the next step forward for margaret/i })).toBeInTheDocument()
+
+    // How they are today is its own tab, one click away.
+    await openTab(user, /^today/i)
+    expect(await screen.findByText('How Margaret is today')).toBeInTheDocument()
   })
 
   it('posts a new help request for the parent when MANAGE_HELP_REQUESTS is granted', async () => {
     const user = userEvent.setup()
     mockWith(['MANAGE_HELP_REQUESTS'])
     renderPage()
+    await openTab(user, /^today/i)
     await user.click(await screen.findByRole('button', { name: /ask for help for margaret/i }))
     await user.type(screen.getByLabelText(/what does margaret need help with/i), 'Shopping on Friday')
     await user.click(screen.getByRole('button', { name: /send for margaret/i }))
@@ -215,6 +240,7 @@ describe('FamilyParent — guardian mode actions', () => {
     const user = userEvent.setup()
     mockWith(['MANAGE_HELP_REQUESTS'])
     renderPage()
+    await openTab(user, /^today/i)
     await user.click(await screen.findByRole('button', { name: /close this request for margaret/i }))
     // Destructive and done for someone else — never one careless tap.
     expect(screen.getByText(/close this for margaret\?/i)).toBeInTheDocument()
@@ -297,8 +323,10 @@ describe('FamilyParent — what I can do (consent flow)', () => {
   })
 
   it('lists every power with its state: on, waiting, or askable', async () => {
+    const user = userEvent.setup()
     mockAsks(['MANAGE_HELP_REQUESTS'], ['LEAVE_REVIEWS'])
     renderPage()
+    await openTab(user, 'What I can do')
     expect(await screen.findByText(/what i can do for margaret/i)).toBeInTheDocument()
     expect(screen.getByText('On')).toBeInTheDocument()
     expect(screen.getByText('Waiting')).toBeInTheDocument()
@@ -307,10 +335,21 @@ describe('FamilyParent — what I can do (consent flow)', () => {
     expect(screen.getAllByRole('button', { name: /ask margaret/i })).toHaveLength(1)
   })
 
+  it('explains what a shared friendship gives you, once, on this tab', async () => {
+    const user = userEvent.setup()
+    mockAsks([], [])
+    renderPage()
+    // It used to sit above every friendship card on every visit.
+    expect(screen.queryByText(/on a friendship margaret shares, you can/i)).not.toBeInTheDocument()
+    await openTab(user, 'What I can do')
+    expect(await screen.findByText(/on a friendship margaret shares, you can/i)).toBeInTheDocument()
+  })
+
   it('asking sends the power request; the server, not the click, decides', async () => {
     const user = userEvent.setup()
     mockAsks([], [])
     renderPage()
+    await openTab(user, 'What I can do')
     const asks = await screen.findAllByRole('button', { name: /ask margaret/i })
     await user.click(asks[0])
     await waitFor(() => {

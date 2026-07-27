@@ -104,15 +104,16 @@ export default function FamilyNeedsForParent({
   }
 
   return (
-    <div style={{ marginTop: '18px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 10px' }}>
+    <div style={{ marginTop: '16px' }}>
+      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 6px' }}>
         {parent}&apos;s open help requests
       </p>
 
+      {/* One line, in the same words as every other "acting for them" note on
+          this page: the request is theirs, your name is on it. */}
       {canManage && (
-        <p style={{ fontSize: '15px', color: 'var(--gold-deep)', fontFamily: SFText, margin: '0 0 12px', lineHeight: 1.5 }}>
-          {parent} asked you to handle these for them. Helpers always see your name
-          next to theirs on anything you do here.
+        <p style={{ fontSize: '14px', color: 'var(--gold-deep)', fontFamily: SFText, margin: '0 0 12px', lineHeight: 1.5 }}>
+          {parent} asked you to handle these. Helpers see your name on anything you do here.
         </p>
       )}
 

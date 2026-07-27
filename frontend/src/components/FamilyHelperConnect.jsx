@@ -1,9 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import ConfirmDialog from './ConfirmDialog';
 import { useToast } from '../context/useToast';
 
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
+
+// Quiet text button — the Manage disclosure and the controls inside it.
+const quietBtn = (busy) => ({
+  background: 'transparent', border: 'none', padding: '10px 8px', minHeight: '44px',
+  color: 'var(--ink-3)', fontSize: '14px', fontWeight: 600, fontFamily: SFText,
+  cursor: busy ? 'default' : 'pointer',
+});
 // Backend TrustLevel values: MESSAGING = 1 — the inheritance unlock
 // (user decision 2026-07-19: family can chat when the elder can).
 const MESSAGING_STAGE = 1;
@@ -16,6 +24,11 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
   const { toast } = useToast();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  // Pause, Remove and the fine print live behind one disclosure. They were four
+  // stacked rows on every card before, which buried Message — the one thing
+  // people come here to do (user call 2026-07-26).
+  const [manageOpen, setManageOpen] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const firstName = (helper.helperName || '').split(' ')[0];
   const parent = elderName || 'your parent';
@@ -107,17 +120,16 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
   }
 
   async function remove() {
-    const sure = window.confirm(
-      `Remove your connection with ${firstName}? You can bring it back later from this card.`
-    );
-    if (!sure) return;
+    setConfirmRemove(false);
     await call(`/family/standings/${standing.standingConnectionId}/revoke`, 'Connection removed.');
   }
+
+  const panelId = `manage-${standing.standingConnectionId}`;
 
   return (
     <div style={{ margin: '10px 0 0' }}>
       <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--green-deep)', fontFamily: SFText, margin: 0, lineHeight: 1.5 }}>
-        You hold {parent}&apos;s trust with {firstName} — you can message them directly.
+        You hold {parent}&apos;s trust with {firstName}.
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
         <button
@@ -136,32 +148,59 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
         </button>
         <button
           type="button"
-          onClick={() => call(`/family/standings/${standing.standingConnectionId}/pause`, 'Chat paused.')}
-          disabled={busy}
-          style={{
-            background: 'transparent', border: 'none', padding: '10px 8px', minHeight: '44px',
-            color: 'var(--ink-3)', fontSize: '14px', fontWeight: 600, fontFamily: SFText,
-            cursor: busy ? 'default' : 'pointer',
-          }}
+          onClick={() => setManageOpen(o => !o)}
+          aria-expanded={manageOpen}
+          aria-controls={panelId}
+          style={{ ...quietBtn(false), display: 'inline-flex', alignItems: 'center', gap: '5px' }}
         >
-          Pause
-        </button>
-        <button
-          type="button"
-          onClick={remove}
-          disabled={busy}
-          style={{
-            background: 'transparent', border: 'none', padding: '10px 8px', minHeight: '44px',
-            color: 'var(--ink-3)', fontSize: '14px', fontWeight: 600, fontFamily: SFText,
-            cursor: busy ? 'default' : 'pointer',
-          }}
-        >
-          Remove
+          Manage this chat
+          <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"
+            style={{
+              transform: manageOpen ? 'rotate(180deg)' : 'none',
+              transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1)',
+            }}>
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </button>
       </div>
-      <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText, margin: '8px 0 0', lineHeight: 1.5 }}>
-        {parent} always sees that you two can talk. If {parent} stops sharing this friendship, the chat closes.
-      </p>
+
+      {manageOpen && (
+        <div id={panelId} style={{ marginTop: '8px' }}>
+          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText, margin: 0, lineHeight: 1.5 }}>
+            {parent} always sees that you two can talk. If {parent} stops sharing this friendship, the chat closes.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => call(`/family/standings/${standing.standingConnectionId}/pause`, 'Chat paused.')}
+              disabled={busy}
+              style={quietBtn(busy)}
+            >
+              Pause
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmRemove(true)}
+              disabled={busy}
+              style={quietBtn(busy)}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={confirmRemove}
+        title={`Remove ${firstName}?`}
+        message={`You will not be able to message ${firstName} any more. You can bring this back later from this card.`}
+        confirmLabel="Yes, remove"
+        cancelLabel="Keep it"
+        danger
+        loading={busy}
+        onConfirm={remove}
+        onCancel={() => setConfirmRemove(false)}
+      />
     </div>
   );
 }
