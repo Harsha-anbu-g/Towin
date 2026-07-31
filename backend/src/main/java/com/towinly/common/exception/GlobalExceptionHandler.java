@@ -82,6 +82,14 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Only the elder can choose the main contact", "Only the elder can choose their main family contact.");
         SAFE_MESSAGES.put("Only an accepted family member can be the main contact",
                 "Only an accepted family member can be the main contact.");
+        // What I pass on — the Story box and Letters. Each is already written the way the
+        // elder should read it, so the key and the message are the same sentence.
+        SAFE_MESSAGES.put("Every letter here can be read today",
+                "Every letter here can be read today. We are still building the part where a "
+                        + "letter opens after you are gone, and we will not offer it until we are sure it works.");
+        SAFE_MESSAGES.put("A letter goes to one person",  "A letter goes to one person, and only that person.");
+        SAFE_MESSAGES.put("Please choose the one person", "Please choose the one person this is for.");
+        SAFE_MESSAGES.put("Only elders can write on this page", "Only elders can write on this page.");
         // Trust flow
         SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow
