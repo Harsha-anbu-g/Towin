@@ -222,6 +222,11 @@ export default function NavBar() {
                 }}>{unread > 99 ? '99+' : unread}</span>
               )}
             </div>
+            {/* Her own boxes sit beside Messages rather than in the account menu:
+                the card at the foot of the dashboard was several screens down for
+                an elder with a few helpers, and a door nobody finds is not a door
+                (user call 2026-07-31). */}
+            {isElder && <NavLink to="/what-i-pass-on" label="My boxes" icon={ScrollText} />}
             {/* Family members are watchers, not earners — no Trust Score for them (user call 2026-07-19). */}
             {!isFamilyRole && (<>
             <div style={{ width: '1px', height: '22px', background: 'var(--border)', margin: '0 8px' }} />
