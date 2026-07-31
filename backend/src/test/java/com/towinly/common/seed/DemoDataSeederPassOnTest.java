@@ -1,0 +1,364 @@
+package com.towinly.common.seed;
+
+import com.towinly.common.entity.User;
+import com.towinly.common.enums.KeyholderStatus;
+import com.towinly.common.enums.PassOnAudience;
+import com.towinly.common.enums.PassOnKind;
+import com.towinly.common.enums.SealedKind;
+import com.towinly.common.enums.UserRole;
+import com.towinly.common.repository.UserRepository;
+import com.towinly.common.service.TrustScoreService;
+import com.towinly.connection.entity.Connection;
+import com.towinly.connection.repository.ConnectionRepository;
+import com.towinly.emergency.repository.EmergencyContactRepository;
+import com.towinly.family.repository.FamilyAlertRepository;
+import com.towinly.family.repository.FamilyDelegatedPowerRepository;
+import com.towinly.family.repository.FamilyLinkRepository;
+import com.towinly.messaging.repository.MessageRepository;
+import com.towinly.need.entity.Need;
+import com.towinly.need.repository.NeedApplicationRepository;
+import com.towinly.need.repository.NeedRepository;
+import com.towinly.passon.dto.PassOnArmRequest;
+import com.towinly.passon.dto.SealedItemRequest;
+import com.towinly.passon.entity.Keyholder;
+import com.towinly.passon.entity.PassOnItem;
+import com.towinly.passon.entity.PassOnSettings;
+import com.towinly.passon.repository.KeyholderRepository;
+import com.towinly.passon.repository.PassOnItemRepository;
+import com.towinly.passon.repository.PassOnOpenRepository;
+import com.towinly.passon.repository.PassOnSettingsRepository;
+import com.towinly.passon.repository.SealedItemRepository;
+import com.towinly.passon.service.KeyholderService;
+import com.towinly.passon.service.SealedBoxService;
+import com.towinly.passon.service.SealedCryptoService;
+import com.towinly.profile.repository.ElderProfileRepository;
+import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.report.repository.ReportRepository;
+import com.towinly.review.repository.ReviewRepository;
+import com.towinly.streak.repository.UserStreakRepository;
+import com.towinly.trust.repository.TrustProgressionLogRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+/**
+ * Task 15: the demo shows "What I pass on" working on day one — stories across all three
+ * audiences, letters including one already read, a genuinely encrypted Sealed box, and three
+ * Keyholders with one question still unanswered.
+ *
+ * <p>Two of these tests are not about completeness at all. {@link #simulatesNoDeathAnywhere}
+ * holds the line every review of this feature drew: no demo account may sit in a state a
+ * scheduled job could advance, so a public demo can never regenerate "someone says you have
+ * died" every five minutes. {@link #leavesTheSealedBoxAloneWhenThereIsNoMasterKey} holds the
+ * other one: locally and in CI there is no master key, and a seeder that let
+ * {@code SealedBoxUnavailableException} escape a {@code @Transactional} service would mark the
+ * whole seeding transaction rollback-only and take the entire demo down with it.
+ */
+@ExtendWith(MockitoExtension.class)
+class DemoDataSeederPassOnTest {
+
+    private static final String MARGARET = DemoDataSeeder.ELDER_DEMO_EMAIL;
+    private static final String SARAH = "demo.sarah@towin.app";
+
+    @Mock UserRepository userRepository;
+    @Mock ElderProfileRepository elderProfileRepository;
+    @Mock HelperProfileRepository helperProfileRepository;
+    @Mock ConnectionRepository connectionRepository;
+    @Mock MessageRepository messageRepository;
+    @Mock NeedRepository needRepository;
+    @Mock NeedApplicationRepository needApplicationRepository;
+    @Mock ReviewRepository reviewRepository;
+    @Mock UserStreakRepository userStreakRepository;
+    @Mock EmergencyContactRepository emergencyContactRepository;
+    @Mock ReportRepository reportRepository;
+    @Mock TrustProgressionLogRepository trustProgressionLogRepository;
+    @Mock PasswordEncoder passwordEncoder;
+    @Mock TrustScoreService trustScoreService;
+    @Mock PlatformTransactionManager transactionManager;
+    @Mock FamilyLinkRepository familyLinkRepository;
+    @Mock FamilyAlertRepository familyAlertRepository;
+    @Mock FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
+    @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
+
+    @Mock PassOnItemRepository passOnItemRepository;
+    @Mock SealedItemRepository sealedItemRepository;
+    @Mock KeyholderRepository keyholderRepository;
+    @Mock PassOnSettingsRepository passOnSettingsRepository;
+    @Mock PassOnOpenRepository passOnOpenRepository;
+    @Mock SealedBoxService sealedBoxService;
+    @Mock KeyholderService keyholderService;
+    @Mock SealedCryptoService sealedCryptoService;
+
+    @InjectMocks DemoDataSeeder seeder;
+
+    @BeforeEach
+    void stubHappyPath() {
+        // Additive mode (no purge) unless a test flips it back on.
+        ReflectionTestUtils.setField(seeder, "resetEnabled", false);
+
+        lenient().when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+        lenient().when(passwordEncoder.encode(anyString())).thenReturn("HASH");
+        lenient().when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            if (u.getId() == null) u.setId(UUID.randomUUID());
+            return u;
+        });
+        lenient().when(connectionRepository.save(any(Connection.class))).thenAnswer(inv -> {
+            Connection c = inv.getArgument(0);
+            if (c.getId() == null) c.setId(UUID.randomUUID());
+            return c;
+        });
+        lenient().when(needRepository.save(any(Need.class))).thenAnswer(inv -> {
+            Need n = inv.getArgument(0);
+            if (n.getId() == null) n.setId(UUID.randomUUID());
+            return n;
+        });
+        lenient().when(needRepository.findByElderIdOrderByCreatedAtDesc(any(), any()))
+                .thenReturn(Page.empty());
+
+        // The key is set, so the Sealed box seeds. One test turns this off on purpose.
+        lenient().when(sealedCryptoService.isAvailable()).thenReturn(true);
+        lenient().when(passOnItemRepository.findByOwnerIdAndKindOrderByCreatedAtDesc(any(), any()))
+                .thenReturn(List.of());
+        lenient().when(sealedItemRepository.countByOwnerId(any())).thenReturn(0L);
+        lenient().when(passOnSettingsRepository.findById(any())).thenReturn(Optional.empty());
+        // Arming really writes the INVITED rows; here it is mocked, so the rows the seeder
+        // reads back to accept two of them are stubbed in their place.
+        lenient().when(keyholderRepository.findByOwnerIdAndKeyholderId(any(), any()))
+                .thenAnswer(inv -> Optional.of(Keyholder.builder()
+                        .id(UUID.randomUUID())
+                        .status(KeyholderStatus.INVITED)
+                        .build()));
+    }
+
+    private User savedUser(String email) {
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository, atLeastOnce()).save(captor.capture());
+        return captor.getAllValues().stream()
+                .filter(u -> email.equals(u.getEmail()))
+                .findFirst().orElse(null);
+    }
+
+    private List<PassOnItem> savedPassOnItems() {
+        ArgumentCaptor<PassOnItem> captor = ArgumentCaptor.forClass(PassOnItem.class);
+        verify(passOnItemRepository, atLeastOnce()).save(captor.capture());
+        return captor.getAllValues();
+    }
+
+    private List<PassOnItem> savedOfKind(PassOnKind kind) {
+        return savedPassOnItems().stream().filter(i -> i.getKind() == kind).toList();
+    }
+
+    // ── the Story box ───────────────────────────────────────────────────
+
+    @Test
+    void seedsThreeStoriesOneForEachAudience() {
+        seeder.run(null);
+
+        verify(transactionManager, never()).rollback(any());
+        List<PassOnItem> stories = savedOfKind(PassOnKind.STORY);
+        assertThat(stories).as("three stories, so no audience filter opens on an empty list").hasSize(3);
+        assertThat(stories).allSatisfy(s ->
+                assertThat(s.getOwner().getEmail()).isEqualTo(MARGARET));
+        assertThat(stories).extracting(PassOnItem::getAudience)
+                .as("Anyone, My family and My helpers are all exercised")
+                .containsExactlyInAnyOrder(
+                        PassOnAudience.EVERYONE, PassOnAudience.FAMILY, PassOnAudience.HELPERS);
+        assertThat(stories).extracting(PassOnItem::getTitle)
+                .contains("The winter we lost the roof",
+                        "What I wish I had told your father",
+                        "How to get the boiler going");
+    }
+
+    @Test
+    void everyStoryIsReadableNowAndNamesNobody() {
+        seeder.run(null);
+
+        assertThat(savedOfKind(PassOnKind.STORY)).allSatisfy(s -> {
+            assertThat(s.getReleaseWhen())
+                    .as("nothing waits on a death the demo must never simulate")
+                    .isEqualTo(com.towinly.common.enums.PassOnRelease.NOW);
+            assertThat(s.getAudienceUser())
+                    .as("a story is written to a group, never to one person")
+                    .isNull();
+        });
+    }
+
+    // ── Letters ─────────────────────────────────────────────────────────
+
+    @Test
+    void seedsTwoLettersEachToOneNamedPerson() {
+        seeder.run(null);
+
+        List<PassOnItem> letters = savedOfKind(PassOnKind.LETTER);
+        assertThat(letters).hasSize(2);
+        assertThat(letters).allSatisfy(l -> {
+            assertThat(l.getAudience()).isEqualTo(PassOnAudience.PERSON);
+            assertThat(l.getAudienceUser()).as("a letter always has a reader").isNotNull();
+            assertThat(l.getReleaseWhen()).isEqualTo(com.towinly.common.enums.PassOnRelease.NOW);
+        });
+    }
+
+    @Test
+    void oneLetterHasAlreadyBeenReadAndTheOtherHasNot() {
+        seeder.run(null);
+
+        List<PassOnItem> letters = savedOfKind(PassOnKind.LETTER);
+        List<PassOnItem> read = letters.stream().filter(l -> l.getFirstReadAt() != null).toList();
+        List<PassOnItem> unread = letters.stream().filter(l -> l.getFirstReadAt() == null).toList();
+
+        assertThat(read).as("exercises the 'Sarah read this on 3 June' line").hasSize(1);
+        assertThat(read.get(0).getAudienceUser().getEmail())
+                .as("the read letter is the one the family demo login can open").isEqualTo(SARAH);
+        assertThat(read.get(0).getFirstReadAt()).isBefore(LocalDateTime.now());
+        assertThat(unread).as("and the waiting-to-be-read state as well").hasSize(1);
+    }
+
+    // ── the Sealed box ──────────────────────────────────────────────────
+
+    @Test
+    void sealsThreeItemsThroughTheRealSealedBoxService() {
+        seeder.run(null);
+
+        ArgumentCaptor<SealedItemRequest> captor = ArgumentCaptor.forClass(SealedItemRequest.class);
+        verify(sealedBoxService, times(3)).add(any(), captor.capture());
+        List<SealedItemRequest> sealed = captor.getAllValues();
+
+        assertThat(sealed).as("every item is encrypted by the service the product uses").hasSize(3);
+        assertThat(sealed).allSatisfy(r -> {
+            assertThat(r.getLabel()).isNotBlank();
+            assertThat(r.getBody()).isNotBlank();
+            assertThat(r.getKindHint()).isNotNull();
+        });
+        assertThat(sealed).extracting(SealedItemRequest::getKindHint)
+                .as("no demo item teaches an elder to write a password down")
+                .doesNotContain(SealedKind.PASSWORDS);
+    }
+
+    @Test
+    void leavesTheSealedBoxAloneWhenThereIsNoMasterKey() {
+        lenient().when(sealedCryptoService.isAvailable()).thenReturn(false);
+
+        seeder.run(null);
+
+        verify(transactionManager, never()).rollback(any());
+        verify(sealedBoxService, never()).add(any(), any());
+        verify(sealedBoxService, never()).arm(any(), any());
+        assertThat(savedOfKind(PassOnKind.STORY))
+                .as("the writing still seeds — only the encrypted half is skipped").hasSize(3);
+    }
+
+    // ── Keyholders and the settled state ────────────────────────────────
+
+    @Test
+    void asksThreePeopleAndNeedsTwoOfThemToAgree() {
+        seeder.run(null);
+
+        ArgumentCaptor<PassOnArmRequest> captor = ArgumentCaptor.forClass(PassOnArmRequest.class);
+        verify(sealedBoxService).arm(any(), captor.capture());
+        PassOnArmRequest armed = captor.getValue();
+
+        assertThat(armed.getPersonIds()).as("three Keyholders").hasSize(3);
+        assertThat(armed.getApprovalsNeeded())
+                .as("two of the three — never one, never all of them").isEqualTo(2);
+        assertThat(armed.getNotAWillAck()).isEqualTo(SealedBoxService.NOT_A_WILL_ACK);
+        assertThat(armed.getKeyTruthAck()).isEqualTo(SealedBoxService.KEY_TRUTH_ACK);
+    }
+
+    @Test
+    void twoOfThemHaveSaidYesAndOneHasNotAnsweredYet() {
+        seeder.run(null);
+
+        // Only the two who accept are answered for. The third row is left INVITED, so the
+        // elder's screen shows a real "asked, not answered yet" and the person it was asked
+        // of opens on a real acceptance card.
+        verify(keyholderService, times(2)).respond(any(), any(), eq(true));
+        verify(keyholderService, never()).respond(any(), any(), eq(false));
+    }
+
+    @Test
+    void opensOnTheSettledStateRatherThanTheSevenDayBanner() {
+        PassOnSettings armed = PassOnSettings.builder().ownerId(UUID.randomUUID()).build();
+        lenient().when(passOnSettingsRepository.findById(any()))
+                .thenReturn(Optional.empty(), Optional.of(armed));
+
+        seeder.run(null);
+
+        ArgumentCaptor<PassOnSettings> captor = ArgumentCaptor.forClass(PassOnSettings.class);
+        verify(passOnSettingsRepository, atLeastOnce()).save(captor.capture());
+        PassOnSettings settled = captor.getValue();
+
+        assertThat(settled.getArmedAt()).as("set up a while ago").isBefore(LocalDateTime.now());
+        assertThat(settled.getCoolingOffUntil())
+                .as("her seven days are over, so the demo opens settled")
+                .isBefore(LocalDateTime.now());
+    }
+
+    // ── the line every review of this feature drew ──────────────────────
+
+    @Test
+    void simulatesNoDeathAnywhere() {
+        seeder.run(null);
+
+        // The seeder writes no record rows of its own at all, which is what makes a fabricated
+        // release structurally impossible rather than merely absent today: every row in the
+        // Sealed box record comes from a real action taken through the real service.
+        verify(passOnOpenRepository, never()).save(any());
+    }
+
+    // ── the visitor's writes are undone ─────────────────────────────────
+
+    @Test
+    void resetClearsEverythingAVisitorPassedOn() {
+        ReflectionTestUtils.setField(seeder, "resetEnabled", true);
+        lenient().when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+
+        seeder.run(null);
+
+        verify(transactionManager, never()).rollback(any());
+        verify(passOnItemRepository, atLeastOnce()).deleteByOwnerId(any());
+        verify(sealedItemRepository, atLeastOnce()).deleteByOwnerId(any());
+        verify(passOnSettingsRepository, atLeastOnce()).deleteByOwnerId(any());
+        verify(passOnOpenRepository, atLeastOnce()).deleteByOwnerId(any());
+        verify(keyholderRepository, atLeastOnce()).deleteByOwnerIdOrKeyholderId(any(), any());
+    }
+
+    // ── the two family members the Keyholders are drawn from ────────────
+
+    @Test
+    void seedsTheTwoFamilyMembersTheThirdAndFourthKeysBelongTo() {
+        seeder.run(null);
+
+        assertThat(savedUser("demo.davidson@towin.app"))
+                .as("Keyholders come from the family list and nowhere else").isNotNull()
+                .satisfies(u -> assertThat(u.getRole()).isEqualTo(UserRole.FAMILY));
+        assertThat(savedUser("demo.ruth@towin.app")).isNotNull()
+                .satisfies(u -> assertThat(u.getRole()).isEqualTo(UserRole.FAMILY));
+        assertThat(DemoDataSeeder.DEMO_EMAILS)
+                .as("the reset coordinator and the email guard both read this list")
+                .contains("demo.davidson@towin.app", "demo.ruth@towin.app");
+    }
+}

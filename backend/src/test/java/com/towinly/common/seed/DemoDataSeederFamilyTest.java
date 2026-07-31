@@ -82,6 +82,17 @@ class DemoDataSeederFamilyTest {
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
+    // What an elder passes on. Nothing here is asserted in this class — they exist so the
+    // seeder is fully wired; a null dependency would abort seeding inside run()'s catch and
+    // quietly empty every assertion below. DemoDataSeederPassOnTest covers the behaviour.
+    @Mock com.towinly.passon.repository.PassOnItemRepository passOnItemRepository;
+    @Mock com.towinly.passon.repository.SealedItemRepository sealedItemRepository;
+    @Mock com.towinly.passon.repository.KeyholderRepository keyholderRepository;
+    @Mock com.towinly.passon.repository.PassOnSettingsRepository passOnSettingsRepository;
+    @Mock com.towinly.passon.repository.PassOnOpenRepository passOnOpenRepository;
+    @Mock com.towinly.passon.service.SealedBoxService sealedBoxService;
+    @Mock com.towinly.passon.service.KeyholderService keyholderService;
+    @Mock com.towinly.passon.service.SealedCryptoService sealedCryptoService;
 
     @InjectMocks DemoDataSeeder seeder;
 
@@ -109,6 +120,11 @@ class DemoDataSeederFamilyTest {
         });
         lenient().when(needRepository.findByElderIdOrderByCreatedAtDesc(any(), any()))
                 .thenReturn(Page.empty());
+        lenient().when(passOnItemRepository.findByOwnerIdAndKindOrderByCreatedAtDesc(any(), any()))
+                .thenReturn(List.of());
+        lenient().when(passOnSettingsRepository.findById(any())).thenReturn(Optional.empty());
+        lenient().when(keyholderRepository.findByOwnerIdAndKeyholderId(any(), any()))
+                .thenReturn(Optional.empty());
     }
 
     private User savedUser(String email) {
@@ -136,9 +152,12 @@ class DemoDataSeederFamilyTest {
 
         ArgumentCaptor<FamilyLink> captor = ArgumentCaptor.forClass(FamilyLink.class);
         verify(familyLinkRepository, atLeastOnce()).save(captor.capture());
-        FamilyLink link = captor.getValue();
+        // Margaret has three family members now (the Sealed box needs three Keyholders), so
+        // this picks Sarah's link by name rather than taking whichever was saved last.
+        FamilyLink link = captor.getAllValues().stream()
+                .filter(l -> "demo.sarah@towin.app".equals(l.getFamilyUser().getEmail()))
+                .findFirst().orElseThrow();
         assertThat(link.getElder().getEmail()).isEqualTo(DemoDataSeeder.ELDER_DEMO_EMAIL);
-        assertThat(link.getFamilyUser().getEmail()).isEqualTo("demo.sarah@towin.app");
         assertThat(link.getStatus()).isEqualTo(FamilyLinkStatus.ACTIVE);
         assertThat(link.getRelationship()).isEqualTo("Daughter");
         assertThat(link.getRespondedAt()).as("accepted links carry responded_at").isNotNull();
