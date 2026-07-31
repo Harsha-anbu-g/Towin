@@ -25,6 +25,11 @@ public interface PassOnItemRepository extends JpaRepository<PassOnItem, UUID> {
     // Letters addressed to one person, for "letters waiting for you".
     List<PassOnItem> findByAudienceUserIdOrderByCreatedAtDesc(UUID audienceUserId);
 
+    // What the account-deletion confirmation counts, so somebody about to press Delete is
+    // told what goes with it. Counted rather than listed — the warning needs a number, and
+    // loading every story to size a list would read the bodies for nothing.
+    long countByOwnerIdAndKind(UUID ownerId, PassOnKind kind);
+
     // GDPR purge, and the demo reset. Rows addressed to the departing user are handled by
     // the ON DELETE SET NULL on audience_user_id, which is why that check is one-directional.
     void deleteByOwnerId(UUID ownerId);

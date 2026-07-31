@@ -6,6 +6,7 @@ import {
   Search, LogOut, RefreshCw,
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
+import DeleteUserButton from '../components/DeleteUserButton';
 import SegmentedTabs from '../components/SegmentedTabs';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
@@ -748,8 +749,10 @@ export default function Admin() {
                           <ConfirmButton label="Remove photo" style={grayBtn}
                             onConfirm={() => api.delete(`/admin/users/${u.id}/photo`).then(() => fetchTab('Users'))} />
                         )}
-                        <ConfirmButton label="Delete" style={redBtn}
-                          onConfirm={() => api.delete(`/admin/users/${u.id}`).then(() => fetchTab('Users'))} />
+                        {/* Not the inline ConfirmButton the other rows use. This delete runs
+                            the whole account purge, so it has to say what goes with it. */}
+                        <DeleteUserButton userId={u.id} style={redBtn}
+                          onDeleted={() => fetchTab('Users')} />
                       </div>
                     </td>
                   </tr>

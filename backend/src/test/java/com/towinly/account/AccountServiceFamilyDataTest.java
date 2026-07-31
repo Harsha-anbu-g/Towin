@@ -62,6 +62,12 @@ class AccountServiceFamilyDataTest {
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock com.towinly.family.repository.FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
+    // "What I pass on" — see AccountServicePassOnDataTest for what these actually assert.
+    @Mock com.towinly.passon.repository.PassOnItemRepository passOnItemRepository;
+    @Mock com.towinly.passon.repository.SealedItemRepository sealedItemRepository;
+    @Mock com.towinly.passon.repository.KeyholderRepository keyholderRepository;
+    @Mock com.towinly.passon.repository.PassOnSettingsRepository passOnSettingsRepository;
+    @Mock com.towinly.passon.repository.PassOnOpenRepository passOnOpenRepository;
     @Mock S3Service s3Service;
 
     @InjectMocks AccountService accountService;

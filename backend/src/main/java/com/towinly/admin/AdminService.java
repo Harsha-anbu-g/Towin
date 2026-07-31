@@ -127,6 +127,18 @@ public class AdminService {
         }
     }
 
+    /**
+     * What deleting this account would take with it, for the confirmation in the panel.
+     *
+     * Delegates rather than counting again: {@code purgeUserData} is shared between the two
+     * delete paths, so the warning has to be too, or the panel would eventually promise to
+     * destroy something different from what it destroys.
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> deletionWarning(UUID userId) {
+        return accountService.deletionWarning(userId);
+    }
+
     @Transactional
     public void deleteUser(UUID adminId, UUID userId) {
         if (adminId.equals(userId)) {

@@ -35,6 +35,12 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAllUsers(pageable));
     }
 
+    // What this delete would take with it, so the confirmation can say so. Read-only.
+    @GetMapping("/users/{id}/delete-preview")
+    public ResponseEntity<java.util.Map<String, Object>> deletePreview(@PathVariable UUID id) {
+        return ResponseEntity.ok(adminService.deletionWarning(id));
+    }
+
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(Authentication auth, @PathVariable UUID id) {
         UUID adminId = UUID.fromString(auth.getName());
