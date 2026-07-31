@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/useAuth';
 import { yearsOld } from '../lib/copy';
+import { landingPathForRole } from '../lib/landingPath';
 
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
@@ -26,12 +27,7 @@ export default function DemoAccounts() {
     try {
       const { data } = await api.post('/auth/login', DEMO[role]);
       login(data.token);
-      navigate(
-        data.role === 'ADMIN' ? '/admin'
-          : data.role === 'FAMILY' ? '/family-home'
-          : '/streaks',
-        { replace: true }
-      );
+      navigate(landingPathForRole(data.role), { replace: true });
     } catch {
       setError('Could not start demo session. Please try again.');
     } finally {

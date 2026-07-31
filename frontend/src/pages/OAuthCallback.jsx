@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import api from '../api/axios';
+import { landingPathForRole } from '../lib/landingPath';
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -24,11 +25,7 @@ export default function OAuthCallback() {
         if (data.status === 'READY') {
           login(data.token);
           const role = JSON.parse(atob(data.token.split('.')[1])).role;
-          // Everyone lands on the daily check-in first — elder and helper alike.
-          navigate(
-            role === 'ADMIN' ? '/admin' : '/streaks',
-            { replace: true }
-          );
+          navigate(landingPathForRole(role), { replace: true });
         } else if (data.status === 'NEEDS_ONBOARDING') {
           navigate('/auth/setup', {
             replace: true,

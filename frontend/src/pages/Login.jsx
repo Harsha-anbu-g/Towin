@@ -6,6 +6,7 @@ import api from '../api/axios';
 import SiteFooter from '../components/SiteFooter';
 import SmoothInput from '../components/SmoothInput';
 import { yearsOld } from '../lib/copy';
+import { landingPathForRole } from '../lib/landingPath';
 
 function HeroPanel() {
   return (
@@ -163,13 +164,7 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', DEMO[role]);
       login(data.token);
-      // Elders and helpers land on the daily check-in; family goes to their home page.
-      navigate(
-        data.role === 'ADMIN' ? '/admin'
-          : data.role === 'FAMILY' ? '/family-home'
-          : '/streaks',
-        { replace: true }
-      );
+      navigate(landingPathForRole(data.role), { replace: true });
     } catch (err) {
       setError(
         err?.response?.status === 429
@@ -193,13 +188,7 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token);
-      // Elders and helpers land on the daily check-in; family goes to their home page.
-      navigate(
-        data.role === 'ADMIN' ? '/admin'
-          : data.role === 'FAMILY' ? '/family-home'
-          : '/streaks',
-        { replace: true }
-      );
+      navigate(landingPathForRole(data.role), { replace: true });
     } catch (err) {
       setError(
         err?.response?.status === 429
