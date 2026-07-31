@@ -78,6 +78,7 @@ class PassOnControllerKeyholderTest {
     @Mock HelperProfileRepository helperProfiles;
     @Mock PassOnAlertService alerts;
     @Mock PassOnService passOnService;
+    @Mock com.towinly.passon.service.SealedBoxService sealedBox;
 
     private MockMvc mockMvc;
     private Authentication margaretsSession;
@@ -93,7 +94,8 @@ class PassOnControllerKeyholderTest {
         KeyholderService service = new KeyholderService(keyholderRepository, familyLinks, settings,
                 opens, users, elderProfiles, helperProfiles, alerts,
                 Clock.fixed(TODAY, ZoneOffset.UTC));
-        mockMvc = MockMvcBuilders.standaloneSetup(new PassOnController(passOnService, service))
+        mockMvc = MockMvcBuilders.standaloneSetup(
+                        new PassOnController(passOnService, service, sealedBox))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 

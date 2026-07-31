@@ -174,6 +174,26 @@ public class KeyholderService {
     }
 
     /**
+     * Asks everybody she picked, at the end of setup and not as she taps them.
+     *
+     * Nothing is asked of anybody until she finishes: backing out halfway through the setup
+     * must leave three people who were never asked a question about her death. The card she
+     * is shown afterwards says "we have written to Sarah, David and Ruth", and that sentence
+     * becomes true here, at the moment it appears.
+     *
+     * <p>Anybody already standing — asked and not yet answered, or holding a key — is
+     * skipped, so she can come back and change the number who must agree without asking the
+     * same people a second time.
+     */
+    @Transactional
+    public void inviteAll(UUID ownerId, List<UUID> personIds) {
+        for (UUID personId : personIds) {
+            if (alreadyStanding(ownerId, personId)) continue;
+            invite(ownerId, personId);
+        }
+    }
+
+    /**
      * Takes one person's key back. Quiet, and immediate.
      *
      * No alert and no restarted week, both deliberately. See the class note — this is the
@@ -236,6 +256,29 @@ public class KeyholderService {
                 nameOf(row.getKeyholder()) + " is no longer holding a key.");
     }
 
+    /**
+     * Takes every key back at once, when the elder undoes the whole setup.
+     *
+     * Reaches the person who has not answered yet as well as the person who said yes: an
+     * undo that left an INVITED row behind would leave a question about her mother's death
+     * sitting on a daughter's screen after the mother took it back.
+     *
+     * <p>As quiet as {@link #remove}, and for the same reason — the tap that reaches this is
+     * the one labelled "If this was not your idea, undo it", so the person whose idea it was
+     * is exactly who must not be told.
+     */
+    @Transactional
+    public void removeAll(UUID ownerId) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        for (Keyholder row : keyholders.findByOwnerIdOrderByInvitedAtAsc(ownerId)) {
+            // A daughter who resigned in June did not have her key taken off her in August.
+            if (isOver(row.getStatus())) continue;
+            row.setStatus(KeyholderStatus.REMOVED);
+            row.setRespondedAt(now);
+            keyholders.save(row);
+        }
+    }
+
     // ── the family link ending takes the key with it ──
 
     /**
@@ -277,6 +320,13 @@ public class KeyholderService {
                 .filter(status -> status == FamilyLinkStatus.ACTIVE)
                 .isPresent();
         if (!linked) throw new IllegalArgumentException(FAMILY_ONLY);
+    }
+
+    /** Asked and waiting, or holding a key. Either way, not somebody to ask again. */
+    private boolean alreadyStanding(UUID ownerId, UUID personId) {
+        return keyholders.findByOwnerIdAndKeyholderId(ownerId, personId)
+                .map(row -> !isOver(row.getStatus()))
+                .orElse(false);
     }
 
     private void requireRoomForOneMore(UUID ownerId, Keyholder reusing) {

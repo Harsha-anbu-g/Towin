@@ -6,10 +6,12 @@ import SegmentedTabs from '../components/SegmentedTabs';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PassOnItemForm from '../components/PassOnItemForm';
 import PassOnItemCard from '../components/PassOnItemCard';
+import SealedSetup from '../components/SealedSetup';
+import SealedKeyholders from '../components/SealedKeyholders';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import {
-  ANYONE_CHECK, LETTERS, NOT_A_WILL, PAGE_LEAD, SEALED_BOX, STORY_BOX, TAKE_DOWN,
+  ANYONE_CHECK, LETTERS, NOT_A_WILL, PAGE_LEAD, SEALED_BOX, SETUP, STORY_BOX, TAKE_DOWN,
 } from '../components/passOnLocks';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -44,9 +46,16 @@ export default function PassOn() {
 
   const [mine, setMine] = useState({ stories: [], letters: [] });
   const [people, setPeople] = useState([]);
+  // Keyholders come from the family list and nowhere else — no outside friend, no
+  // notary, no helper — so this is kept apart from the people she can write to.
+  const [family, setFamily] = useState([]);
+  const [setup, setSetup] = useState(null);
+  const [keyholders, setKeyholders] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [writing, setWriting] = useState(null);   // { kind, item } while the form is open
   const [saving, setSaving] = useState(false);
+  const [settingUp, setSettingUp] = useState(false);
+  const [askUndo, setAskUndo] = useState(false);
   const [askAnyone, setAskAnyone] = useState(null);   // a payload waiting on the wider-audience answer
   const [pendingRemove, setPendingRemove] = useState(null);
   const [explainWill, setExplainWill] = useState(false);
@@ -68,8 +77,13 @@ export default function PassOn() {
         .catch(() => {}),
       api.get('/family/links').then(r => r.data?.activeLinks || []).catch(() => []),
       api.get('/connections').then(r => r.data || []).catch(() => []),
-    ]).then(([, links, connections]) => {
+      api.get('/passon/setup').then(r => r.data).catch(() => null),
+      api.get('/passon/keyholders').then(r => r.data || []).catch(() => []),
+    ]).then(([, links, connections, setupState, keys]) => {
       setPeople(peopleSheKnows(links, connections));
+      setFamily(herFamilyList(links));
+      setSetup(setupState);
+      setKeyholders(keys);
     }).finally(() => setLoaded(true));
   }, []);
 
@@ -113,6 +127,39 @@ export default function PassOn() {
       await load();
     } catch (err) {
       toast.error(err?.response?.data?.message || 'We could not take that down. Please try again.');
+    }
+  }
+
+  /**
+   * The last step of setup. One call: who she picked, how many must agree, and the
+   * two sentences she ticked. Everybody is asked from inside it, so backing out of
+   * the three steps earlier has asked nobody anything.
+   */
+  async function arm(payload) {
+    setSaving(true);
+    try {
+      await api.post('/passon/arm', payload);
+      setSettingUp(false);
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || SETUP.before.failed);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  /** "If this was not your idea, undo it." Nothing is said to anybody about it. */
+  async function undo() {
+    setSaving(true);
+    try {
+      await api.post('/passon/undo');
+      setAskUndo(false);
+      toast.success(SETUP.settling.undone);
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || SETUP.settling.undoFailed);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -239,11 +286,46 @@ export default function PassOn() {
           </BlurFade>
         )}
 
-        {/* ── Sealed box, before it is set up ───────────────────────────────── */}
+        {/* ── Sealed box ────────────────────────────────────────────────────── */}
         {tab === 'sealed' && (
           <BlurFade delay={4}>
             <div role="tabpanel" aria-label="Your sealed box" style={{ marginTop: '20px' }}>
-              <SealedBoxTeaching />
+              {/* Three states, one at a time: the teaching card before she has
+                  decided anything, the three steps while she is deciding, and who
+                  holds a key once she has. */}
+              {settingUp && setup && (
+                <SealedSetup
+                  family={family}
+                  setup={setup}
+                  already={keyholders
+                    .filter(k => k.status === 'INVITED' || k.status === 'ACTIVE')
+                    .map(k => k.personId)}
+                  saving={saving}
+                  onFinish={arm}
+                  onCancel={() => setSettingUp(false)}
+                />
+              )}
+
+              {!settingUp && setup?.armed && (
+                <SealedKeyholders
+                  setup={setup}
+                  keyholders={keyholders}
+                  undoing={saving}
+                  onUndo={() => setAskUndo(true)}
+                  onChange={() => setSettingUp(true)}
+                />
+              )}
+
+              {!settingUp && !setup?.armed && (
+                <>
+                  <SealedBoxTeaching />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                    <button type="button" onClick={() => setSettingUp(true)} style={fillBtn}>
+                      {SETUP.start}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </BlurFade>
         )}
@@ -257,6 +339,19 @@ export default function PassOn() {
         cancelLabel={ANYONE_CHECK.cancel}
         onConfirm={() => send(askAnyone)}
         onCancel={() => setAskAnyone(null)}
+      />
+
+      {/* Asked once, because the undo takes every key back with it — and worded so
+          she knows what it does NOT touch. Nothing she wrote is affected. */}
+      <ConfirmDialog
+        open={askUndo}
+        title={SETUP.settling.confirmTitle}
+        message={SETUP.settling.confirmMessage}
+        confirmLabel={SETUP.settling.confirmYes}
+        cancelLabel={SETUP.settling.confirmNo}
+        loading={saving}
+        onConfirm={undo}
+        onCancel={() => setAskUndo(false)}
       />
 
       <ConfirmDialog
@@ -290,6 +385,17 @@ function peopleSheKnows(links, connections) {
 
   const seen = new Set();
   return [...family, ...helpers].filter(p => !seen.has(p.id) && seen.add(p.id));
+}
+
+/**
+ * Her family list on its own, for Keyholders. Deliberately not the list above: a
+ * Keyholder can only ever be somebody on the family list — no outside friend, no
+ * notary, and no helper however well she trusts them.
+ */
+function herFamilyList(links) {
+  return (links || [])
+    .filter(l => l.status === 'ACTIVE' && l.otherUserId)
+    .map(l => ({ id: l.otherUserId, name: l.otherUserName, note: l.relationship || 'Family' }));
 }
 
 /**

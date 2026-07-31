@@ -471,6 +471,99 @@ class KeyholderServiceTest {
         assertThat(cards.get(0).keyholderCount()).isEqualTo(1);
     }
 
+    // ── the whole list at once, at the end of setup ──
+
+    @Test
+    void everybodySheChoseIsAskedInTheOrderShePickedThem() {
+        onFamilyList(sarah);
+        onFamilyList(david);
+        when(keyholders.findByOwnerIdAndKeyholderId(any(), any())).thenReturn(Optional.empty());
+        when(keyholders.findByOwnerIdOrderByInvitedAtAsc(margaret.getId())).thenReturn(List.of());
+
+        service.inviteAll(margaret.getId(), List.of(sarah.getId(), david.getId()));
+
+        ArgumentCaptor<Keyholder> saved = ArgumentCaptor.forClass(Keyholder.class);
+        verify(keyholders, org.mockito.Mockito.times(2)).save(saved.capture());
+        assertThat(saved.getAllValues()).extracting(k -> k.getKeyholder().getId())
+                .containsExactly(sarah.getId(), david.getId());
+        // Every one of them is named to the family, one alert each. An alert saying only
+        // "someone" would let exactly the relative this is meant to expose stay anonymous.
+        verify(alerts).keyholderAsked(margaret, "Sarah");
+        verify(alerts).keyholderAsked(margaret, "David");
+    }
+
+    @Test
+    void runningSetupAgainDoesNotAskTheSamePersonTwice() {
+        // She can come back and change the number who must agree. The people she is keeping
+        // must not be asked a second time about her death.
+        Keyholder alreadyHolding = row(sarah, KeyholderStatus.ACTIVE);
+        when(keyholders.findByOwnerIdAndKeyholderId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(alreadyHolding));
+
+        service.inviteAll(margaret.getId(), List.of(sarah.getId()));
+
+        verify(keyholders, never()).save(any());
+        verifyNoInteractions(alerts);
+    }
+
+    @Test
+    void somebodyWhoSaidNoCanBeAskedAgainByRunningSetupAgain() {
+        // DECLINED is not a life sentence. She may have talked to them since.
+        onFamilyList(sarah);
+        Keyholder saidNo = row(sarah, KeyholderStatus.DECLINED);
+        when(keyholders.findByOwnerIdAndKeyholderId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(saidNo));
+        when(keyholders.findByOwnerIdOrderByInvitedAtAsc(margaret.getId())).thenReturn(List.of(saidNo));
+
+        service.inviteAll(margaret.getId(), List.of(sarah.getId()));
+
+        assertThat(saidNo.getStatus()).isEqualTo(KeyholderStatus.INVITED);
+        verify(alerts).keyholderAsked(margaret, "Sarah");
+    }
+
+    // ── undoing the whole arrangement ──
+
+    @Test
+    void takingEveryKeyBackAtOnceEndsBothTheAskedAndTheHolding() {
+        // Undoing the setup has to reach the person who has not answered yet as well as the
+        // one who said yes — otherwise the daughter who talked her into it still has a
+        // question about her mother's death sitting on her screen.
+        Keyholder waiting = row(sarah, KeyholderStatus.INVITED);
+        Keyholder holding = row(david, KeyholderStatus.ACTIVE);
+        when(keyholders.findByOwnerIdOrderByInvitedAtAsc(margaret.getId()))
+                .thenReturn(List.of(waiting, holding));
+
+        service.removeAll(margaret.getId());
+
+        assertThat(waiting.getStatus()).isEqualTo(KeyholderStatus.REMOVED);
+        assertThat(holding.getStatus()).isEqualTo(KeyholderStatus.REMOVED);
+    }
+
+    @Test
+    void takingEveryKeyBackAtOnceIsJustAsQuietAsTakingOne() {
+        Keyholder holding = row(sarah, KeyholderStatus.ACTIVE);
+        when(keyholders.findByOwnerIdOrderByInvitedAtAsc(margaret.getId()))
+                .thenReturn(List.of(holding));
+
+        service.removeAll(margaret.getId());
+
+        verifyNoInteractions(alerts);
+    }
+
+    @Test
+    void takingEveryKeyBackLeavesRowsThatWereAlreadyFinishedAlone() {
+        // A daughter who resigned in June did not have her key taken off her in August, and
+        // the elder's own record must not say she did.
+        Keyholder resigned = row(sarah, KeyholderStatus.RESIGNED);
+        when(keyholders.findByOwnerIdOrderByInvitedAtAsc(margaret.getId()))
+                .thenReturn(List.of(resigned));
+
+        service.removeAll(margaret.getId());
+
+        assertThat(resigned.getStatus()).isEqualTo(KeyholderStatus.RESIGNED);
+        verify(keyholders, never()).save(any());
+    }
+
     // ── helpers ──
 
     private void onFamilyList(User familyMember) {

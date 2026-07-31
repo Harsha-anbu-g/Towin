@@ -91,6 +91,7 @@ class SealedBoxRoundTripDbTest {
                 new SealedCryptoService(TEST_MASTER_KEY), encoder,
                 new SealedRevealRateLimiter(),
                 org.mockito.Mockito.mock(com.towinly.passon.service.PassOnAlertService.class),
+                org.mockito.Mockito.mock(com.towinly.passon.service.KeyholderService.class),
                 Clock.systemUTC());
 
         String tag = UUID.randomUUID().toString().substring(0, 8);

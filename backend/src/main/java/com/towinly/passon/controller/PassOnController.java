@@ -4,12 +4,15 @@ import com.towinly.passon.dto.KeyholderAskResponse;
 import com.towinly.passon.dto.KeyholderInviteRequest;
 import com.towinly.passon.dto.KeyholderRespondRequest;
 import com.towinly.passon.dto.KeyholderResponse;
+import com.towinly.passon.dto.PassOnArmRequest;
 import com.towinly.passon.dto.PassOnFromResponse;
 import com.towinly.passon.dto.PassOnItemRequest;
 import com.towinly.passon.dto.PassOnItemResponse;
 import com.towinly.passon.dto.PassOnMineResponse;
+import com.towinly.passon.dto.PassOnSetupResponse;
 import com.towinly.passon.service.KeyholderService;
 import com.towinly.passon.service.PassOnService;
+import com.towinly.passon.service.SealedBoxService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +33,12 @@ import java.util.UUID;
  * What an elder passes on: her Story box and her Letters.
  *
  * The caller is read from the session on every single route and never from the request body,
- * so no call here can write in somebody else's name or read a page as somebody else. The
- * Sealed box is not on this controller at all — it is opened only by its owner, against her
- * password, through {@code SealedBoxService}.
+ * so no call here can write in somebody else's name or read a page as somebody else.
+ *
+ * <p>The Sealed box appears here only as the arrangement <em>around</em> it — who holds a key,
+ * how many must agree, and the week she has to change her mind. No route on this controller
+ * returns a single word of what is inside a box; that is opened only by its owner, against her
+ * re-typed password, through {@code SealedBoxService.reveal}.
  */
 @RestController
 @RequestMapping("/api/passon")
@@ -41,6 +47,7 @@ public class PassOnController {
 
     private final PassOnService passOnService;
     private final KeyholderService keyholderService;
+    private final SealedBoxService sealedBoxService;
 
     /** Her own page — everything she has written, whoever it is for. */
     @GetMapping("/mine")
@@ -138,6 +145,43 @@ public class PassOnController {
     public ResponseEntity<Void> resign(Authentication auth, @PathVariable UUID keyholderId) {
         UUID personId = UUID.fromString(auth.getName());
         keyholderService.resign(personId, keyholderId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── setting the Sealed box up, and the week to change her mind ──
+    //
+    // Nothing here opens a box or reads a word out of one. These three routes are the
+    // arrangement around it: who she picked, how many must agree, and the one tap that takes
+    // the whole thing back.
+
+    /** Where she stands, including what would stop her finishing, before she starts. */
+    @GetMapping("/setup")
+    public ResponseEntity<PassOnSetupResponse> setup(Authentication auth) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(sealedBoxService.setup(ownerId));
+    }
+
+    /**
+     * The last step. Everybody she picked is asked from inside this one call, so backing out
+     * of the setup earlier has asked nobody anything.
+     */
+    @PostMapping("/arm")
+    public ResponseEntity<Void> arm(
+            Authentication auth,
+            @Valid @RequestBody PassOnArmRequest request) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        sealedBoxService.arm(ownerId, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * "If this was not your idea, undo it." Quiet, like taking one key back — see
+     * {@code SealedBoxService.undoSetup} before adding any notification here.
+     */
+    @PostMapping("/undo")
+    public ResponseEntity<Void> undo(Authentication auth) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        sealedBoxService.undoSetup(ownerId);
         return ResponseEntity.noContent().build();
     }
 }

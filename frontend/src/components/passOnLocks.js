@@ -140,6 +140,116 @@ export const SEALED_BOX = {
 };
 
 /**
+ * "Sarah, David and Ruth" — the way a list of people is said out loud.
+ *
+ * Vocabulary rather than formatting, and shared, because the same three names are
+ * read back to her in step two of setup and again in the card she is shown for the
+ * seven days afterwards. Those two sentences must never disagree about who was
+ * asked. No serial comma: it is a sentence about her family, not a citation.
+ */
+export const listOfNames = (names) => {
+  const said = (names || []).filter(Boolean);
+  if (said.length <= 1) return said[0] || '';
+  return `${said.slice(0, -1).join(', ')} and ${said[said.length - 1]}`;
+};
+
+/**
+ * Setting the Sealed box up: three steps, then a week to change her mind.
+ *
+ * The two sentences she ticks are deliberately NOT here. They come down from the
+ * server with the setup state and are echoed back when she finishes, because the
+ * server stores a hash of the exact wording shown. A second copy in this file
+ * would drift from the hashed one, and the drift would be invisible — the record
+ * would go on being written, of a sentence nobody could look up any more.
+ */
+export const SETUP = {
+  start: 'Set this up',
+  step: (n, of) => `Step ${n} of ${of}`,
+  back: 'Go back',
+  next: 'Next',
+  finish: 'Finish setting this up',
+  cancel: 'Not now',
+
+  who: {
+    title: 'Who can open it one day?',
+    blurb:
+      'Pick at least three people you trust. They must already be on your family list, '
+      + 'and each one has to say yes before they count.',
+    /** Fewer than three people on her family list: a dead end, said plainly. */
+    tooFew: 'You need at least three people on your family list first.',
+    tooFewLink: 'Go to my family list',
+    /** Under the list, so she knows nothing has left yet. */
+    nothingSentYet: 'Nobody is asked anything until you finish.',
+  },
+
+  howMany: {
+    title: 'How many must agree?',
+    blurb:
+      'One day, when your Keyholders ask to open this, this many of them must agree. It is '
+      + 'never all of them, so that one person who is far away — or who has passed on '
+      + 'themselves — can never keep it shut forever.',
+    /**
+     * Rebuilt live from the real names and never softened. `names` is already
+     * written out as "Sarah, David and Ruth".
+     */
+    inRealTerms: (agree, names, of) =>
+      `So: any ${agree} of ${names}. That means ${agree} of them can open it even if the `
+      + `${of - agree === 1 ? 'other one says' : 'others say'} no.`,
+  },
+
+  before: {
+    title: 'Before you finish.',
+    /** The hard gate. Nothing can be armed until her email is confirmed. */
+    confirmEmail:
+      'Please confirm your email address first. One day it is how we would reach you about '
+      + 'your box, and we need to know it works.',
+    confirmEmailLink: 'Go to my account settings',
+    /** A Google-only account has no password, and the box is kept shut by nothing else. */
+    needsPassword:
+      'Your Sealed box is kept shut by your password, and this account signs in with Google. '
+      + 'Please set a password first, then come back.',
+    saveHeading: 'Keep a copy somewhere else',
+    save:
+      'Save your one-page copy, or send it to yourself in an email, and keep it wherever your '
+      + 'family would think to look. Do not let this app be your only copy.',
+    failed: 'We could not finish that. Please try again.',
+  },
+
+  /**
+   * The seven days. A calm card, not an alarm — most people reading it set the box
+   * up on purpose. The undo is the whole point of the week, so it is a real button
+   * and never buried behind a menu.
+   */
+  settling: {
+    title: 'Your box is set up.',
+    body: (names) =>
+      'Nothing can be opened by anyone but you. We will check with you once more in seven days '
+      + `before this is settled, and we have written to ${names} to ask if they will hold a key.`,
+    undo: 'If this was not your idea, undo it',
+    /** Asked once, in her words, because the undo takes every key back with it. */
+    confirmTitle: 'Undo the whole setup?',
+    confirmMessage:
+      'Your box stays exactly as it is, and everything you wrote stays where it is. The people '
+      + 'you asked will stop being asked, and nobody is told you did this.',
+    confirmYes: 'Yes, undo it',
+    confirmNo: 'Leave it as it is',
+    undone: 'That is undone. Nobody is holding a key.',
+    undoFailed: 'We could not undo that. Please try again.',
+  },
+
+  /** Once the week has passed. Who holds a key, said with real names and real dates. */
+  settled: {
+    heading: 'Who can open it one day',
+    threshold: (agree, of) => `${agree} of the ${of} must agree.`,
+    saidYes: (name, when) => `${name} said yes on ${when}`,
+    waiting: (name) => `${name} has not answered yet`,
+    saidNo: (name) => `${name} said no`,
+    steppedBack: (name) => `${name} is no longer holding a key`,
+    change: 'Change',
+  },
+};
+
+/**
  * Reading somebody else's page.
  *
  * The reviewed design copy fixes the title — "From Margaret" — and nothing else on this

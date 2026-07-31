@@ -4,6 +4,8 @@ import com.towinly.common.entity.User;
 import com.towinly.common.enums.PassOnOpenKind;
 import com.towinly.common.repository.UserRepository;
 import com.towinly.common.service.DisplayNameResolver;
+import com.towinly.passon.dto.PassOnArmRequest;
+import com.towinly.passon.dto.PassOnSetupResponse;
 import com.towinly.passon.dto.SealedItemRequest;
 import com.towinly.passon.dto.SealedItemSummary;
 import com.towinly.passon.dto.SealedRevealResponse;
@@ -22,6 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -92,10 +97,63 @@ public class SealedBoxService {
 
     private static final String USER_NOT_FOUND = "User not found";
 
+    /**
+     * The two sentences she ticks at the end of setup, and the reason they live on the server
+     * rather than in the screen's own copy file.
+     *
+     * What is stored against her name is a hash of the wording she was shown. For that record
+     * to mean anything years later there must be exactly one copy of each sentence in the
+     * product: the screen renders these, sends them back, and this class hashes what it
+     * received after checking it is still what it publishes. A second copy in the frontend
+     * would drift, and the drift would be invisible — the hash would go on being written, of
+     * a sentence nobody could look up any more.
+     */
+    public static final String NOT_A_WILL_ACK = "I understand this is not a will.";
+
+    public static final String KEY_TRUTH_ACK =
+            "I understand that Towinly holds the key, so someone here could open my box — and "
+                    + "that means I can never be shut out of it either. If I forget my password I "
+                    + "reset it as usual.";
+
+    static final String TICK_BOTH = "Please tick both boxes to finish.";
+
+    /**
+     * The sentence that came back is not the sentence this version publishes, so we do not
+     * know what she was shown and there is nothing honest to write down. She cannot fix this
+     * and is not asked to try.
+     */
+    static final String WORDING_CHANGED =
+            "Something has changed on this page. Please load it again and try again.";
+
+    /**
+     * Every way this box is ever reached again goes through her mailbox: the password reset,
+     * the warning that her password was changed, and the release procedure itself. Arming a
+     * box we cannot write to creates a locked box with nobody at the other end of it, and a
+     * later release feature would have to open against that pool.
+     */
+    static final String CONFIRM_EMAIL =
+            "Please confirm your email address before you set this up. One day it is how we would "
+                    + "reach you about your box, and we need to know it works.";
+
+    static final String PICK_THREE_TO_FIVE =
+            "Please pick at least three people, and no more than five.";
+
+    static final String HOW_MANY_MUST_AGREE =
+            "The number who must agree has to be at least two, and always fewer than the number of "
+                    + "people you picked.";
+
+    static final String NOT_SET_UP = "Your box is not set up yet.";
+
+    static final String ALREADY_SETTLED =
+            "The seven days have passed, so this is settled. You can still take anybody's key back "
+                    + "whenever you like.";
+
     /** The record says an item was opened. It never says, in words, which one. */
     private static final String OPENED_NOTE = "Opened by the owner after typing her password.";
     private static final String DELETED_NOTE = "Taken out of the box by the owner.";
     private static final String ARMED_NOTE = "The box was set up.";
+    private static final String UNDONE_NOTE =
+            "The setup was undone, and nobody is holding a key any more.";
 
     /** actor_label is VARCHAR(60): a very long name must not turn an audit row into an error. */
     private static final int ACTOR_LABEL_MAX = 60;
@@ -108,6 +166,8 @@ public class SealedBoxService {
     private final PasswordEncoder passwordEncoder;
     private final SealedRevealRateLimiter revealLimiter;
     private final PassOnAlertService alerts;
+    /** Setup asks everybody at the end, and undoing takes every key back. */
+    private final KeyholderService keyholders;
     private final Clock clock;
 
     // ── reading ──
@@ -230,34 +290,60 @@ public class SealedBoxService {
     }
 
     /**
-     * Sets the box up: how many Keyholders she is aiming for and how many of them must agree.
+     * Sets the box up: who she picked, how many of them must agree, and the two sentences she
+     * ticked. This is the last step of setup and the only thing on it that writes.
      *
-     * Arming starts the cooling-off week. That week is the only real defence against somebody
-     * sitting beside an elder and tapping through the whole thing in one visit, so it is
-     * stamped here, at the moment of arming, and not when the last Keyholder says yes.
+     * <h3>Everything happens here or nothing does</h3>
+     * The invitations go out from inside this transaction rather than as she taps each person
+     * in step one. Backing out halfway must leave three relatives who were never asked a
+     * question about her death, and the card she is shown afterwards — "we have written to
+     * Sarah, David and Ruth" — has to become true at the moment it appears.
      *
-     * The three rules about the numbers themselves — at least two must agree, three to five
-     * Keyholders, never unanimity — live in Postgres (V53) rather than here, so no future
-     * caller can route around them.
+     * <h3>Arming starts the cooling-off week</h3>
+     * That week is the only real defence against somebody sitting beside an elder and tapping
+     * through the whole thing in one visit, so it is stamped at the moment of arming and not
+     * when the last Keyholder says yes.
      *
-     * <p>Task 12 adds the two acknowledgements and the verified-email gate on top of this.
+     * <h3>Where the rules live</h3>
+     * The three rules about the numbers — at least two must agree, three to five Keyholders,
+     * never unanimity — are CHECK constraints in Postgres (V53) so no future caller can route
+     * around them. They are also checked here, first, so that what she reads is a sentence in
+     * her own words rather than a constraint violation.
      */
     @Transactional
-    public void arm(UUID ownerId, int approvalsNeeded, int keyholderTarget) {
+    public void arm(UUID ownerId, PassOnArmRequest request) {
         // Availability first: a box armed while the key is missing is a promise we cannot
         // keep, and the elder would have no way of knowing.
         requireCryptoAvailable();
 
         User owner = getUser(ownerId);
         requireOwnPassword(owner);
+        requireConfirmedEmail(owner);
+
+        // The same person picked twice is one person, and would otherwise inflate the pool
+        // the quorum is measured against.
+        List<UUID> people = request.getPersonIds() == null ? List.of()
+                : request.getPersonIds().stream().distinct().toList();
+        int approvalsNeeded = request.getApprovalsNeeded() == null ? 0 : request.getApprovalsNeeded();
+        requireWorkableNumbers(people.size(), approvalsNeeded);
+
+        // Checked before anything is written, so a mismatch asks nobody anything.
+        String notAWillHash = hashOfExactly(request.getNotAWillAck(), NOT_A_WILL_ACK);
+        String keyTruthHash = hashOfExactly(request.getKeyTruthAck(), KEY_TRUTH_ACK);
+
+        keyholders.inviteAll(ownerId, people);
 
         LocalDateTime now = LocalDateTime.now(clock);
         PassOnSettings existing = settings.findById(ownerId)
                 .orElseGet(() -> PassOnSettings.builder().ownerId(ownerId).build());
         existing.setApprovalsNeeded((short) approvalsNeeded);
-        existing.setKeyholderTarget((short) keyholderTarget);
+        existing.setKeyholderTarget((short) people.size());
         existing.setArmedAt(now);
         existing.setCoolingOffUntil(now.plusDays(COOLING_OFF_DAYS));
+        existing.setNotAWillAckAt(now);
+        existing.setNotAWillAckHash(notAWillHash);
+        existing.setKeyTruthAckAt(now);
+        existing.setKeyTruthAckHash(keyTruthHash);
         settings.save(existing);
 
         writeItDown(owner, null, PassOnOpenKind.BOX_ARMED, ARMED_NOTE);
@@ -266,6 +352,56 @@ public class SealedBoxService {
         // happen. Taking a Keyholder's key back is the one change that stays quiet — see
         // KeyholderService.remove.
         alerts.settingsChanged(owner);
+    }
+
+    /**
+     * Where she stands, for the setup screen — including the two refusals, so the last step
+     * can say what is missing while she can still fix it rather than after she has picked
+     * three people and ticked two boxes.
+     */
+    @Transactional(readOnly = true)
+    public PassOnSetupResponse setup(UUID ownerId) {
+        User owner = getUser(ownerId);
+        PassOnSettings row = settings.findById(ownerId).orElse(null);
+
+        boolean armed = row != null && row.getArmedAt() != null;
+        return new PassOnSetupResponse(
+                armed,
+                row == null ? null : row.getArmedAt(),
+                row == null ? null : row.getCoolingOffUntil(),
+                armed && withinCoolingOff(row),
+                row == null ? null : row.getApprovalsNeeded(),
+                row == null ? null : row.getKeyholderTarget(),
+                owner.isEmailVerified(),
+                owner.getPasswordHash() != null,
+                NOT_A_WILL_ACK,
+                KEY_TRUTH_ACK);
+    }
+
+    /**
+     * "If this was not your idea, undo it." Her rules go, and so does every key she just
+     * handed out — leaving the keys behind would leave the relative who talked her into this
+     * still holding one.
+     *
+     * <p>Nothing she wrote is touched. The undo is about the arrangement, never about her
+     * writing, and no tap on a banner deletes what is in the box.
+     *
+     * <p>Silent, exactly like taking one person's key back. The tap that reaches this says
+     * the setup was somebody else's idea, so that somebody is precisely who must not be told
+     * she reversed it. Anyone who "fixes" the missing alert has removed her only quiet way
+     * out. Her own record still shows it, because that record is hers alone.
+     */
+    @Transactional
+    public void undoSetup(UUID ownerId) {
+        User owner = getUser(ownerId);
+        PassOnSettings row = settings.findById(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException(NOT_SET_UP));
+        if (row.getArmedAt() == null) throw new IllegalArgumentException(NOT_SET_UP);
+        if (!withinCoolingOff(row)) throw new IllegalArgumentException(ALREADY_SETTLED);
+
+        keyholders.removeAll(ownerId);
+        settings.deleteByOwnerId(ownerId);
+        writeItDown(owner, null, PassOnOpenKind.SETTINGS_CHANGED, UNDONE_NOTE);
     }
 
     // ── the rules ──
@@ -312,6 +448,63 @@ public class SealedBoxService {
     private void requireOwnPassword(User owner) {
         if (owner.getPasswordHash() == null) {
             throw new IllegalArgumentException(NEEDS_A_PASSWORD);
+        }
+    }
+
+    /** No new box without a mailbox we know reaches her. See {@link #CONFIRM_EMAIL}. */
+    private void requireConfirmedEmail(User owner) {
+        if (!owner.isEmailVerified()) {
+            throw new IllegalArgumentException(CONFIRM_EMAIL);
+        }
+    }
+
+    /**
+     * The same three rules Postgres enforces, said in her words first. A box one person can
+     * open alone is not a lock; a box everybody must agree on is a permanent deadlock the
+     * first time one Keyholder is unreachable or has died themselves.
+     */
+    private static void requireWorkableNumbers(int people, int approvalsNeeded) {
+        if (people < 3 || people > KeyholderService.MAX_KEYHOLDERS) {
+            throw new IllegalArgumentException(PICK_THREE_TO_FIVE);
+        }
+        if (approvalsNeeded < 2 || approvalsNeeded > people - 1) {
+            throw new IllegalArgumentException(HOW_MANY_MUST_AGREE);
+        }
+    }
+
+    /** Whether the one-tap undo is still open. Re-derived on every read, never stored. */
+    private boolean withinCoolingOff(PassOnSettings row) {
+        LocalDateTime until = row.getCoolingOffUntil();
+        return until != null && until.isAfter(LocalDateTime.now(clock));
+    }
+
+    /**
+     * The hash of the sentence she was shown — after checking it is still the sentence this
+     * version publishes.
+     *
+     * The check is what makes the record mean something. Hashing whatever arrived would
+     * faithfully store a sentence nobody could ever look up again; hashing our own constant
+     * regardless of what arrived would record an agreement to words she may never have seen.
+     */
+    private static String hashOfExactly(String given, String published) {
+        if (given == null || given.isBlank()) throw new IllegalArgumentException(TICK_BOTH);
+        if (!given.equals(published)) throw new IllegalArgumentException(WORDING_CHANGED);
+        return sha256Hex(published);
+    }
+
+    /** 64 hex characters, which is exactly what the CHAR(64) ack columns hold. */
+    private static String sha256Hex(String text) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(text.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(digest.length * 2);
+            for (byte b : digest) hex.append(Character.forDigit((b >> 4) & 0xF, 16))
+                    .append(Character.forDigit(b & 0xF, 16));
+            return hex.toString();
+        } catch (NoSuchAlgorithmException e) {
+            // SHA-256 is required of every Java runtime. If it is genuinely absent the box
+            // must not be armed, because the acknowledgement could not be recorded.
+            throw new IllegalStateException("SHA-256 is unavailable", e);
         }
     }
 

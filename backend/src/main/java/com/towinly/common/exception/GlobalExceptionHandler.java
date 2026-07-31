@@ -104,6 +104,27 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("You are not holding a key",          "You are not holding a key for that person.");
         SAFE_MESSAGES.put("Please answer yes or no",            "Please answer yes or no.");
         SAFE_MESSAGES.put("Please choose who to ask",           "Please choose who to ask.");
+        // What I pass on — setting the Sealed box up. Every one of these is something she
+        // can act on, on the last screen of a flow about her own death, so each is the
+        // sentence she should read rather than a generic refusal.
+        SAFE_MESSAGES.put("Please confirm your email address before you set this up",
+                "Please confirm your email address before you set this up. One day it is how we "
+                        + "would reach you about your box, and we need to know it works.");
+        SAFE_MESSAGES.put("Please pick at least three people",
+                "Please pick at least three people, and no more than five.");
+        SAFE_MESSAGES.put("The number who must agree",
+                "The number who must agree has to be at least two, and always fewer than the "
+                        + "number of people you picked.");
+        SAFE_MESSAGES.put("Please tick both boxes",  "Please tick both boxes to finish.");
+        SAFE_MESSAGES.put("Something has changed on this page",
+                "Something has changed on this page. Please load it again and try again.");
+        SAFE_MESSAGES.put("Your box is not set up yet", "Your box is not set up yet.");
+        SAFE_MESSAGES.put("The seven days have passed",
+                "The seven days have passed, so this is settled. You can still take anybody's key "
+                        + "back whenever you like.");
+        SAFE_MESSAGES.put("Your Sealed box is kept shut by your password",
+                "Your Sealed box is kept shut by your password, and this account signs in with "
+                        + "Google. Please set a password first, then come back.");
         // Trust flow
         SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow

@@ -5,6 +5,8 @@ import com.towinly.common.enums.PassOnOpenKind;
 import com.towinly.common.enums.SealedKind;
 import com.towinly.common.exception.RateLimitException;
 import com.towinly.common.repository.UserRepository;
+import com.towinly.passon.dto.PassOnArmRequest;
+import com.towinly.passon.dto.PassOnSetupResponse;
 import com.towinly.passon.dto.SealedItemRequest;
 import com.towinly.passon.dto.SealedItemSummary;
 import com.towinly.passon.dto.SealedRevealResponse;
@@ -27,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -79,6 +82,11 @@ class SealedBoxServiceTest {
     private static final String LABEL = "Where the house papers are";
     private static final String BODY = "In the brown envelope, second drawer of the writing desk.";
 
+    /** The three people she picks in step one. Order is the order she picked them in. */
+    private static final UUID SARAH = UUID.fromString("aaaaaaaa-0000-0000-0000-00000000a001");
+    private static final UUID DAVID = UUID.fromString("aaaaaaaa-0000-0000-0000-00000000a002");
+    private static final UUID RUTH = UUID.fromString("aaaaaaaa-0000-0000-0000-00000000a003");
+
     @Mock SealedItemRepository sealedItems;
     @Mock PassOnSettingsRepository settings;
     @Mock PassOnOpenRepository opens;
@@ -86,6 +94,7 @@ class SealedBoxServiceTest {
     @Mock SealedCryptoService crypto;
     @Mock PasswordEncoder passwordEncoder;
     @Mock PassOnAlertService alerts;
+    @Mock KeyholderService keyholders;
 
     private Clock clock;
     private SealedRevealRateLimiter revealLimiter;
@@ -99,13 +108,16 @@ class SealedBoxServiceTest {
         clock = Clock.fixed(TODAY, ZoneOffset.UTC);
         revealLimiter = new SealedRevealRateLimiter(clock);
         service = new SealedBoxService(sealedItems, settings, opens, users, crypto,
-                passwordEncoder, revealLimiter, alerts, clock);
+                passwordEncoder, revealLimiter, alerts, keyholders, clock);
 
         margaret = User.builder()
                 .id(UUID.randomUUID())
                 .fullName("Margaret")
                 .username("margaret")
                 .passwordHash(HASH)
+                // Confirmed by default: every test that is not about the email gate would
+                // otherwise be silently testing the email gate.
+                .emailVerified(true)
                 .build();
         item = sealedRow(margaret);
 
@@ -273,7 +285,7 @@ class SealedBoxServiceTest {
     void googleOnlyAccountsCannotArmABox() {
         margaret.setPasswordHash(null);
 
-        assertThatThrownBy(() -> service.arm(margaret.getId(), 2, 3))
+        assertThatThrownBy(() -> service.arm(margaret.getId(), armRequest()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(SealedBoxService.NEEDS_A_PASSWORD);
 
@@ -285,7 +297,7 @@ class SealedBoxServiceTest {
         when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
         when(settings.save(any())).thenAnswer(call -> call.getArgument(0));
 
-        service.arm(margaret.getId(), 2, 3);
+        service.arm(margaret.getId(), armRequest());
 
         ArgumentCaptor<PassOnSettings> saved = ArgumentCaptor.forClass(PassOnSettings.class);
         verify(settings).save(saved.capture());
@@ -302,7 +314,7 @@ class SealedBoxServiceTest {
         when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
         when(settings.save(any())).thenAnswer(call -> call.getArgument(0));
 
-        service.arm(margaret.getId(), 2, 3);
+        service.arm(margaret.getId(), armRequest());
 
         verify(alerts).settingsChanged(margaret);
     }
@@ -311,7 +323,7 @@ class SealedBoxServiceTest {
     void aRefusedArmingTellsNobody() {
         margaret.setPasswordHash(null);
 
-        assertThatThrownBy(() -> service.arm(margaret.getId(), 2, 3))
+        assertThatThrownBy(() -> service.arm(margaret.getId(), armRequest()))
                 .isInstanceOf(IllegalArgumentException.class);
 
         verifyNoInteractions(alerts);
@@ -321,10 +333,213 @@ class SealedBoxServiceTest {
     void aBoxIsNeverArmedWhileTheKeyIsUnavailable() {
         when(crypto.isAvailable()).thenReturn(false);
 
-        assertThatThrownBy(() -> service.arm(margaret.getId(), 2, 3))
+        assertThatThrownBy(() -> service.arm(margaret.getId(), armRequest()))
                 .isInstanceOf(SealedBoxUnavailableException.class);
 
         verify(settings, never()).save(any());
+    }
+
+    @Test
+    void nobodyIsAskedToHoldAKeyUntilSheFinishes() {
+        // The three people she picked are asked here, at the end, and not as she taps them.
+        // The card she is shown afterwards says "we have written to Sarah, David and Ruth" —
+        // that sentence has to become true at the moment it appears, and not before, so that
+        // backing out halfway has asked nobody anything about her death.
+        when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
+        when(settings.save(any())).thenAnswer(call -> call.getArgument(0));
+
+        service.arm(margaret.getId(), armRequest());
+
+        verify(keyholders).inviteAll(margaret.getId(), List.of(SARAH, DAVID, RUTH));
+    }
+
+    // ── the two acknowledgements ──
+
+    @Test
+    void bothAcksAreStoredAsAHashOfTheExactWordingShown() throws Exception {
+        // A bare timestamp proves she ticked something. It cannot prove *what* she ticked,
+        // and "I understand this is not a will" is precisely the sentence somebody will one
+        // day dispute. So the wording itself is what is written down.
+        when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
+        when(settings.save(any())).thenAnswer(call -> call.getArgument(0));
+
+        service.arm(margaret.getId(), armRequest());
+
+        ArgumentCaptor<PassOnSettings> saved = ArgumentCaptor.forClass(PassOnSettings.class);
+        verify(settings).save(saved.capture());
+        PassOnSettings row = saved.getValue();
+
+        assertThat(row.getNotAWillAckHash()).isEqualTo(sha256Hex(SealedBoxService.NOT_A_WILL_ACK));
+        assertThat(row.getKeyTruthAckHash()).isEqualTo(sha256Hex(SealedBoxService.KEY_TRUTH_ACK));
+        assertThat(row.getNotAWillAckAt()).isEqualTo(LocalDateTime.of(2026, 8, 5, 10, 0));
+        assertThat(row.getKeyTruthAckAt()).isEqualTo(LocalDateTime.of(2026, 8, 5, 10, 0));
+
+        // CHAR(64): a SHA-256 hex digest, and nothing else, fits the column.
+        assertThat(row.getNotAWillAckHash()).hasSize(64);
+        assertThat(row.getKeyTruthAckHash()).hasSize(64);
+    }
+
+    @Test
+    void theStoredHashIsOfTheSentenceAndChangesWhenTheSentenceDoes() throws Exception {
+        // The whole value of storing a hash rather than a flag: two different wordings can
+        // never produce the same record.
+        assertThat(sha256Hex(SealedBoxService.NOT_A_WILL_ACK))
+                .isNotEqualTo(sha256Hex(SealedBoxService.NOT_A_WILL_ACK + " Probably."));
+    }
+
+    @Test
+    void armingIsRefusedWhenABoxIsNotTicked() {
+        PassOnArmRequest request = armRequest();
+        request.setKeyTruthAck(null);
+
+        assertThatThrownBy(() -> service.arm(margaret.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(SealedBoxService.TICK_BOTH);
+
+        verify(settings, never()).save(any());
+        verifyNoInteractions(alerts);
+    }
+
+    @Test
+    void armingIsRefusedWhenTheWordingIsNotTheWordingWeShow() {
+        // If the sentence that came back is not the sentence this version publishes, we do
+        // not know what she was shown — so there is nothing honest to write down.
+        PassOnArmRequest request = armRequest();
+        request.setNotAWillAck("I understand this is basically a will.");
+
+        assertThatThrownBy(() -> service.arm(margaret.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(SealedBoxService.WORDING_CHANGED);
+
+        verify(settings, never()).save(any());
+    }
+
+    // ── the confirmed-email gate ──
+
+    @Test
+    void armingIsRefusedUntilTheEmailIsConfirmed() {
+        // Every way this box is ever opened again — the password reset, the "your password
+        // was changed" warning, the release procedure — goes through her mailbox. Arming a
+        // box we cannot reach creates a locked box with nobody at the other end of it.
+        margaret.setEmailVerified(false);
+
+        assertThatThrownBy(() -> service.arm(margaret.getId(), armRequest()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(SealedBoxService.CONFIRM_EMAIL);
+
+        verify(settings, never()).save(any());
+        verifyNoInteractions(alerts);
+        verifyNoInteractions(keyholders);
+    }
+
+    @Test
+    void theScreenIsToldAboutTheEmailBeforeSheTypesAnything() {
+        margaret.setEmailVerified(false);
+        when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
+
+        PassOnSetupResponse setup = service.setup(margaret.getId());
+
+        assertThat(setup.emailConfirmed()).isFalse();
+        assertThat(setup.armed()).isFalse();
+        // The screen renders the sentences the server will hash, so there is exactly one
+        // copy of each and what she reads is what is written down.
+        assertThat(setup.notAWillAck()).isEqualTo(SealedBoxService.NOT_A_WILL_ACK);
+        assertThat(setup.keyTruthAck()).isEqualTo(SealedBoxService.KEY_TRUTH_ACK);
+    }
+
+    @Test
+    void theScreenIsToldHowLongSheStillHasToChangeHerMind() {
+        margaret.setEmailVerified(true);
+        when(settings.findById(margaret.getId())).thenReturn(Optional.of(PassOnSettings.builder()
+                .ownerId(margaret.getId())
+                .approvalsNeeded((short) 2)
+                .keyholderTarget((short) 3)
+                .armedAt(LocalDateTime.of(2026, 8, 1, 9, 0))
+                .coolingOffUntil(LocalDateTime.of(2026, 8, 8, 9, 0))
+                .build()));
+
+        PassOnSetupResponse setup = service.setup(margaret.getId());
+
+        assertThat(setup.armed()).isTrue();
+        assertThat(setup.canStillUndo()).isTrue();
+        assertThat(setup.coolingOffUntil()).isEqualTo(LocalDateTime.of(2026, 8, 8, 9, 0));
+        assertThat(setup.approvalsNeeded()).isEqualTo((short) 2);
+        assertThat(setup.keyholderTarget()).isEqualTo((short) 3);
+    }
+
+    // ── the seven days, and the one tap out of them ──
+
+    @Test
+    void undoingInsideTheSevenDaysTakesTheWholeArrangementBack() {
+        when(settings.findById(margaret.getId())).thenReturn(Optional.of(armedSettings()));
+
+        service.undoSetup(margaret.getId());
+
+        // Her rules go, and so does every key she just handed out. Leaving the keys behind
+        // would leave the relative who talked her into this still holding one.
+        verify(settings).deleteByOwnerId(margaret.getId());
+        verify(keyholders).removeAll(margaret.getId());
+    }
+
+    @Test
+    void undoingLeavesWhatSheWroteExactlyWhereItWas() {
+        // "Undo it" is about the arrangement, never about her writing. Nothing she typed is
+        // deleted by a tap on a banner.
+        when(settings.findById(margaret.getId())).thenReturn(Optional.of(armedSettings()));
+
+        service.undoSetup(margaret.getId());
+
+        verify(sealedItems, never()).delete(any());
+        verify(sealedItems, never()).deleteAll();
+    }
+
+    @Test
+    void undoingTellsNobody() {
+        // The same silence that protects taking one person's key back. An elder who has
+        // realised the setup was not her idea must be able to reverse it without the app
+        // announcing to the person beside her that she did.
+        when(settings.findById(margaret.getId())).thenReturn(Optional.of(armedSettings()));
+
+        service.undoSetup(margaret.getId());
+
+        verifyNoInteractions(alerts);
+    }
+
+    @Test
+    void undoingIsWrittenIntoHerOwnRecord() {
+        when(settings.findById(margaret.getId())).thenReturn(Optional.of(armedSettings()));
+
+        service.undoSetup(margaret.getId());
+
+        ArgumentCaptor<PassOnOpen> written = ArgumentCaptor.forClass(PassOnOpen.class);
+        verify(opens).save(written.capture());
+        assertThat(written.getValue().getKind()).isEqualTo(PassOnOpenKind.SETTINGS_CHANGED);
+        assertThat(written.getValue().getOwnerId()).isEqualTo(margaret.getId());
+    }
+
+    @Test
+    void undoingOnceTheSevenDaysHavePassedIsRefused() {
+        PassOnSettings settled = armedSettings();
+        settled.setCoolingOffUntil(LocalDateTime.of(2026, 8, 4, 10, 0));   // yesterday
+        when(settings.findById(margaret.getId())).thenReturn(Optional.of(settled));
+
+        assertThatThrownBy(() -> service.undoSetup(margaret.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(SealedBoxService.ALREADY_SETTLED);
+
+        verify(settings, never()).deleteByOwnerId(any());
+        verifyNoInteractions(keyholders);
+    }
+
+    @Test
+    void undoingABoxThatWasNeverSetUpIsRefused() {
+        when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.undoSetup(margaret.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(SealedBoxService.NOT_SET_UP);
+
+        verify(settings, never()).deleteByOwnerId(any());
     }
 
     // ── writing one in, taking one out ──
@@ -395,6 +610,36 @@ class SealedBoxServiceTest {
     }
 
     // ── fixtures ──
+
+    /** What the screen sends when she has picked three people and ticked both boxes. */
+    private static PassOnArmRequest armRequest() {
+        PassOnArmRequest request = new PassOnArmRequest();
+        request.setPersonIds(List.of(SARAH, DAVID, RUTH));
+        request.setApprovalsNeeded(2);
+        request.setNotAWillAck(SealedBoxService.NOT_A_WILL_ACK);
+        request.setKeyTruthAck(SealedBoxService.KEY_TRUTH_ACK);
+        return request;
+    }
+
+    /** Armed on 1 August, so the seven days run out on the 8th — three days from "today". */
+    private PassOnSettings armedSettings() {
+        return PassOnSettings.builder()
+                .ownerId(margaret.getId())
+                .approvalsNeeded((short) 2)
+                .keyholderTarget((short) 3)
+                .armedAt(LocalDateTime.of(2026, 8, 1, 9, 0))
+                .coolingOffUntil(LocalDateTime.of(2026, 8, 8, 9, 0))
+                .build();
+    }
+
+    /** Worked out here rather than asked of the class under test, so the two must agree. */
+    private static String sha256Hex(String text) throws Exception {
+        byte[] digest = MessageDigest.getInstance("SHA-256")
+                .digest(text.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hex = new StringBuilder(digest.length * 2);
+        for (byte b : digest) hex.append(String.format("%02x", b));
+        return hex.toString();
+    }
 
     private SealedItem sealedRow(User owner) {
         SealedContents sealed = sealedContents();
