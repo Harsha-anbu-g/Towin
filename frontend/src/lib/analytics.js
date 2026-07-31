@@ -22,16 +22,17 @@
 export const NO_CAPTURE = 'ph-no-capture'
 
 /**
- * Where it goes today: the title and body on `PassOnItemCard` and `PassOnReadCard`, and the whole
- * document on `PassOnSheet`. The chips, the buttons and the save row around them are deliberately
- * left unmarked — whether an elder can find [Change] is exactly what replay is for, and none of
- * her words are in the word "Change".
+ * Where it goes today: the title and body on `PassOnItemCard` and `PassOnReadCard`, the whole
+ * document on `PassOnSheet`, and on `SealedItemCard` both the name she gave a sealed item and the
+ * words that come back when she opens it. The chips, the buttons and the save row around them are
+ * deliberately left unmarked — whether an elder can find [Change] is exactly what replay is for,
+ * and none of her words are in the word "Change".
  *
- * Where it must also go, and cannot yet: the screen that shows a revealed sealed item. No such
- * screen exists — there is no HTTP route for a sealed item at all — so the one surface in this
- * feature that displays a decrypted secret is the one surface this marker is not yet on. Whoever
- * builds it puts `className={NO_CAPTURE}` on the revealed text and adds a case to
- * `passOnNoCapture.test.jsx`.
+ * The revealed sealed item is the most sensitive string in the product and the reason
+ * `maskAllInputs` was never enough: it masks the password she types and does nothing at all to
+ * the bank details that come back. Both halves of `SealedItemCard` are pinned by
+ * `passOnNoCapture.test.jsx`, which asserts against the words themselves rather than against a
+ * `className=` in the source, so a card restructured later either keeps the protection or fails.
  */
 
 /**

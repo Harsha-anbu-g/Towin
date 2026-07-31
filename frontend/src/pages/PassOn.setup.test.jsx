@@ -63,13 +63,16 @@ const notSetUp = {
   keyTruthAck: KEY_TRUTH_ACK,
 }
 
-const mockGet = ({ setup = notSetUp, links = threeOnHerList, keyholders = [] } = {}) => {
+const mockGet = ({ setup = notSetUp, links = threeOnHerList, keyholders = [], sealed = [] } = {}) => {
   api.get.mockImplementation((url) => {
     if (url === '/passon/mine') return Promise.resolve({ data: { stories: [], letters: [] } })
     if (url === '/family/links') return Promise.resolve({ data: links })
     if (url === '/connections') return Promise.resolve({ data: [] })
     if (url === '/passon/setup') return Promise.resolve({ data: setup })
     if (url === '/passon/keyholders') return Promise.resolve({ data: keyholders })
+    // Names only, never a body — see SealedItemSummary. An armed box with nothing in it is
+    // a real state: she can set the arrangement up before she writes anything down.
+    if (url === '/passon/sealed') return Promise.resolve({ data: sealed })
     return Promise.resolve({ data: {} })
   })
 }

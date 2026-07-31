@@ -261,6 +261,102 @@ export const SEALED_KINDS = {
 };
 
 /**
+ * What is in the box, and putting something in it.
+ *
+ * The design copy fixes the top line ("Your box is shut. 3 things are inside. Nobody can see
+ * them but you."), the word "Locked", [See this], "Type your password to see this.", the name
+ * prompt and its promise, and [Lock this away]. Everything else here was written for this
+ * screen and is the wording to change if it is wrong.
+ *
+ * <b>Nothing here ever describes what an item says.</b> The list this screen renders has no
+ * body field on it at all — that is the server's design — so there is no preview to write copy
+ * for, and there must never be one. A card that clips the first line of "where the money is"
+ * hands it to whoever is standing behind her.
+ */
+export const SEALED_ITEMS = {
+  /**
+   * "3 things are inside" — and "1 thing is", because a screen for somebody in their
+   * eighties that says "1 things" is a screen that looks like nobody checked it.
+   */
+  shut: (count) =>
+    `Your box is shut. ${count === 1 ? '1 thing is' : `${count} things are`} inside. `
+    + 'Nobody can see them but you.',
+  /** A box that is set up with nothing in it yet. Said plainly, never as an empty list. */
+  nothingInside:
+    'Your box is shut. There is nothing in it yet. Nobody can see what you put in but you.',
+
+  locked: 'Locked',
+  /**
+   * What the same word says while she is looking at the thing. A card still reading "Locked"
+   * over its own open contents is the app telling her something she can see is not true.
+   */
+  unlocked: 'Open',
+  see: 'See this',
+  remove: 'Delete',
+
+  /** The inline row. Not a dialog: she is looking at the card she asked about. */
+  askPassword: 'Type your password to see this.',
+  passwordLabel: 'Your password',
+  show: 'Show it to me',
+  showing: 'Opening…',
+  neverMind: 'Never mind',
+  /** On a shared family laptop, being able to put it away again matters as much as opening it. */
+  hide: 'Hide this again',
+  needsPassword: 'Please type your password.',
+  failedToOpen: 'We could not open that. Please try again.',
+
+  add: 'Put something in',
+  namePrompt: 'What is it?',
+  /**
+   * The whole reason the name is encrypted too, said to her rather than kept in a design
+   * document. It is a promise the database keeps: there is no readable label column.
+   */
+  nameHelp:
+    'Give it a name you would recognise. Nobody else ever sees this name, not even your '
+    + 'Keyholders.',
+  namePlaceholder: 'Where the money is',
+  bodyPrompt: 'Write it down',
+  kindPrompt: 'What kind of thing is it?',
+  save: 'Lock this away',
+  saving: 'Locking it away…',
+  cancel: 'Cancel',
+  saved: 'That is locked away.',
+  needsName: 'Please give it a name.',
+  needsBody: 'Please write something before you save it.',
+  needsKind: 'Please choose what kind of thing this is.',
+  failedToSave: 'We could not save that. Please try again.',
+  removed: 'That is out of your box.',
+  failedToRemove: 'We could not take that out. Please try again.',
+};
+
+/**
+ * The refusal after a password change, and the one thing the screen adds to it.
+ *
+ * The sentence itself is the server's — `SealedBoxService.frozenMessage` builds it with the
+ * real date on which the freeze lifts, so it is rendered exactly as it arrives and never
+ * rebuilt here. What the screen adds is the missing half of "tell us straight away": a person
+ * to write to. Whoever reads an elder's email can reset her password, and this refusal is the
+ * only thing standing between that and her bank details — so it must end somewhere she can
+ * actually go, not in a feedback form.
+ *
+ * `prefix` is how the screen knows it is looking at that refusal rather than a wrong password.
+ * It is the opening of the server's sentence, and it is only ever used to decide whether to
+ * show the contact line — the words on screen are always the server's own.
+ */
+export const FROZEN = {
+  prefix: 'You changed your password recently.',
+  tellUs: (who, email) => `Write to ${who} at ${email}.`,
+};
+
+/** Taking something out of the box cannot be undone by anybody, so it is asked for plainly. */
+export const TAKE_OUT_OF_BOX = {
+  title: 'Take this out of the box?',
+  message: 'It will be gone for good. Nobody will be able to read it again, and that includes you.',
+  confirm: 'Take it out',
+  cancel: 'Keep it',
+};
+
+/**
  * Who a family writes to when the day comes.
  *
  * **This is a launch gate, and it is not met yet.** The spec requires a named human and a real

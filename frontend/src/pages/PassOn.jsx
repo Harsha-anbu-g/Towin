@@ -8,10 +8,12 @@ import PassOnItemForm from '../components/PassOnItemForm';
 import PassOnItemCard from '../components/PassOnItemCard';
 import SealedSetup from '../components/SealedSetup';
 import SealedKeyholders from '../components/SealedKeyholders';
+import SealedItems from '../components/SealedItems';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import {
-  ANYONE_CHECK, LETTERS, NOT_A_WILL, PAGE_LEAD, SEALED_BOX, SETUP, STORY_BOX, TAKE_DOWN,
+  ANYONE_CHECK, LETTERS, NOT_A_WILL, PAGE_LEAD, SEALED_BOX, SEALED_ITEMS, SETUP, STORY_BOX,
+  TAKE_DOWN, TAKE_OUT_OF_BOX,
 } from '../components/passOnLocks';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -51,6 +53,9 @@ export default function PassOn() {
   const [family, setFamily] = useState([]);
   const [setup, setSetup] = useState(null);
   const [keyholders, setKeyholders] = useState([]);
+  // Names only. The server's list route has no body field on it at all, so nothing that
+  // reaches this state has ever been decrypted — see SealedItemSummary.
+  const [sealedItems, setSealedItems] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [writing, setWriting] = useState(null);   // { kind, item } while the form is open
   const [saving, setSaving] = useState(false);
@@ -58,6 +63,7 @@ export default function PassOn() {
   const [askUndo, setAskUndo] = useState(false);
   const [askAnyone, setAskAnyone] = useState(null);   // a payload waiting on the wider-audience answer
   const [pendingRemove, setPendingRemove] = useState(null);
+  const [pendingSealedRemove, setPendingSealedRemove] = useState(null);
   const [explainWill, setExplainWill] = useState(false);
 
   // Tabs are different lengths, so switching from the bottom of a long one would
@@ -79,11 +85,16 @@ export default function PassOn() {
       api.get('/connections').then(r => r.data || []).catch(() => []),
       api.get('/passon/setup').then(r => r.data).catch(() => null),
       api.get('/passon/keyholders').then(r => r.data || []).catch(() => []),
-    ]).then(([, links, connections, setupState, keys]) => {
+      // Array.isArray, not `|| []`: a 200 carrying anything but a list would otherwise reach
+      // the screen and take her whole page down with it, and this is the page she opens to
+      // check her sealed box is still there.
+      api.get('/passon/sealed').then(r => (Array.isArray(r.data) ? r.data : [])).catch(() => []),
+    ]).then(([, links, connections, setupState, keys, sealed]) => {
       setPeople(peopleSheKnows(links, connections));
       setFamily(herFamilyList(links));
       setSetup(setupState);
       setKeyholders(keys);
+      setSealedItems(sealed);
     }).finally(() => setLoaded(true));
   }, []);
 
@@ -146,6 +157,48 @@ export default function PassOn() {
     } finally {
       setSaving(false);
     }
+  }
+
+  // ── what is in the box ──
+  //
+  // Putting something in and taking something out are handled here beside every other call on
+  // this page. Opening one is not: `openSealed` hands the answer straight back to the card
+  // that asked for it and keeps nothing, so no decrypted word is ever held in this component,
+  // in a list, or anywhere a later change could accidentally render.
+
+  async function addSealed(payload) {
+    setSaving(true);
+    try {
+      await api.post('/passon/sealed', payload);
+      toast.success(SEALED_ITEMS.saved);
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || SEALED_ITEMS.failedToSave);
+      throw err;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeSealed(item) {
+    try {
+      await api.delete(`/passon/sealed/${item.id}`);
+      setPendingSealedRemove(null);
+      toast.success(SEALED_ITEMS.removed);
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || SEALED_ITEMS.failedToRemove);
+    }
+  }
+
+  /**
+   * The password travels in the body, never in the address: a path or a query string is
+   * written into access logs, browser history and referrer headers, and this one opens the
+   * whole account. The refusal is passed back untouched so the card can show the server's own
+   * sentence — the seven-day freeze carries a real date she may act on.
+   */
+  function openSealed(item, password) {
+    return api.post(`/passon/sealed/${item.id}/reveal`, { password }).then(r => r.data);
   }
 
   /** "If this was not your idea, undo it." Nothing is said to anybody about it. */
@@ -306,6 +359,19 @@ export default function PassOn() {
                 />
               )}
 
+              {/* What is inside comes before who can open it one day. She reads down the
+                  screen from her own things to the arrangement around them, and only the
+                  first of those is something she came here to change. */}
+              {!settingUp && setup?.armed && (
+                <SealedItems
+                  items={sealedItems}
+                  saving={saving}
+                  onAdd={addSealed}
+                  onRemove={setPendingSealedRemove}
+                  onReveal={openSealed}
+                />
+              )}
+
               {!settingUp && setup?.armed && (
                 <SealedKeyholders
                   setup={setup}
@@ -352,6 +418,20 @@ export default function PassOn() {
         loading={saving}
         onConfirm={undo}
         onCancel={() => setAskUndo(false)}
+      />
+
+      {/* Taking something out of the box is the one delete in this feature that nobody can
+          reverse — not support, not the operator, nobody. So it is asked for in words that
+          say exactly that, on the same danger dialog every other destructive action uses. */}
+      <ConfirmDialog
+        open={pendingSealedRemove != null}
+        danger
+        title={TAKE_OUT_OF_BOX.title}
+        message={TAKE_OUT_OF_BOX.message}
+        confirmLabel={TAKE_OUT_OF_BOX.confirm}
+        cancelLabel={TAKE_OUT_OF_BOX.cancel}
+        onConfirm={() => removeSealed(pendingSealedRemove)}
+        onCancel={() => setPendingSealedRemove(null)}
       />
 
       <ConfirmDialog
