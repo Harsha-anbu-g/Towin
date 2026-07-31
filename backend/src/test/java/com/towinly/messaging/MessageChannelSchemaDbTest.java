@@ -1,10 +1,10 @@
 package com.towinly.messaging;
 
+import com.towinly.common.persistence.TestDatabase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,28 +15,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  * DB-level schema tests for the V40 message channel migration (family Step 3,
  * US-001).
  *
- * The regular test suite runs without a database (Flyway/DataSource excluded in
- * src/test/resources/application.properties, and CI has no Postgres service), so
- * these tests only run when TOWINLY_DB_TESTS=true is set locally:
- *
- *   TOWINLY_DB_TESTS=true ./mvnw test -Dtest=MessageChannelSchemaDbTest
- *
- * They expect a locally migrated database with V40 applied (default: the local
- * towin DB, which the booted backend migrates via Flyway).
+ * These need a real Postgres, so they only run when TOWINLY_DB_TESTS=true. CI sets it
+ * and gives them a throwaway Postgres service container; locally, see {@link TestDatabase}
+ * for the one-liner. They used to default to the dev {@code towin} database, which does
+ * not exist in CI — {@code TestDatabase} points them at the throwaway one and migrates it.
  */
 @EnabledIfEnvironmentVariable(named = "TOWINLY_DB_TESTS", matches = "true")
 class MessageChannelSchemaDbTest {
 
-    private static String env(String name, String fallback) {
-        String value = System.getenv(name);
-        return value != null && !value.isBlank() ? value : fallback;
-    }
-
     private Connection open() throws SQLException {
-        return DriverManager.getConnection(
-                env("TOWINLY_TEST_DB_URL", "jdbc:postgresql://localhost:5432/towin"),
-                env("TOWINLY_TEST_DB_USER", "postgres"),
-                env("TOWINLY_TEST_DB_PASSWORD", "0000"));
+        return TestDatabase.connect();
     }
 
     @Test
