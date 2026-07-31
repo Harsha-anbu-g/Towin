@@ -130,6 +130,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage(), 403, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(com.towinly.passon.exception.SealedBoxUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleSealedBoxUnavailable(
+            com.towinly.passon.exception.SealedBoxUnavailableException ex) {
+        // The Sealed box could not be operated — no master key, a bad one, or a row wrapped
+        // by a key version this build does not hold. The real reason is already logged at
+        // the throw site; the elder only ever sees the plain line, and every sealed write
+        // is refused rather than stored in a form nobody could decrypt later.
+        log.error("Sealed box unavailable: {}", ex.getMessage());
+        return ResponseEntity.status(503)
+                .body(new ErrorResponse(ex.getMessage(), 503, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
