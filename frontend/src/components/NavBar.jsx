@@ -330,7 +330,7 @@ export default function NavBar() {
                       onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                     >
-                      <ScrollText size={18} strokeWidth={2} aria-hidden="true" />What I pass on
+                      <ScrollText size={18} strokeWidth={2} aria-hidden="true" />My boxes
                     </Link>
                   )}
                   {showFamilyHome && (
@@ -468,7 +468,7 @@ export default function NavBar() {
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
             {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
-            {isElder && <MenuLink to="/what-i-pass-on" label="What I pass on" icon={ScrollText} />}
+            {isElder && <MenuLink to="/what-i-pass-on" label="My boxes" icon={ScrollText} />}
             {showFamilyHome && <MenuLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             {!isFamilyRole && <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />}

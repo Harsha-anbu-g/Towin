@@ -13,9 +13,54 @@
  * somebody will later dispute.
  */
 
-/** The one-line subtitle under the page name. */
-export const PAGE_LEAD =
-  'Your stories, your letters, and the things only you know. You choose who sees each one.';
+/**
+ * The way in, from the elder's own dashboard.
+ *
+ * A card on her landing tab, and deliberately not a sixth dashboard tab: below
+ * 640px that tab strip becomes a two-column grid whose icons are written out one
+ * by one, so a new tab there would arrive with no icon at all.
+ *
+ * The summary line is the reason the card exists. "My boxes" on its own names a
+ * door and nothing behind it; "3 stories · 2 letters · your box is shut" is her
+ * own page read back to her, so she knows what she is opening before she taps.
+ */
+export const MY_BOXES = {
+  title: 'My boxes',
+  /** Shared with PAGE_LEAD below, so the card and the page it opens cannot drift apart. */
+  lead: 'Your stories, your letters, and the things only you know.',
+  open: 'Open my boxes',
+  /**
+   * Said in words rather than as "0 stories · 0 letters". This is a card on the
+   * first screen she sees every day, and a row of zeros on it reads as a
+   * standing reproach for not having written her life down yet.
+   */
+  empty: 'Nothing in your boxes yet. Start whenever you like.',
+  /**
+   * What is in them, said out loud.
+   *
+   * A count she has none of is left out rather than shown as zero, and the sealed
+   * box is named only once she has really set one up — mentioning a box she has
+   * never opened would be an invitation she did not ask for. Singulars are spelled
+   * out for the same reason "1 thing is" is: a screen for somebody in her eighties
+   * that says "1 stories" is a screen that looks like nobody checked it.
+   */
+  summary: ({ stories = 0, letters = 0, shut = false } = {}) => {
+    const said = [];
+    if (stories) said.push(`${stories} ${stories === 1 ? 'story' : 'stories'}`);
+    if (letters) said.push(`${letters} ${letters === 1 ? 'letter' : 'letters'}`);
+    if (shut) said.push('your box is shut');
+    return said.length ? said.join(' · ') : MY_BOXES.empty;
+  },
+};
+
+/**
+ * The one-line subtitle under the page name.
+ *
+ * Built from `MY_BOXES.lead` rather than repeated, because the same sentence is
+ * the whole of what the dashboard card promises. The words are unchanged from the
+ * reviewed design copy.
+ */
+export const PAGE_LEAD = `${MY_BOXES.lead} You choose who sees each one.`;
 
 /**
  * The not-a-will primer. Short line always visible; the explanation folded away

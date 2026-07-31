@@ -3,6 +3,10 @@
 // grid and its TabIcon has no default branch, so a new tab there renders with no
 // icon at all. It has to be reachable from both the desktop account menu and the
 // mobile drawer, or half the people who own the page cannot find it.
+//
+// In the navigation it is called "My boxes" — what she has, in her words — while
+// the page itself keeps its title. These tests assert the nav label, not the page
+// heading, so the two can be worded for their own places.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -45,7 +49,7 @@ describe('NavBar — the way in to What I pass on', () => {
     setWidth(1280)
     renderNav()
     await user.click(screen.getByRole('button', { name: /account/i }))
-    const link = await screen.findByRole('menuitem', { name: /what i pass on/i })
+    const link = await screen.findByRole('menuitem', { name: /my boxes/i })
     expect(link).toHaveAttribute('href', '/what-i-pass-on')
   })
 
@@ -54,7 +58,7 @@ describe('NavBar — the way in to What I pass on', () => {
     setWidth(390)
     renderNav()
     await user.click(screen.getByRole('button', { name: /^menu$/i }))
-    expect(await screen.findByRole('link', { name: /what i pass on/i })).toHaveAttribute('href', '/what-i-pass-on')
+    expect(await screen.findByRole('link', { name: /my boxes/i })).toHaveAttribute('href', '/what-i-pass-on')
   })
 
   it('does not offer it to a helper, whose page it is not', async () => {
@@ -63,6 +67,6 @@ describe('NavBar — the way in to What I pass on', () => {
     setWidth(390)
     renderNav()
     await user.click(screen.getByRole('button', { name: /^menu$/i }))
-    expect(screen.queryByRole('link', { name: /what i pass on/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /my boxes/i })).not.toBeInTheDocument()
   })
 })
