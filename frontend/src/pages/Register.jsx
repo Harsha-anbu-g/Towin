@@ -43,7 +43,7 @@ const PRIVACY_CONTENT = [
   { h: '7. Your rights',
     p: 'You can edit or delete your profile information at any time from the Profile page. You can request a copy of your data or full deletion by contacting support@towinly.example.' },
   { h: '8. Security',
-    p: 'We use industry-standard encryption in transit and at rest. No system is perfectly secure, so please use a strong, unique password and report anything suspicious.' },
+    p: 'We use industry-standard encryption in transit, so what you send us is protected on its way to Towinly. Once it reaches us, most of your information is stored without a second lock on it. The Sealed box is the exception: whatever you keep there is encrypted while it is stored, and only you can open it. No system is perfectly secure, so please use a strong, unique password and report anything suspicious.' },
   { h: '9. Children',
     p: 'Towinly is not directed at children under 18. If we learn we have collected data from a minor, we will delete it.' },
   { h: '10. Contact',
