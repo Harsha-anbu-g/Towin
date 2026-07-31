@@ -6,6 +6,7 @@ import com.towinly.common.repository.UserRepository;
 import com.towinly.common.service.DisplayNameResolver;
 import com.towinly.passon.dto.PassOnArmRequest;
 import com.towinly.passon.dto.PassOnSetupResponse;
+import com.towinly.passon.dto.PassOnSheetResponse;
 import com.towinly.passon.dto.SealedItemRequest;
 import com.towinly.passon.dto.SealedItemSummary;
 import com.towinly.passon.dto.SealedRevealResponse;
@@ -235,6 +236,56 @@ public class SealedBoxService {
     @Transactional(readOnly = true)
     public LocalDateTime revealFrozenUntil(UUID ownerId) {
         return frozenUntil(getUser(ownerId));
+    }
+
+    /**
+     * Everything her saved one-page copy is built from: what is in the box by name, who can ask
+     * to open it, and how many of them must agree.
+     *
+     * <h3>This is the payload that leaves the app</h3>
+     * The sheet is downloaded as a file and kept in a drawer, so it is the one thing here that
+     * outlives us. It is built on {@link #list}, which unwraps names through
+     * {@code openLabel} and never produces a body — see the note at the top of this class. There
+     * is no password gate on it for exactly that reason: nothing on this page is a secret, and
+     * asking an elder for her password to be told the names of her own things would teach her to
+     * type it whenever anything asks.
+     *
+     * <p>Answered before setup as well as after. She may look at this while she is deciding, and
+     * a page that refuses until the box is armed would hide the thing she is being asked to
+     * judge.
+     */
+    @Transactional(readOnly = true)
+    public PassOnSheetResponse sheet(UUID ownerId) {
+        User owner = getUser(ownerId);
+        PassOnSettings row = settings.findById(ownerId).orElse(null);
+
+        return new PassOnSheetResponse(
+                DisplayNameResolver.fromUser(owner),
+                LocalDateTime.now(clock),
+                row != null && row.getArmedAt() != null,
+                row == null ? null : row.getApprovalsNeeded(),
+                row == null ? null : row.getKeyholderTarget(),
+                list(ownerId),
+                keyholders.mine(ownerId),
+                row == null ? null : row.getSheetSavedAt());
+    }
+
+    /**
+     * She has taken a copy out of the app. Recorded so the page can stop saying "you have not
+     * saved a copy yet", which is the only honest way to press the point that Towinly must not
+     * be her only copy.
+     *
+     * <p>Before she has set the box up there is no settings row to write on — that row is
+     * created by {@link #arm}, and it cannot exist earlier because the database requires a
+     * quorum on it. The download still works; there is simply nowhere to note it, and failing
+     * her download over a note would be the wrong way round.
+     */
+    @Transactional
+    public void markSheetSaved(UUID ownerId) {
+        settings.findById(ownerId).ifPresent(row -> {
+            row.setSheetSavedAt(LocalDateTime.now(clock));
+            settings.save(row);
+        });
     }
 
     // ── writing ──

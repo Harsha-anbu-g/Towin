@@ -15,6 +15,7 @@ import EmergencyContacts from './pages/EmergencyContacts';
 import MyFamily from './pages/MyFamily';
 import PassOn from './pages/PassOn';
 import PassOnFrom from './pages/PassOnFrom';
+import PassOnSheet from './pages/PassOnSheet';
 import FamilyHome from './pages/FamilyHome';
 import FamilyParent from './pages/FamilyParent';
 import Messages from './pages/Messages';
@@ -177,6 +178,9 @@ function App() {
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
             <Route path="/family" element={<ElderOnly><MyFamily /></ElderOnly>} />
             <Route path="/what-i-pass-on" element={<ElderOnly><PassOn /></ElderOnly>} />
+            {/* Her saved one-page copy. ElderOnly like the page it belongs to — it is her own
+                arrangement, and nobody else's copy to take. */}
+            <Route path="/what-i-pass-on/sheet" element={<ElderOnly><PassOnSheet /></ElderOnly>} />
             {/* Reading somebody else's page. PrivateRoute, never ElderOnly — the whole
                 point is that her family and her helpers can read it, and none of them
                 are elders. The server decides what any one of them may see. */}

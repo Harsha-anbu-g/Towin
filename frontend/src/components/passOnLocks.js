@@ -250,6 +250,158 @@ export const SETUP = {
 };
 
 /**
+ * The one readable thing about a sealed item: a chip, carrying no name, no address and no
+ * amount. Keyed by the server's SealedKind.
+ */
+export const SEALED_KINDS = {
+  MONEY: 'Money',
+  PASSWORDS: 'Passwords',
+  PAPERS: 'Papers',
+  OTHER: 'Something else',
+};
+
+/**
+ * Who a family writes to when the day comes.
+ *
+ * **This is a launch gate, and it is not met yet.** The spec requires a named human and a real
+ * contact address with a stated turnaround before any elder sees this page; naming one is Task
+ * 16's job and the owner's decision. Until then this is the same placeholder the Terms page
+ * already publishes, and its `.example` domain is reserved by RFC 2606 precisely so it can
+ * never be mistaken for a live mailbox. Replace both values here — there is one copy in the
+ * product and this is it.
+ */
+export const RELEASE_CONTACT = {
+  who: 'Towinly',
+  email: 'support@towinly.example',
+};
+
+/**
+ * The saved copy — one page she takes out of the app and keeps somewhere her family would
+ * think to look.
+ *
+ * Digital only. There is no print step anywhere in this feature.
+ *
+ * The design copy fixes only the shape of this page and its last line: names of what is in the
+ * box and never contents, who can open it and how many must agree, who to write to and what
+ * they will be asked for, ending "This is not a will." The sentences below were written here
+ * and are the ones to rewrite if the wording is wrong — except the closing line, which is the
+ * design copy word for word and is the whole legal point of the page.
+ *
+ * Nothing about the Keyholders is written here. Those lines come from `SETUP.settled` through
+ * `keyholderLine` below, so the saved copy, her own screen and the acceptance card can never
+ * disagree about who said yes.
+ */
+export const SHEET = {
+  /** The page around the copy, which is not part of the copy itself. */
+  pageTitle: 'Your one-page copy',
+  pageLead:
+    'This is the copy you keep outside Towinly. Save it, and put it wherever your family would '
+    + 'think to look. Do not let this app be your only copy.',
+  save: 'Save this to my computer',
+  saved: 'Saved. Now put it somewhere your family would look.',
+  failedToSave: 'We could not save that file. Please try again.',
+  back: 'Go back to my sealed box',
+  loading: 'Getting your copy ready…',
+  failed: 'We could not get your copy ready. Please try again.',
+  lastSaved: when => `You last saved a copy on ${when}.`,
+  neverSaved: 'You have not saved a copy yet.',
+  /** What she is looking at, above the copy itself. */
+  previewHeading: 'This is what you will save',
+  /** The way in, from her sealed box. A page nobody can reach is a page that is not shipped. */
+  linkFromBox: 'Save your one-page copy',
+
+  // ── the copy itself, in the order it is read ──
+
+  title: name => `What ${name} passes on`,
+  madeOn: when => `Made on ${when}, from Towinly.`,
+
+  inTheBox: {
+    heading: 'What is in the sealed box',
+    blurb:
+      'These are the names of the things inside. What any of them says is not written here, and '
+      + 'it is not written down anywhere outside Towinly.',
+    empty: 'There is nothing in the box yet.',
+    /** "Where the money is — Money". The name she gave it, then its chip. */
+    line: (label, kind) => `${label} — ${kind}`,
+  },
+
+  whoCanOpen: {
+    heading: 'Who can ask to open it',
+    empty: 'Nobody has been asked yet.',
+  },
+
+  howToAsk: {
+    heading: 'How your family asks for it to be opened',
+    writeTo: (who, email) => `Write to ${who} at ${email}.`,
+    askedFor: 'They will be asked for:',
+    /**
+     * The manual release procedure, said to a family rather than to an operator. It is written
+     * out in full in docs/operations/sealed-box-release.md; these three lines are what somebody
+     * holding this page needs to know before they start.
+     */
+    steps: name => [
+      'a death certificate, which a person here reads and writes down',
+      'word from each of the people above, one at a time, that they agree',
+      `then a wait of thirty days, while Towinly keeps trying to reach ${name}`,
+    ],
+    /**
+     * The sentence that stops a family waiting for something to happen on its own. There is no
+     * button anywhere in Towinly that opens a box, and saying so here is kinder than letting
+     * them find out by waiting.
+     */
+    thenWhat:
+      'Only then does somebody here pass on what is in the box. None of this happens by itself, '
+      + 'and there is no button anywhere that opens the box.',
+  },
+
+  /** The design copy's last line, and the whole legal point of the page. */
+  closing: 'This is not a will.',
+};
+
+/**
+ * "6 August" — the way a date is said out loud, not 06/08/2026. Matches the way the server
+ * says a date back to her in the blocked-reveal line.
+ *
+ * Shared rather than repeated: the same date appears on her screen and in the file she keeps,
+ * and two spellings of one day on one person's copy is exactly the kind of thing that makes
+ * somebody doubt the whole page.
+ */
+export const onDay = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+};
+
+/**
+ * "6 August 2026" — the same day with the year on it, for the saved copy only.
+ *
+ * On her own screen the year is noise: everything there happened recently and she is reading it
+ * today. The saved copy is the opposite case. It is a file in a drawer that somebody may open
+ * years later, possibly beside an older copy of the same page, and a date without a year cannot
+ * tell them which one to believe.
+ */
+export const onDayInFull = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+/**
+ * One person's real state, in the words she would use about it — "Sarah said yes on 2 June",
+ * "David has not answered yet".
+ *
+ * Lives here because it is read in two places that must never disagree: her own sealed box
+ * screen, and the copy she saves and her family reads after she is gone. Never softened into
+ * "pending", because "David has not answered yet" is a sentence she may act on.
+ */
+export const keyholderLine = (person) => {
+  if (person.status === 'ACTIVE') return SETUP.settled.saidYes(person.personName, onDay(person.respondedAt));
+  if (person.status === 'INVITED') return SETUP.settled.waiting(person.personName);
+  if (person.status === 'DECLINED') return SETUP.settled.saidNo(person.personName);
+  return SETUP.settled.steppedBack(person.personName);
+};
+
+/**
  * Reading somebody else's page.
  *
  * The reviewed design copy fixes the title — "From Margaret" — and nothing else on this

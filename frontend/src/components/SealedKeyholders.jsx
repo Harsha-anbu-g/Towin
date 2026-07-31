@@ -1,4 +1,5 @@
-import { SETUP, listOfNames } from './passOnLocks';
+import { Link } from 'react-router-dom';
+import { SETUP, SHEET, keyholderLine, listOfNames } from './passOnLocks';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -65,7 +66,7 @@ export default function SealedKeyholders({ setup, keyholders, undoing, onUndo, o
             <li key={person.id} style={personRow}>
               <span aria-hidden="true" style={{ ...dot, background: dotColour(person.status) }} />
               <span style={{ fontSize: '17px', color: 'var(--ink)', lineHeight: 1.5 }}>
-                {statusLine(person)}
+                {keyholderLine(person)}
               </span>
             </li>
           ))}
@@ -80,16 +81,19 @@ export default function SealedKeyholders({ setup, keyholders, undoing, onUndo, o
           {SETUP.settled.change}
         </button>
       </section>
+
+      {/* The way to her saved copy. It sits below the arrangement rather than beside the undo,
+          because it is the one thing on this page that is worth doing every time something
+          here changes — and a page nobody can reach is a page that is not shipped. */}
+      <Link to="/what-i-pass-on/sheet" style={sheetLink}>
+        {SHEET.linkFromBox}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </Link>
     </div>
   );
-}
-
-/** The real state, in the words she would use about it. */
-function statusLine(person) {
-  if (person.status === 'ACTIVE') return SETUP.settled.saidYes(person.personName, onDay(person.respondedAt));
-  if (person.status === 'INVITED') return SETUP.settled.waiting(person.personName);
-  if (person.status === 'DECLINED') return SETUP.settled.saidNo(person.personName);
-  return SETUP.settled.steppedBack(person.personName);
 }
 
 /**
@@ -100,13 +104,6 @@ function dotColour(status) {
   if (status === 'ACTIVE') return 'var(--green-deep)';
   if (status === 'INVITED') return 'var(--gold-deep)';
   return 'var(--ink-3)';
-}
-
-/** "6 August" — the way a date is said out loud, not 06/08/2026. */
-function onDay(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
 }
 
 const displayHead = {
@@ -153,3 +150,15 @@ const personRow = {
 };
 
 const dot = { width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0 };
+
+const sheetLink = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  minHeight: '48px',
+  marginTop: '16px',
+  fontSize: '17px',
+  color: 'var(--blue)',
+  textDecoration: 'none',
+  fontFamily: SFText,
+};

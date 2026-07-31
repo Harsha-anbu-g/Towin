@@ -299,6 +299,20 @@ describe('the seven days', () => {
     expect(screen.getByText('2 of the 3 must agree.')).toBeInTheDocument()
   })
 
+  // Her saved copy is the answer to "what if Towinly disappears", and a page nobody can reach
+  // is a page that is not shipped. This is the only way to it.
+  it('offers her the way to her saved copy', async () => {
+    mockGet({ setup: settling, keyholders: asked })
+    render(
+      <MemoryRouter initialEntries={['/what-i-pass-on?tab=sealed']}>
+        <PassOn />
+      </MemoryRouter>,
+    )
+
+    const link = await screen.findByRole('link', { name: /Save your one-page copy/ })
+    expect(link).toHaveAttribute('href', '/what-i-pass-on/sheet')
+  })
+
   it('drops the undo once the week has passed, and says nothing about it', async () => {
     mockGet({
       setup: { ...settling, canStillUndo: false, coolingOffUntil: '2026-08-01T10:00:00' },

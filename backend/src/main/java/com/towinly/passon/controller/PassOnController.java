@@ -10,6 +10,7 @@ import com.towinly.passon.dto.PassOnItemRequest;
 import com.towinly.passon.dto.PassOnItemResponse;
 import com.towinly.passon.dto.PassOnMineResponse;
 import com.towinly.passon.dto.PassOnSetupResponse;
+import com.towinly.passon.dto.PassOnSheetResponse;
 import com.towinly.passon.service.KeyholderService;
 import com.towinly.passon.service.PassOnService;
 import com.towinly.passon.service.SealedBoxService;
@@ -182,6 +183,27 @@ public class PassOnController {
     public ResponseEntity<Void> undo(Authentication auth) {
         UUID ownerId = UUID.fromString(auth.getName());
         sealedBoxService.undoSetup(ownerId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── the saved copy ──
+    //
+    // The one page she takes out of the app and keeps where her family would look. It carries
+    // the names of what is in the box and never a word of what any of it says: the service
+    // builds it on SealedBoxService.list, which unwraps names only.
+
+    /** What her one-page copy is built from. Her own, always — there is no owner in the path. */
+    @GetMapping("/sheet")
+    public ResponseEntity<PassOnSheetResponse> sheet(Authentication auth) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(sealedBoxService.sheet(ownerId));
+    }
+
+    /** She has taken a copy out. Noted, so the page can stop telling her she has not. */
+    @PostMapping("/sheet/saved")
+    public ResponseEntity<Void> sheetSaved(Authentication auth) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        sealedBoxService.markSheetSaved(ownerId);
         return ResponseEntity.noContent().build();
     }
 }
