@@ -33,6 +33,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * loaded field could still pass through a caching entity manager while the database held
  * nothing but a pointer.
  *
+ * Every builder here sets an id, because {@code SealedItem} has no {@code @GeneratedValue}:
+ * the item id is bound into the ciphertext, so it is decided before the encryption and not
+ * by the database. See the entity's own note, and {@code SealedBoxRoundTripDbTest}.
+ *
  * Needs a real Postgres, so gated on TOWINLY_DB_TESTS the same way as
  * {@code MigrationsApplyDbTest}. CI sets it and supplies a throwaway service container:
  *
@@ -72,6 +76,7 @@ class SealedItemByteaDbTest {
         byte[] wrappedKey = randomBytes(48);
 
         SealedItem saved = sealedItems.save(SealedItem.builder()
+                .id(UUID.randomUUID())
                 .owner(owner)
                 .labelCipher(labelCipher)
                 .labelIv(labelIv)
@@ -100,6 +105,7 @@ class SealedItemByteaDbTest {
         byte[] bodyCipher = randomBytes(BODY_BYTES);
 
         SealedItem saved = sealedItems.save(SealedItem.builder()
+                .id(UUID.randomUUID())
                 .owner(owner)
                 .labelCipher(randomBytes(64))
                 .labelIv(randomBytes(12))
@@ -125,6 +131,7 @@ class SealedItemByteaDbTest {
     @Test
     void theDefaultsTheSchemaSuppliesComeBackOnTheEntity() {
         SealedItem saved = sealedItems.save(SealedItem.builder()
+                .id(UUID.randomUUID())
                 .owner(owner)
                 .labelCipher(randomBytes(32))
                 .labelIv(randomBytes(12))

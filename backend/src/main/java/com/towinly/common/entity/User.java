@@ -115,6 +115,15 @@ public class User {
     @Builder.Default
     private int tokenVersion = 0;
 
+    /**
+     * When the password last changed — set at exactly the two places that bump
+     * {@link #tokenVersion}, and nowhere else. The Sealed box refuses to open for seven days
+     * afterwards, because control of an elder's inbox is control of her password. Null means
+     * no credential change we can date, which reads as "not frozen".
+     */
+    @Column(name = "credential_changed_at")
+    private LocalDateTime credentialChangedAt;
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 

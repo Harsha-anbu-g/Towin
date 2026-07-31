@@ -1,0 +1,19 @@
+-- "What I pass on" (2026-07-30): when this account's password last changed.
+--
+-- The Sealed box refuses to open for seven days after any credential change. That rule is
+-- the only real defence against the most realistic attack in the whole feature: whoever
+-- reads an elder's email can reset her password, and would otherwise be three taps from her
+-- bank details. Seven days is long enough for the real owner to see the "your password was
+-- changed" mail and raise the alarm.
+--
+-- users.token_version (V31) already records THAT the credential changed — every reset and
+-- every change bumps it, invalidating live sessions. It cannot record WHEN, and an integer
+-- with no timestamp cannot answer "is this within the last seven days?". Hence this column,
+-- written at exactly the two places that bump token_version (AuthService.resetPassword and
+-- AuthService.changePassword) and nowhere else.
+--
+-- Deliberately NULL for every existing account and left un-backfilled. NULL means "no
+-- credential change we can date", which reads as "not frozen" — the honest answer, since no
+-- Sealed box existed before this release for any of those accounts to protect. Backfilling
+-- now() instead would freeze every elder in the system out of a box on the day it ships.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS credential_changed_at TIMESTAMP;

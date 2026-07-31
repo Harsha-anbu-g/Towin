@@ -4,6 +4,7 @@ import com.towinly.common.entity.User;
 import com.towinly.common.enums.SealedKind;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,14 +22,27 @@ import java.util.UUID;
  * makes Hibernate 6 target a Postgres large object and the context refuses to start with
  * "found [bytea (Types#BINARY)], but expecting [oid (Types#BLOB)]" — see
  * {@code SealedItemByteaDbTest}, which exists to keep that mistake out.
+ *
+ * <h2>The id is assigned by the caller, and it has to be</h2>
+ * Alone among the entities here this one has no {@code @GeneratedValue}. The item id is
+ * bound into the ciphertext as additional authenticated data — that is what stops one
+ * elder's blob being moved onto another elder's row — so it must be known <em>before</em>
+ * the encryption happens, which is before the insert. {@code SealedBoxService#add} decides
+ * it and the database keeps it.
+ *
+ * That in turn is why this implements {@link Persistable}: Spring Data reads "has an id" as
+ * "already saved" and would route a brand-new row through {@code merge}, which issues an
+ * UPDATE against a row that does not exist yet and fails. Answering {@code isNew} from
+ * {@code createdAt} — null exactly until {@link #onCreate} runs — sends a new row through
+ * {@code persist} with the id intact. {@code SealedBoxRoundTripDbTest} holds both halves of
+ * this in place; without it the whole feature writes rows it can never open.
  */
 @Entity
 @Table(name = "passon_sealed_items")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class SealedItem {
+public class SealedItem implements Persistable<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -74,6 +88,17 @@ public class SealedItem {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    /**
+     * True until this row has actually been written. {@code createdAt} is set by
+     * {@link #onCreate} and by nothing else, so it is the one field that cannot be true of a
+     * row that has never reached Postgres — unlike the id, which is always set here.
+     */
+    @Override
+    @Transient
+    public boolean isNew() {
+        return createdAt == null;
+    }
 
     @PrePersist
     void onCreate() {

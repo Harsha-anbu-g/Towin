@@ -151,6 +151,27 @@ public class SealedCryptoService {
      * it is logged as a security event rather than swallowed.
      */
     public OpenContents open(UUID ownerId, UUID itemId, SealedContents stored) {
+        return unwrapAndRead(ownerId, itemId, stored, true);
+    }
+
+    /**
+     * Opens the name of one item and deliberately not its contents.
+     *
+     * The owner's own list shows what is in the box by name, and so will the account export;
+     * neither has any business decrypting a bank account number to render a card that says
+     * "Locked". Splitting the read here rather than opening both and dropping one is what
+     * makes that structural: on the list path the body's plaintext is never produced at all,
+     * so it cannot be logged, cached, serialised or caught in a heap dump by accident.
+     */
+    public String openLabel(UUID ownerId, UUID itemId, SealedContents stored) {
+        return unwrapAndRead(ownerId, itemId, stored, false).label();
+    }
+
+    /**
+     * The single unwrap path behind both reads. The data key exists for the length of one
+     * call and is wiped in the {@code finally} whichever way the call ends.
+     */
+    private OpenContents unwrapAndRead(UUID ownerId, UUID itemId, SealedContents stored, boolean withBody) {
         requireAvailable();
         if (stored.keyVersion() != CURRENT_KEY_VERSION) {
             log.error("Sealed item for owner {} was wrapped by key version {}, which this build does not hold.",
@@ -172,8 +193,10 @@ public class SealedCryptoService {
 
             String label = new String(decrypt(dataKey, stored.labelIv(), aad, stored.labelCipher()),
                     StandardCharsets.UTF_8);
-            String body = new String(decrypt(dataKey, stored.bodyIv(), aad, stored.bodyCipher()),
-                    StandardCharsets.UTF_8);
+            String body = withBody
+                    ? new String(decrypt(dataKey, stored.bodyIv(), aad, stored.bodyCipher()),
+                            StandardCharsets.UTF_8)
+                    : null;
             return new OpenContents(label, body);
         } catch (GeneralSecurityException e) {
             // A failed tag here means the row was edited or moved. Log it loudly; the row

@@ -214,6 +214,10 @@ public class AuthService {
         passwordPolicy.validate(newPassword, user.getUsername(), user.getEmail());
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setTokenVersion(user.getTokenVersion() + 1); // invalidate any existing sessions
+        // Dates the bump, which token_version alone cannot. A reset is the exact move an
+        // attacker holding the elder's inbox makes, so this is what freezes her Sealed box
+        // for seven days — see SealedBoxService#revealFrozenUntil.
+        user.setCredentialChangedAt(LocalDateTime.now());
         user.setPasswordResetToken(null);
         user.setPasswordResetExpiresAt(null);
         userRepository.save(user);
@@ -238,6 +242,10 @@ public class AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         user.setTokenVersion(user.getTokenVersion() + 1);
+        // The other half of the pair above. A change made from inside the account freezes the
+        // Sealed box for the same seven days: from the server's side the two are the same
+        // event, and treating the "safe" one as exempt would be the hole worth walking through.
+        user.setCredentialChangedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
