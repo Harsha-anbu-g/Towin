@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import StreakCard from '../components/StreakCard';
+import CheckInFamilyNote from '../components/CheckInFamilyNote';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 
@@ -8,49 +10,9 @@ const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SKY = 'var(--blue)';
 
-function FlameIcon({ size = 56 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 2C12 2 7 7 7 12.5C7 15.5 9 18 12 18C15 18 17 15.5 17 12.5C17 10 15.5 8 14 7C14 9 13 10 12 10C11 10 10 9 10 7.5C10 5.5 12 2 12 2Z"
-        fill="var(--blue)" opacity="0.85"
-      />
-      <path
-        d="M12 13C12 13 10.5 14.5 10.5 16C10.5 17.1 11.2 18 12 18C12.8 18 13.5 17.1 13.5 16C13.5 14.5 12 13 12 13Z"
-        fill="var(--ink)" opacity="0.5"
-      />
-    </svg>
-  );
-}
-
-// Build the Monday–Sunday week containing today, marking which days fall inside
-// the current consecutive streak. Derived from currentStreak + lastCheckinDate
-// since the backend keeps no per-day history.
-function buildWeek(streak) {
-  const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const mondayOffset = (today.getDay() + 6) % 7; // days since Monday
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - mondayOffset);
-
-  const current = streak?.currentStreak ?? 0;
-  const last = streak?.lastCheckinDate ? new Date(`${streak.lastCheckinDate}T00:00:00`) : null;
-  let runStart = null;
-  if (last && current > 0) {
-    runStart = new Date(last);
-    runStart.setDate(last.getDate() - (current - 1));
-  }
-
-  return labels.map((label, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const isFuture = d > today;
-    const isToday = d.getTime() === today.getTime();
-    const done = !!(runStart && last && d >= runStart && d <= last && !isFuture);
-    return { label, done, today: isToday && !done, future: isFuture };
-  });
-}
+// The check-in button and the "already done" row swap places in the same slot.
+// Holding one height across both stops the page jumping under a tapping thumb.
+const ACTION_SLOT_MIN_HEIGHT = '68px';
 
 function greeting() {
   const h = new Date().getHours();
@@ -82,28 +44,54 @@ function computeAge(dobStr) {
   return { totalDays, years, months, days };
 }
 
+/**
+ * The daily check-in. Elder-only (see ElderOnly on the /streaks route): a
+ * helper has nobody waiting to hear they are alright, so they have no check-in.
+ *
+ * The page leads with the reason rather than the score. Tapping "I'm here
+ * today" is what puts "All looks well — Margaret checked in today" on her
+ * family's own page, and she should be able to see that is what she is doing.
+ * The streak sits underneath: the reward, not the reason.
+ */
 export default function Streaks() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [streak, setStreak] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dob, setDob] = useState(null);
+  const [familyNames, setFamilyNames] = useState([]);
+
   useEffect(() => {
     api.get('/streaks/me')
       .then(r => setStreak(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
   useEffect(() => {
     api.get('/profile/me')
       .then(r => setDob(r.data.dateOfBirth))
       .catch(() => {});
   }, []);
 
+  // Who sees this check-in. Only the links where she sits in the elder seat —
+  // the family she watches over herself are on the other side and see nothing.
+  // A failure here leaves the list empty, which shows the invitation instead;
+  // the check-in itself must never wait on this call.
+  useEffect(() => {
+    api.get('/family/links')
+      .then(r => setFamilyNames(
+        (r.data?.activeLinks || [])
+          .filter(l => l.iAmElder)
+          .map(l => l.otherUserName)
+          .filter(Boolean)
+      ))
+      .catch(() => {});
+  }, []);
+
   const [checkingIn, setCheckingIn] = useState(false);
   const [justCheckedIn, setJustCheckedIn] = useState(false);
   const alreadyDone = streak?.alreadyCheckedIn || justCheckedIn;
-  const week = buildWeek(streak);
 
   async function handleCheckIn() {
     setCheckingIn(true);
@@ -160,7 +148,7 @@ export default function Streaks() {
         </p>
       </div>
 
-      {/* Right — streak content */}
+      {/* Right — the check-in */}
       <div className="streaks-right" style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'flex-start',
@@ -178,90 +166,61 @@ export default function Streaks() {
           <h1 className="streaks-heading" style={{
             fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 7vw, 40px)', fontWeight: 400,
             color: 'var(--ink)', letterSpacing: '-0.02em',
-            marginBottom: '18px', lineHeight: 1.1,
+            marginBottom: '20px', lineHeight: 1.15,
           }}>
-            {alreadyDone ? 'You showed up today.' : 'Ready to check in?'}
+            {alreadyDone
+              ? "Your family knows you're alright today."
+              : "Let your family know you're alright."}
           </h1>
 
-          {/* Streak card */}
-          <div className="streak-card" style={{
-            background: 'var(--canvas)', borderRadius: '18px',
-            border: '1px solid var(--border)', padding: '26px 28px',
-            textAlign: 'center', marginBottom: '18px',
-          }}>
-            {loading ? (
-              <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>Loading…</p>
-            ) : (
-              <>
-                <div style={{ display: 'inline-flex' }}>
-                  <FlameIcon size={56} />
+          {/* The one thing this page asks for, and who it reaches. */}
+          {!loading && (
+            <div style={{ marginBottom: '22px' }}>
+              {alreadyDone ? (
+                <div style={{
+                  minHeight: ACTION_SLOT_MIN_HEIGHT,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                  border: '1.5px solid var(--green-line)', borderRadius: '9999px',
+                  padding: '14px 20px',
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green-deep)"
+                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span style={{ fontSize: '17px', color: 'var(--green-deep)', fontWeight: 600, fontFamily: SFT }}>
+                    You checked in today
+                  </span>
                 </div>
-                <p
-                  key={justCheckedIn ? 'checked' : 'idle'}
-                  className={`streak-number${justCheckedIn ? ' checkin-pop' : ''}`}
+              ) : (
+                <button
+                  onClick={handleCheckIn}
+                  disabled={checkingIn}
                   style={{
-                    fontFamily: 'var(--font-display)', fontSize: '80px', fontWeight: 400,
-                    color: 'var(--ink)', lineHeight: 1, margin: '16px 0 4px',
-                    letterSpacing: '-0.02em',
+                    width: '100%', minHeight: ACTION_SLOT_MIN_HEIGHT,
+                    background: SKY, color: '#fff',
+                    border: 'none', borderRadius: '9999px',
+                    padding: '20px 0', fontSize: '20px', fontWeight: 600,
+                    fontFamily: SFT, cursor: checkingIn ? 'not-allowed' : 'pointer',
+                    letterSpacing: '-0.2px',
+                    boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
+                    opacity: checkingIn ? 0.7 : 1,
                   }}
                 >
-                  {streak?.currentStreak ?? 0}
-                </p>
-                <p style={{
-                  fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink-3)',
-                  fontFamily: SFT, marginBottom: '8px',
-                }}>
-                  days in a row
-                </p>
-                {/* Fixed slot, present in both states — checking in must never shift
-                    the layout below (the jump read as broken). */}
-                <p aria-live="polite" style={{
-                  fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--green-deep)',
-                  fontFamily: SFT, margin: '0 0 14px', minHeight: '20px',
-                  opacity: justCheckedIn ? 1 : 0, transition: 'opacity 0.3s ease-out',
-                }}>
-                  Your streak is alive, see you tomorrow!
-                </p>
+                  {checkingIn ? 'Checking in…' : "I'm here today"}
+                </button>
+              )}
+              <CheckInFamilyNote names={familyNames} checkedIn={alreadyDone} />
+            </div>
+          )}
 
-                {/* Week tracker */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
-                  {week.map((d, i) => (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-                      <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--ink-4)', fontFamily: SFT }}>{d.label}</span>
-                      <div className="streak-dot" style={{
-                        width: '34px', height: '34px', borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: d.done ? SKY : 'var(--canvas)',
-                        border: d.done ? 'none' : d.today ? `2px solid ${SKY}` : '1px solid var(--line-idle)',
-                        opacity: d.future ? 0.6 : 1,
-                      }}>
-                        {d.done && (
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                        {d.today && (
-                          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: SKY }} />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {streak?.longestStreak > 0 && (
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, margin: '18px 0 0' }}>
-                    Best streak: {streak.longestStreak} {streak.longestStreak === 1 ? 'day' : 'days'}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+          {/* The run of days behind it — the reward, not the reason. */}
+          <StreakCard streak={streak} loading={loading} justCheckedIn={justCheckedIn} />
 
           {/* Age display */}
           <div className="age-card" style={{
             background: 'var(--canvas)', borderRadius: '18px',
             border: '1px solid var(--border)', padding: '24px 28px',
-            marginBottom: '28px',
+            marginBottom: '24px',
           }}>
             {dob && computeAge(dob) ? (() => {
               const age = computeAge(dob);
@@ -318,23 +277,11 @@ export default function Streaks() {
             )}
           </div>
 
-          {/* Action */}
+          {/* Where to next. Below everything: the day's question is already
+              answered by this point. */}
           {!loading && (
             alreadyDone ? (
-              /* Already checked in — show two options */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{
-                  border: '1px solid var(--green-line)',
-                  borderRadius: '14px', padding: '14px 20px',
-                  textAlign: 'center',
-                }}>
-                  <p style={{ fontSize: '16px', color: 'var(--green-deep)', fontWeight: 600, fontFamily: SFT, margin: 0 }}>
-                    ✓ You have already checked in today.
-                  </p>
-                  <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: SFT, margin: '4px 0 0' }}>
-                    See you again tomorrow. Keep it going!
-                  </p>
-                </div>
                 <button
                   onClick={() => navigate('/dashboard')}
                   style={{
@@ -359,40 +306,18 @@ export default function Streaks() {
                 </button>
               </div>
             ) : (
-              /* Not checked in yet: min-height matches the checked-in stack above so
-                 the page holds still when the state swaps. */
-              <div style={{ minHeight: '214px' }}>
+              <div style={{ textAlign: 'center' }}>
                 <button
-                  onClick={handleCheckIn}
-                  disabled={checkingIn}
+                  onClick={() => navigate('/dashboard')}
                   style={{
-                    width: '100%', background: SKY, color: '#fff',
-                    border: 'none', borderRadius: '9999px',
-                    padding: '22px 0', fontSize: '20px', fontWeight: 600,
-                    fontFamily: SFT, cursor: checkingIn ? 'not-allowed' : 'pointer',
-                    letterSpacing: '-0.2px',
-                    boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
-                    opacity: checkingIn ? 0.7 : 1,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: '16px', color: 'var(--ink-3)', fontFamily: SFT,
+                    textDecoration: 'underline', padding: '10px 8px',
+                    minHeight: '44px', // elderly-first tap-target floor
                   }}
                 >
-                  {checkingIn ? 'Checking in…' : "I'm here today"}
+                  Skip for now, go to dashboard
                 </button>
-                <p style={{ textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, lineHeight: 1.5, marginTop: '12px' }}>
-                  Tap to log today and keep your streak alive.
-                </p>
-                <div style={{ textAlign: 'center', marginTop: '8px' }}>
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: '16px', color: 'var(--ink-3)', fontFamily: SFT,
-                      textDecoration: 'underline', padding: '10px 8px',
-                      minHeight: '44px', // elderly-first tap-target floor
-                    }}
-                  >
-                    Skip for now, go to dashboard
-                  </button>
-                </div>
               </div>
             )
           )}
