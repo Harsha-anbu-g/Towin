@@ -151,7 +151,10 @@ public class AdminService {
                 .map(u -> AdminVerificationResponse.builder()
                         .userId(u.getId())
                         .email(u.getEmail())
-                        .idDocumentUrl(u.getIdDocumentUrl())
+                        // Sign it, exactly as every other S3 URL we hand to a browser is
+                        // signed. The raw bucket URL is private, so the admin panel's
+                        // "view document" link 403s and the ID can never be checked.
+                        .idDocumentUrl(s3Service.presignedUrl(u.getIdDocumentUrl()))
                         .createdAt(u.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
