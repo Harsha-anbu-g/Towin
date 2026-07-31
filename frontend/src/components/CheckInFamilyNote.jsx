@@ -17,8 +17,8 @@ export default function CheckInFamilyNote({ names, checkedIn }) {
   if (!label) {
     return (
       <p style={{
-        textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--ink-4)',
-        fontFamily: SFT, lineHeight: 1.5, margin: '12px 0 0',
+        textAlign: 'center', fontSize: 'var(--text-base)', color: 'var(--ink-3)',
+        fontFamily: SFT, lineHeight: 1.5, margin: '14px 0 0',
       }}>
         <Link to="/family" style={{ color: 'var(--blue-deep)', fontWeight: 600 }}>
           Add your family
@@ -30,9 +30,9 @@ export default function CheckInFamilyNote({ names, checkedIn }) {
 
   return (
     <p aria-live="polite" style={{
-      textAlign: 'center', fontSize: 'var(--text-sm)', fontWeight: 600,
+      textAlign: 'center', fontSize: 'var(--text-base)', fontWeight: 600,
       color: checkedIn ? 'var(--green-deep)' : 'var(--ink-3)',
-      fontFamily: SFT, lineHeight: 1.5, margin: '12px 0 0',
+      fontFamily: SFT, lineHeight: 1.5, margin: '14px 0 0',
     }}>
       {checkedIn ? `${label} can see you checked in.` : `${label} will see this.`}
     </p>
