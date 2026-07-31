@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -125,6 +126,9 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Your Sealed box is kept shut by your password",
                 "Your Sealed box is kept shut by your password, and this account signs in with "
                         + "Google. Please set a password first, then come back.");
+        // What I pass on — opening one thing in the Sealed box.
+        SAFE_MESSAGES.put("That password was not right",
+                "That password was not right. Please try again.");
         // Trust flow
         SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow
@@ -137,6 +141,21 @@ public class GlobalExceptionHandler {
                 "You can leave a review once you're fully trusted friends.");
     }
 
+    /**
+     * The few refusals whose own text is already exactly what the person should read, and
+     * which carry a real value inside them — a date — so no fixed sentence in the allowlist
+     * above could stand in for one without losing the part that makes it useful.
+     *
+     * <p>Kept to prefixes that are written as constants in the code that throws them, never a
+     * general pass-through: everything else stays on the allowlist, because an exception
+     * message is otherwise the last place internal detail leaks from.
+     */
+    private static final List<String> SAY_IT_AS_THROWN = List.of(
+            // SealedBoxService.frozenMessage — "…stays shut until 12 August…". The date is the
+            // whole point: it is what tells an elder her box is safe rather than broken, and
+            // when it will open again.
+            "You changed your password recently. For your safety your Sealed box stays shut until ");
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("IllegalArgumentException: {}", ex.getMessage());
@@ -147,6 +166,10 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(404)
                     .body(new ErrorResponse("We couldn't find that. It may have been removed.",
                             404, LocalDateTime.now()));
+        }
+        if (ex.getMessage() != null && SAY_IT_AS_THROWN.stream().anyMatch(ex.getMessage()::startsWith)) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(ex.getMessage(), 400, LocalDateTime.now()));
         }
         String safe = SAFE_MESSAGES.entrySet().stream()
                 .filter(e -> ex.getMessage() != null && ex.getMessage().startsWith(e.getKey()))
