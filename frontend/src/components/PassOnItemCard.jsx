@@ -1,3 +1,4 @@
+import { NO_CAPTURE } from '../lib/analytics';
 import { AUDIENCES, LETTERS } from './passOnLocks';
 
 /**
@@ -18,7 +19,9 @@ export default function PassOnItemCard({ item, onChange, onRemove }) {
   return (
     <article style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-        <h3 style={{
+        {/* Her words, hidden from session replay. The chips and buttons around them are not
+            marked, so a recording still shows how she moved through the page. */}
+        <h3 className={NO_CAPTURE} style={{
           fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.02em',
           fontSize: 'var(--text-lg)', color: 'var(--ink)', margin: 0,
         }}>
@@ -29,7 +32,7 @@ export default function PassOnItemCard({ item, onChange, onRemove }) {
           : audience && <span style={quietChip}>{audience.title}</span>}
       </div>
 
-      <p style={{
+      <p className={NO_CAPTURE} style={{
         fontSize: '17px', color: 'var(--ink-slate)', lineHeight: 1.65,
         whiteSpace: 'pre-wrap', margin: '12px 0 0',
       }}>

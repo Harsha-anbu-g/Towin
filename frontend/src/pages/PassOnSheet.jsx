@@ -4,6 +4,7 @@ import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
+import { NO_CAPTURE } from '../lib/analytics';
 import { SHEET, onDayInFull } from '../components/passOnLocks';
 import { buildSheet, sheetAsText, sheetFileName } from '../components/passOnSheet';
 
@@ -128,8 +129,13 @@ export default function PassOnSheet() {
             <h2 style={previewHeading}>{SHEET.previewHeading}</h2>
 
             {/* The copy itself, drawn from the same structure the file is written from. A line
-                that appears here appears there; neither can gain a line the other lacks. */}
-            <article style={paper} aria-label={sheet.title}>
+                that appears here appears there; neither can gain a line the other lacks.
+
+                The whole document is marked no-capture rather than line by line: the names of
+                what is in the box are the burglary list the encryption exists to prevent, and
+                the save button above is outside it, so a recording still shows whether she
+                found the one action on the page. */}
+            <article className={NO_CAPTURE} style={paper} aria-label={sheet.title}>
               <h3 style={sheetTitle}>{sheet.title}</h3>
               <p style={madeOn}>{sheet.madeOn}</p>
 

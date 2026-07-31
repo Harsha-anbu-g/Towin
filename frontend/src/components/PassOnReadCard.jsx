@@ -1,3 +1,4 @@
+import { NO_CAPTURE } from '../lib/analytics';
 import { FROM_PAGE, REPORT_STORY } from './passOnLocks';
 
 /**
@@ -29,7 +30,9 @@ export default function PassOnReadCard({
         display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
         gap: '12px', flexWrap: 'wrap',
       }}>
-        <h2 style={{
+        {/* Somebody else's words, hidden from session replay for the same reason as on the
+            owner's card: a reader is still reading a letter written to them. */}
+        <h2 className={NO_CAPTURE} style={{
           fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.02em',
           fontSize: 'var(--text-lg)', color: 'var(--ink)', margin: 0,
         }}>
@@ -38,7 +41,7 @@ export default function PassOnReadCard({
         {isLetter && <span style={letterChip}>{FROM_PAGE.letterChip}</span>}
       </div>
 
-      <p style={{
+      <p className={NO_CAPTURE} style={{
         fontSize: '17px', color: 'var(--ink-slate)', lineHeight: 1.65,
         whiteSpace: 'pre-wrap', margin: '12px 0 0',
       }}>

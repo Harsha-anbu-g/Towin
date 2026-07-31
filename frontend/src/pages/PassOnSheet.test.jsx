@@ -12,6 +12,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
+import { NO_CAPTURE } from '../lib/analytics'
 import PassOnSheet from './PassOnSheet'
 
 vi.mock('../api/axios', () => ({
@@ -204,5 +205,21 @@ describe('the saved one-page copy', () => {
 
     expect(screen.queryByRole('button', { name: /print/i })).not.toBeInTheDocument()
     expect(screen.queryByText(/print/i)).not.toBeInTheDocument()
+  })
+
+  // The names of what is in the box are the burglary list the encryption exists to prevent —
+  // "Where the money is", under a named woman at a known address. Session replay would hold
+  // that page as a video on a third-party service, so the whole document is marked no-capture.
+  it('keeps the document out of the session recording', async () => {
+    mockSheet()
+    renderPage()
+
+    const document_ = await screen.findByLabelText('What Margaret passes on')
+    expect(document_.closest(`.${NO_CAPTURE}`)).not.toBeNull()
+
+    // The one action on the page is not part of the document and stays visible: whether she
+    // finds the button that saves her copy is exactly what replay is for.
+    expect(screen.getByRole('button', { name: 'Save this to my computer' })
+      .closest(`.${NO_CAPTURE}`)).toBeNull()
   })
 })
