@@ -209,9 +209,19 @@ export const SETUP = {
       'Your Sealed box is kept shut by your password, and this account signs in with Google. '
       + 'Please set a password first, then come back.',
     saveHeading: 'Keep a copy somewhere else',
+    /**
+     * The download, and only the download.
+     *
+     * The design copy also offered "or send it to yourself in an email". There is no such
+     * path anywhere in this feature — no mailto, no send-to-self, nothing that puts the sheet
+     * in a mailbox — so the offer came off rather than the wording being kept. The sentence
+     * that matters is the last one, and it is the reason this row exists at all: an app that
+     * holds the only copy of where somebody's money is has not solved the problem it set out
+     * to solve.
+     */
     save:
-      'Save your one-page copy, or send it to yourself in an email, and keep it wherever your '
-      + 'family would think to look. Do not let this app be your only copy.',
+      'Save your one-page copy to your computer, and keep it wherever your family would think '
+      + 'to look. Do not let this app be your only copy.',
     failed: 'We could not finish that. Please try again.',
   },
 
@@ -345,7 +355,13 @@ export const SEALED_ITEMS = {
  */
 export const FROZEN = {
   prefix: 'You changed your password recently.',
-  tellUs: (who, email) => `Write to ${who} at ${email}.`,
+  /**
+   * @param email the configured release address, from the server. When there is none she is
+   *   told that plainly — see `RELEASE_CONTACT` for why an invented address is worse than
+   *   none at all. Written as a function so it is read at call time, which is what lets it
+   *   sit above the constants it uses.
+   */
+  tellUs: email => (email ? writeToUs(email) : RELEASE_CONTACT.notSetYet),
 };
 
 /** Taking something out of the box cannot be undone by anybody, so it is asked for plainly. */
@@ -359,17 +375,42 @@ export const TAKE_OUT_OF_BOX = {
 /**
  * Who a family writes to when the day comes.
  *
- * **This is a launch gate, and it is not met yet.** The spec requires a named human and a real
- * contact address with a stated turnaround before any elder sees this page; naming one is Task
- * 16's job and the owner's decision. Until then this is the same placeholder the Terms page
- * already publishes, and its `.example` domain is reserved by RFC 2606 precisely so it can
- * never be mistaken for a live mailbox. Replace both values here — there is one copy in the
- * product and this is it.
+ * **The address is not here, and it must never be put here.** It is deployment configuration —
+ * `SEALED_BOX_RELEASE_CONTACT_EMAIL` on the server — and it arrives with the sheet and the
+ * setup state. When it is unset, the answer is `notSetYet`, said out loud.
+ *
+ * The reason is the page it is printed on. This address goes onto the one-page copy an elder
+ * keeps with her will, read years later by somebody in the week after a death, and it is the
+ * only route they have into the release procedure. A plausible-looking mailbox that cannot
+ * receive mail is worse than an admission, not better: it looks real, so they write to it,
+ * and nothing comes back and they never find out why. "We have not set one yet" is at least
+ * something a family can act on.
+ *
+ * **This is still a launch gate.** The spec requires a named human and a real address with a
+ * stated turnaround before any elder sees this page. Setting the variable is the whole of it.
  */
 export const RELEASE_CONTACT = {
   who: 'Towinly',
-  email: 'support@towinly.example',
+  /** Said in place of an address, never beside one. */
+  notSetYet: 'Towinly has not set an address to write to yet.',
 };
+
+/**
+ * The one sentence that carries the address, so her own screen and the copy her family keeps
+ * can never spell it differently.
+ */
+const writeToUs = email => `Write to ${RELEASE_CONTACT.who} at ${email}.`;
+
+/**
+ * What the saved copy says instead, when there is no address.
+ *
+ * It adds the one thing a family holding the page cannot work out for themselves: the page
+ * will carry the address once there is one, so it is worth saving again. On her own screen
+ * that sentence would be noise — she is looking at a live page — so only the sheet says it.
+ */
+const NO_ADDRESS_ON_THE_SHEET =
+  `${RELEASE_CONTACT.notSetYet} Save a new copy of this page from time to time, and the address `
+  + 'will be on it once it is set.';
 
 /**
  * The saved copy — one page she takes out of the app and keeps somewhere her family would
@@ -428,7 +469,10 @@ export const SHEET = {
 
   howToAsk: {
     heading: 'How your family asks for it to be opened',
-    writeTo: (who, email) => `Write to ${who} at ${email}.`,
+    /** @param email the configured address, or nothing when this deployment has not set one. */
+    writeTo: email => (email ? writeToUs(email) : NO_ADDRESS_ON_THE_SHEET),
+    /** The same sentence as a value, so the page and its tests can name what a family reads. */
+    noAddressYet: NO_ADDRESS_ON_THE_SHEET,
     askedFor: 'They will be asked for:',
     /**
      * The manual release procedure, said to a family rather than to an operator. It is written

@@ -22,11 +22,15 @@ import { SEALED_ITEMS } from './passOnLocks';
  * Props:
  *   items    — [{ id, label, kindHint }] as the server's list route returned them, names only
  *   saving   — true while a save is in flight
+ *   releaseContactEmail — passed straight down to the cards, which need it only for the
+ *                         refusal after a password change
  *   onAdd({ label, body, kindHint }) → Promise, resolving when it is saved
  *   onRemove(item)
  *   onReveal(item, password) → Promise<{ label, body }>
  */
-export default function SealedItems({ items, saving, onAdd, onRemove, onReveal }) {
+export default function SealedItems({
+  items, saving, releaseContactEmail, onAdd, onRemove, onReveal,
+}) {
   const [adding, setAdding] = useState(false);
   const inside = items || [];
 
@@ -54,6 +58,7 @@ export default function SealedItems({ items, saving, onAdd, onRemove, onReveal }
         <SealedItemCard
           key={item.id}
           item={item}
+          releaseContactEmail={releaseContactEmail}
           onRemove={onRemove}
           onReveal={onReveal}
         />

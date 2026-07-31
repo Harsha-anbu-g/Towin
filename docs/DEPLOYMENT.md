@@ -99,6 +99,7 @@ ADMIN_EMAIL=            # see "Secrets that switch a feature on or off" below
 ADMIN_PASSWORD=
 GROQ_API_KEY=
 SEALED_BOX_MASTER_KEY=
+SEALED_BOX_RELEASE_CONTACT_EMAIL=
 ```
 
 CORS lists three explicit origins: the custom domain, its apex, and the old `towin.vercel.app` (kept alive so links on already-submitted resumes still work). There is no preview-deployment wildcard.
@@ -116,6 +117,7 @@ goes looking for the feature**.
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | No admin account is created at boot (`AdminSeeder`) | Set new ones and restart; the account is re-seeded |
 | `GROQ_API_KEY` | The Ask-AI assistant is off and says so | Get another key from Groq. Nothing is lost |
 | `SEALED_BOX_MASTER_KEY` | Every Sealed box endpoint refuses with a plain "unavailable" message, and **no new box can be armed** | **Every existing Sealed box is destroyed. Permanently. Read the next section before you touch this variable.** |
+| `SEALED_BOX_RELEASE_CONTACT_EMAIL` | The saved one-page copy says plainly that no address has been set yet, instead of telling a family where to write | Set it again and restart. Copies already saved by elders still carry the old address, so treat a change as a forwarding problem, not a config change |
 
 #### `SEALED_BOX_MASTER_KEY` — the one secret that cannot be regenerated
 
@@ -158,6 +160,29 @@ answers when the first is unreachable.
 re-encrypting bodies: a new key gets the next version, new items are wrapped under it, and old rows
 are re-wrapped in the background. **That background re-wrap is not built.** Until it is, replacing
 the key is not a rotation, it is a deletion. Do not change the value of this variable.
+
+#### `SEALED_BOX_RELEASE_CONTACT_EMAIL` — the address printed on a page a family keeps
+
+Where a family writes when the day comes. It is the only route they have into the manual release
+procedure in [`docs/operations/sealed-box-release.md`](operations/sealed-box-release.md), and it is
+**printed on the one-page copy an elder saves and keeps with her will** — read years later, by
+somebody in the week after a death.
+
+- **Format**: one email address, on a domain that receives mail, going to a mailbox somebody reads.
+  Not a no-reply. Not a form. The spec's launch gate is a named human with a stated turnaround.
+- **Read by exactly one class**, `ReleaseContact`, and sent to the browser on `/api/passon/sheet`
+  and `/api/passon/setup`. It is not a secret — it is meant to be published — so it is logged at
+  boot: look for `Sealed box release contact is set to …`.
+- **Blank is a supported state and is said out loud.** With nothing set, the saved copy reads
+  *"Towinly has not set an address to write to yet."* and the boot log carries
+  `Sealed box release contact is NOT SET.` There is deliberately no default: an invented address on
+  the real domain would look real to a grieving family, take their letter, and give them no way of
+  finding out it went nowhere. An admission is the only honest answer, and it is one they can act
+  on.
+- **Changing it does not reach copies already saved.** Every sheet an elder has downloaded carries
+  the address that was configured on the day she saved it. Keep any address that has ever shipped
+  forwarding to the new one, indefinitely — for this variable a change is a forwarding problem, not
+  a config change.
 
 ### One replica, and only one
 

@@ -12,6 +12,7 @@ import com.towinly.passon.security.SealedRevealRateLimiter;
 import com.towinly.passon.service.KeyholderService;
 import com.towinly.passon.service.PassOnAlertService;
 import com.towinly.passon.service.PassOnService;
+import com.towinly.passon.service.ReleaseContact;
 import com.towinly.passon.service.SealedBoxService;
 import com.towinly.passon.service.SealedCryptoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,6 +88,9 @@ class PassOnControllerSealedTest {
     private static final String LABEL = "Where the house papers are";
     private static final String BODY = "In the brown envelope, second drawer of the writing desk.";
 
+    /** What a deployment that has done its homework has configured. */
+    private static final String RELEASE_CONTACT_EMAIL = "sealedbox@example.org";
+
     @Mock SealedItemRepository sealedItems;
     @Mock PassOnSettingsRepository settings;
     @Mock PassOnOpenRepository opens;
@@ -111,7 +115,8 @@ class PassOnControllerSealedTest {
         clock = Clock.fixed(TODAY, ZoneOffset.UTC);
         SealedBoxService sealedBox = new SealedBoxService(sealedItems, settings, opens, users,
                 new SealedCryptoService(TEST_MASTER_KEY), passwordEncoder,
-                new SealedRevealRateLimiter(clock), alerts, keyholders, clock);
+                new SealedRevealRateLimiter(clock), alerts, keyholders,
+                new ReleaseContact(RELEASE_CONTACT_EMAIL), clock);
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new PassOnController(passOnService, keyholders, sealedBox))

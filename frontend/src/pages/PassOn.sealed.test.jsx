@@ -33,6 +33,9 @@ import api from '../api/axios'
 
 const SARAH = 'aaaaaaaa-0000-0000-0000-00000000a001'
 
+/** What a deployment that has set the release contact sends down with the setup state. */
+const RELEASE_CONTACT_EMAIL = 'sealedbox@example.org'
+
 // A box that was set up long enough ago that the seven-day undo card is gone, so the
 // item half is the first thing on the tab.
 const settled = {
@@ -46,6 +49,9 @@ const settled = {
   hasPassword: true,
   notAWillAck: 'I understand this is not a will.',
   keyTruthAck: 'I understand that Towinly holds the key.',
+  // Deployment configuration, from SEALED_BOX_RELEASE_CONTACT_EMAIL. Null on a deployment
+  // that has not set one, and the screen says so — see the pair of tests on the freeze.
+  releaseContactEmail: RELEASE_CONTACT_EMAIL,
 }
 
 const links = {
@@ -294,7 +300,30 @@ describe('opening one thing', () => {
 
     const alert = await within(card).findByRole('alert')
     expect(alert).toHaveTextContent(frozen)
-    expect(alert).toHaveTextContent('Write to Towinly at support@towinly.example.')
+    expect(alert).toHaveTextContent(`Write to Towinly at ${RELEASE_CONTACT_EMAIL}.`)
+  })
+
+  // The address is deployment configuration and there is no fallback. Sending her to a
+  // plausible-looking mailbox that cannot receive mail would be worse than telling her the
+  // truth: she would write to it, hear nothing, and have no way of knowing why — on the one
+  // message in this feature that means somebody may be going through her account.
+  it('admits there is no address to write to rather than inventing one', async () => {
+    const user = userEvent.setup()
+    const frozen = 'You changed your password recently. For your safety your Sealed box stays '
+      + 'shut until 12 August. If that was not you, tell us straight away.'
+    mockGet(THREE_THINGS, { ...settled, releaseContactEmail: null })
+    api.post.mockImplementation(() => refusal(frozen))
+    await openSealedTab()
+
+    const card = await waitFor(() => cardFor('Where the money is'))
+    await user.click(within(card).getByRole('button', { name: 'See this' }))
+    await user.type(within(card).getByLabelText('Your password'), 'rosebush22')
+    await user.click(within(card).getByRole('button', { name: 'Show it to me' }))
+
+    const alert = await within(card).findByRole('alert')
+    expect(alert).toHaveTextContent(frozen)
+    expect(alert).toHaveTextContent('Towinly has not set an address to write to yet.')
+    expect(alert.textContent).not.toMatch(/@/)
   })
 
   it('says something plain when the server says nothing at all', async () => {

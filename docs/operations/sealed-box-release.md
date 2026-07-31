@@ -19,27 +19,31 @@ the ones that go wrong under pressure from a grieving family.
 | | |
 |---|---|
 | **Name of the person who answers** | **UNSET** |
-| **Address a family writes to** | **UNSET** — the product currently ships `support@towinly.example`, a reserved domain that can never receive mail ([RFC 2606][rfc]) |
+| **Address a family writes to** | **UNSET** — `SEALED_BOX_RELEASE_CONTACT_EMAIL` is not set in Railway, so the saved copy tells the family plainly that there is no address yet. It ships no placeholder: an invented mailbox would look real and take their letter |
 | **First-reply turnaround** | **UNSET** |
 | **Second person, for when the first is unreachable** | **UNSET** |
-
-[rfc]: https://www.rfc-editor.org/rfc/rfc2606
 
 Until those four boxes are filled, this feature must not go in front of a real elder. An elder is
 being asked to write down where her money is, on the promise that a person will help her family
 read it back. A promise with no name attached to it is not a promise.
 
-There is exactly one copy of the contact details in the product:
+There is exactly one place the address is set, and it is not in the code:
 
 ```
-frontend/src/components/passOnLocks.js  →  RELEASE_CONTACT = { who, email }
+Railway → backend → Variables → SEALED_BOX_RELEASE_CONTACT_EMAIL
 ```
 
-It is printed on the elder's saved one-page copy — the page she keeps outside the app — so changing
-it there changes it everywhere at once. **Change it in that one place, then re-read
-`SHEET.howToAsk` in the same file**: the saved copy tells a family what they will be asked for, and
-it currently states no turnaround at all. When a turnaround is agreed, it has to be added there too,
-because the saved copy is the only thing the family will still have if Towinly is gone.
+It is read by `ReleaseContact` on the server, sent down with the sheet, and printed on the elder's
+saved one-page copy — the page she keeps outside the app. Setting it there sets it everywhere at
+once. Leaving it blank is a supported state: every screen then says *"Towinly has not set an address
+to write to yet."* rather than an address that cannot answer. See
+[`docs/DEPLOYMENT.md`](../DEPLOYMENT.md) for the full note, including why a change is a forwarding
+problem — copies already saved by elders carry the address that was set on the day they saved them.
+
+**Then re-read `SHEET.howToAsk` in `frontend/src/components/passOnLocks.js`**: the saved copy tells
+a family what they will be asked for, and it states no turnaround at all. When a turnaround is
+agreed, it has to be added there, because the saved copy is the only thing the family will still
+have if Towinly is gone.
 
 A personal mailbox is a poor choice for this and the spec already flags one in use elsewhere
 (residual risk 6). Whatever address is chosen has to outlive one person's phone.

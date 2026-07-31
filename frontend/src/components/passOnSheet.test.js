@@ -15,6 +15,9 @@ import { RELEASE_CONTACT, SHEET } from './passOnLocks'
 
 const MADE_ON = '2026-08-05T10:00:00'
 
+/** What a deployment that has set SEALED_BOX_RELEASE_CONTACT_EMAIL sends down. */
+const RELEASE_EMAIL = 'sealedbox@example.org'
+
 const sheetFor = (over = {}) => buildSheet({
   ownerName: 'Margaret',
   preparedAt: MADE_ON,
@@ -22,6 +25,7 @@ const sheetFor = (over = {}) => buildSheet({
   keyholders: [],
   approvalsNeeded: null,
   keyholderTarget: null,
+  releaseContactEmail: RELEASE_EMAIL,
   ...over,
 })
 
@@ -83,11 +87,35 @@ describe('the saved one-page copy', () => {
   it('says who to write to and what they will be asked for', () => {
     const text = textFor({ items, keyholders, approvalsNeeded: 2, keyholderTarget: 3 })
 
-    expect(text).toContain(`Write to ${RELEASE_CONTACT.who} at ${RELEASE_CONTACT.email}.`)
+    expect(text).toContain(`Write to ${RELEASE_CONTACT.who} at ${RELEASE_EMAIL}.`)
     expect(text).toContain('a death certificate, which a person here reads and writes down')
     expect(text).toContain('word from each of the people above, one at a time, that they agree')
     expect(text).toContain('then a wait of thirty days, while Towinly keeps trying to reach Margaret')
     expect(text).toContain('there is no button anywhere that opens the box')
+  })
+
+  // The address is deployment configuration, and a deployment that has not set one must not
+  // have an address invented for it here. This file is kept with a will and read by somebody
+  // in the week after a death: a plausible-looking mailbox that cannot receive mail takes
+  // their letter and gives them no way of finding out it went nowhere.
+  it('says plainly that there is no address yet, rather than printing one that does not work', () => {
+    const text = textFor({
+      items, keyholders, approvalsNeeded: 2, keyholderTarget: 3, releaseContactEmail: null,
+    })
+
+    expect(text).toContain(RELEASE_CONTACT.notSetYet)
+    expect(text).toContain(SHEET.howToAsk.noAddressYet)
+    expect(text).not.toContain('Write to')
+    // Nothing anywhere in the file that a grieving family could mistake for an address.
+    expect(text).not.toMatch(/@/)
+  })
+
+  // An older server, or a payload that lost the field on the way. Same answer: no address.
+  it('says the same thing when the payload has no address field at all', () => {
+    const text = sheetAsText(buildSheet({ ownerName: 'Margaret', preparedAt: MADE_ON }))
+
+    expect(text).toContain(RELEASE_CONTACT.notSetYet)
+    expect(text).not.toMatch(/@/)
   })
 
   it('ends with "This is not a will."', () => {

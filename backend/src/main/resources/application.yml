@@ -156,9 +156,16 @@ springdoc:
 # deliberate — rows written without a working key could never be decrypted by anyone.
 # Losing this key destroys every existing box irrecoverably, so it needs a written
 # recovery procedure and a second holder before launch.
+#
+# SEALED_BOX_RELEASE_CONTACT_EMAIL is the address a family writes to when the day comes.
+# It is PRINTED on the one-page copy an elder saves and keeps with her will, so it has to
+# be a mailbox somebody actually reads. Blank means every screen says plainly that no
+# address has been set yet. There is no default on purpose: a plausible-looking address
+# that cannot receive mail swallows a grieving family's letter in silence.
 passon:
   sealed:
     master-key: ${SEALED_BOX_MASTER_KEY:}
+    release-contact-email: ${SEALED_BOX_RELEASE_CONTACT_EMAIL:}
 
 server:
   port: ${PORT:8080}

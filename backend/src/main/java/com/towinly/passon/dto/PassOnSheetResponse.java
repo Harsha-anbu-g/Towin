@@ -23,6 +23,12 @@ import java.util.List;
  *                    holding two of them.
  * @param lastSavedAt when she last took a copy out of the app, or null if she never has —
  *                    which is the honest answer to "do not let this app be your only copy".
+ * @param releaseContactEmail the address a family writes to when the day comes, from
+ *                    {@code SEALED_BOX_RELEASE_CONTACT_EMAIL}, or <b>null when none is set</b>.
+ *                    Null is a real answer the page renders in plain words. It must never be
+ *                    filled in with a placeholder here or on the screen: this address is
+ *                    printed on a page a family keeps with the will, and one that looks real
+ *                    but cannot receive mail swallows their letter in silence.
  */
 public record PassOnSheetResponse(
 
@@ -43,5 +49,8 @@ public record PassOnSheetResponse(
 
         List<KeyholderResponse> keyholders,
 
-        LocalDateTime lastSavedAt
+        LocalDateTime lastSavedAt,
+
+        /** Who the family writes to, or null when no address has been set. Never a placeholder. */
+        String releaseContactEmail
 ) {}

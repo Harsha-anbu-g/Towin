@@ -366,6 +366,7 @@ export default function PassOn() {
                 <SealedItems
                   items={sealedItems}
                   saving={saving}
+                  releaseContactEmail={setup?.releaseContactEmail}
                   onAdd={addSealed}
                   onRemove={setPendingSealedRemove}
                   onReveal={openSealed}

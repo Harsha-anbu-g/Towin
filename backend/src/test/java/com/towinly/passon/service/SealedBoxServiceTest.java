@@ -7,6 +7,7 @@ import com.towinly.common.exception.RateLimitException;
 import com.towinly.common.repository.UserRepository;
 import com.towinly.passon.dto.PassOnArmRequest;
 import com.towinly.passon.dto.PassOnSetupResponse;
+import com.towinly.passon.dto.PassOnSheetResponse;
 import com.towinly.passon.dto.SealedItemRequest;
 import com.towinly.passon.dto.SealedItemSummary;
 import com.towinly.passon.dto.SealedRevealResponse;
@@ -79,6 +80,9 @@ class SealedBoxServiceTest {
     private static final String PASSWORD = "the-elders-own-password";
     private static final String HASH = "$2a$10$notarealbcrypthashbutlongenough";
 
+    /** What a deployment that has done its homework has configured. */
+    private static final String RELEASE_CONTACT_EMAIL = "sealedbox@example.org";
+
     private static final String LABEL = "Where the house papers are";
     private static final String BODY = "In the brown envelope, second drawer of the writing desk.";
 
@@ -108,7 +112,8 @@ class SealedBoxServiceTest {
         clock = Clock.fixed(TODAY, ZoneOffset.UTC);
         revealLimiter = new SealedRevealRateLimiter(clock);
         service = new SealedBoxService(sealedItems, settings, opens, users, crypto,
-                passwordEncoder, revealLimiter, alerts, keyholders, clock);
+                passwordEncoder, revealLimiter, alerts, keyholders,
+                new ReleaseContact(RELEASE_CONTACT_EMAIL), clock);
 
         margaret = User.builder()
                 .id(UUID.randomUUID())
@@ -465,6 +470,41 @@ class SealedBoxServiceTest {
         assertThat(setup.coolingOffUntil()).isEqualTo(LocalDateTime.of(2026, 8, 8, 9, 0));
         assertThat(setup.approvalsNeeded()).isEqualTo((short) 2);
         assertThat(setup.keyholderTarget()).isEqualTo((short) 3);
+    }
+
+    // ── the address a family writes to ──
+    //
+    // It is printed on the copy she keeps with her will, so the only two answers this may ever
+    // give are the configured address and nothing. A placeholder that looks real would send a
+    // grieving family's letter into a mailbox nobody reads, and they would never find out.
+
+    @Test
+    void theSavedCopyCarriesTheAddressAFamilyWritesTo() {
+        expectAnEmptyBox();
+
+        PassOnSheetResponse sheet = service.sheet(margaret.getId());
+
+        assertThat(sheet.releaseContactEmail()).isEqualTo(RELEASE_CONTACT_EMAIL);
+    }
+
+    @Test
+    void anUnsetAddressArrivesAsNothingAtAllRatherThanAPlaceholder() {
+        SealedBoxService unconfigured = new SealedBoxService(sealedItems, settings, opens, users,
+                crypto, passwordEncoder, revealLimiter, alerts, keyholders,
+                new ReleaseContact(""), clock);
+        expectAnEmptyBox();
+
+        assertThat(unconfigured.sheet(margaret.getId()).releaseContactEmail()).isNull();
+        // The same answer on her own screen, where it finishes "tell us straight away".
+        assertThat(unconfigured.setup(margaret.getId()).releaseContactEmail()).isNull();
+    }
+
+    /** A box that has been set up with nothing in it — enough for the sheet to be built. */
+    private void expectAnEmptyBox() {
+        when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
+        when(sealedItems.findByOwnerIdOrderBySortOrderAscCreatedAtAsc(margaret.getId()))
+                .thenReturn(List.of());
+        when(keyholders.mine(margaret.getId())).thenReturn(List.of());
     }
 
     // ── the seven days, and the one tap out of them ──

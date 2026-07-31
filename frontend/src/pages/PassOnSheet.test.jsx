@@ -30,6 +30,9 @@ import api from '../api/axios'
 
 const THE_SECRET = 'Account 4471 at the credit union on Rue Principale'
 
+/** What a deployment that has set SEALED_BOX_RELEASE_CONTACT_EMAIL sends down. */
+const RELEASE_CONTACT_EMAIL = 'sealedbox@example.org'
+
 const payload = (over = {}) => ({
   ownerName: 'Margaret',
   preparedAt: '2026-08-05T10:00:00',
@@ -46,6 +49,7 @@ const payload = (over = {}) => ({
     { id: 'k2', personName: 'David', status: 'INVITED', respondedAt: null },
   ],
   lastSavedAt: null,
+  releaseContactEmail: RELEASE_CONTACT_EMAIL,
   ...over,
 })
 
@@ -115,10 +119,22 @@ describe('the saved one-page copy', () => {
     mockSheet()
     renderPage()
 
-    expect(await screen.findByText(/Write to Towinly at support@towinly.example\./))
+    expect(await screen.findByText(`Write to Towinly at ${RELEASE_CONTACT_EMAIL}.`))
       .toBeInTheDocument()
     expect(screen.getByText(/a death certificate/)).toBeInTheDocument()
     expect(screen.getByText(/no button anywhere that opens the box/)).toBeInTheDocument()
+  })
+
+  // The address is deployment configuration and there is no fallback anywhere. A page that
+  // printed a plausible-looking mailbox instead would be handed to a family and used, and
+  // their letter would go nowhere with nothing to tell them so.
+  it('shows plainly that no address has been set yet, rather than a made-up one', async () => {
+    mockSheet(payload({ releaseContactEmail: null }))
+    renderPage()
+
+    expect(await screen.findByText(/Towinly has not set an address to write to yet\./))
+      .toBeInTheDocument()
+    expect(screen.queryByText(/Write to Towinly/)).not.toBeInTheDocument()
   })
 
   it('saves a file carrying the names and never the contents', async () => {

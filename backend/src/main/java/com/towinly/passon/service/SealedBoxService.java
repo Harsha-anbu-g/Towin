@@ -169,6 +169,8 @@ public class SealedBoxService {
     private final PassOnAlertService alerts;
     /** Setup asks everybody at the end, and undoing takes every key back. */
     private final KeyholderService keyholders;
+    /** Where a family writes when the day comes. Null until a deployment sets it. */
+    private final ReleaseContact releaseContact;
     private final Clock clock;
 
     // ── reading ──
@@ -267,7 +269,8 @@ public class SealedBoxService {
                 row == null ? null : row.getKeyholderTarget(),
                 list(ownerId),
                 keyholders.mine(ownerId),
-                row == null ? null : row.getSheetSavedAt());
+                row == null ? null : row.getSheetSavedAt(),
+                releaseContact.email());
     }
 
     /**
@@ -426,7 +429,8 @@ public class SealedBoxService {
                 owner.isEmailVerified(),
                 owner.getPasswordHash() != null,
                 NOT_A_WILL_ACK,
-                KEY_TRUTH_ACK);
+                KEY_TRUTH_ACK,
+                releaseContact.email());
     }
 
     /**

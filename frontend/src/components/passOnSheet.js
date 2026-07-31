@@ -1,5 +1,5 @@
 import {
-  RELEASE_CONTACT, SEALED_KINDS, SETUP, SHEET, keyholderLine, onDayInFull,
+  SEALED_KINDS, SETUP, SHEET, keyholderLine, onDayInFull,
 } from './passOnLocks';
 
 /**
@@ -41,6 +41,7 @@ export function buildSheet({
   keyholders = [],
   approvalsNeeded,
   keyholderTarget,
+  releaseContactEmail,
 }) {
   const name = ownerName || '';
 
@@ -67,7 +68,11 @@ export function buildSheet({
       },
       {
         heading: SHEET.howToAsk.heading,
-        blurb: SHEET.howToAsk.writeTo(RELEASE_CONTACT.who, RELEASE_CONTACT.email),
+        // The address is the server's, or there is none and the page says so. Nothing here
+        // may substitute a placeholder: this line is the only route a family has into the
+        // release procedure, and an address that cannot receive mail loses their letter in
+        // silence on the worst week of their lives.
+        blurb: SHEET.howToAsk.writeTo(releaseContactEmail),
         listLead: SHEET.howToAsk.askedFor,
         lines: SHEET.howToAsk.steps(name),
         note: SHEET.howToAsk.thenWhat,

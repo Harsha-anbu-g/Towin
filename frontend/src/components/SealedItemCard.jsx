@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SmoothInput from './SmoothInput';
 import { NO_CAPTURE } from '../lib/analytics';
-import { FROZEN, RELEASE_CONTACT, SEALED_ITEMS, SEALED_KINDS } from './passOnLocks';
+import { FROZEN, SEALED_ITEMS, SEALED_KINDS } from './passOnLocks';
 
 /**
  * One thing in her Sealed box, as it sits on her own screen.
@@ -21,10 +21,13 @@ import { FROZEN, RELEASE_CONTACT, SEALED_ITEMS, SEALED_KINDS } from './passOnLoc
  *
  * Props:
  *   item      — { id, label, kindHint }
+ *   releaseContactEmail — where to write, from the server. Nothing when this deployment has
+ *                         not set one, and then she is told that plainly rather than sent to
+ *                         an address that cannot answer her.
  *   onRemove(item)
  *   onReveal(item, password) → Promise<{ label, body }>, rejecting with the server's refusal
  */
-export default function SealedItemCard({ item, onRemove, onReveal }) {
+export default function SealedItemCard({ item, releaseContactEmail, onRemove, onReveal }) {
   const [asking, setAsking] = useState(false);
   const [password, setPassword] = useState('');
   const [opening, setOpening] = useState(false);
@@ -99,7 +102,7 @@ export default function SealedItemCard({ item, onRemove, onReveal }) {
               {problem}
               {problem.startsWith(FROZEN.prefix) && (
                 <span style={{ display: 'block', marginTop: '6px' }}>
-                  {FROZEN.tellUs(RELEASE_CONTACT.who, RELEASE_CONTACT.email)}
+                  {FROZEN.tellUs(releaseContactEmail)}
                 </span>
               )}
             </p>

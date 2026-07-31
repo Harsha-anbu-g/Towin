@@ -45,5 +45,15 @@ public record PassOnSetupResponse(
 
         String notAWillAck,
 
-        String keyTruthAck
+        String keyTruthAck,
+
+        /**
+         * The address a family writes to when the day comes, or null when none is set.
+         *
+         * <p>Here as well as on the sheet because the refusal after a password change carries
+         * "if that was not you, tell us straight away", and the screen has to finish that
+         * sentence with somewhere to go. Null is a real answer and is said in plain words —
+         * never filled in with a placeholder.
+         */
+        String releaseContactEmail
 ) {}

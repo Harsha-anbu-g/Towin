@@ -16,6 +16,7 @@ import com.towinly.passon.security.SealedRevealRateLimiter;
 import com.towinly.passon.service.KeyholderService;
 import com.towinly.passon.service.PassOnAlertService;
 import com.towinly.passon.service.PassOnService;
+import com.towinly.passon.service.ReleaseContact;
 import com.towinly.passon.service.SealedBoxService;
 import com.towinly.passon.service.SealedCryptoService;
 import com.towinly.profile.repository.ElderProfileRepository;
@@ -74,6 +75,9 @@ class PassOnControllerSetupTest {
     /** 5 August 2026. Seven days on is 12 August, the same day the spec uses. */
     private static final Instant TODAY = Instant.parse("2026-08-05T10:00:00Z");
 
+    /** What a deployment that has done its homework has configured. */
+    private static final String RELEASE_CONTACT_EMAIL = "sealedbox@example.org";
+
     @Mock SealedItemRepository sealedItems;
     @Mock PassOnSettingsRepository settings;
     @Mock PassOnOpenRepository opens;
@@ -100,7 +104,8 @@ class PassOnControllerSetupTest {
         KeyholderService keyholders = new KeyholderService(keyholderRepository, familyLinks,
                 settings, opens, users, elderProfiles, helperProfiles, alerts, clock);
         SealedBoxService sealedBox = new SealedBoxService(sealedItems, settings, opens, users,
-                crypto, passwordEncoder, new SealedRevealRateLimiter(clock), alerts, keyholders, clock);
+                crypto, passwordEncoder, new SealedRevealRateLimiter(clock), alerts, keyholders,
+                new ReleaseContact(RELEASE_CONTACT_EMAIL), clock);
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new PassOnController(passOnService, keyholders, sealedBox))

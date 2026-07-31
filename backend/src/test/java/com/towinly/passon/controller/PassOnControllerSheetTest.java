@@ -20,6 +20,7 @@ import com.towinly.passon.security.SealedRevealRateLimiter;
 import com.towinly.passon.service.KeyholderService;
 import com.towinly.passon.service.PassOnAlertService;
 import com.towinly.passon.service.PassOnService;
+import com.towinly.passon.service.ReleaseContact;
 import com.towinly.passon.service.SealedBoxService;
 import com.towinly.passon.service.SealedCryptoService;
 import com.towinly.profile.repository.ElderProfileRepository;
@@ -88,6 +89,9 @@ class PassOnControllerSheetTest {
      */
     private static final String THE_SECRET = "Account 4471 at the credit union on Rue Principale";
 
+    /** What a deployment that has done its homework has configured. */
+    private static final String RELEASE_CONTACT_EMAIL = "sealedbox@example.org";
+
     @Mock SealedItemRepository sealedItems;
     @Mock PassOnSettingsRepository settings;
     @Mock PassOnOpenRepository opens;
@@ -114,7 +118,8 @@ class PassOnControllerSheetTest {
         KeyholderService keyholders = new KeyholderService(keyholderRepository, familyLinks,
                 settings, opens, users, elderProfiles, helperProfiles, alerts, clock);
         SealedBoxService sealedBox = new SealedBoxService(sealedItems, settings, opens, users,
-                crypto, passwordEncoder, new SealedRevealRateLimiter(clock), alerts, keyholders, clock);
+                crypto, passwordEncoder, new SealedRevealRateLimiter(clock), alerts, keyholders,
+                new ReleaseContact(RELEASE_CONTACT_EMAIL), clock);
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new PassOnController(passOnService, keyholders, sealedBox))
@@ -169,6 +174,20 @@ class PassOnControllerSheetTest {
 
         verify(crypto, never()).openLabel(any(), any(), any());
         verify(crypto, never()).open(any(), any(), any());
+    }
+
+    /**
+     * The address is deployment configuration, and it has to survive the whole way out to the
+     * JSON — this is the one line on the saved copy that tells a family where to write, and
+     * a field that quietly failed to serialise would leave the page saying there is no address
+     * on a deployment that has one.
+     */
+    @Test
+    void theSheetCarriesTheAddressAFamilyWritesTo() throws Exception {
+        mockMvc.perform(get("/api/passon/sheet").principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.releaseContactEmail").value(RELEASE_CONTACT_EMAIL));
     }
 
     @Test

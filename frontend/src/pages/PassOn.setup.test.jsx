@@ -202,6 +202,26 @@ describe('setting the Sealed box up', () => {
     expect(screen.queryByRole('button', { name: 'Finish setting this up' })).not.toBeInTheDocument()
   })
 
+  // The save row asks her to keep a copy outside Towinly, and it may only offer what the
+  // product actually does. There is no mailto, no send-to-self and no sheet-email path
+  // anywhere in this feature, so an offer to email it to herself is a promise she would find
+  // out about only when she went looking for a button that was never built — on the screen
+  // where she is deciding whether to trust this with where her money is.
+  it('offers the download and nothing it cannot do, and still says not to rely on the app', async () => {
+    mockGet()
+    await openSealedTab()
+
+    const user = userEvent.setup()
+    await walkToTheLastStep(user)
+
+    expect(screen.getByText('Keep a copy somewhere else')).toBeInTheDocument()
+    expect(screen.getByText(
+      'Save your one-page copy to your computer, and keep it wherever your family would think '
+      + 'to look. Do not let this app be your only copy.',
+    )).toBeInTheDocument()
+    expect(screen.queryByText(/in an email/)).not.toBeInTheDocument()
+  })
+
   it('will not finish until both boxes are ticked', async () => {
     mockGet()
     await openSealedTab()
