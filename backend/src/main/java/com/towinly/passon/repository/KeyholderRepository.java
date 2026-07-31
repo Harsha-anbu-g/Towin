@@ -24,6 +24,10 @@ public interface KeyholderRepository extends JpaRepository<Keyholder, UUID> {
 
     Optional<Keyholder> findByOwnerIdAndKeyholderId(UUID ownerId, UUID keyholderId);
 
+    // The elder acting on one row of her own list. Ownership is part of the query, so
+    // somebody else's row id is a plain not-found and never a read.
+    Optional<Keyholder> findByIdAndOwnerId(UUID id, UUID ownerId);
+
     // GDPR export: both sides of the relationship.
     List<Keyholder> findByOwnerIdOrKeyholderId(UUID ownerId, UUID keyholderId);
 

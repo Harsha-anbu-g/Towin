@@ -63,6 +63,13 @@ public class SealedBoxService {
     /** Seven days: long enough for a password-change mail to be seen and acted on. */
     static final int FREEZE_DAYS = 7;
 
+    /**
+     * The freeze blocks the first week; the family are told about any reveal in the rest of
+     * this month. Whoever holds an elder's mailbox can reset her password and simply wait
+     * seven days, and a silent box after that is a silent theft.
+     */
+    static final int TELL_THE_FAMILY_DAYS = 30;
+
     /** The elder's own week to undo the whole thing, counted from the moment she armed it. */
     static final int COOLING_OFF_DAYS = 7;
 
@@ -100,6 +107,7 @@ public class SealedBoxService {
     private final SealedCryptoService crypto;
     private final PasswordEncoder passwordEncoder;
     private final SealedRevealRateLimiter revealLimiter;
+    private final PassOnAlertService alerts;
     private final Clock clock;
 
     // ── reading ──
@@ -152,6 +160,9 @@ public class SealedBoxService {
 
         OpenContents opened = crypto.open(ownerId, item.getId(), contentsOf(item));
         writeItDown(owner, item.getId(), PassOnOpenKind.OPENED_BY_OWNER, OPENED_NOTE);
+        if (soonAfterACredentialChange(owner)) {
+            alerts.openedSoonAfterPasswordChange(owner);
+        }
 
         return new SealedRevealResponse(item.getId(), item.getKindHint(), opened.label(), opened.body());
     }
@@ -250,6 +261,11 @@ public class SealedBoxService {
         settings.save(existing);
 
         writeItDown(owner, null, PassOnOpenKind.BOX_ARMED, ARMED_NOTE);
+        // Loud on purpose. Nothing here can stop a relative sitting beside her and tapping
+        // through the whole thing; what this does is make sure the rest of the family see it
+        // happen. Taking a Keyholder's key back is the one change that stays quiet — see
+        // KeyholderService.remove.
+        alerts.settingsChanged(owner);
     }
 
     // ── the rules ──
@@ -268,6 +284,18 @@ public class SealedBoxService {
 
         LocalDateTime liftsAt = changedAt.plusDays(FREEZE_DAYS);
         return liftsAt.isAfter(LocalDateTime.now(clock)) ? liftsAt : null;
+    }
+
+    /**
+     * Whether this reveal falls inside the month after a credential change. Days one to
+     * seven never reach here — the freeze refuses them outright — so in practice this covers
+     * days eight to thirty, which is exactly the window somebody who reset her password
+     * would have to wait out.
+     */
+    private boolean soonAfterACredentialChange(User owner) {
+        LocalDateTime changedAt = owner.getCredentialChangedAt();
+        return changedAt != null
+                && changedAt.plusDays(TELL_THE_FAMILY_DAYS).isAfter(LocalDateTime.now(clock));
     }
 
     /**

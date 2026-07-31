@@ -216,6 +216,29 @@ describe('FamilyHome', () => {
     expect(screen.queryByText(/friendships shared with you/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /ask for help for margaret/i })).not.toBeInTheDocument()
   })
+
+  // "What I pass on": being asked to hold a key to an elder's Sealed box. The card has its
+  // own tests; these two are only about it being on this screen, and staying off it when
+  // nobody has asked.
+  it('shows a keyholder request among the other things being asked of me', async () => {
+    const withAsk = (url) => (url === '/passon/keyholders/asked-of-me'
+      ? Promise.resolve({ data: [{
+        id: 'k1', ownerId: 'e1', ownerName: 'Margaret', approvalsNeeded: 2, keyholderCount: 3,
+      }] })
+      : null)
+    const base = api.get.getMockImplementation()
+    api.get.mockImplementation(url => withAsk(url) || base(url))
+
+    renderPage()
+    expect(await screen.findByText('Margaret has asked you to hold a key.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'No thanks' })).toBeInTheDocument()
+  })
+
+  it('says nothing about keyholders when nobody has asked', async () => {
+    renderPage()
+    await screen.findByText('Margaret')
+    expect(screen.queryByText(/hold a key/i)).not.toBeInTheDocument()
+  })
 })
 
 // The reassurance band (2026-07-26): the one-line "is Mum okay" answer the

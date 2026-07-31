@@ -189,6 +189,38 @@ export const REPORT_STORY = {
   failed: 'We could not send that. Please try again.',
 };
 
+/**
+ * Being asked to hold a key, on the family member's own screen.
+ *
+ * The words are the design copy, with two substitutions the app cannot avoid. The copy is
+ * written about a named woman — "Margaret has asked you… after she is gone… her Sealed box" —
+ * and we do not know anybody's gender, so it says they/their, exactly as the rest of the
+ * family screens already do. And the threshold sentence is rebuilt from the elder's real
+ * numbers rather than the example's "two of the three", because a made-up number in a
+ * sentence about somebody's death is the one thing this card must never contain.
+ *
+ * The sentence is left out altogether before she has chosen a threshold. That is a real
+ * state: she can ask people before she picks the number.
+ */
+export const KEYHOLDER_ASK = {
+  heading: name => `${name} has asked you to hold a key.`,
+  body: name =>
+    `One day, after they are gone, you would be one of the people who can ask to open `
+    + `${name}'s Sealed box. You cannot see anything in it now and you never will unless that `
+    + `day comes.`,
+  /** Only when both numbers are real. `agree` is how many must say yes, `of` how many were asked. */
+  threshold: (agree, of) =>
+    `${agree} of the ${of} of you would have to agree, and someone here at Towinly would check first.`,
+  yes: 'Yes, I will do that',
+  no: 'No thanks',
+  /** Under every card, every time. Nobody is held to this. */
+  reassurance: 'You can change your mind whenever you like.',
+  /** Written here rather than in the design copy, which does not cover the failure. */
+  failed: 'We could not send your answer. Please try again.',
+  accepted: name => `Thank you. ${name} will see that you said yes.`,
+  declined: 'That is fine. Nothing more is needed from you.',
+};
+
 /** Taking something down is permanent, so it is asked for in plain words. */
 export const TAKE_DOWN = {
   title: 'Take this down?',

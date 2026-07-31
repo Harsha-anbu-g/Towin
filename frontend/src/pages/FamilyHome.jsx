@@ -5,6 +5,7 @@ import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
+import KeyholderAsk from '../components/KeyholderAsk';
 // The per-parent detail — trust ladders, guardian actions, the updates thread —
 // now lives on FamilyParent.jsx, so this page imports none of it.
 
@@ -247,6 +248,11 @@ export default function FamilyHome() {
         <BlurFade delay={2}>
           <h1 style={{ ...sectionH, margin: '0 0 16px' }}>My Parents</h1>
         </BlurFade>
+
+        {/* Someone has asked me to hold a key to their Sealed box. Sits with the other
+            "they are asking you something" cards, above the parent list, and renders
+            nothing at all when nobody has asked. */}
+        <KeyholderAsk />
 
         {/* Incoming requests — an elder invited me */}
         {incoming.length > 0 && (

@@ -36,6 +36,7 @@ class FamilyServiceTrustRecalcTest {
     @Mock FamilyDelegationService familyDelegationService;
     @Mock com.towinly.profile.repository.ElderProfileRepository elderProfileRepository;
     @Mock com.towinly.profile.repository.HelperProfileRepository helperProfileRepository;
+    @Mock com.towinly.passon.service.KeyholderService keyholderService;
 
     FamilyService familyService;
 
@@ -46,7 +47,8 @@ class FamilyServiceTrustRecalcTest {
     void setUp() {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
-                familyDelegationService, elderProfileRepository, helperProfileRepository);
+                familyDelegationService, elderProfileRepository, helperProfileRepository,
+                keyholderService);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
     }

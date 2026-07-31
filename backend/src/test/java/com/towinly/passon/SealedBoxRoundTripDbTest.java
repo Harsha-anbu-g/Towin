@@ -85,9 +85,13 @@ class SealedBoxRoundTripDbTest {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         // The real crypto, not a mock: the point of this test is the real ciphertext landing
         // on the real row and opening again afterwards.
+        // The family alerts have their own tests and no bearing on the round trip, so this
+        // one is stubbed out rather than given two more repositories to write rows with.
         service = new SealedBoxService(sealedItems, settings, opens, users,
                 new SealedCryptoService(TEST_MASTER_KEY), encoder,
-                new SealedRevealRateLimiter(), Clock.systemUTC());
+                new SealedRevealRateLimiter(),
+                org.mockito.Mockito.mock(com.towinly.passon.service.PassOnAlertService.class),
+                Clock.systemUTC());
 
         String tag = UUID.randomUUID().toString().substring(0, 8);
         owner = entityManager.persistAndFlush(User.builder()

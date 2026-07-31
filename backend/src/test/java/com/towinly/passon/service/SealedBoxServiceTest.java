@@ -42,6 +42,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -84,6 +85,7 @@ class SealedBoxServiceTest {
     @Mock UserRepository users;
     @Mock SealedCryptoService crypto;
     @Mock PasswordEncoder passwordEncoder;
+    @Mock PassOnAlertService alerts;
 
     private Clock clock;
     private SealedRevealRateLimiter revealLimiter;
@@ -97,7 +99,7 @@ class SealedBoxServiceTest {
         clock = Clock.fixed(TODAY, ZoneOffset.UTC);
         revealLimiter = new SealedRevealRateLimiter(clock);
         service = new SealedBoxService(sealedItems, settings, opens, users, crypto,
-                passwordEncoder, revealLimiter, clock);
+                passwordEncoder, revealLimiter, alerts, clock);
 
         margaret = User.builder()
                 .id(UUID.randomUUID())
@@ -221,6 +223,42 @@ class SealedBoxServiceTest {
     }
 
     @Test
+    void aRevealSoonAfterAPasswordChangeTellsTheFamily() {
+        // The freeze covers the first seven days. Whoever holds her mailbox can simply wait
+        // it out, so the family are told about any reveal in the month behind it.
+        margaret.setCredentialChangedAt(LocalDateTime.ofInstant(TODAY, ZoneOffset.UTC).minusDays(20));
+        when(passwordEncoder.matches(PASSWORD, HASH)).thenReturn(true);
+        when(crypto.open(any(), any(), any())).thenReturn(new OpenContents(LABEL, BODY));
+
+        service.reveal(margaret.getId(), item.getId(), PASSWORD);
+
+        verify(alerts).openedSoonAfterPasswordChange(margaret);
+    }
+
+    @Test
+    void anOrdinaryRevealTellsNobody() {
+        // Her own box, opened on an ordinary day. Telling the family every time would be
+        // noise, and noise is what makes the alert above easy to ignore.
+        margaret.setCredentialChangedAt(LocalDateTime.ofInstant(TODAY, ZoneOffset.UTC).minusDays(31));
+        when(passwordEncoder.matches(PASSWORD, HASH)).thenReturn(true);
+        when(crypto.open(any(), any(), any())).thenReturn(new OpenContents(LABEL, BODY));
+
+        service.reveal(margaret.getId(), item.getId(), PASSWORD);
+
+        verifyNoInteractions(alerts);
+    }
+
+    @Test
+    void aBoxThatNeverHadAPasswordChangeTellsNobody() {
+        when(passwordEncoder.matches(PASSWORD, HASH)).thenReturn(true);
+        when(crypto.open(any(), any(), any())).thenReturn(new OpenContents(LABEL, BODY));
+
+        service.reveal(margaret.getId(), item.getId(), PASSWORD);
+
+        verifyNoInteractions(alerts);
+    }
+
+    @Test
     void theScreenCanAskWhenTheFreezeLifts() {
         assertThat(service.revealFrozenUntil(margaret.getId())).isNull();
 
@@ -255,6 +293,28 @@ class SealedBoxServiceTest {
         assertThat(saved.getValue().getKeyholderTarget()).isEqualTo((short) 3);
         assertThat(saved.getValue().getArmedAt()).isEqualTo(LocalDateTime.of(2026, 8, 5, 10, 0));
         assertThat(saved.getValue().getCoolingOffUntil()).isEqualTo(LocalDateTime.of(2026, 8, 12, 10, 0));
+    }
+
+    @Test
+    void choosingHowManyMustAgreeTellsEveryActiveFamilyMember() {
+        // Nothing stops a relative sitting beside her and tapping through all of this. What
+        // this does is make sure the rest of the family see it happen.
+        when(settings.findById(margaret.getId())).thenReturn(Optional.empty());
+        when(settings.save(any())).thenAnswer(call -> call.getArgument(0));
+
+        service.arm(margaret.getId(), 2, 3);
+
+        verify(alerts).settingsChanged(margaret);
+    }
+
+    @Test
+    void aRefusedArmingTellsNobody() {
+        margaret.setPasswordHash(null);
+
+        assertThatThrownBy(() -> service.arm(margaret.getId(), 2, 3))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verifyNoInteractions(alerts);
     }
 
     @Test

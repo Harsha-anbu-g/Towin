@@ -90,6 +90,20 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("A letter goes to one person",  "A letter goes to one person, and only that person.");
         SAFE_MESSAGES.put("Please choose the one person", "Please choose the one person this is for.");
         SAFE_MESSAGES.put("Only elders can write on this page", "Only elders can write on this page.");
+        // What I pass on — Keyholders. Same again: the sentence the person reads is the one
+        // thrown, because every one of these is about somebody's death and a generic
+        // "Invalid request." on that screen would be worse than useless.
+        SAFE_MESSAGES.put("You can only ask someone who is already on your family list",
+                "You can only ask someone who is already on your family list.");
+        SAFE_MESSAGES.put("You have already asked that person", "You have already asked that person.");
+        SAFE_MESSAGES.put("That has already been answered",     "That has already been answered.");
+        SAFE_MESSAGES.put("That person is not holding a key any more",
+                "That person is not holding a key any more.");
+        SAFE_MESSAGES.put("You can ask up to",                  "You can ask up to 5 people to hold a key.");
+        SAFE_MESSAGES.put("That was not asked of you",          "That was not asked of you.");
+        SAFE_MESSAGES.put("You are not holding a key",          "You are not holding a key for that person.");
+        SAFE_MESSAGES.put("Please answer yes or no",            "Please answer yes or no.");
+        SAFE_MESSAGES.put("Please choose who to ask",           "Please choose who to ask.");
         // Trust flow
         SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow

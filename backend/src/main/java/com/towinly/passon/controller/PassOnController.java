@@ -1,9 +1,14 @@
 package com.towinly.passon.controller;
 
+import com.towinly.passon.dto.KeyholderAskResponse;
+import com.towinly.passon.dto.KeyholderInviteRequest;
+import com.towinly.passon.dto.KeyholderRespondRequest;
+import com.towinly.passon.dto.KeyholderResponse;
 import com.towinly.passon.dto.PassOnFromResponse;
 import com.towinly.passon.dto.PassOnItemRequest;
 import com.towinly.passon.dto.PassOnItemResponse;
 import com.towinly.passon.dto.PassOnMineResponse;
+import com.towinly.passon.service.KeyholderService;
 import com.towinly.passon.service.PassOnService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,6 +40,7 @@ import java.util.UUID;
 public class PassOnController {
 
     private final PassOnService passOnService;
+    private final KeyholderService keyholderService;
 
     /** Her own page — everything she has written, whoever it is for. */
     @GetMapping("/mine")
@@ -74,5 +81,63 @@ public class PassOnController {
     public ResponseEntity<PassOnFromResponse> from(Authentication auth, @PathVariable UUID ownerId) {
         UUID viewerId = UUID.fromString(auth.getName());
         return ResponseEntity.ok(passOnService.from(viewerId, ownerId));
+    }
+
+    // ── Keyholders ──
+    //
+    // Two sides, and never the same person on both. Everything under /keyholders is the
+    // elder acting on her own list; everything under /keyholders/asked-of-me is the person
+    // she asked, answering for themselves. Which side you are on is decided by the session,
+    // so no request can put words in the other person's mouth.
+
+    /** Her own "Who can open it one day" list, with every status on it. */
+    @GetMapping("/keyholders")
+    public ResponseEntity<List<KeyholderResponse>> keyholders(Authentication auth) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(keyholderService.mine(ownerId));
+    }
+
+    @PostMapping("/keyholders")
+    public ResponseEntity<KeyholderResponse> askSomeone(
+            Authentication auth,
+            @Valid @RequestBody KeyholderInviteRequest request) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(keyholderService.invite(ownerId, request.getPersonId()));
+    }
+
+    /**
+     * Takes one person's key back. No alert goes anywhere, and it takes effect at once —
+     * see the note on {@code KeyholderService.remove} before changing that.
+     */
+    @DeleteMapping("/keyholders/{keyholderId}")
+    public ResponseEntity<Void> takeTheKeyBack(Authentication auth, @PathVariable UUID keyholderId) {
+        UUID ownerId = UUID.fromString(auth.getName());
+        keyholderService.remove(ownerId, keyholderId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** What has been asked of me, on my own screen, in my own words. */
+    @GetMapping("/keyholders/asked-of-me")
+    public ResponseEntity<List<KeyholderAskResponse>> askedOfMe(Authentication auth) {
+        UUID personId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(keyholderService.askedOfMe(personId));
+    }
+
+    @PostMapping("/keyholders/{keyholderId}/respond")
+    public ResponseEntity<Void> respond(
+            Authentication auth,
+            @PathVariable UUID keyholderId,
+            @Valid @RequestBody KeyholderRespondRequest request) {
+        UUID personId = UUID.fromString(auth.getName());
+        keyholderService.respond(personId, keyholderId, request.getAccept());
+        return ResponseEntity.noContent().build();
+    }
+
+    /** "You can change your mind whenever you like" has to be a real button. */
+    @PostMapping("/keyholders/{keyholderId}/resign")
+    public ResponseEntity<Void> resign(Authentication auth, @PathVariable UUID keyholderId) {
+        UUID personId = UUID.fromString(auth.getName());
+        keyholderService.resign(personId, keyholderId);
+        return ResponseEntity.noContent().build();
     }
 }

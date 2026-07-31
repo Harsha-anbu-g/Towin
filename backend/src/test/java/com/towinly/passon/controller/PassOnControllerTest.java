@@ -62,6 +62,7 @@ class PassOnControllerTest {
     @Mock ElderProfileRepository elderProfiles;
     @Mock HelperProfileRepository helperProfiles;
     @Mock PassOnVisibilityService visibility;
+    @Mock com.towinly.passon.service.KeyholderService keyholders;
 
     private MockMvc mockMvc;
     private Authentication margaretsSession;
@@ -75,7 +76,8 @@ class PassOnControllerTest {
 
         PassOnService service =
                 new PassOnService(items, users, elderProfiles, helperProfiles, visibility);
-        mockMvc = MockMvcBuilders.standaloneSetup(new PassOnController(service))
+        // Keyholders have their own test class; nothing here touches them.
+        mockMvc = MockMvcBuilders.standaloneSetup(new PassOnController(service, keyholders))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
