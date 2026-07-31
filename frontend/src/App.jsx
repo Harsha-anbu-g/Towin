@@ -13,6 +13,7 @@ import ProfileEdit from './pages/ProfileEdit';
 import ChangePassword from './pages/ChangePassword';
 import EmergencyContacts from './pages/EmergencyContacts';
 import MyFamily from './pages/MyFamily';
+import PassOn from './pages/PassOn';
 import FamilyHome from './pages/FamilyHome';
 import FamilyParent from './pages/FamilyParent';
 import Messages from './pages/Messages';
@@ -174,6 +175,7 @@ function App() {
             <Route path="/profile/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
             <Route path="/family" element={<ElderOnly><MyFamily /></ElderOnly>} />
+            <Route path="/what-i-pass-on" element={<ElderOnly><PassOn /></ElderOnly>} />
             <Route path="/family-home" element={<PrivateRoute><FamilyHome /></PrivateRoute>} />
             <Route path="/family-home/parent/:elderId" element={<PrivateRoute><FamilyParent /></PrivateRoute>} />
             <Route path="/messages" element={<PrivateRoute><MessagesInbox /></PrivateRoute>} />

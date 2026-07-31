@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon, HeartHandshake } from 'lucide-react';
+import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon, HeartHandshake, ScrollText } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 import { useTheme } from '../context/useTheme';
@@ -321,6 +321,18 @@ export default function NavBar() {
                       <Users size={18} strokeWidth={2} aria-hidden="true" />My Family
                     </Link>
                   )}
+                  {isElder && (
+                    <Link to="/what-i-pass-on" role="menuitem" onClick={() => setAccountOpen(false)} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
+                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <ScrollText size={18} strokeWidth={2} aria-hidden="true" />What I pass on
+                    </Link>
+                  )}
                   {showFamilyHome && (
                     <Link to="/family-home" role="menuitem" onClick={() => setAccountOpen(false)} style={{
                       display: 'flex', alignItems: 'center', gap: '10px',
@@ -456,6 +468,7 @@ export default function NavBar() {
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
             {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
+            {isElder && <MenuLink to="/what-i-pass-on" label="What I pass on" icon={ScrollText} />}
             {showFamilyHome && <MenuLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             {!isFamilyRole && <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />}
