@@ -139,6 +139,56 @@ export const SEALED_BOX = {
     + 'so they know this exists — and save the one-page sheet and keep it with your will.',
 };
 
+/**
+ * Reading somebody else's page.
+ *
+ * The reviewed design copy fixes the title — "From Margaret" — and nothing else on this
+ * screen, so the four lines below were written here. They are the ones to rewrite if the
+ * wording is wrong. Every one takes the writer's name, because "this person" reads like a
+ * form letter on a page somebody may be opening the week she died.
+ */
+export const FROM_PAGE = {
+  title: name => `From ${name}`,
+  lead: name => `What ${name} chose to share with you.`,
+  empty: name => `${name} has not shared anything with you yet.`,
+  /** A letter is written to one person. If you are reading one, it was written to you. */
+  letterChip: 'A letter for you',
+  failed: 'We could not open that page.',
+  back: 'Go back',
+  /** The way in, from the profile of the person whose page it is. */
+  linkFromProfile: name => `What ${name} passes on`,
+  linkBlurb: 'Her stories, and any letter she wrote to you.',
+};
+
+/**
+ * Objecting to a story.
+ *
+ * A living person named in somebody else's story needs a way to say so, and until now a
+ * report could only ever say "this person". The reasons are the four things people
+ * actually object to about a story, in the words they would use — not the app's existing
+ * "Inappropriate Behavior / Spam / Safety Concern", which describe messages, not memories.
+ *
+ * Not offered on letters: a letter is written to one person and reaches nobody else, so it
+ * cannot name a third person to a room. A letter that is itself abusive is a complaint about
+ * the writer, which is the report that already exists on her profile.
+ */
+export const REPORT_STORY = {
+  open: 'Report this',
+  reasonPrompt: 'What is wrong with it?',
+  reasons: [
+    'It says something untrue about me',
+    'It should not be shown to people',
+    'It is unkind or hurtful',
+    'Something else',
+  ],
+  notePrompt: 'Tell us more (you can skip this)',
+  send: 'Send this to Towinly',
+  cancel: 'Never mind',
+  sending: 'Sending…',
+  sent: 'Thank you. Somebody at Towinly will read this.',
+  failed: 'We could not send that. Please try again.',
+};
+
 /** Taking something down is permanent, so it is asked for in plain words. */
 export const TAKE_DOWN = {
   title: 'Take this down?',

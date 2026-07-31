@@ -191,6 +191,11 @@ public class AdminService {
                         .reportedEmail(r.getReportedUser().getEmail())
                         .reason(r.getReason())
                         .description(r.getDescription())
+                        // Without these, a report about one particular story arrives on the
+                        // admin screen indistinguishable from a complaint about a person,
+                        // and nobody can find the writing that was objected to.
+                        .contentType(r.getContentType())
+                        .contentId(r.getContentId())
                         .createdAt(r.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import Avatar from '../components/ui/Avatar';
 import TrustBadge from '../components/TrustBadge';
 import api from '../api/axios';
+import { FROM_PAGE } from '../components/passOnLocks';
 
 const CARD = {
   background: 'var(--canvas)', borderRadius: '18px',
@@ -58,6 +59,47 @@ function Section({ title, delay = 0, children }) {
       </h2>
       {children}
     </section>
+  );
+}
+
+/**
+ * The way in to "From Margaret". A slim row rather than a card with a button: it sits above
+ * her bio and must not be the loudest thing on somebody's profile.
+ */
+function PassOnLink({ id, name }) {
+  return (
+    <Link
+      to={`/passed-on/${id}`}
+      style={{
+        ...CARD, padding: '14px 20px', textDecoration: 'none',
+        display: 'flex', alignItems: 'center', gap: '14px', minHeight: '44px',
+      }}
+    >
+      <span aria-hidden style={{
+        width: '32px', height: '32px', borderRadius: '50%', background: 'var(--gold-wash)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-deep)"
+          strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+      </span>
+      <span style={{ minWidth: 0 }}>
+        <span style={{
+          display: 'block', fontSize: 'var(--text-base)', fontWeight: 600,
+          color: 'var(--blue-deep)', lineHeight: 1.35,
+        }}>
+          {FROM_PAGE.linkFromProfile(name)}
+        </span>
+        <span style={{
+          display: 'block', fontSize: 'var(--text-sm)', color: 'var(--ink-slate)',
+          lineHeight: 1.4, marginTop: '2px',
+        }}>
+          {FROM_PAGE.linkBlurb}
+        </span>
+      </span>
+    </Link>
   );
 }
 
@@ -206,6 +248,14 @@ export default function UserProfile() {
                 </div>
               )}
             </section>
+
+            {/* What she passes on. Offered on an elder's profile only — helpers and
+                family have no page of their own, so on their profiles this link would
+                open something permanently empty. What any one visitor actually finds
+                there is the server's decision, not this link's. */}
+            {(profile.role === 'ELDER' || profile.role === 'BOTH') && (
+              <PassOnLink id={id} name={profile.name || 'this person'} />
+            )}
 
             {/* Bio */}
             {profile.bio && (
