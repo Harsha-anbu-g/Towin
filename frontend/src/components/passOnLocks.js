@@ -18,17 +18,20 @@ export const PAGE_LEAD =
   'Your stories, your letters, and the things only you know. You choose who sees each one.';
 
 /**
- * The not-a-will primer. Short line always visible; the Quebec explanation
- * folded away behind a question, because the answer is four sentences long and
- * most visits do not need it.
+ * The not-a-will primer. Short line always visible; the explanation folded away
+ * behind a question, because most visits do not need it.
+ *
+ * Deliberately names no country and no profession. What makes a will valid
+ * differs everywhere, so a sentence that is true in one place is wrong advice
+ * in another — this points her at whoever helps her with her will instead.
  */
 export const NOT_A_WILL = {
   short: 'This is not a will, and it does not replace one.',
   ask: "What's the difference?",
   long:
-    'A will decides who gets your money, your home and your things. In Quebec a will can be '
-    + 'written out by hand and signed by you, or made with a notary. Nothing you write on this '
-    + 'page changes who gets what. Please tell your notary that this page exists.',
+    'A will decides who gets your money, your home and your things. Nothing you write on this '
+    + 'page changes who gets what. If you have a will, please tell whoever helped you make it '
+    + 'that this page exists.',
 };
 
 /** Who a story is for. `key` is the server's PassOnAudience value. */

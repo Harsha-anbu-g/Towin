@@ -21,7 +21,7 @@ const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 const TABS = [
   { id: 'stories', label: 'Story box' },
-  { id: 'letters', label: 'Letters' },
+  { id: 'letters', label: 'Letter box' },
   { id: 'sealed', label: 'Sealed box' },
 ];
 

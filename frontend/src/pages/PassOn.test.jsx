@@ -94,30 +94,30 @@ describe('What I pass on — the page itself', () => {
     const user = userEvent.setup()
     renderPage()
     expect(await screen.findByText('This is not a will, and it does not replace one.')).toBeInTheDocument()
-    // The Quebec explanation is long; it stays folded away until she asks for it.
+    // The explanation stays folded away until she asks for it.
     expect(screen.queryByText(/a will decides who gets your money/i)).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /what's the difference\?/i }))
     expect(screen.getByText(/A will decides who gets your money, your home and your things\./)).toBeInTheDocument()
-    expect(screen.getByText(/Please tell your notary that this page exists\./)).toBeInTheDocument()
+    expect(screen.getByText(/whoever helped you make it that this page exists\./)).toBeInTheDocument()
   })
 
   it('offers the three parts as tabs, opening on the Story box', async () => {
     renderPage()
     expect(await screen.findByRole('tab', { name: 'Story box' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('tab', { name: 'Letters' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Letter box' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Sealed box' })).toBeInTheDocument()
   })
 
   it('keeps the open tab in the address bar, and opens on the tab a link names', async () => {
     const user = userEvent.setup()
     renderPage()
-    await openTab(user, 'Letters')
+    await openTab(user, 'Letter box')
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/what-i-pass-on?tab=letters'))
   })
 
-  it('opens straight onto Letters when the address says so', async () => {
+  it('opens straight onto the Letter box when the address says so', async () => {
     renderPage('/what-i-pass-on?tab=letters')
-    expect(await screen.findByRole('tab', { name: 'Letters' })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByRole('tab', { name: 'Letter box' })).toHaveAttribute('aria-selected', 'true')
   })
 })
 
@@ -238,7 +238,7 @@ describe('What I pass on — Story box', () => {
   })
 })
 
-describe('What I pass on — Letters', () => {
+describe('What I pass on — Letter box', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGet()
@@ -250,14 +250,14 @@ describe('What I pass on — Letters', () => {
   it('says what a letter is when there are none', async () => {
     const user = userEvent.setup()
     renderPage()
-    await openTab(user, 'Letters')
+    await openTab(user, 'Letter box')
     expect(await screen.findByText('No letters yet. A letter goes to one person, and only that person.')).toBeInTheDocument()
   })
 
   it('is honest about the part that is not built, instead of offering it', async () => {
     const user = userEvent.setup()
     renderPage()
-    await openTab(user, 'Letters')
+    await openTab(user, 'Letter box')
     expect(await screen.findByText(
       'Every letter here can be read today. We are still building the part where a letter opens after you are gone, and we will not offer it until we are sure it works. When it is ready we will tell you, and you will be able to change any letter over.',
     )).toBeInTheDocument()
@@ -270,7 +270,7 @@ describe('What I pass on — Letters', () => {
   it('writes a letter to one named person', async () => {
     const user = userEvent.setup()
     renderPage()
-    await openTab(user, 'Letters')
+    await openTab(user, 'Letter box')
     await user.click(await screen.findByRole('button', { name: 'Write a letter' }))
     await user.type(screen.getByLabelText('Give it a name'), 'For Sarah')
     await user.type(screen.getByLabelText('Write it'), 'You were always the brave one.')
@@ -290,7 +290,7 @@ describe('What I pass on — Letters', () => {
   it('offers family and trusted helpers to write to, and nobody whose friendship has ended', async () => {
     const user = userEvent.setup()
     renderPage()
-    await openTab(user, 'Letters')
+    await openTab(user, 'Letter box')
     await user.click(await screen.findByRole('button', { name: 'Write a letter' }))
     expect(screen.getByRole('radio', { name: /Sarah/ })).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: /Priya/ })).toBeInTheDocument()
@@ -312,7 +312,7 @@ describe('What I pass on — Letters', () => {
       },
     ]))
     renderPage()
-    await openTab(user, 'Letters')
+    await openTab(user, 'Letter box')
     expect(await screen.findByText('To Sarah')).toBeInTheDocument()
     expect(screen.getByText('To David')).toBeInTheDocument()
     expect(screen.getAllByText('They can read this now')).toHaveLength(2)
