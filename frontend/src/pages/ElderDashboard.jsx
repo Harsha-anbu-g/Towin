@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import TrustJourney from '../components/TrustJourney';
 import FamilyShareToggle from '../components/FamilyShareToggle';
@@ -16,6 +16,7 @@ import SmoothInput from '../components/SmoothInput';
 import { useAuth } from '../context/useAuth';
 import Avatar from '../components/ui/Avatar';
 import { useSeenIds } from '../lib/useSeenIds';
+import { MY_BOXES } from '../components/passOnLocks';
 import MyFamily from './MyFamily';
 
 function TabBadge({ count }) {
@@ -219,6 +220,14 @@ export default function ElderDashboard() {
   const [radiusKm, setRadiusKm] = useState(25);
   const [connectingTo, setConnectingTo] = useState(null);
   const [connectMsg, setConnectMsg] = useState({});
+  // What is in her boxes, for the My boxes card. null until the real counts are
+  // in, so the card is never on screen saying nothing.
+  const [boxes, setBoxes] = useState(null);
+
+  // The card is offered to exactly whoever /what-i-pass-on would let in — the
+  // same test App's ElderOnly makes — so it can never open a door that bounces
+  // them straight back here.
+  const canPassOn = user?.role === 'ELDER' || user?.role === 'BOTH';
 
   async function loadConnections(silent = false) {
     if (!silent) setLoading(true);
@@ -232,6 +241,29 @@ export default function ElderDashboard() {
     try { const res = await api.get('/needs/mine'); setMyNeeds(res.data.content ?? []); } catch { /* transient load error — keep last list, spinner clears below */ }
     finally { if (!silent) setLoading(false); }
   }
+
+  // Counts only — never a title, never a word of what she wrote. Both calls are
+  // allowed to fail quietly: a wrong count on this card is worse than no card,
+  // and she can always reach the page from the account menu.
+  async function loadBoxes() {
+    try {
+      const [mine, setup] = await Promise.all([
+        api.get('/passon/mine').then(r => r.data),
+        api.get('/passon/setup').then(r => r.data).catch(() => null),
+      ]);
+      setBoxes({
+        stories: mine?.stories?.length || 0,
+        letters: mine?.letters?.length || 0,
+        shut: !!setup?.armed,
+      });
+    } catch { /* nothing trustworthy to say about her boxes — the card stays off */ }
+  }
+
+  // Keyed to the one thing that decides whether the card exists at all, so a
+  // helper who somehow lands here never asks the server about an elder's boxes.
+  useEffect(() => {
+    if (canPassOn) loadBoxes();
+  }, [canPassOn]);
 
   useEffect(() => {
     loadConnections();
@@ -854,6 +886,43 @@ export default function ElderDashboard() {
                 </div>
                 );
               })}
+
+              {/* My boxes — the way in to "What I pass on".
+                  A card, and deliberately not a sixth tab: below 640px the strip
+                  above is a two-column grid whose icons are written out one by
+                  one, so a new tab there would arrive with no icon at all.
+                  Held back until the real counts are in, and the link is a quiet
+                  outline — the filled blue on this screen belongs to asking for
+                  help, not to reading her own page. */}
+              {canPassOn && boxes && (
+                <div style={{
+                  background: 'var(--canvas)', borderRadius: '18px', padding: '22px',
+                  border: '1px solid var(--border)', marginTop: '4px',
+                }}>
+                  <h2 style={{
+                    fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-lg)',
+                    letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0,
+                  }}>
+                    {MY_BOXES.title}
+                  </h2>
+                  <p style={{ fontSize: '18px', color: 'var(--ink-slate)', lineHeight: 1.55, margin: '8px 0 0' }}>
+                    {MY_BOXES.lead}
+                  </p>
+                  <p style={{ fontSize: '18px', color: 'var(--ink-slate-dark)', lineHeight: 1.5, margin: '10px 0 0' }}>
+                    {MY_BOXES.summary(boxes)}
+                  </p>
+                  <Link to="/what-i-pass-on" style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    minHeight: '44px', padding: '0 20px', marginTop: '16px',
+                    background: 'var(--canvas)', color: 'var(--ink-slate)',
+                    border: '1px solid var(--border)', borderRadius: '9999px',
+                    fontSize: '18px', fontWeight: 600, textDecoration: 'none',
+                  }}>
+                    {MY_BOXES.open}
+                    <svg aria-hidden width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

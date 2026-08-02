@@ -174,7 +174,7 @@ export const STEPS = [
             'See the helpers who apply and choose the person you trust.',
             'Find and connect with helpers near you.',
             'Message the people you connect with, safely and simply.',
-            'Check in every day to keep your daily streak going.',
+            'Check in each day so your family know you are alright.',
             'Add emergency contacts and use the SOS button any time you need help fast.',
           ]} />
           <NoteBox>
@@ -255,21 +255,24 @@ export const STEPS = [
   },
   {
     id: 'streaks',
-    navLabel: 'Streaks',
+    navLabel: 'Daily check-in',
     render: () => (
       <>
-        <StepTitle>Daily Streaks</StepTitle>
+        <StepTitle>Your daily check-in</StepTitle>
         <Lead>
-          Showing up matters. Each day you visit Towinly, tap "I'm here today" to mark the day.
+          Each day, tap "I'm here today". The family you are linked with then see that you
+          are alright, on their own page — you do not have to ring round or explain.
         </Lead>
         <Bullets items={[
+          'The page tells you by name who will see it before you tap.',
           'Your current streak counts the days you have checked in, one after another.',
           'Your best streak is your all-time record, something to be proud of.',
           'Miss a day and the current streak starts again, but your best streak is always kept.',
+          'No family added yet? The check-in still works, and the page shows you how to add them.',
         ]} />
         <NoteBox>
-          The streak check-in is the first screen elders see after logging in. A simple,
-          friendly way to start the day.
+          The check-in is the first screen elders see after logging in. Helpers do not have
+          one — the check-in exists so an elder's family can stop worrying.
         </NoteBox>
       </>
     ),

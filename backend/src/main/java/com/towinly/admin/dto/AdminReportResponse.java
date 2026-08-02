@@ -1,4 +1,5 @@
 package com.towinly.admin.dto;
+import com.towinly.common.enums.ReportedContent;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -11,5 +12,11 @@ public class AdminReportResponse {
     private String reportedEmail;
     private String reason;
     private String description;
+    /**
+     * Which one thing this report is about, when it is about a thing and not only a person.
+     * Null on a plain "this person" report, which is still most of them.
+     */
+    private ReportedContent contentType;
+    private UUID contentId;
     private LocalDateTime createdAt;
 }

@@ -19,6 +19,18 @@ import com.towinly.need.entity.Need;
 import com.towinly.need.entity.NeedApplication;
 import com.towinly.need.repository.NeedApplicationRepository;
 import com.towinly.need.repository.NeedRepository;
+import com.towinly.passon.dto.PassOnArmRequest;
+import com.towinly.passon.dto.SealedItemRequest;
+import com.towinly.passon.entity.Keyholder;
+import com.towinly.passon.entity.PassOnItem;
+import com.towinly.passon.repository.KeyholderRepository;
+import com.towinly.passon.repository.PassOnItemRepository;
+import com.towinly.passon.repository.PassOnOpenRepository;
+import com.towinly.passon.repository.PassOnSettingsRepository;
+import com.towinly.passon.repository.SealedItemRepository;
+import com.towinly.passon.service.KeyholderService;
+import com.towinly.passon.service.SealedBoxService;
+import com.towinly.passon.service.SealedCryptoService;
 import com.towinly.profile.entity.ElderProfile;
 import com.towinly.profile.entity.HelperProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
@@ -90,6 +102,13 @@ public class DemoDataSeeder implements ApplicationRunner {
     public static final String ELDER_DEMO_EMAIL  = "elder@gmail.com";
     public static final String HELPER_DEMO_EMAIL = "helper@gmail.com";
 
+    /**
+     * The elder demo password, printed on the login screen for anyone to use. Named because
+     * the Sealed box is guarded by it: this is the password a visitor types to open Margaret's
+     * box, and {@code DemoSealedBoxOpensDbTest} proves that it really does.
+     */
+    static final String ELDER_DEMO_PASSWORD = "12345678";
+
     // Every demo account, so DemoResetCoordinator can tell when a write targets
     // one. Keep in sync with the ensureUser(...) calls in seed().
     public static final List<String> DEMO_EMAILS = List.of(
@@ -100,7 +119,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             "demo.claire@towin.app", "demo.ethan@towin.app",
             "demo.lakshmi@towin.app", "demo.karthik@towin.app",
             "demo.meena@towin.app", "demo.arjun@towin.app",
-            "demo.sarah@towin.app");
+            "demo.sarah@towin.app", "demo.davidson@towin.app", "demo.ruth@towin.app");
 
     // Most demo personas (elders and helpers) are pinned to Montreal, Canada so
     // they cluster together and "near me" discovery matches across both roles.
@@ -132,6 +151,17 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final PasswordEncoder passwordEncoder;
     private final TrustScoreService trustScoreService;
     private final PlatformTransactionManager transactionManager;
+    // What an elder passes on. The two services are here rather than the repositories alone
+    // because the Sealed box must be sealed by the same code that seals a real elder's — see
+    // seedWhatMargaretPassesOn.
+    private final PassOnItemRepository passOnItemRepository;
+    private final SealedItemRepository sealedItemRepository;
+    private final KeyholderRepository keyholderRepository;
+    private final PassOnSettingsRepository passOnSettingsRepository;
+    private final PassOnOpenRepository passOnOpenRepository;
+    private final SealedBoxService sealedBoxService;
+    private final KeyholderService keyholderService;
+    private final SealedCryptoService sealedCryptoService;
 
     // When true (default), wipe content accumulated on the public demo accounts
     // on each boot before re-seeding, so the demo always shows a clean, minimal
@@ -175,7 +205,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     }
 
     private void seed() {
-        User margaret = ensureUser(ELDER_DEMO_EMAIL, "+14165550101", UserRole.ELDER, "12345678");
+        User margaret = ensureUser(ELDER_DEMO_EMAIL, "+14165550101", UserRole.ELDER, ELDER_DEMO_PASSWORD);
         User james    = ensureUser(HELPER_DEMO_EMAIL, "+14385355782", UserRole.HELPER, "123456789");
         User priya    = ensureUser("demo.priya@towin.app", "+14165550103", UserRole.HELPER, "DemoPriya!2026");
         User tom      = ensureUser("demo.tom@towin.app",   "+14165550104", UserRole.HELPER, "DemoTom!2026");
@@ -211,8 +241,27 @@ public class DemoDataSeeder implements ApplicationRunner {
             sarah = userRepository.save(sarah);
         }
 
+        // Margaret's son and her sister. Keyholders are drawn from the family list and
+        // nowhere else, so a Sealed box needing three of them needs three family members —
+        // Sarah alone could never be a quorum. Both are FAMILY accounts like Sarah's, with a
+        // real login, because the person a key is asked of has to be able to answer.
+        //
+        // The name is deliberate and slightly awkward: the demo already has a "David Chen",
+        // an unrelated 76-year-old elder in Montreal. The design names Margaret's Keyholders
+        // Sarah, David and Ruth throughout, and the setup screen renders that trio from these
+        // rows, so the name was kept and the login handle made unique instead. Rename him if
+        // the two Davids read as a mistake rather than a coincidence.
+        User davidSon = ensureUser("demo.davidson@towin.app", "+14165550116", UserRole.FAMILY, "DemoDavidson!2026");
+        User ruth     = ensureUser("demo.ruth@towin.app",     "+14165550115", UserRole.FAMILY, "DemoRuth!2026");
+        davidSon = ensureFullName(davidSon, "David");
+        ruth = ensureFullName(ruth, "Ruth");
+        // FAMILY alerts and SOS messages name the elder through her account rather than her
+        // profile, so without this the whole family reads "elder has asked Sarah to hold a
+        // key". Her profile already says Margaret; this makes the account agree with it.
+        margaret = ensureFullName(margaret, "Margaret");
+
         List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur, sofia,
-                claire, ethan, lakshmi, karthik, meena, arjun, sarah);
+                claire, ethan, lakshmi, karthik, meena, arjun, sarah, davidSon, ruth);
 
         // Clear anything visitors left on the public demo accounts so the rest of
         // this method re-seeds a clean, minimal showcase (one of each type).
@@ -387,6 +436,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Margaret, so the demo shows a linked family member, the elder's +1
         // family trust point, and the Family Home screen with a real elder card.
         ensureFamilyLink(margaret, sarah, "Daughter");
+        // Her other two, added for the Sealed box. They carry no delegated powers: the point
+        // of them is that a key can be held by somebody who does nothing else for you.
+        //
+        // Her trust score does not move. An elder earns one flat family point the moment any
+        // link is active and never a second one (TrustScoreService.familyPoints), and Sarah
+        // already earned it — so these two are worth zero, not +1 each. The design document
+        // says +2; the code says otherwise, and the code is what runs.
+        ensureFamilyLink(margaret, davidSon, "Son");
+        ensureFamilyLink(margaret, ruth, "Sister");
         // Guardian mode on display: Margaret has said yes to Sarah handling two
         // things for her, so a visitor signing in as Sarah finds the feature
         // already working rather than a screen of switches nobody has touched.
@@ -627,6 +685,8 @@ public class DemoDataSeeder implements ApplicationRunner {
 
         ensureEmergencyContact(margaret, "Sarah (daughter)", "+14165550199", "Family");
 
+        seedWhatMargaretPassesOn(margaret, sarah, davidSon, ruth);
+
         for (User u : demoUsers) {
             try {
                 trustScoreService.recalculate(u.getId());
@@ -661,6 +721,14 @@ public class DemoDataSeeder implements ApplicationRunner {
         reportRepository.deleteByReporterIdOrReportedUserId(id, id);
         needRepository.deleteByElderId(id);
         trustProgressionLogRepository.deleteByUserId(id);
+        // What this account passed on, in the same order AccountService.purgeUserData uses:
+        // the record first, then the keys (by both sides — a visitor may hold one for
+        // somebody else), then the box, its rules, and finally the writing.
+        passOnOpenRepository.deleteByOwnerId(id);
+        keyholderRepository.deleteByOwnerIdOrKeyholderId(id, id);
+        sealedItemRepository.deleteByOwnerId(id);
+        passOnSettingsRepository.deleteByOwnerId(id);
+        passOnItemRepository.deleteByOwnerId(id);
         familyAlertRepository.deleteByElderId(id);
         familyDelegatedPowerRepository.deleteByElderIdOrFamilyUserId(id, id);
         familyPowerRequestRepository.deleteByElderIdOrFamilyUserId(id, id);
@@ -785,6 +853,241 @@ public class DemoDataSeeder implements ApplicationRunner {
         connectionRepository.save(c);
     }
 
+    // ── What I pass on ───────────────────────────────────────────────────
+
+    /** How long ago Margaret set her box up. Comfortably past her seven days. */
+    private static final int ARMED_DAYS_AGO = 40;
+    /** When Sarah opened the letter written to her — the "Sarah read this on …" line. */
+    private static final int LETTER_READ_DAYS_AGO = 12;
+    /** Two of the three. Never one, and never all of them. */
+    private static final int APPROVALS_NEEDED = 2;
+
+    /**
+     * Everything Margaret passes on: her stories, her letters, her Sealed box and the three
+     * people who would one day be asked to open it.
+     *
+     * <h3>The box is really encrypted</h3>
+     * Every sealed item goes through {@link SealedBoxService#add}, which is the same call the
+     * elder's own screen makes, so the demo rows are sealed by the production crypto under the
+     * production key. A seeder that wrote its own rows would prove nothing and would diverge
+     * from the real thing at exactly the point where divergence is most dangerous — a demo box
+     * that opens while a real one does not, or the reverse.
+     *
+     * <h3>Nothing here simulates a death</h3>
+     * No release is in flight, no certificate exists and no row sits in a state a scheduled
+     * job could advance. A public demo that regenerated "someone says you have died" every few
+     * minutes would be a defect, not completeness. The only backdating is her own setup date.
+     *
+     * <p>She holds one letter until after she is gone, and she is not gone: her
+     * {@code released_at} stays null, which is the only switch that would open it. That is the
+     * state a real elder who chooses "only after I'm gone" is in for years, and it is the one
+     * the demo shows. Releasing her would instead show a letter nobody can change and a page
+     * she can no longer write on — a permanent frozen account, five minutes after every reset.
+     *
+     * <h3>Why it can decline to run</h3>
+     * With no master key configured — every local machine and CI — the crypto is unavailable
+     * and the Sealed box half is skipped rather than attempted. {@code SealedBoxService} is
+     * transactional, so letting it throw would mark the whole seeding transaction
+     * rollback-only and cost the demo everything else in this method too.
+     */
+    private void seedWhatMargaretPassesOn(User margaret, User sarah, User davidSon, User ruth) {
+        // Three stories, one per audience, so no filter on her page opens on an empty list.
+        ensureStory(margaret, "The winter we lost the roof", PassOnAudience.EVERYONE,
+                "The gale came through on a Tuesday night in 1978 and took half the roof with "
+                        + "it. We slept four to a bed in the front room and your grandfather went up "
+                        + "the ladder every morning for a fortnight with a tarpaulin and a hammer. I "
+                        + "have never been colder or laughed more. When people tell me they are "
+                        + "having a hard year, that is the winter I think of.");
+        ensureStory(margaret, "What I wish I had told your father", PassOnAudience.FAMILY,
+                "He asked me once, near the end, whether I had been happy. I said of course, "
+                        + "the way you do when you are carrying a tray. What I should have said is "
+                        + "that the happiest I ever was, was the ordinary Sunday afternoons, with the "
+                        + "radio on and nobody needing anything. I am writing it here so it is said.");
+        ensureStory(margaret, "How to get the boiler going", PassOnAudience.HELPERS,
+                "It looks broken and it is not. The switch by the back door has to be off for "
+                        + "a full minute before you press the red button, and you have to hold the "
+                        + "button while it clicks three times. Anything less than three clicks and it "
+                        + "will not light. Do not let anybody sell you a new one.");
+
+        // Two letters, both readable now: one Sarah has already opened, one still waiting.
+        ensureLetter(margaret, sarah, "For Sarah, whenever you need it",
+                "My darling girl. You have spent so much of your life making sure everybody "
+                        + "else was all right, and I want you to know that I noticed every single "
+                        + "time. Be as kind to yourself as you have been to me. That is the whole "
+                        + "letter, really.",
+                LocalDateTime.now().minusDays(LETTER_READ_DAYS_AGO));
+        ensureLetter(margaret, davidSon, "For David, about the garden",
+                "You always said the apple tree at the bottom was more trouble than it was "
+                        + "worth, and you were right, and I want you to keep it anyway. Your father "
+                        + "planted it the spring you were born. Prune it hard in February and it will "
+                        + "outlast all of us.",
+                null);
+
+        // And one she is keeping back for her sister. Without it "only after I'm gone" is a
+        // choice on a form that nothing in the demo has ever made, and the held state — the one
+        // a woman who picks it lives in for years — is never on screen.
+        ensureHeldLetter(margaret, ruth, "For Ruth, for when I am gone",
+                "You have been my sister all my life and my best friend for most of it. When "
+                        + "you read this, put the kettle on first — you always did think better "
+                        + "with a cup in your hand. Tell the others gently, and then sit in the "
+                        + "garden a while and think of the summer we cycled to the coast. There "
+                        + "is nothing left unsaid between us, and that is the finest thing I have.");
+
+        seedMargaretsSealedBox(margaret, sarah, davidSon, ruth);
+    }
+
+    /**
+     * The Sealed box, sealed for real, with three Keyholders and her seven days behind her.
+     * See {@link #seedWhatMargaretPassesOn} for why this can decline to run.
+     */
+    private void seedMargaretsSealedBox(User margaret, User sarah, User davidSon, User ruth) {
+        if (!sealedCryptoService.isAvailable()) {
+            log.info("Sealed box demo skipped: no master key configured (the rest of the demo is unaffected)");
+            return;
+        }
+        // Already set up: either an untouched baseline or a visitor's own box. Either way this
+        // must not ask three people the same question a second time.
+        if (passOnSettingsRepository.findById(margaret.getId())
+                .filter(row -> row.getArmedAt() != null).isPresent()) {
+            return;
+        }
+
+        // Locations and people, never credentials. The one readable field on a sealed row is
+        // the kind, and PASSWORDS is deliberately unused here: a demo is a teacher, and no
+        // elder should learn from it that her passwords belong in an app.
+        if (sealedItemRepository.countByOwnerId(margaret.getId()) == 0) {
+            MARGARET_SEALED_ITEMS.forEach(item -> seal(margaret, item));
+        }
+
+        // Armed through the real setup: the invitations go out, the two sentences she ticked
+        // are hashed as typed, and her own record gets the line saying the box was set up.
+        PassOnArmRequest arm = new PassOnArmRequest();
+        arm.setPersonIds(List.of(sarah.getId(), davidSon.getId(), ruth.getId()));
+        arm.setApprovalsNeeded(APPROVALS_NEEDED);
+        arm.setNotAWillAck(SealedBoxService.NOT_A_WILL_ACK);
+        arm.setKeyTruthAck(SealedBoxService.KEY_TRUTH_ACK);
+        sealedBoxService.arm(margaret.getId(), arm);
+
+        // Two said yes. Ruth is left exactly as the invitation found her, the same deliberate
+        // half-finished state as ensureFamilyPowerRequest above: Margaret's screen shows a
+        // real "asked, not answered yet", and Ruth's own screen opens on a real acceptance
+        // card rather than a mock-up of one.
+        acceptKey(margaret, sarah);
+        acceptKey(margaret, davidSon);
+
+        // Her seven days are behind her, so the demo opens on the settled card and not on the
+        // "if this was not your idea, undo it" banner. Backdated afterwards because arming is
+        // what starts the week, and the week has to start from a real arming.
+        passOnSettingsRepository.findById(margaret.getId()).ifPresent(row -> {
+            LocalDateTime armedAt = LocalDateTime.now().minusDays(ARMED_DAYS_AGO);
+            row.setArmedAt(armedAt);
+            row.setCoolingOffUntil(armedAt.plusDays(7));
+            passOnSettingsRepository.save(row);
+        });
+    }
+
+    /**
+     * One thing in Margaret's demo Sealed box.
+     *
+     * <p>Locations and people, never credentials. The only readable field on a sealed row is
+     * the kind, and {@code PASSWORDS} is deliberately unused: a demo teaches, and no elder
+     * should learn from this one that her passwords belong in an app.
+     */
+    record DemoSealedItem(String label, SealedKind kind, String body) {}
+
+    /**
+     * Exactly what the demo box contains. Package-visible and shared rather than written
+     * inline, so {@code DemoSealedBoxOpensDbTest} can prove that <em>these</em> rows — not a
+     * copy of them written for a test — really open again with the demo password.
+     */
+    static final List<DemoSealedItem> MARGARET_SEALED_ITEMS = List.of(
+            new DemoSealedItem("Where the house papers are", SealedKind.PAPERS,
+                    "In the brown envelope in the second drawer of the writing desk, underneath "
+                            + "the tablecloths. The deeds and the insurance are both in there."),
+            new DemoSealedItem("The tin in the pantry", SealedKind.MONEY,
+                    "There is a little money in the biscuit tin on the top shelf of the pantry, "
+                            + "behind the flour. It is not much. It is for the wake."),
+            new DemoSealedItem("Who to telephone about the house", SealedKind.OTHER,
+                    "Mr Reid at the solicitors on Sherbrooke Street looked after everything when "
+                            + "your father died and he knows where the rest of it is. His number is "
+                            + "in my address book under R."));
+
+    private void seal(User owner, DemoSealedItem item) {
+        SealedItemRequest request = new SealedItemRequest();
+        request.setLabel(item.label());
+        request.setBody(item.body());
+        request.setKindHint(item.kind());
+        sealedBoxService.add(owner.getId(), request);
+    }
+
+    /** Says yes on the Keyholder's behalf, through the only method entitled to say it. */
+    private void acceptKey(User owner, User person) {
+        keyholderRepository.findByOwnerIdAndKeyholderId(owner.getId(), person.getId())
+                .filter(row -> row.getStatus() == KeyholderStatus.INVITED)
+                .map(Keyholder::getId)
+                .ifPresent(rowId -> keyholderService.respond(person.getId(), rowId, true));
+    }
+
+    private void ensureStory(User owner, String title, PassOnAudience audience, String body) {
+        ensurePassOnItem(owner, PassOnKind.STORY, title, body, audience, null, null,
+                PassOnRelease.NOW);
+    }
+
+    private void ensureLetter(User owner, User person, String title, String body,
+                              LocalDateTime firstReadAt) {
+        ensurePassOnItem(owner, PassOnKind.LETTER, title, body, PassOnAudience.PERSON,
+                person, firstReadAt, PassOnRelease.NOW);
+    }
+
+    /**
+     * A letter held until after the writer is gone: written and addressed today, shut to the
+     * person it names until a human runs the release procedure for this owner by hand.
+     *
+     * <p>There is no first-read date to pass and none is offered. The person it names cannot
+     * have read it — {@code released_at} is null for every demo owner, and
+     * {@code PassOnVisibilityService} turns every reader but the writer away until it is not.
+     * A seeded read date would be the one thing here that could not have happened.
+     */
+    private void ensureHeldLetter(User owner, User person, String title, String body) {
+        ensurePassOnItem(owner, PassOnKind.LETTER, title, body, PassOnAudience.PERSON,
+                person, null, PassOnRelease.AFTER);
+    }
+
+    /** Guarded by owner + kind + title, so a re-run never writes a second copy of a story. */
+    private void ensurePassOnItem(User owner, PassOnKind kind, String title, String body,
+                                  PassOnAudience audience, User person, LocalDateTime firstReadAt,
+                                  PassOnRelease releaseWhen) {
+        boolean exists = passOnItemRepository
+                .findByOwnerIdAndKindOrderByCreatedAtDesc(owner.getId(), kind)
+                .stream().anyMatch(item -> title.equals(item.getTitle()));
+        if (exists) return;
+
+        passOnItemRepository.save(PassOnItem.builder()
+                .owner(owner)
+                .kind(kind)
+                .title(title)
+                .body(body)
+                .audience(audience)
+                .audienceUser(person)
+                // NOW for the stories and for the letters she means to be read today; AFTER for
+                // the one she is holding back, which this version delivers for real. What the
+                // demo must never show is a RELEASED owner: her released_at stays null, so the
+                // held letter sits shut exactly as a living elder's does, and nothing here waits
+                // on a death that a job could then act on.
+                .releaseWhen(releaseWhen)
+                .firstReadAt(firstReadAt)
+                .build());
+    }
+
+    /** Sets the name on the account when it is missing or has drifted, and not otherwise. */
+    private User ensureFullName(User user, String fullName) {
+        if (fullName.equals(user.getFullName())) return user;
+        user.setFullName(fullName);
+        return userRepository.save(user);
+    }
+
+    // ── helpers, continued ───────────────────────────────────────────────
+
     private User ensureUser(String email, String phone, UserRole role, String rawPassword) {
         return ensureUser(email, phone, role, rawPassword, MONTREAL);
     }
@@ -802,6 +1105,10 @@ public class DemoDataSeeder implements ApplicationRunner {
                 u.setVerificationStatus(VerificationStatus.VERIFIED); dirty = true;
             }
             if (!u.isPhoneVerified()) { u.setPhoneVerified(true); dirty = true; }
+            // Accounts seeded before this column existed carry false, and an unconfirmed
+            // address is refused by the Sealed box setup — "one day it is how we would reach
+            // you about your box". Without this the demo elder cannot arm hers at all.
+            if (!u.isEmailVerified()) { u.setEmailVerified(true); dirty = true; }
             // Full reset: snap account settings a visitor may have changed (their
             // location, date of birth, city, phone, verification) back to baseline.
             if (resetEnabled) {

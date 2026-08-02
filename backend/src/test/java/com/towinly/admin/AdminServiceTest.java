@@ -1,7 +1,9 @@
 package com.towinly.admin;
 
+import com.towinly.admin.dto.AdminVerificationResponse;
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.UserRole;
+import com.towinly.common.enums.VerificationStatus;
 import com.towinly.common.repository.UserRepository;
 import com.towinly.common.seed.DemoDataSeeder;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -73,6 +76,24 @@ class AdminServiceTest {
         // The admin stays active and nothing is persisted — no self-lockout possible.
         assertThat(admin.getIsActive()).isTrue();
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void getPendingVerifications_signsTheIdDocumentUrl() {
+        User waiting = user(UserRole.ELDER);
+        waiting.setIdDocumentUrl("https://towin-photos.s3.us-east-1.amazonaws.com/documents/a/b.pdf");
+        when(userRepository.findByVerificationStatus(eq(VerificationStatus.PENDING), any(Pageable.class)))
+                .thenReturn(List.of(waiting));
+        when(s3Service.presignedUrl(anyString()))
+                .thenAnswer(call -> call.getArgument(0) + "?X-Amz-Signature=deadbeef");
+
+        List<AdminVerificationResponse> pending = adminService.getPendingVerifications();
+
+        // Bucket objects are private: a raw S3 URL 403s in the admin's browser, so
+        // the panel can never open the document it is being asked to approve.
+        assertThat(pending).singleElement()
+                .extracting(AdminVerificationResponse::getIdDocumentUrl)
+                .asString().contains("X-Amz-Signature");
     }
 
     @Test

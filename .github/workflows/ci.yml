@@ -12,6 +12,26 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    # Hard gate: Flyway runs at boot, so a bad migration is not a failed request, it is a
+    # backend that will not start — and a push to main deploys straight to Railway. This
+    # throwaway database is where the migrations get to fail instead.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: towin
+          POSTGRES_PASSWORD: towin
+          POSTGRES_DB: towin_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      # Turns on the DB-backed tests, which skip themselves everywhere else.
+      TOWINLY_DB_TESTS: "true"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/towin_test
+      SPRING_DATASOURCE_USERNAME: towin
+      SPRING_DATASOURCE_PASSWORD: towin
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

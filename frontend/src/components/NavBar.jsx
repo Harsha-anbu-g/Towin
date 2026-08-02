@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon, HeartHandshake } from 'lucide-react';
+import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon, HeartHandshake, ScrollText } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 import { useTheme } from '../context/useTheme';
@@ -222,6 +222,11 @@ export default function NavBar() {
                 }}>{unread > 99 ? '99+' : unread}</span>
               )}
             </div>
+            {/* Her own boxes sit beside Messages rather than in the account menu:
+                the card at the foot of the dashboard was several screens down for
+                an elder with a few helpers, and a door nobody finds is not a door
+                (user call 2026-07-31). */}
+            {isElder && <NavLink to="/what-i-pass-on" label="My boxes" icon={ScrollText} />}
             {/* Family members are watchers, not earners — no Trust Score for them (user call 2026-07-19). */}
             {!isFamilyRole && (<>
             <div style={{ width: '1px', height: '22px', background: 'var(--border)', margin: '0 8px' }} />
@@ -319,6 +324,18 @@ export default function NavBar() {
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                     >
                       <Users size={18} strokeWidth={2} aria-hidden="true" />My Family
+                    </Link>
+                  )}
+                  {isElder && (
+                    <Link to="/what-i-pass-on" role="menuitem" onClick={() => setAccountOpen(false)} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
+                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <ScrollText size={18} strokeWidth={2} aria-hidden="true" />My boxes
                     </Link>
                   )}
                   {showFamilyHome && (
@@ -456,6 +473,7 @@ export default function NavBar() {
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
             <MenuLink to="/profile" label="Profile" icon={User} />
             {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
+            {isElder && <MenuLink to="/what-i-pass-on" label="My boxes" icon={ScrollText} />}
             {showFamilyHome && <MenuLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
             {!isFamilyRole && <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />}

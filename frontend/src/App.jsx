@@ -13,12 +13,16 @@ import ProfileEdit from './pages/ProfileEdit';
 import ChangePassword from './pages/ChangePassword';
 import EmergencyContacts from './pages/EmergencyContacts';
 import MyFamily from './pages/MyFamily';
+import PassOn from './pages/PassOn';
+import PassOnFrom from './pages/PassOnFrom';
+import PassOnSheet from './pages/PassOnSheet';
 import FamilyHome from './pages/FamilyHome';
 import FamilyParent from './pages/FamilyParent';
 import Messages from './pages/Messages';
 import MessagesInbox from './pages/MessagesInbox';
 import Admin from './pages/Admin';
 import AdminRoute from './components/AdminRoute';
+import { PrivateRoute, PublicRoute, ElderOnly } from './routes/guards';
 import Trust from './pages/Trust';
 import Streaks from './pages/Streaks';
 import UserProfile from './pages/UserProfile';
@@ -79,30 +83,6 @@ function BfCacheGuard() {
   }, [user, logout, navigate]);
 
   return null;
-}
-
-function PrivateRoute({ children }) {
-  const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
-}
-
-function PublicRoute({ children }) {
-  const { user } = useAuth();
-  if (!user) return children;
-  if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
-  // Family members land on their own home — they have no check-in streaks,
-  // discovery, needs or connection surfaces (family-in-trust Step 1)
-  if (user.role === 'FAMILY') return <Navigate to="/family-home" replace />;
-  // Elders land on the daily check-in first — keeps the post-login flow
-  // consistent even when navigation races the auth context update
-  return <Navigate to="/streaks" replace />;
-}
-
-function ElderOnly({ children }) {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'ELDER' || user.role === 'BOTH') return children;
-  return <Navigate to="/dashboard" replace />;
 }
 
 function DashboardRouter() {
@@ -173,11 +153,22 @@ function App() {
             <Route path="/profile/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
             <Route path="/emergency-contacts" element={<ElderOnly><EmergencyContacts /></ElderOnly>} />
             <Route path="/family" element={<ElderOnly><MyFamily /></ElderOnly>} />
+            <Route path="/what-i-pass-on" element={<ElderOnly><PassOn /></ElderOnly>} />
+            {/* Her saved one-page copy. ElderOnly like the page it belongs to — it is her own
+                arrangement, and nobody else's copy to take. */}
+            <Route path="/what-i-pass-on/sheet" element={<ElderOnly><PassOnSheet /></ElderOnly>} />
+            {/* Reading somebody else's page. PrivateRoute, never ElderOnly — the whole
+                point is that her family and her helpers can read it, and none of them
+                are elders. The server decides what any one of them may see. */}
+            <Route path="/passed-on/:ownerId" element={<PrivateRoute><PassOnFrom /></PrivateRoute>} />
             <Route path="/family-home" element={<PrivateRoute><FamilyHome /></PrivateRoute>} />
             <Route path="/family-home/parent/:elderId" element={<PrivateRoute><FamilyParent /></PrivateRoute>} />
             <Route path="/messages" element={<PrivateRoute><MessagesInbox /></PrivateRoute>} />
             <Route path="/messages/:connectionId" element={<PrivateRoute><Messages /></PrivateRoute>} />
-            <Route path="/streaks" element={<PrivateRoute><Streaks /></PrivateRoute>} />
+            {/* The daily check-in is an elder's signal to their family that they
+                are alright. Helpers have no check-in, so ElderOnly sends them to
+                their own dashboard rather than a page that means nothing to them. */}
+            <Route path="/streaks" element={<ElderOnly><Streaks /></ElderOnly>} />
             <Route path="/game" element={<PrivateRoute><PeekabooGame /></PrivateRoute>} />
             <Route path="/trust" element={<PrivateRoute><Trust /></PrivateRoute>} />
             <Route path="/user/:id" element={<PrivateRoute><UserProfile /></PrivateRoute>} />

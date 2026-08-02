@@ -127,6 +127,18 @@ public class AdminService {
         }
     }
 
+    /**
+     * What deleting this account would take with it, for the confirmation in the panel.
+     *
+     * Delegates rather than counting again: {@code purgeUserData} is shared between the two
+     * delete paths, so the warning has to be too, or the panel would eventually promise to
+     * destroy something different from what it destroys.
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> deletionWarning(UUID userId) {
+        return accountService.deletionWarning(userId);
+    }
+
     @Transactional
     public void deleteUser(UUID adminId, UUID userId) {
         if (adminId.equals(userId)) {
@@ -151,7 +163,10 @@ public class AdminService {
                 .map(u -> AdminVerificationResponse.builder()
                         .userId(u.getId())
                         .email(u.getEmail())
-                        .idDocumentUrl(u.getIdDocumentUrl())
+                        // Sign it, exactly as every other S3 URL we hand to a browser is
+                        // signed. The raw bucket URL is private, so the admin panel's
+                        // "view document" link 403s and the ID can never be checked.
+                        .idDocumentUrl(s3Service.presignedUrl(u.getIdDocumentUrl()))
                         .createdAt(u.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
@@ -188,6 +203,11 @@ public class AdminService {
                         .reportedEmail(r.getReportedUser().getEmail())
                         .reason(r.getReason())
                         .description(r.getDescription())
+                        // Without these, a report about one particular story arrives on the
+                        // admin screen indistinguishable from a complaint about a person,
+                        // and nobody can find the writing that was objected to.
+                        .contentType(r.getContentType())
+                        .contentId(r.getContentId())
                         .createdAt(r.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());

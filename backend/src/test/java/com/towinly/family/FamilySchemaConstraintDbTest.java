@@ -1,12 +1,12 @@
 package com.towinly.family;
 
+import com.towinly.common.persistence.TestDatabase;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,14 +18,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * DB-level constraint tests for the V38 family_links schema.
  *
- * The regular test suite runs without a database (Flyway/DataSource excluded in
- * src/test/resources/application.properties, and CI has no Postgres service), so
- * these tests only run when TOWINLY_DB_TESTS=true is set locally:
- *
- *   TOWINLY_DB_TESTS=true ./mvnw test -Dtest=FamilySchemaConstraintDbTest
- *
- * They expect a locally migrated database (default: the towin_mig_check_ralph
- * scratch DB created for US-001, which has all 39 migrations applied).
+ * These need a real Postgres, so they only run when TOWINLY_DB_TESTS=true. CI sets it
+ * and gives them a throwaway Postgres service container; locally, see {@link TestDatabase}
+ * for the one-liner. {@code TestDatabase} also migrates the schema, so this class does not
+ * depend on some other test having run first.
  */
 @EnabledIfEnvironmentVariable(named = "TOWINLY_DB_TESTS", matches = "true")
 class FamilySchemaConstraintDbTest {
@@ -35,17 +31,9 @@ class FamilySchemaConstraintDbTest {
     private UUID familyAId;
     private UUID familyBId;
 
-    private static String env(String name, String fallback) {
-        String value = System.getenv(name);
-        return value != null && !value.isBlank() ? value : fallback;
-    }
-
     @BeforeEach
     void setUp() throws Exception {
-        conn = DriverManager.getConnection(
-                env("TOWINLY_TEST_DB_URL", "jdbc:postgresql://localhost:5432/towin_mig_check_ralph"),
-                env("TOWINLY_TEST_DB_USER", "postgres"),
-                env("TOWINLY_TEST_DB_PASSWORD", "0000"));
+        conn = TestDatabase.connect();
         conn.setAutoCommit(true);
         elderId = insertUser("ELDER");
         familyAId = insertUser("FAMILY");

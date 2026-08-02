@@ -43,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -65,6 +66,14 @@ class AccountServiceTest {
     @Mock com.towinly.family.repository.FamilyAlertRepository familyAlertRepository;
     @Mock com.towinly.family.repository.FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
+    // "What I pass on" — see AccountServicePassOnDataTest for what these actually assert.
+    @Mock com.towinly.passon.repository.PassOnItemRepository passOnItemRepository;
+    @Mock com.towinly.passon.repository.SealedItemRepository sealedItemRepository;
+    @Mock com.towinly.passon.repository.KeyholderRepository keyholderRepository;
+    @Mock com.towinly.passon.repository.PassOnSettingsRepository passOnSettingsRepository;
+    @Mock com.towinly.passon.repository.PassOnOpenRepository passOnOpenRepository;
+    @Mock com.towinly.passon.service.ReleaseGate releaseGate;
+    @Mock com.towinly.passon.service.ReleaseContact releaseContact;
     @Mock S3Service s3Service;
 
     @InjectMocks AccountService accountService;
@@ -188,6 +197,52 @@ class AccountServiceTest {
         accountService.deleteOwnAccount(userId);
 
         verify(connectionRepository).deleteByUserId(userId);
+        verify(userRepository).delete(user);
+    }
+
+    // ── once a person has been released, the account is not theirs to delete ──
+
+    @Test
+    void deleteOwnAccount_isRefusedOnceTheirThingsHaveBeenPassedOn() {
+        // Cheaper than any other attack on the freeze: this endpoint takes nothing but the
+        // JWT — no password, no confirmation — and erases every story and letter, including
+        // ones a bereaved daughter has already read. The data subject is dead; whoever is
+        // holding the account is by definition not them, and the dead have no erasure right
+        // to exercise.
+        when(releaseGate.isReleased(userId)).thenReturn(true);
+        when(releaseContact.email()).thenReturn("sealedbox@example.org");
+
+        assertThatThrownBy(() -> accountService.deleteOwnAccount(userId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("What was on this account has been passed on to the people it was "
+                        + "meant for, and it cannot be taken back now. If you need to talk to "
+                        + "somebody about it, write to sealedbox@example.org.");
+
+        verify(passOnItemRepository, never()).deleteByOwnerId(any());
+        verify(userRepository, never()).delete(any());
+    }
+
+    @Test
+    void deleteOwnAccount_saysSoPlainlyWhenNoAddressIsSet() {
+        // A bereaved relative must not be shown a blank space where an address should be.
+        when(releaseGate.isReleased(userId)).thenReturn(true);
+        when(releaseContact.email()).thenReturn(null);
+
+        assertThatThrownBy(() -> accountService.deleteOwnAccount(userId))
+                .hasMessage("What was on this account has been passed on to the people it was "
+                        + "meant for, and it cannot be taken back now. Towinly has not set an "
+                        + "address to write to yet.");
+    }
+
+    @Test
+    void purgeUserData_isNotGatedByTheRelease() {
+        // Shared with the admin delete and mirrored by the demo reset. Gating it here would
+        // strip an operator of the ability to honour a genuine erasure order — for a living
+        // person wrongly released, or a court's. Only the self-serve door is closed.
+        lenient().when(releaseGate.isReleased(userId)).thenReturn(true);
+
+        accountService.purgeUserData(userId);
+
         verify(userRepository).delete(user);
     }
 

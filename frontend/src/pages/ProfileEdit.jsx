@@ -10,6 +10,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
 import TagInput from '../components/TagInput';
+import { isTooBig, TOO_BIG_MESSAGE } from '../lib/uploads';
 
 const MUTED = 'var(--ink-4)';
 const BORDER = 'var(--border)';
@@ -172,9 +173,19 @@ export default function ProfileEdit() {
     finally { setUploadingId(false); }
   }
 
+  function handleIdSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (isTooBig(file)) { setIdFile(null); setIdMsg(TOO_BIG_MESSAGE); return; }
+    setIdMsg('');
+    setIdFile(file);
+  }
+
   function handlePhotoSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
+    // Stop it here rather than let the server answer 500 with nothing readable.
+    if (isTooBig(file)) { setPhotoFile(null); setPhotoMsg(TOO_BIG_MESSAGE); return; }
     if (localPhotoPreview) URL.revokeObjectURL(localPhotoPreview);
     setLocalPhotoPreview(URL.createObjectURL(file));
     setPhotoFile(file);
@@ -569,7 +580,7 @@ export default function ProfileEdit() {
                   </div>
                   {(profileData?.verificationStatus === 'NONE' || !profileData?.verificationStatus) && (
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <input type="file" accept="image/*,.pdf" onChange={e => setIdFile(e.target.files[0])}
+                      <input type="file" accept="image/*,.pdf" onChange={handleIdSelect}
                         style={{ fontSize: '14px', color: 'var(--ink-3)', flex: 1 }} />
                       {idFile && (
                         <button onClick={uploadId} disabled={uploadingId} className="primary-btn" style={{ fontSize: '14px' }}>

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -82,6 +83,54 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Only the elder can choose the main contact", "Only the elder can choose their main family contact.");
         SAFE_MESSAGES.put("Only an accepted family member can be the main contact",
                 "Only an accepted family member can be the main contact.");
+        // What I pass on — the Story box and Letters. Each is already written the way the
+        // elder should read it, so the key and the message are the same sentence.
+        SAFE_MESSAGES.put("A story is for people to read now",
+                "A story is for people to read now. Only a letter can be kept until after you are gone.");
+        SAFE_MESSAGES.put("What is kept here was passed on",
+                "What is kept here was passed on to the people it was meant for. Nothing can be "
+                        + "added, changed or taken down now.");
+        SAFE_MESSAGES.put("A letter goes to one person",  "A letter goes to one person, and only that person.");
+        SAFE_MESSAGES.put("Please choose the one person", "Please choose the one person this is for.");
+        SAFE_MESSAGES.put("Only elders can write on this page", "Only elders can write on this page.");
+        // What I pass on — Keyholders. Same again: the sentence the person reads is the one
+        // thrown, because every one of these is about somebody's death and a generic
+        // "Invalid request." on that screen would be worse than useless.
+        SAFE_MESSAGES.put("You can only ask someone who is already on your family list",
+                "You can only ask someone who is already on your family list.");
+        SAFE_MESSAGES.put("You have already asked that person", "You have already asked that person.");
+        SAFE_MESSAGES.put("That has already been answered",     "That has already been answered.");
+        SAFE_MESSAGES.put("That person is not holding a key any more",
+                "That person is not holding a key any more.");
+        SAFE_MESSAGES.put("You can ask up to",                  "You can ask up to 5 people to hold a key.");
+        SAFE_MESSAGES.put("That was not asked of you",          "That was not asked of you.");
+        SAFE_MESSAGES.put("You are not holding a key",          "You are not holding a key for that person.");
+        SAFE_MESSAGES.put("Please answer yes or no",            "Please answer yes or no.");
+        SAFE_MESSAGES.put("Please choose who to ask",           "Please choose who to ask.");
+        // What I pass on — setting the Sealed box up. Every one of these is something she
+        // can act on, on the last screen of a flow about her own death, so each is the
+        // sentence she should read rather than a generic refusal.
+        SAFE_MESSAGES.put("Please confirm your email address before you set this up",
+                "Please confirm your email address before you set this up. One day it is how we "
+                        + "would reach you about your box, and we need to know it works.");
+        SAFE_MESSAGES.put("Please pick at least three people",
+                "Please pick at least three people, and no more than five.");
+        SAFE_MESSAGES.put("The number who must agree",
+                "The number who must agree has to be at least two, and always fewer than the "
+                        + "number of people you picked.");
+        SAFE_MESSAGES.put("Please tick both boxes",  "Please tick both boxes to finish.");
+        SAFE_MESSAGES.put("Something has changed on this page",
+                "Something has changed on this page. Please load it again and try again.");
+        SAFE_MESSAGES.put("Your box is not set up yet", "Your box is not set up yet.");
+        SAFE_MESSAGES.put("The seven days have passed",
+                "The seven days have passed, so this is settled. You can still take anybody's key "
+                        + "back whenever you like.");
+        SAFE_MESSAGES.put("Your Sealed box is kept shut by your password",
+                "Your Sealed box is kept shut by your password, and this account signs in with "
+                        + "Google. Please set a password first, then come back.");
+        // What I pass on — opening one thing in the Sealed box.
+        SAFE_MESSAGES.put("That password was not right",
+                "That password was not right. Please try again.");
         // Trust flow
         SAFE_MESSAGES.put("Only the elder can start the next step",       "Only the elder can start the next step. You can accept it once they do.");
         // Review flow
@@ -94,6 +143,31 @@ public class GlobalExceptionHandler {
                 "You can leave a review once you're fully trusted friends.");
     }
 
+    /**
+     * The few refusals whose own text is already exactly what the person should read, and
+     * which carry a real value inside them — a date — so no fixed sentence in the allowlist
+     * above could stand in for one without losing the part that makes it useful.
+     *
+     * <p>Kept to prefixes that are written as constants in the code that throws them, never a
+     * general pass-through: everything else stays on the allowlist, because an exception
+     * message is otherwise the last place internal detail leaks from.
+     */
+    private static final List<String> SAY_IT_AS_THROWN = List.of(
+            // SealedBoxService.frozenMessage — "…stays shut until 12 August…". The date is the
+            // whole point: it is what tells an elder her box is safe rather than broken, and
+            // when it will open again.
+            "You changed your password recently. For your safety your Sealed box stays shut until ",
+            // AccountService.cannotDeleteAfterRelease — "…write to sealedbox@example.org." The
+            // address is the whole point: a bereaved relative told only "no" concludes the app
+            // has eaten their mother's words, so the sentence has to carry somewhere to go.
+            "What was on this account has been passed on to the people it was meant for, and it "
+                    + "cannot be taken back now. ",
+            // ReleaseGate.boxCannotBeOpened — "…write to sealedbox@example.org." Same reason: this
+            // is the likeliest wall a family meets while genuinely trying to reach what she left
+            // them, and a refusal with no next step reads as the app having swallowed it.
+            "This box was passed on to the people it was meant for, so it cannot be opened here "
+                    + "any more. ");
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("IllegalArgumentException: {}", ex.getMessage());
@@ -104,6 +178,10 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(404)
                     .body(new ErrorResponse("We couldn't find that. It may have been removed.",
                             404, LocalDateTime.now()));
+        }
+        if (ex.getMessage() != null && SAY_IT_AS_THROWN.stream().anyMatch(ex.getMessage()::startsWith)) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(ex.getMessage(), 400, LocalDateTime.now()));
         }
         String safe = SAFE_MESSAGES.entrySet().stream()
                 .filter(e -> ex.getMessage() != null && ex.getMessage().startsWith(e.getKey()))
@@ -128,6 +206,18 @@ public class GlobalExceptionHandler {
         log.warn("ForbiddenException: {}", ex.getMessage());
         return ResponseEntity.status(403)
                 .body(new ErrorResponse(ex.getMessage(), 403, LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(com.towinly.passon.exception.SealedBoxUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleSealedBoxUnavailable(
+            com.towinly.passon.exception.SealedBoxUnavailableException ex) {
+        // The Sealed box could not be operated — no master key, a bad one, or a row wrapped
+        // by a key version this build does not hold. The real reason is already logged at
+        // the throw site; the elder only ever sees the plain line, and every sealed write
+        // is refused rather than stored in a form nobody could decrypt later.
+        log.error("Sealed box unavailable: {}", ex.getMessage());
+        return ResponseEntity.status(503)
+                .body(new ErrorResponse(ex.getMessage(), 503, LocalDateTime.now()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

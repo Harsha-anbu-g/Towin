@@ -32,6 +32,7 @@ class FamilyServiceRespondRevokePrimaryTest {
     @Mock FamilyDelegationService familyDelegationService;
     @Mock com.towinly.profile.repository.ElderProfileRepository elderProfileRepository;
     @Mock com.towinly.profile.repository.HelperProfileRepository helperProfileRepository;
+    @Mock com.towinly.passon.service.KeyholderService keyholderService;
 
     FamilyService familyService;
 
@@ -43,7 +44,8 @@ class FamilyServiceRespondRevokePrimaryTest {
     void setUp() {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
-                familyDelegationService, elderProfileRepository, helperProfileRepository);
+                familyDelegationService, elderProfileRepository, helperProfileRepository,
+                keyholderService);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
         stranger = buildUser("steve_stranger", UserRole.HELPER);
@@ -166,6 +168,20 @@ class FamilyServiceRespondRevokePrimaryTest {
         verify(familyLinkRepository).save(active);
         // Unlinking ends consent: grants and open asks are cleared with the link.
         verify(familyDelegationService).revokeAll(active.getElder().getId(), active.getFamilyUser().getId());
+    }
+
+    @Test
+    void unlinkingAlsoEndsTheKeyToTheSealedBox() {
+        // Two "remove this person" buttons with two different consequences is a trap an
+        // elder cannot be expected to understand: taking somebody off the family list has
+        // to take their key with it, whichever side did the unlinking.
+        FamilyLink active = link(elder, FamilyLinkStatus.ACTIVE, false);
+        stubFind(active);
+        stubSave();
+
+        familyService.revoke(daughter.getId(), active.getId());
+
+        verify(keyholderService).onFamilyLinkEnded(elder.getId(), daughter.getId());
     }
 
     @Test

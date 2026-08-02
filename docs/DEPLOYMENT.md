@@ -42,6 +42,25 @@ How the live site is wired up, what each piece costs, and how to redeploy or rec
 
 **Manual deploy (CLI)**: `vercel --prod` from `frontend/` (requires `npm i -g vercel` + `vercel login`).
 
+### Analytics (PostHog), and the one page it must not see
+
+`VITE_PUBLIC_POSTHOG_KEY` and `VITE_PUBLIC_POSTHOG_HOST` are set in the Vercel project. With no
+key, `main.jsx` renders the app without the provider and nothing is sent at all.
+
+"What I pass on" is excluded from analytics, because session replay would otherwise hold a video of
+an elderly woman reading her own last words. Two of the three controls are in the code and tested
+(`frontend/src/lib/analytics.js`, `analytics.test.js`):
+
+1. **Autocapture is off** on `/what-i-pass-on*` and `/passed-on/*` (`autocapture.url_ignorelist`).
+2. **Every element rendering her words carries `ph-no-capture`**, which session replay blocks and
+   autocapture refuses to read. `maskAllInputs` does not do this — it masks what is *typed*, never
+   what is already on the page.
+3. **Not in the code, and still to be done in the PostHog project itself**: add `/what-i-pass-on`
+   and `/passed-on/` to the session-replay URL blocklist, under the project's session-replay
+   settings. PostHog delivers that list from its own server (`urlBlocklist` arrives in the remote
+   config, it is not an option this app can pass at start-up), so no change in this repository can
+   make it — control 2 is what stands in for it until somebody sets it.
+
 ---
 
 ## 3. Railway — backend + Postgres
@@ -76,11 +95,114 @@ AWS_S3_BUCKET=towin-photos
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=
+ADMIN_EMAIL=            # see "Secrets that switch a feature on or off" below
+ADMIN_PASSWORD=
+GROQ_API_KEY=
+SEALED_BOX_MASTER_KEY=
+SEALED_BOX_RELEASE_CONTACT_EMAIL=
 ```
 
 CORS lists three explicit origins: the custom domain, its apex, and the old `towin.vercel.app` (kept alive so links on already-submitted resumes still work). There is no preview-deployment wildcard.
 
 The three domain-bearing variables above must all change together if the domain ever changes again. Google sign-in is started by the backend (`/oauth2/authorization/google`), so the redirect URI registered in Google Cloud Console points at the Railway backend and does **not** need updating when the frontend domain changes.
+
+### Secrets that switch a feature on or off
+
+None of these live in the repository. Each is blank by default, and a blank value turns its feature
+off quietly rather than crashing the app — which means **a missing one is invisible until somebody
+goes looking for the feature**.
+
+| Variable | Blank means | If it is lost |
+|---|---|---|
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | No admin account is created at boot (`AdminSeeder`) | Set new ones and restart; the account is re-seeded |
+| `GROQ_API_KEY` | The Ask-AI assistant is off and says so | Get another key from Groq. Nothing is lost |
+| `SEALED_BOX_MASTER_KEY` | Every Sealed box endpoint refuses with a plain "unavailable" message, and **no new box can be armed** | **Every existing Sealed box is destroyed. Permanently. Read the next section before you touch this variable.** |
+| `SEALED_BOX_RELEASE_CONTACT_EMAIL` | The saved one-page copy says plainly that no address has been set yet, instead of telling a family where to write | Set it again and restart. Copies already saved by elders still carry the old address, so treat a change as a forwarding problem, not a config change |
+
+#### `SEALED_BOX_MASTER_KEY` — the one secret that cannot be regenerated
+
+Every other secret here can be replaced. This one cannot, because it is not a credential — it is
+the key that every sealed item was encrypted under.
+
+- **Format**: base64 of exactly 32 random bytes — `openssl rand -base64 32`.
+- **Read by exactly one class**, `SealedCryptoService`. Never in Postgres, never in a log, never
+  returned by any endpoint.
+- **Checked at boot**: the app encrypts and decrypts a known constant through the real code path.
+  A malformed key, a wrong length, or a JCE provider that cannot do AES-256-GCM is caught then —
+  the box switches off rather than writing rows nobody could ever decrypt. Look for
+  `Sealed box armed: master key loaded and the startup self-check round-tripped.` in the boot log.
+- **Losing it destroys every box irrecoverably.** Not "makes them hard to read" — the ciphertext in
+  `passon_sealed_items` becomes permanently meaningless, including in every database backup you
+  hold, because the key was never in the database. What is lost is where elderly people said their
+  money, their papers and their keys are. There is no recovery, no support path, and nothing to
+  apologise with.
+
+**Recovery procedure — this is the whole of it, and it has to be done before there is a problem:**
+
+1. Generate the key once, on a machine you trust: `openssl rand -base64 32`.
+2. Set it in Railway → `backend` service → Variables. Confirm the boot line above appears.
+3. Store a copy **outside Railway and outside this repository**, in a password manager entry named
+   so that somebody who is not you would recognise what it is. Railway is the running copy, not the
+   backup: an account lockout, a billing lapse or a deleted service takes it with it.
+4. Give a second person their own copy, by a route that is not email. See below.
+5. Write down the date it was generated. It is never rotated on a schedule — see rotation below.
+6. Test the restore, once: set the variable on a scratch environment from the stored copy and
+   confirm an item written under it opens.
+
+**Second holder: UNSET. This blocks launch.** One person holding the only copy of this key means
+one lost laptop, one hospital stay or one forgotten password destroys every box in the product. The
+second holder needs to be a real named person who can be reached independently, who knows what the
+string is for, and who is written into
+[`docs/operations/sealed-box-release.md`](operations/sealed-box-release.md) as the person who
+answers when the first is unreachable.
+
+**Rotation.** `passon_sealed_items.key_version` exists so the key can be replaced without
+re-encrypting bodies: a new key gets the next version, new items are wrapped under it, and old rows
+are re-wrapped in the background. **That background re-wrap is not built.** Until it is, replacing
+the key is not a rotation, it is a deletion. Do not change the value of this variable.
+
+#### `SEALED_BOX_RELEASE_CONTACT_EMAIL` — the address printed on a page a family keeps
+
+Where a family writes when the day comes. It is the only route they have into the manual release
+procedure in [`docs/operations/sealed-box-release.md`](operations/sealed-box-release.md), and it is
+**printed on the one-page copy an elder saves and keeps with her will** — read years later, by
+somebody in the week after a death.
+
+- **Format**: one email address, on a domain that receives mail, going to a mailbox somebody reads.
+  Not a no-reply. Not a form. The spec's launch gate is a named human with a stated turnaround.
+- **Read by exactly one class**, `ReleaseContact`, and sent to the browser on `/api/passon/sheet`
+  and `/api/passon/setup`. It is not a secret — it is meant to be published — so it is logged at
+  boot: look for `Sealed box release contact is set to …`.
+- **Blank is a supported state and is said out loud.** With nothing set, the saved copy reads
+  *"Towinly has not set an address to write to yet."* and the boot log carries
+  `Sealed box release contact is NOT SET.` There is deliberately no default: an invented address on
+  the real domain would look real to a grieving family, take their letter, and give them no way of
+  finding out it went nowhere. An admission is the only honest answer, and it is one they can act
+  on.
+- **Changing it does not reach copies already saved.** Every sheet an elder has downloaded carries
+  the address that was configured on the day she saved it. Keep any address that has ever shipped
+  forwarding to the new one, indefinitely — for this variable a change is a forwarding problem, not
+  a config change.
+
+### One replica, and only one
+
+The backend runs as a single Railway instance and **everything in it assumes that**. There is no
+ShedLock, no Postgres advisory lock and no leader election anywhere in the codebase.
+
+Nothing in v1 depends on this — "What I pass on" deliberately ships with no scheduled job, and the
+after-death release is a human procedure, not a cron. There are exactly three pieces of recurring
+work today:
+
+| What | Where | On two replicas |
+|---|---|---|
+| Inactivity check, daily at 09:00 | `InactivityCheckService` | **Two emails to the same family.** Untidy, not dangerous |
+| Rate-limiter sweep | `RateLimiterSweeper` | Harmless — the map it sweeps is per-instance anyway |
+| Demo data reset, debounced | `DemoResetCoordinator` | Harmless — each instance re-seeds the same fixed content |
+
+**This is recorded here because the next scheduled job is the one that breaks.** Scaling the
+service to two replicas, or adding a v2 job that advances a release state, sends a nudge or opens a
+box, means two instances doing it at once — two emails to a grieving family, or two releases from a
+single quorum. Add a lock **before** the job, not after the incident.
 
 ### Deploy command
 

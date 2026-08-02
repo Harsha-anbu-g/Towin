@@ -26,6 +26,18 @@ public class AccountController {
         return ResponseEntity.ok(accountService.exportUserData(userId));
     }
 
+    /**
+     * What deleting your account would take with it, to be shown before it happens.
+     *
+     * The same numbers the admin panel gets, from the same place, because the two delete
+     * paths destroy exactly the same rows. Read-only and nothing is removed by calling it.
+     */
+    @GetMapping("/delete-preview")
+    public ResponseEntity<Map<String, Object>> deletePreview(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(accountService.deletionWarning(userId));
+    }
+
     /** GDPR Article 17 — permanently delete your account and all associated data. */
     @DeleteMapping
     public ResponseEntity<Void> deleteAccount(Authentication auth) {

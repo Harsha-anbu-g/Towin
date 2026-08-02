@@ -50,6 +50,8 @@ public class FamilyService {
     private final FamilyDelegationService familyDelegationService;
     private final com.towinly.profile.repository.ElderProfileRepository elderProfileRepository;
     private final com.towinly.profile.repository.HelperProfileRepository helperProfileRepository;
+    // Unlinking ends a Keyholder's key too. See the note in revoke().
+    private final com.towinly.passon.service.KeyholderService keyholderService;
 
     @Transactional
     public FamilyLinkResponse createRequest(UUID callerId, FamilyRequest request) {
@@ -164,6 +166,10 @@ public class FamilyService {
         // this pair, or a later re-link would silently resurrect old grants
         // the elder never re-approved.
         familyDelegationService.revokeAll(link.getElder().getId(), link.getFamilyUser().getId());
+        // ...and it ends their key to the elder's Sealed box, from either side. Two
+        // "remove this person" buttons with two different consequences is a trap an elder
+        // cannot be expected to understand, so there is only ever one.
+        keyholderService.onFamilyLinkEnded(link.getElder().getId(), link.getFamilyUser().getId());
         if (wasActive) {
             // US-008: revoked links stop counting — recompute drops the point.
             trustScoreService.recalculate(link.getElder().getId());

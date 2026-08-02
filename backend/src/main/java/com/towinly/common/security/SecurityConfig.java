@@ -82,6 +82,10 @@ public class SecurityConfig {
                 // Family links/requests/alerts are always about a signed-in person —
                 // explicit here (US-004) even though anyRequest() would cover it.
                 .requestMatchers("/api/family/**").authenticated()
+                // What I pass on: stories, letters and the Sealed box. Always about a
+                // signed-in person, and every route reads the caller from the token —
+                // explicit here for the same reason as the family routes above.
+                .requestMatchers("/api/passon/**").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
