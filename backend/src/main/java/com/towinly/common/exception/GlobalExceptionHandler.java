@@ -161,7 +161,12 @@ public class GlobalExceptionHandler {
             // address is the whole point: a bereaved relative told only "no" concludes the app
             // has eaten their mother's words, so the sentence has to carry somewhere to go.
             "What was on this account has been passed on to the people it was meant for, and it "
-                    + "cannot be taken back now. ");
+                    + "cannot be taken back now. ",
+            // ReleaseGate.boxCannotBeOpened — "…write to sealedbox@example.org." Same reason: this
+            // is the likeliest wall a family meets while genuinely trying to reach what she left
+            // them, and a refusal with no next step reads as the app having swallowed it.
+            "This box was passed on to the people it was meant for, so it cannot be opened here "
+                    + "any more. ");
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {

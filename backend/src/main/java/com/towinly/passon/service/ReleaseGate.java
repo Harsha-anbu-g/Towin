@@ -49,6 +49,28 @@ public class ReleaseGate {
             "What is kept here was passed on to the people it was meant for. Nothing can be "
                     + "added, changed or taken down now.";
 
+    /**
+     * The Sealed box refuses differently, because opening is not adding, changing or taking down
+     * and being told the wrong sentence at the worst moment is its own small cruelty.
+     *
+     * <p>It names somewhere to write. This is the likeliest place a family member meets a wall
+     * while genuinely trying to reach what she left them, and "no" with no next step is how they
+     * conclude the app has swallowed it. When no address is configured it says so plainly rather
+     * than leaving a gap or printing a plausible mailbox nobody reads — {@code ReleaseContact}'s
+     * rule everywhere else.
+     */
+    static String boxCannotBeOpened(String contactEmail) {
+        return BOX_CANNOT_BE_OPENED
+                + (contactEmail == null
+                        ? "Towinly has not set an address to write to yet."
+                        : "If you need to talk to somebody about it, write to " + contactEmail + ".");
+    }
+
+    /** Constant prefix, so GlobalExceptionHandler can allow the sentence through by its start. */
+    static final String BOX_CANNOT_BE_OPENED =
+            "This box was passed on to the people it was meant for, so it cannot be opened here "
+                    + "any more. ";
+
     private final PassOnSettingsRepository settings;
 
     /** True only once a person has run the release procedure for this owner. */

@@ -206,6 +206,22 @@ public class SealedBoxService {
     public SealedRevealResponse reveal(UUID ownerId, UUID itemId, String password) {
         revealLimiter.checkNotLocked(ownerId);
 
+        // Sits with the freeze rather than with the password, for the same reason: once a person
+        // has released her there is nothing to be gained by getting the password right, so there
+        // is nothing to be learned by trying. It is an extra gate and not a replacement — the
+        // password check below is untouched.
+        //
+        // Why a correct password is no longer enough: after a release the owner is dead, so
+        // whoever is typing it is somebody else. The procedure she agreed to — a certificate read
+        // by a person, her own quorum of Keyholders each confirming, thirty days of trying to
+        // reach her — is the mechanism that decides who sees inside this box. A password is a
+        // second door around all of it, and one that leaves the Keyholders no record it was used.
+        // That the contents already went to the right people does not make a disclosure to the
+        // wrong one harmless.
+        if (releases.isReleased(ownerId)) {
+            throw new IllegalArgumentException(ReleaseGate.boxCannotBeOpened(releaseContact.email()));
+        }
+
         User owner = getUser(ownerId);
         requireOwnPassword(owner);
 

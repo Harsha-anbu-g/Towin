@@ -210,7 +210,11 @@ oversight to work around at the time; it is the honest state of the build, and i
 before the contact details above are filled in.
 
 - `SealedBoxService.reveal` is the only path that opens an item, and it re-checks the account
-  password (`SealedBoxService.java`). A dead person cannot type it.
+  password (`SealedBoxService.java`). A dead person cannot type it. It now also refuses outright
+  once `released_at` is set, so **do not plan to use it at step 5 even if somebody hands you her
+  password** — after the release it will not open anything for anyone. That is deliberate: a
+  password would otherwise be a second door around the quorum, the certificate and the thirty
+  days, leaving her Keyholders no record it had been used.
 - `SealedCryptoService.open(ownerId, itemId, stored)` can open an item with only the master key —
   but nothing calls it outside that password path, and there is no script, endpoint or admin screen
   that would let a person run it.

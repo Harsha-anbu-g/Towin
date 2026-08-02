@@ -722,6 +722,39 @@ class SealedBoxServiceTest {
     }
 
     @Test
+    void openingSomethingInTheBoxIsRefusedOnceHerThingsHaveBeenPassedOn() {
+        // The password is right, and that is the point: after a release the person typing it is
+        // not the owner, because the owner is dead. Her chosen quorum, a certificate read by a
+        // person and thirty days of trying to reach her are the mechanism she agreed would decide
+        // who sees inside this box. A password is a second door around all of it, and one that
+        // leaves her Keyholders no record it was used.
+        margaretHasBeenReleased();
+        lenient().when(passwordEncoder.matches(PASSWORD, HASH)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.reveal(margaret.getId(), item.getId(), PASSWORD))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("This box was passed on to the people it was meant for, so it cannot "
+                        + "be opened here any more. If you need to talk to somebody about it, "
+                        + "write to " + RELEASE_CONTACT_EMAIL + ".");
+
+        // Nothing was decrypted, and no line was written saying she opened it.
+        verify(crypto, never()).open(any(), any(), any());
+        verifyNoInteractions(opens);
+    }
+
+    @Test
+    void aRefusedOpeningSaysSoPlainlyWhenNoAddressIsSet() {
+        SealedBoxService unconfigured = new SealedBoxService(sealedItems, settings, opens, users,
+                crypto, passwordEncoder, revealLimiter, alerts, keyholders,
+                new ReleaseContact(""), releases, clock);
+        margaretHasBeenReleased();
+
+        assertThatThrownBy(() -> unconfigured.reveal(margaret.getId(), item.getId(), PASSWORD))
+                .hasMessage("This box was passed on to the people it was meant for, so it cannot "
+                        + "be opened here any more. Towinly has not set an address to write to yet.");
+    }
+
+    @Test
     void theSavedCopyCanStillBeNotedAsTakenAfterARelease() {
         // Deliberately outside the freeze, and the one write here that is. Downloading the
         // one-page copy is exactly what a bereaved family legitimately does on this account,
