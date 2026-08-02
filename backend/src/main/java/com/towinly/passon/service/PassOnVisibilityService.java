@@ -42,6 +42,7 @@ public class PassOnVisibilityService {
 
     private final FamilyLinkRepository familyLinkRepository;
     private final ConnectionRepository connectionRepository;
+    private final ReleaseGate releases;
 
     /** May this reader open this story or letter, right now? */
     @Transactional(readOnly = true)
@@ -53,9 +54,17 @@ public class PassOnVisibilityService {
         // and what she wrote herself.
         if (ownerId.equals(viewerId)) return true;
 
-        // AFTER is legal in the schema so the later release needs no migration, but nothing
-        // may be handed out that the app cannot yet deliver properly.
-        if (item.getReleaseWhen() != PassOnRelease.NOW) return false;
+        // "After I am gone." Shut to everyone but the writer until a person has run the release
+        // procedure by hand for this owner — a death certificate read with somebody's eyes, her
+        // own quorum of Keyholders each asked separately, and thirty days in which nobody could
+        // reach her. Written as "anything that is not NOW", so a value nobody has thought of yet
+        // fails shut rather than open.
+        //
+        // Release opens the letter; it does not decide who reads it. That is still the audience
+        // below, which for a letter is the one person she named and nobody else.
+        if (item.getReleaseWhen() != PassOnRelease.NOW && !releases.isReleased(ownerId)) {
+            return false;
+        }
 
         return switch (item.getAudience()) {
             case EVERYONE -> true;

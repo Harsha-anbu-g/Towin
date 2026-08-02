@@ -58,6 +58,11 @@ public class PassOnItem {
     @JoinColumn(name = "audience_user_id")
     private User audienceUser;
 
+    /**
+     * NOW for everything a story ever is, and for most letters. AFTER is a letter she means to
+     * be read after she is gone: it stays shut to the person it names until somebody has run
+     * the release procedure by hand for this owner — see {@code ReleaseGate}.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "release_when", nullable = false, length = 6)
     @Builder.Default

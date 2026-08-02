@@ -228,6 +228,30 @@ class PassOnMigrationTest {
                 .hasMessageContaining("ck_pool_range");
     }
 
+    // ------------------------------------------------------ V56 passon_settings.released_at
+
+    @Test
+    void aBoxThatWasNeverReleasedHasNoReleaseDate() throws Exception {
+        // Null is where every row starts and where almost every row stays forever. Nothing in
+        // the code writes this column; only a person running the release procedure by hand does.
+        insertSettings(2, 3);
+
+        assertThat(releasedAt()).describedAs("nothing has been released").isNull();
+    }
+
+    @Test
+    void aReleaseWrittenByHandIsWhatOpensTheBox() throws Exception {
+        insertSettings(2, 3);
+
+        try (PreparedStatement ps = conn.prepareStatement(
+                "UPDATE passon_settings SET released_at = now() WHERE owner_id = ?")) {
+            ps.setObject(1, ownerId);
+            ps.executeUpdate();
+        }
+
+        assertThat(releasedAt()).describedAs("the one switch, set by a person").isNotNull();
+    }
+
     // ----------------------------------------------------------------- V53 passon_opens
 
     @Test
@@ -348,6 +372,16 @@ class PassOnMigrationTest {
             ps.setString(3, kind);
             ps.setString(4, actorLabel);
             ps.executeUpdate();
+        }
+    }
+
+    private java.sql.Timestamp releasedAt() throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT released_at FROM passon_settings WHERE owner_id = ?")) {
+            ps.setObject(1, ownerId);
+            ResultSet rs = ps.executeQuery();
+            assertThat(rs.next()).describedAs("her settings row is there").isTrue();
+            return rs.getTimestamp("released_at");
         }
     }
 

@@ -28,25 +28,31 @@ import java.util.UUID;
  * The Story box and the Letters: writing them, editing them, taking them down, and handing one
  * elder's writing to one visitor.
  *
- * Two rules are load-bearing and both live here rather than in a screen.
+ * Three rules are load-bearing and all three live here rather than in a screen.
  *
- * The first is that {@link PassOnRelease#AFTER} is refused. The value is legal in the database
- * so the later release needs no migration, but an elder must never be able to write a letter
- * this app cannot yet deliver — a deathbed letter sitting in a system with no working delivery
- * is the worst thing this feature could produce.
+ * The first is that a letter may be held until after she is gone ({@link PassOnRelease#AFTER})
+ * and a story never may. A story is something she shares while she is here; only a letter, to
+ * one named person, can be left behind. Postgres says the same in {@code ck_passon_story}, and
+ * this is where it becomes a sentence she can read.
  *
- * The second is that nothing here decides who may read anything. Every visitor's item passes
+ * The second is that a letter already passed on is hers no longer — see
+ * {@link #requireNotAlreadyPassedOn}. Everything else she wrote stays hers to change forever.
+ *
+ * The third is that nothing here decides who may read anything. Every visitor's item passes
  * through {@link PassOnVisibilityService}, which re-derives the answer on the spot, so a family
- * link revoked this morning stops granting a read on the very next call.
+ * link revoked this morning stops granting a read on the very next call — and a letter held
+ * until after she is gone stays shut until a person, not this code, releases it.
  */
 @Service
 @RequiredArgsConstructor
 public class PassOnService {
 
     /** Exactly the sentence an elder reads, so a client never has to invent one. */
-    static final String AFTER_NOT_READY =
-            "Every letter here can be read today. We are still building the part where a letter "
-                    + "opens after you are gone, and we will not offer it until we are sure it works.";
+    static final String STORY_IS_FOR_TODAY =
+            "A story is for people to read now. Only a letter can be kept until after you are gone.";
+    static final String ALREADY_PASSED_ON =
+            "This letter has already been passed on to the person it was for. It cannot be changed "
+                    + "or taken down now.";
     static final String LETTER_IS_FOR_ONE_PERSON = "A letter goes to one person, and only that person.";
     static final String PICK_THE_PERSON = "Please choose the one person this is for.";
     static final String ELDERS_ONLY = "Only elders can write on this page.";
@@ -58,6 +64,8 @@ public class PassOnService {
     private final ElderProfileRepository elderProfiles;
     private final HelperProfileRepository helperProfiles;
     private final PassOnVisibilityService visibility;
+    /** Whether a person has released this owner's things. Nothing here ever sets it. */
+    private final ReleaseGate releases;
 
     /** Her own page: one list per tab, everything she wrote, in the order she wrote it. */
     @Transactional(readOnly = true)
@@ -82,9 +90,7 @@ public class PassOnService {
                 .photoUrl(blankToNull(request.getPhotoUrl()))
                 .audience(request.getAudience())
                 .audienceUser(namedPerson(request))
-                // Never taken from the request: AFTER is refused above, so NOW is the only
-                // value this version can honestly store.
-                .releaseWhen(PassOnRelease.NOW)
+                .releaseWhen(releaseOf(request))
                 .build();
         return toResponse(items.save(item));
     }
@@ -97,6 +103,7 @@ public class PassOnService {
     @Transactional
     public PassOnItemResponse update(UUID ownerId, UUID itemId, PassOnItemRequest request) {
         PassOnItem item = getOwnItem(ownerId, itemId);
+        requireNotAlreadyPassedOn(item);
         checkRules(item.getKind(), request);
 
         item.setTitle(request.getTitle().trim());
@@ -104,12 +111,17 @@ public class PassOnService {
         item.setPhotoUrl(blankToNull(request.getPhotoUrl()));
         item.setAudience(request.getAudience());
         item.setAudienceUser(namedPerson(request));
+        // She may change her mind about the timing as freely as about the words: a letter she
+        // meant to leave behind becomes one to hand over today with a single tap, and back again.
+        item.setReleaseWhen(releaseOf(request));
         return toResponse(items.save(item));
     }
 
     @Transactional
     public void delete(UUID ownerId, UUID itemId) {
-        items.delete(getOwnItem(ownerId, itemId));
+        PassOnItem item = getOwnItem(ownerId, itemId);
+        requireNotAlreadyPassedOn(item);
+        items.delete(item);
     }
 
     /**
@@ -155,8 +167,10 @@ public class PassOnService {
     // ── the rules ──
 
     private void checkRules(PassOnKind kind, PassOnItemRequest request) {
-        if (request.getReleaseWhen() == PassOnRelease.AFTER) {
-            throw new IllegalArgumentException(AFTER_NOT_READY);
+        // Letters may be held back; stories never are. Postgres says the same thing in
+        // ck_passon_story, but a constraint violation reaches her as a 500 and a shrug.
+        if (kind == PassOnKind.STORY && request.getReleaseWhen() == PassOnRelease.AFTER) {
+            throw new IllegalArgumentException(STORY_IS_FOR_TODAY);
         }
         if (kind == PassOnKind.LETTER && request.getAudience() != PassOnAudience.PERSON) {
             throw new IllegalArgumentException(LETTER_IS_FOR_ONE_PERSON);
@@ -171,6 +185,30 @@ public class PassOnService {
      * choice she changed her mind about would break the database's own {@code ck_passon_person}
      * rule, so it is dropped here rather than carried and rejected later.
      */
+    /**
+     * Nothing she wrote is ever locked to her — with one exception, and this is it.
+     *
+     * <p>A letter held until after she is gone stops being hers to change the moment a person
+     * releases it, because by then the daughter it was addressed to has very likely read it.
+     * Editing it afterwards would rewrite what a bereaved person was told, and deleting it would
+     * take back words she has already been given. Everything else on the page stays editable
+     * forever; a letter she chose to be read today was never gated on the release and is not
+     * gated on it now.
+     *
+     * <p>In practice the owner is dead by the time this can refuse anything. It is enforced
+     * anyway, on the server, because "she cannot log in" is a circumstance and not a rule.
+     */
+    private void requireNotAlreadyPassedOn(PassOnItem item) {
+        if (item.getReleaseWhen() == PassOnRelease.NOW) return;
+        if (!releases.isReleased(item.getOwner().getId())) return;
+        throw new IllegalArgumentException(ALREADY_PASSED_ON);
+    }
+
+    /** Left out means "they can read it now", which is what almost every elder means. */
+    private static PassOnRelease releaseOf(PassOnItemRequest request) {
+        return request.getReleaseWhen() == null ? PassOnRelease.NOW : request.getReleaseWhen();
+    }
+
     private User namedPerson(PassOnItemRequest request) {
         if (request.getAudience() != PassOnAudience.PERSON || request.getAudienceUserId() == null) {
             return null;

@@ -2,10 +2,11 @@
 
 This is the whole procedure. There is no other one, and there is no code that does any of it.
 
-Nothing in Towinly opens a Sealed box on its own. No scheduler, no timer, no admin button, no
-"release" screen — none of it exists, and that is deliberate ([the spec's cut list][spec]). A box
-opens because a named person here reads a death certificate, speaks to each Keyholder, waits thirty
-days, and then decides. Every step below is done by hand and written down by hand.
+Nothing in Towinly opens a Sealed box on its own, and nothing opens a letter written to be read
+after somebody is gone. No scheduler, no timer, no admin button, no "release" screen — none of it
+exists, and that is deliberate ([the spec's cut list][spec]). Both open because a named person here
+reads a death certificate, speaks to each Keyholder, waits thirty days, and then decides. Every step
+below is done by hand and written down by hand.
 
 Read the whole document before answering the first email. The order matters, and steps 2 and 3 are
 the ones that go wrong under pressure from a grieving family.
@@ -151,10 +152,43 @@ SELECT last_seen_at, email_verified, created_at FROM users WHERE id = '<owner uu
 Thirty days is not a formality. It is the window in which a mistake, or a lie, has a chance to
 surface.
 
-### 5. A person hands over the contents, and writes the row
+### 5. A person hands over the contents, opens the letters, and writes the row
 
 Only now. Export the contents to the Keyholders who agreed — not to whoever wrote in, unless they
 are one of them.
+
+The same step opens the letters she wrote to be read after she was gone. Set the release date on
+her settings row by hand:
+
+```sql
+UPDATE passon_settings SET released_at = now(), updated_at = now()
+WHERE owner_id = '<owner uuid>' AND released_at IS NULL;
+```
+
+That one column is the whole switch, and there is deliberately only one of them. It opens her
+Sealed box **and** it makes each letter marked "after I am gone" readable by the one person she
+addressed it to — a family goes through this procedure once, not once per thing she left behind.
+
+**Until a person runs that line, nothing opens.** No scheduler sets it, no timer, no cron job, no
+admin screen and no endpoint — none of those exist. A letter she wrote to her daughter is
+invisible to that daughter until the day you type this: not the words, not the title, not the fact
+that it is there.
+
+Three things worth knowing before you run it:
+
+- **It opens each letter to its named person only.** Release is not a general unlocking of her
+  page. A letter for Sarah opens for Sarah; her other children, her helpers and her Keyholders see
+  nothing of it. What the Keyholders receive is the Sealed box, which you hand over yourself.
+- **It is one-way in practice.** From that moment her letters are frozen: nothing can edit or
+  delete a released letter, because somebody has probably already read it and rewriting what a
+  bereaved person was told is not something an app should be able to do. Clearing the column back
+  to `NULL` would hide the letters again but cannot un-read them, so treat this as final and be
+  certain of steps 2 to 4 first.
+- **If she has no `passon_settings` row, there is nothing to set** and no release is possible. That
+  row is created when she sets her Sealed box up, so an elder with no row also has no Keyholders to
+  have agreed in step 3 — the procedure never gets that far. Any "after I am gone" letters she
+  wrote stay shut. Do not invent a settings row to work around this: the quorum on it would be
+  numbers you made up rather than numbers she chose.
 
 Then write the release into the audit table by hand:
 

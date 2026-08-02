@@ -44,6 +44,7 @@ class PassOnVisibilityServiceTest {
 
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock ConnectionRepository connectionRepository;
+    @Mock ReleaseGate releases;
     @InjectMocks PassOnVisibilityService service;
 
     private User margaret, sarah, tom, nina, stranger;
@@ -61,6 +62,8 @@ class PassOnVisibilityServiceTest {
                 .thenReturn(Optional.empty());
         lenient().when(connectionRepository.findBetweenUsers(any(), any()))
                 .thenReturn(Optional.empty());
+        // And Margaret is alive. Nothing has been released unless a test says so.
+        lenient().when(releases.isReleased(any())).thenReturn(false);
     }
 
     private User user(String name) {
@@ -114,6 +117,18 @@ class PassOnVisibilityServiceTest {
     private void friendshipBetween(User a, User b, Connection connection) {
         lenient().when(connectionRepository.findBetweenUsers(a.getId(), b.getId()))
                 .thenReturn(Optional.of(connection));
+    }
+
+    /** A letter she wrote to be read after she is gone. */
+    private PassOnItem heldUntilAfter(User person) {
+        PassOnItem letter = letterTo(person);
+        letter.setReleaseWhen(PassOnRelease.AFTER);
+        return letter;
+    }
+
+    /** A person has run the release procedure by hand for this owner. */
+    private void released(User owner) {
+        lenient().when(releases.isReleased(owner.getId())).thenReturn(true);
     }
 
     // ── the four audiences ──
@@ -243,15 +258,49 @@ class PassOnVisibilityServiceTest {
         assertThat(service.canRead(letterTo(sarah), margaret.getId())).isTrue();
     }
 
+    // ── "after I am gone", and the one thing that opens it ──
+
     @Test
-    void aLetterHeldUntilAfterIsNotReadableYet() {
-        // AFTER is legal in the schema so phase two needs no migration. Until that part is
-        // built, nobody but the writer may read one — not even the person it names.
-        PassOnItem letter = letterTo(sarah);
-        letter.setReleaseWhen(PassOnRelease.AFTER);
+    void aLetterHeldUntilAfterStaysShutWhileNobodyHasReleasedIt() {
+        // The whole point of the feature: Sarah is the person it is addressed to, and she still
+        // cannot see it — not the words, not the title, not that it exists. Margaret can, because
+        // it is hers.
+        PassOnItem letter = heldUntilAfter(sarah);
 
         assertThat(service.canRead(letter, sarah.getId())).isFalse();
         assertThat(service.canRead(letter, margaret.getId())).isTrue();
+    }
+
+    @Test
+    void aLetterHeldUntilAfterOpensForItsPersonOnceSomebodyHasReleasedIt() {
+        // A person read a death certificate, asked each Keyholder separately, waited thirty days
+        // and set released_at by hand. That, and only that, is what has changed here.
+        released(margaret);
+        PassOnItem letter = heldUntilAfter(sarah);
+
+        assertThat(service.canRead(letter, sarah.getId())).isTrue();
+    }
+
+    @Test
+    void aLetterHeldUntilAfterIsNeverReadableByAnybodyButItsPerson() {
+        // Release is not a general unlocking of her page. It opens each letter to the one person
+        // it names and to nobody else — her family, her most trusted helper, a stranger, all no.
+        released(margaret);
+        familyLink(margaret, tom, FamilyLinkStatus.ACTIVE);
+        friendshipBetween(margaret, tom, friendship(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED));
+        PassOnItem letter = heldUntilAfter(sarah);
+
+        assertThat(service.canRead(letter, tom.getId())).isFalse();
+        assertThat(service.canRead(letter, nina.getId())).isFalse();
+        assertThat(service.canRead(letter, stranger.getId())).isFalse();
+    }
+
+    @Test
+    void aLetterHeldUntilAfterIsShutToEverybodyElseBeforeAReleaseToo() {
+        PassOnItem letter = heldUntilAfter(sarah);
+
+        assertThat(service.canRead(letter, tom.getId())).isFalse();
+        assertThat(service.canRead(letter, stranger.getId())).isFalse();
     }
 
     @Test

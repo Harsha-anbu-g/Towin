@@ -85,9 +85,11 @@ public class GlobalExceptionHandler {
                 "Only an accepted family member can be the main contact.");
         // What I pass on — the Story box and Letters. Each is already written the way the
         // elder should read it, so the key and the message are the same sentence.
-        SAFE_MESSAGES.put("Every letter here can be read today",
-                "Every letter here can be read today. We are still building the part where a "
-                        + "letter opens after you are gone, and we will not offer it until we are sure it works.");
+        SAFE_MESSAGES.put("A story is for people to read now",
+                "A story is for people to read now. Only a letter can be kept until after you are gone.");
+        SAFE_MESSAGES.put("This letter has already been passed on",
+                "This letter has already been passed on to the person it was for. It cannot be "
+                        + "changed or taken down now.");
         SAFE_MESSAGES.put("A letter goes to one person",  "A letter goes to one person, and only that person.");
         SAFE_MESSAGES.put("Please choose the one person", "Please choose the one person this is for.");
         SAFE_MESSAGES.put("Only elders can write on this page", "Only elders can write on this page.");

@@ -64,6 +64,17 @@ public class PassOnSettings {
     @Column(name = "sheet_saved_at")
     private LocalDateTime sheetSavedAt;
 
+    /**
+     * The day a person released this owner's things — and the only switch that opens either her
+     * Sealed box or the letters she addressed "after I am gone". Null for every living owner.
+     *
+     * <p>No code path writes it. It is set by hand at the last step of
+     * {@code docs/operations/sealed-box-release.md}; see V56 for why there is exactly one of
+     * these rather than one per box.
+     */
+    @Column(name = "released_at")
+    private LocalDateTime releasedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

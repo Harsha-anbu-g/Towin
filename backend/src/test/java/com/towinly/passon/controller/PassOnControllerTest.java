@@ -62,6 +62,8 @@ class PassOnControllerTest {
     @Mock ElderProfileRepository elderProfiles;
     @Mock HelperProfileRepository helperProfiles;
     @Mock PassOnVisibilityService visibility;
+    /** Nobody has died unless a test says so — every owner is alive and unreleased. */
+    @Mock com.towinly.passon.service.ReleaseGate releases;
     @Mock com.towinly.passon.service.KeyholderService keyholders;
     @Mock com.towinly.passon.service.SealedBoxService sealedBox;
 
@@ -76,7 +78,7 @@ class PassOnControllerTest {
         tom = user("Tom", UserRole.HELPER);
 
         PassOnService service =
-                new PassOnService(items, users, elderProfiles, helperProfiles, visibility);
+                new PassOnService(items, users, elderProfiles, helperProfiles, visibility, releases);
         // Keyholders and the Sealed box setup have their own test classes; nothing here
         // touches either.
         mockMvc = MockMvcBuilders.standaloneSetup(
@@ -134,8 +136,8 @@ class PassOnControllerTest {
     // ── writing ──
 
     @Test
-    @DisplayName("a letter held until after the writer is gone is refused, in plain words, and nothing is saved")
-    void refusesALetterHeldUntilAfterAndSavesNothing() throws Exception {
+    @DisplayName("a letter held until after the writer is gone is written down as she asked")
+    void savesALetterHeldUntilTheWriterIsGone() throws Exception {
         String body = """
                 {"kind":"LETTER","title":"What I wish I had told your father",
                  "body":"You were always kind.","audience":"PERSON",
@@ -147,10 +149,31 @@ class PassOnControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.releaseWhen").value("AFTER"));
+
+        assertThat(lastSaved().getReleaseWhen()).isEqualTo(PassOnRelease.AFTER);
+    }
+
+    @Test
+    @DisplayName("a story cannot be held back until after she is gone, and nothing is saved")
+    void refusesAStoryHeldUntilAfterAndSavesNothing() throws Exception {
+        // The database says the same thing (ck_passon_story), but a constraint violation is a
+        // 500 and a shrug. She reads a sentence instead.
+        String body = """
+                {"kind":"STORY","title":"The winter we lost the roof","body":"It snowed.",
+                 "audience":"EVERYONE","releaseWhen":"AFTER"}
+                """;
+
+        mockMvc.perform(post("/api/passon/items")
+                        .principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
-                        "Every letter here can be read today. We are still building the part where a "
-                                + "letter opens after you are gone, and we will not offer it until we are sure it works."));
+                        "A story is for people to read now. Only a letter can be kept until after "
+                                + "you are gone."));
 
         verify(items, never()).save(any());
     }
@@ -287,6 +310,23 @@ class PassOnControllerTest {
     }
 
     @Test
+    @DisplayName("her own page shows a letter held until after she is gone, long before any release")
+    void herOwnPageShowsALetterHeldUntilAfterSheIsGone() throws Exception {
+        PassOnItem held = letterTo(sarah, "What I wish I had told your father");
+        held.setReleaseWhen(PassOnRelease.AFTER);
+        when(items.findByOwnerIdAndKindOrderByCreatedAtDesc(margaret.getId(), PassOnKind.STORY))
+                .thenReturn(List.of());
+        when(items.findByOwnerIdAndKindOrderByCreatedAtDesc(margaret.getId(), PassOnKind.LETTER))
+                .thenReturn(List.of(held));
+
+        mockMvc.perform(get("/api/passon/mine").principal(margaretsSession).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.letters.length()").value(1))
+                .andExpect(jsonPath("$.letters[0].title").value("What I wish I had told your father"))
+                .andExpect(jsonPath("$.letters[0].releaseWhen").value("AFTER"));
+    }
+
+    @Test
     @DisplayName("editing something that is not hers is a not-found, not a read")
     void editingSomethingThatIsNotMineIsANotFound() throws Exception {
         UUID someoneElsesItem = UUID.randomUUID();
@@ -350,6 +390,88 @@ class PassOnControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(items).delete(existing);
+    }
+
+    // ── a letter held until after she is gone, while she is still here ──
+
+    @Test
+    @DisplayName("she can change a letter held until after she is gone into one to read today")
+    void sheCanTurnALetterHeldUntilAfterIntoOneToReadToday() throws Exception {
+        PassOnItem held = letterTo(sarah, "What I wish I had told your father");
+        held.setReleaseWhen(PassOnRelease.AFTER);
+        when(items.findByIdAndOwnerId(held.getId(), margaret.getId())).thenReturn(Optional.of(held));
+        String body = """
+                {"kind":"LETTER","title":"What I wish I had told your father",
+                 "body":"You were always kind.","audience":"PERSON",
+                 "audienceUserId":"%s","releaseWhen":"NOW"}
+                """.formatted(sarah.getId());
+
+        mockMvc.perform(put("/api/passon/items/{id}", held.getId())
+                        .principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.releaseWhen").value("NOW"));
+
+        assertThat(lastSaved().getReleaseWhen()).isEqualTo(PassOnRelease.NOW);
+    }
+
+    @Test
+    @DisplayName("she can take a letter held until after she is gone back down")
+    void sheCanTakeDownALetterHeldUntilAfterSheIsGone() throws Exception {
+        PassOnItem held = letterTo(sarah, "What I wish I had told your father");
+        held.setReleaseWhen(PassOnRelease.AFTER);
+        when(items.findByIdAndOwnerId(held.getId(), margaret.getId())).thenReturn(Optional.of(held));
+
+        mockMvc.perform(delete("/api/passon/items/{id}", held.getId())
+                        .principal(margaretsSession).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        verify(items).delete(held);
+    }
+
+    // ── and after somebody has released it ──
+
+    @Test
+    @DisplayName("a letter that has already been passed on cannot be rewritten")
+    void aLetterAlreadyPassedOnCannotBeEdited() throws Exception {
+        // Sarah has read it. Editing it now would rewrite what a grieving daughter was told.
+        PassOnItem passedOn = letterTo(sarah, "What I wish I had told your father");
+        passedOn.setReleaseWhen(PassOnRelease.AFTER);
+        when(items.findByIdAndOwnerId(passedOn.getId(), margaret.getId())).thenReturn(Optional.of(passedOn));
+        when(releases.isReleased(margaret.getId())).thenReturn(true);
+        String body = """
+                {"kind":"LETTER","title":"What I wish I had told your father",
+                 "body":"Something else entirely.","audience":"PERSON","audienceUserId":"%s"}
+                """.formatted(sarah.getId());
+
+        mockMvc.perform(put("/api/passon/items/{id}", passedOn.getId())
+                        .principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "This letter has already been passed on to the person it was for. It cannot "
+                                + "be changed or taken down now."));
+
+        verify(items, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("a letter that has already been passed on cannot be taken away again")
+    void aLetterAlreadyPassedOnCannotBeTakenDown() throws Exception {
+        PassOnItem passedOn = letterTo(sarah, "What I wish I had told your father");
+        passedOn.setReleaseWhen(PassOnRelease.AFTER);
+        when(items.findByIdAndOwnerId(passedOn.getId(), margaret.getId())).thenReturn(Optional.of(passedOn));
+        when(releases.isReleased(margaret.getId())).thenReturn(true);
+
+        mockMvc.perform(delete("/api/passon/items/{id}", passedOn.getId())
+                        .principal(margaretsSession).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        verify(items, never()).delete(any());
     }
 
     // ── what a visitor sees ──
