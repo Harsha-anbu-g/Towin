@@ -293,17 +293,16 @@ export default function PassOn() {
         {tab === 'letters' && (
           <BlurFade delay={4}>
             <div role="tabpanel" aria-label="Your letters" style={{ marginTop: '20px' }}>
-              {/* Where the release choice would be. It is a paragraph, not a
-                  greyed-out control: an elder writing a deathbed letter into a
-                  system with no working delivery is the worst thing this feature
-                  could produce, so the half that is not built is described in
-                  words instead of offered as an option. */}
+              {/* Both halves of the Letter box, said before she writes anything —
+                  including the part that matters most, which is that nothing here
+                  happens on its own. There is no timer and no button anywhere that
+                  passes a letter on. */}
               <p style={{
                 fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.6,
                 background: 'var(--canvas)', border: '1px solid var(--border)',
                 borderRadius: '14px', padding: '16px 20px', margin: '0 0 16px',
               }}>
-                {LETTERS.notYet}
+                {LETTERS.howItWorks}
               </p>
 
               {writingHere('LETTER') ? (
@@ -311,9 +310,14 @@ export default function PassOn() {
                   kind="LETTER"
                   initial={writing.item}
                   people={people}
+                  // Her Keyholders and her quorum live on the Sealed box tab, and
+                  // without them nobody could ever ask for a held letter to be
+                  // opened. Same state the tab itself reads, fetched once.
+                  canHoldUntilGone={Boolean(setup?.armed)}
                   saving={saving}
                   onSave={save}
                   onCancel={() => setWriting(null)}
+                  onGoToSealedBox={() => changeTab('sealed')}
                 />
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '14px' }}>

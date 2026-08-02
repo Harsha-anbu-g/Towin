@@ -139,22 +139,74 @@ export const STORY_BOX = {
 export const LETTERS = {
   empty: 'No letters yet. A letter goes to one person, and only that person.',
   /**
-   * Where the release choice would be. The choice is absent rather than greyed
-   * out: an elder writing a deathbed letter into a system with no working
-   * delivery is the worst thing this feature could produce.
+   * What the Letter box is, now that both halves of it exist.
+   *
+   * This replaced a paragraph that said the after-you-are-gone half was still being
+   * built. It is built, so the paragraph had to go — but the sentence that mattered
+   * in it is kept and made louder: nothing happens on its own. There is no timer
+   * anywhere in this feature and no button that opens anything, and an elder who
+   * believes otherwise is an elder who has quietly decided this app will tell her
+   * daughter she has died.
    */
-  notYet:
-    'Every letter here can be read today. We are still building the part where a letter opens '
-    + 'after you are gone, and we will not offer it until we are sure it works. When it is ready '
-    + 'we will tell you, and you will be able to change any letter over.',
+  howItWorks:
+    'Every letter can be read today, or held until after you are gone. Nothing opens on its own. '
+    + 'Before a held letter is passed on, a person here at Towinly checks a death certificate, '
+    + 'asks the people you chose, and tries to reach you for thirty days.',
   start: 'Write a letter',
   save: 'Save this letter',
   bodyPrompt: 'Write it',
   personPrompt: 'Who is this for?',
   readableNow: 'They can read this now',
+  /**
+   * The counterpart chip, on a letter she has asked to be held.
+   *
+   * "Held" and not "locked", "sealed", "pending" or "scheduled". She is looking at a
+   * list of her own writing, and the one word describing the letter she wrote to her
+   * daughter for after her death should be a word she can read without flinching.
+   */
+  heldUntilGone: 'Held until after you are gone',
   noneToWriteTo:
     'There is nobody to write to yet. Add someone to your family list, or build up trust with a '
     + 'helper, and they will appear here.',
+
+  // ── when the person she named can read it ──
+
+  whenPrompt: 'When can they read it?',
+  /**
+   * The two choices, shaped like AUDIENCES so both render through the same cards.
+   * `key` is the server's PassOnRelease value.
+   *
+   * The second blurb is the whole procedure, said to her rather than to an operator:
+   * a person, a death certificate, her own people asked one at a time, thirty days of
+   * trying to reach her. It promises nothing automatic because nothing is automatic,
+   * and it is the sentence to change if the procedure ever changes.
+   */
+  WHEN: [
+    {
+      key: 'NOW',
+      title: 'They can read it now',
+      blurb: 'It goes on your page as soon as you save it, for the one person you chose.',
+    },
+    {
+      key: 'AFTER',
+      title: "Only after I'm gone",
+      blurb:
+        'Nobody sees this until someone at Towinly has checked a death certificate, asked the '
+        + 'people you chose, and tried to reach you for thirty days.',
+    },
+  ],
+  /**
+   * Why the second choice is greyed out, and the one thing that turns it on.
+   *
+   * Her Keyholders and her quorum live in the Sealed box, and until she has set that
+   * up there is nobody who could ever ask for a held letter to be opened — so a letter
+   * held today could never be delivered by anybody. The choice is shown and disabled
+   * rather than hidden: an option she cannot see is an option she cannot go and earn.
+   */
+  needsKeyholders:
+    'First choose the people who can open things for you, in your Sealed box. Then you can hold '
+    + 'a letter until after you are gone.',
+  needsKeyholdersLink: 'Go to my Sealed box',
 };
 
 /**

@@ -15,6 +15,9 @@ import { AUDIENCES, LETTERS } from './passOnLocks';
 export default function PassOnItemCard({ item, onChange, onRemove }) {
   const isLetter = item.kind === 'LETTER';
   const audience = AUDIENCES.find(a => a.key === item.audience);
+  // Anything but NOW is held. Written this way round so a release value this build
+  // has never heard of reads as "held" — the shut side is the safe side to guess.
+  const held = isLetter && item.releaseWhen && item.releaseWhen !== 'NOW';
 
   return (
     <article style={cardStyle}>
@@ -41,7 +44,12 @@ export default function PassOnItemCard({ item, onChange, onRemove }) {
 
       {isLetter && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '14px' }}>
-          <span style={greenChip}>{LETTERS.readableNow}</span>
+          {/* Which of the two kinds of letter this is, on every one of them. Gold rather
+              than green: green is the colour of something achieved, and a letter waiting
+              to be read after her death has not achieved anything yet. */}
+          {held
+            ? <span style={goldChip}>{LETTERS.heldUntilGone}</span>
+            : <span style={greenChip}>{LETTERS.readableNow}</span>}
           {item.firstReadAt && (
             <span style={{ fontSize: '16px', color: 'var(--ink-3)' }}>
               {item.audienceUserName} read this on {onDay(item.firstReadAt)}
@@ -93,6 +101,12 @@ const greenChip = {
   borderRadius: '9999px',
   padding: '4px 12px',
   whiteSpace: 'nowrap',
+};
+
+const goldChip = {
+  ...greenChip,
+  color: 'var(--gold-deep)',
+  border: '1px solid color-mix(in srgb, var(--gold-deep) 30%, transparent)',
 };
 
 const ghostBtn = {

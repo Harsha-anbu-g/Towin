@@ -254,17 +254,19 @@ describe('What I pass on — Letter box', () => {
     expect(await screen.findByText('No letters yet. A letter goes to one person, and only that person.')).toBeInTheDocument()
   })
 
-  it('is honest about the part that is not built, instead of offering it', async () => {
+  it('says what the two kinds of letter are, and promises nothing automatic', async () => {
     const user = userEvent.setup()
     renderPage()
     await openTab(user, 'Letter box')
     expect(await screen.findByText(
-      'Every letter here can be read today. We are still building the part where a letter opens after you are gone, and we will not offer it until we are sure it works. When it is ready we will tell you, and you will be able to change any letter over.',
+      'Every letter can be read today, or held until after you are gone. Nothing opens on its own. '
+      + 'Before a held letter is passed on, a person here at Towinly checks a death certificate, '
+      + 'asks the people you chose, and tries to reach you for thirty days.',
     )).toBeInTheDocument()
-    // The choice itself is absent, not greyed out: nothing on this tab lets her
-    // pick a letter that opens after she is gone.
-    expect(screen.queryByRole('radio', { name: /after/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('option', { name: /after/i })).not.toBeInTheDocument()
+    // The sentence this replaced said the after-you-are-gone half was still being
+    // built. It is built, and a page that still says otherwise is a page telling
+    // her not to bother writing the letter.
+    expect(screen.queryByText(/still building/i)).not.toBeInTheDocument()
   })
 
   it('writes a letter to one named person', async () => {
@@ -277,12 +279,16 @@ describe('What I pass on — Letter box', () => {
     await user.click(screen.getByRole('radio', { name: /Sarah/ }))
     await user.click(screen.getByRole('button', { name: 'Save this letter' }))
     await waitFor(() => {
+      // releaseWhen rides on every letter, never left out. The server reads a
+      // missing one as "read it today", so an edit that omitted it would hand a
+      // held letter to a living person on the next typo fix.
       expect(api.post).toHaveBeenCalledWith('/passon/items', {
         kind: 'LETTER',
         title: 'For Sarah',
         body: 'You were always the brave one.',
         audience: 'PERSON',
         audienceUserId: SARAH,
+        releaseWhen: 'NOW',
       })
     })
   })
