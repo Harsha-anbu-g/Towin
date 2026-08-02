@@ -35,8 +35,8 @@ import java.util.UUID;
  * one named person, can be left behind. Postgres says the same in {@code ck_passon_story}, and
  * this is where it becomes a sentence she can read.
  *
- * The second is that a letter already passed on is hers no longer — see
- * {@link #requireNotAlreadyPassedOn}. Everything else she wrote stays hers to change forever.
+ * The second is that a released owner writes nothing at all — see {@link #requireNotReleased}.
+ * Until that day everything she wrote stays hers to change, including when it may be read.
  *
  * The third is that nothing here decides who may read anything. Every visitor's item passes
  * through {@link PassOnVisibilityService}, which re-derives the answer on the spot, so a family
@@ -51,8 +51,8 @@ public class PassOnService {
     static final String STORY_IS_FOR_TODAY =
             "A story is for people to read now. Only a letter can be kept until after you are gone.";
     static final String ALREADY_PASSED_ON =
-            "This letter has already been passed on to the person it was for. It cannot be changed "
-                    + "or taken down now.";
+            "This page has been passed on to the people it was written for. Nothing here can be "
+                    + "added, changed or taken down now.";
     static final String LETTER_IS_FOR_ONE_PERSON = "A letter goes to one person, and only that person.";
     static final String PICK_THE_PERSON = "Please choose the one person this is for.";
     static final String ELDERS_ONLY = "Only elders can write on this page.";
@@ -78,6 +78,7 @@ public class PassOnService {
 
     @Transactional
     public PassOnItemResponse create(UUID ownerId, PassOnItemRequest request) {
+        requireNotReleased(ownerId);
         User owner = getUser(ownerId);
         requireElderSeat(owner);
         checkRules(request.getKind(), request);
@@ -102,8 +103,8 @@ public class PassOnService {
      */
     @Transactional
     public PassOnItemResponse update(UUID ownerId, UUID itemId, PassOnItemRequest request) {
+        requireNotReleased(ownerId);
         PassOnItem item = getOwnItem(ownerId, itemId);
-        requireNotAlreadyPassedOn(item);
         checkRules(item.getKind(), request);
 
         item.setTitle(request.getTitle().trim());
@@ -111,17 +112,20 @@ public class PassOnService {
         item.setPhotoUrl(blankToNull(request.getPhotoUrl()));
         item.setAudience(request.getAudience());
         item.setAudienceUser(namedPerson(request));
-        // She may change her mind about the timing as freely as about the words: a letter she
-        // meant to leave behind becomes one to hand over today with a single tap, and back again.
-        item.setReleaseWhen(releaseOf(request));
+        // She may change her mind about the timing as freely as about the words — but only by
+        // saying so. A missing releaseWhen means UNCHANGED and never "read it today": she edits
+        // a held letter to fix a typo far more often than to hand it over, and reading the
+        // absence as a choice would deliver it to her daughter while she is still alive.
+        if (request.getReleaseWhen() != null) {
+            item.setReleaseWhen(request.getReleaseWhen());
+        }
         return toResponse(items.save(item));
     }
 
     @Transactional
     public void delete(UUID ownerId, UUID itemId) {
-        PassOnItem item = getOwnItem(ownerId, itemId);
-        requireNotAlreadyPassedOn(item);
-        items.delete(item);
+        requireNotReleased(ownerId);
+        items.delete(getOwnItem(ownerId, itemId));
     }
 
     /**
@@ -186,25 +190,38 @@ public class PassOnService {
      * rule, so it is dropped here rather than carried and rejected later.
      */
     /**
-     * Nothing she wrote is ever locked to her — with one exception, and this is it.
+     * A released owner writes nothing. Nothing new, no edit, no deletion.
      *
-     * <p>A letter held until after she is gone stops being hers to change the moment a person
-     * releases it, because by then the daughter it was addressed to has very likely read it.
-     * Editing it afterwards would rewrite what a bereaved person was told, and deleting it would
-     * take back words she has already been given. Everything else on the page stays editable
-     * forever; a letter she chose to be read today was never gated on the release and is not
-     * gated on it now.
+     * <h3>Why the owner and not the item</h3>
+     * The obvious version of this rule asks whether <em>this letter</em> was held until after she
+     * was gone. That version is broken twice over, because it reads the value the write is about
+     * to replace: an ordinary letter can be flipped to "after I am gone" against an already-open
+     * gate — delivered instantly and frozen instantly — and a brand new one can simply be written
+     * from scratch. Asking about the owner closes the whole writing surface at once and is the
+     * smaller rule of the two.
      *
-     * <p>In practice the owner is dead by the time this can refuse anything. It is enforced
-     * anyway, on the server, because "she cannot log in" is a circumstance and not a rule.
+     * <h3>Why it is worth enforcing at all</h3>
+     * By the time this can refuse anything the owner is dead, so every caller reaching it is
+     * somebody else holding her account — her family have her phone and her mailbox, and after a
+     * release nobody is watching that account at all. It is the same threat the Sealed box's
+     * seven-day freeze exists for. "She cannot log in" is a circumstance, not a rule.
+     *
+     * <h3>What it deliberately does not cover</h3>
+     * {@link #from} is outside this freeze on purpose. Its {@code stampIfFirstRead} writes the
+     * day a letter reached the person it names, and those are precisely the letters where that
+     * date matters. Gating every write path for the sake of consistency would silently lose it.
      */
-    private void requireNotAlreadyPassedOn(PassOnItem item) {
-        if (item.getReleaseWhen() == PassOnRelease.NOW) return;
-        if (!releases.isReleased(item.getOwner().getId())) return;
-        throw new IllegalArgumentException(ALREADY_PASSED_ON);
+    private void requireNotReleased(UUID ownerId) {
+        if (releases.isReleased(ownerId)) {
+            throw new IllegalArgumentException(ALREADY_PASSED_ON);
+        }
     }
 
-    /** Left out means "they can read it now", which is what almost every elder means. */
+    /**
+     * On create only. Left out means "they can read it now", which is what almost every elder
+     * means and what a client that has never heard of the choice will send. On an edit the same
+     * absence means something quite different — see {@link #update}.
+     */
     private static PassOnRelease releaseOf(PassOnItemRequest request) {
         return request.getReleaseWhen() == null ? PassOnRelease.NOW : request.getReleaseWhen();
     }

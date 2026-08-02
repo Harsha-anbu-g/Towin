@@ -42,6 +42,14 @@ public class PassOnItemRequest {
     /** The one person this is for. Kept only when {@link #audience} is PERSON. */
     private UUID audienceUserId;
 
-    /** Left out means "they can read it now", which is the only choice v1 offers. */
+    /**
+     * When the person she named may read it: now, or only after she is gone.
+     *
+     * <p>Left out means two different things on the two routes, and the difference is
+     * load-bearing. On POST it means "they can read it now" — the ordinary case, and what a
+     * client that has never heard of the choice sends. On PUT it means <em>unchanged</em>: an
+     * edit that fixes a typo must never be read as a decision to hand a held letter over while
+     * she is still alive. See {@code PassOnService.update}.
+     */
     private PassOnRelease releaseWhen;
 }

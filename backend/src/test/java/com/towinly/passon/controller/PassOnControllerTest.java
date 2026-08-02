@@ -418,6 +418,34 @@ class PassOnControllerTest {
     }
 
     @Test
+    @DisplayName("an edit that says nothing about the timing leaves a held letter held")
+    void anEditThatSaysNothingAboutTimingLeavesAHeldLetterHeld() throws Exception {
+        // She is fixing a typo, not changing her mind about when Sarah may read it. A body with
+        // no releaseWhen in it must not quietly hand the letter over while she is still alive.
+        PassOnItem held = letterTo(sarah, "What I wish I had told your father");
+        held.setReleaseWhen(PassOnRelease.AFTER);
+        when(items.findByIdAndOwnerId(held.getId(), margaret.getId())).thenReturn(Optional.of(held));
+        String body = """
+                {"kind":"LETTER","title":"What I wish I had told your father",
+                 "body":"You were always kind, and I meant it.","audience":"PERSON",
+                 "audienceUserId":"%s"}
+                """.formatted(sarah.getId());
+
+        mockMvc.perform(put("/api/passon/items/{id}", held.getId())
+                        .principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.releaseWhen").value("AFTER"));
+
+        PassOnItem saved = lastSaved();
+        assertThat(saved.getBody()).isEqualTo("You were always kind, and I meant it.");
+        assertThat(saved.getReleaseWhen()).describedAs("the timing she never mentioned")
+                .isEqualTo(PassOnRelease.AFTER);
+    }
+
+    @Test
     @DisplayName("she can take a letter held until after she is gone back down")
     void sheCanTakeDownALetterHeldUntilAfterSheIsGone() throws Exception {
         PassOnItem held = letterTo(sarah, "What I wish I had told your father");
@@ -431,7 +459,17 @@ class PassOnControllerTest {
         verify(items).delete(held);
     }
 
-    // ── and after somebody has released it ──
+    // ── and after somebody has released her ──
+    //
+    // Every test below has somebody signed in as a woman who has died. That is not a far-fetched
+    // scenario, it is the ordinary one: her family have her phone and her mailbox, and after the
+    // release nobody is watching the account at all. So the rule is not "released letters are
+    // frozen", it is "a released owner writes nothing" — the whole surface, not the items on it.
+
+    /** Somebody has run the release procedure for Margaret by hand. */
+    private void margaretHasBeenReleased() {
+        when(releases.isReleased(margaret.getId())).thenReturn(true);
+    }
 
     @Test
     @DisplayName("a letter that has already been passed on cannot be rewritten")
@@ -440,7 +478,7 @@ class PassOnControllerTest {
         PassOnItem passedOn = letterTo(sarah, "What I wish I had told your father");
         passedOn.setReleaseWhen(PassOnRelease.AFTER);
         when(items.findByIdAndOwnerId(passedOn.getId(), margaret.getId())).thenReturn(Optional.of(passedOn));
-        when(releases.isReleased(margaret.getId())).thenReturn(true);
+        margaretHasBeenReleased();
         String body = """
                 {"kind":"LETTER","title":"What I wish I had told your father",
                  "body":"Something else entirely.","audience":"PERSON","audienceUserId":"%s"}
@@ -453,8 +491,8 @@ class PassOnControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
-                        "This letter has already been passed on to the person it was for. It cannot "
-                                + "be changed or taken down now."));
+                        "This page has been passed on to the people it was written for. Nothing "
+                                + "here can be added, changed or taken down now."));
 
         verify(items, never()).save(any());
     }
@@ -465,13 +503,108 @@ class PassOnControllerTest {
         PassOnItem passedOn = letterTo(sarah, "What I wish I had told your father");
         passedOn.setReleaseWhen(PassOnRelease.AFTER);
         when(items.findByIdAndOwnerId(passedOn.getId(), margaret.getId())).thenReturn(Optional.of(passedOn));
-        when(releases.isReleased(margaret.getId())).thenReturn(true);
+        margaretHasBeenReleased();
 
         mockMvc.perform(delete("/api/passon/items/{id}", passedOn.getId())
                         .principal(margaretsSession).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
         verify(items, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("a letter she meant for today cannot be turned into one held until after her death")
+    void aReleasedOwnerCannotTurnALetterIntoAHeldOne() throws Exception {
+        // The gate is already open, so an item flipped to AFTER now is readable the instant it
+        // is saved — and frozen from that instant, so nobody could take it back down either.
+        // Checking the timing on the stored row rather than on the owner missed exactly this.
+        PassOnItem forToday = letterTo(sarah, "What I wish I had told your father");
+        when(items.findByIdAndOwnerId(forToday.getId(), margaret.getId())).thenReturn(Optional.of(forToday));
+        margaretHasBeenReleased();
+        String body = """
+                {"kind":"LETTER","title":"What I wish I had told your father",
+                 "body":"Something else entirely.","audience":"PERSON",
+                 "audienceUserId":"%s","releaseWhen":"AFTER"}
+                """.formatted(sarah.getId());
+
+        mockMvc.perform(put("/api/passon/items/{id}", forToday.getId())
+                        .principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verify(items, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("nobody can write a new last letter in her name after she is gone")
+    void aReleasedOwnerCannotWriteAnythingNew() throws Exception {
+        // Without this, somebody holding her account can compose what reads as her final letter,
+        // have it delivered at once, and leave it there permanently — the app itself could not
+        // take it down again.
+        margaretHasBeenReleased();
+        String body = """
+                {"kind":"LETTER","title":"One last thing","body":"Sign the house over.",
+                 "audience":"PERSON","audienceUserId":"%s","releaseWhen":"AFTER"}
+                """.formatted(sarah.getId());
+
+        mockMvc.perform(post("/api/passon/items")
+                        .principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "This page has been passed on to the people it was written for. Nothing "
+                                + "here can be added, changed or taken down now."));
+
+        verify(items, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("after she is gone even an ordinary story is closed to editing")
+    void aReleasedOwnerCannotEvenEditAStory() throws Exception {
+        // The rule is about the writing surface, not about held letters. A story she shared
+        // years ago is still her voice, and after her death nobody gets to put words in it.
+        PassOnItem story = story("The winter we lost the roof", PassOnAudience.EVERYONE);
+        when(items.findByIdAndOwnerId(story.getId(), margaret.getId())).thenReturn(Optional.of(story));
+        margaretHasBeenReleased();
+        String body = """
+                {"kind":"STORY","title":"The winter we lost the roof",
+                 "body":"It never happened.","audience":"EVERYONE"}
+                """;
+
+        mockMvc.perform(put("/api/passon/items/{id}", story.getId())
+                        .principal(margaretsSession)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verify(items, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("the freeze stops her writing, and never stops a letter being marked as read")
+    void aHeldLetterIsStillStampedWhenItsPersonFinallyReadsIt() throws Exception {
+        // Guard, not a bug fix. The first-read stamp is a save() on the read path, and it is the
+        // one write that must survive the release — these are exactly the letters where "Sarah
+        // read this on 3 June" matters. Anyone tempted to gate every write path for consistency
+        // should fail this test.
+        PassOnItem held = letterTo(sarah, "What I wish I had told your father");
+        held.setReleaseWhen(PassOnRelease.AFTER);
+        when(items.findByOwnerIdOrderByCreatedAtDesc(margaret.getId())).thenReturn(List.of(held));
+        when(visibility.canRead(held, sarah.getId())).thenReturn(true);
+        margaretHasBeenReleased();
+        Authentication sarahsSession = new UsernamePasswordAuthenticationToken(sarah.getId().toString(), null);
+
+        mockMvc.perform(get("/api/passon/from/{ownerId}", margaret.getId())
+                        .principal(sarahsSession).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1));
+
+        assertThat(lastSaved().getFirstReadAt()).describedAs("the day it reached her").isNotNull();
     }
 
     // ── what a visitor sees ──

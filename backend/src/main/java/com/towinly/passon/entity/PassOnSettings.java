@@ -71,8 +71,15 @@ public class PassOnSettings {
      * <p>No code path writes it. It is set by hand at the last step of
      * {@code docs/operations/sealed-box-release.md}; see V56 for why there is exactly one of
      * these rather than one per box.
+     *
+     * <p>{@code updatable = false} is what makes that sentence true rather than remembered. Every
+     * JPA write of this row is an update — {@code SealedBoxService.arm}, {@code markSheetSaved},
+     * the demo seeder's backdating — and each of them saves the whole entity, so a stray
+     * {@code setReleasedAt} anywhere would reach Postgres. Hibernate now leaves the column out of
+     * the UPDATE entirely. The operator's own SQL is outside JPA and is unaffected, which is the
+     * point: the only hand that can open this is a human hand.
      */
-    @Column(name = "released_at")
+    @Column(name = "released_at", updatable = false)
     private LocalDateTime releasedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)

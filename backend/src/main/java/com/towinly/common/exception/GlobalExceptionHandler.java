@@ -87,9 +87,9 @@ public class GlobalExceptionHandler {
         // elder should read it, so the key and the message are the same sentence.
         SAFE_MESSAGES.put("A story is for people to read now",
                 "A story is for people to read now. Only a letter can be kept until after you are gone.");
-        SAFE_MESSAGES.put("This letter has already been passed on",
-                "This letter has already been passed on to the person it was for. It cannot be "
-                        + "changed or taken down now.");
+        SAFE_MESSAGES.put("This page has been passed on",
+                "This page has been passed on to the people it was written for. Nothing here can "
+                        + "be added, changed or taken down now.");
         SAFE_MESSAGES.put("A letter goes to one person",  "A letter goes to one person, and only that person.");
         SAFE_MESSAGES.put("Please choose the one person", "Please choose the one person this is for.");
         SAFE_MESSAGES.put("Only elders can write on this page", "Only elders can write on this page.");

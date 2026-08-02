@@ -455,6 +455,12 @@ public class SealedBoxService {
         if (!withinCoolingOff(row)) throw new IllegalArgumentException(ALREADY_SETTLED);
 
         keyholders.removeAll(ownerId);
+        // This row may carry released_at, and deleting it is the only thing in the codebase that
+        // can un-release somebody — her held letters would close again and her page would reopen
+        // to editing. It is unreachable today and the two checks above are why: a release takes a
+        // Keyholder quorum plus thirty days, and the cooling-off window this sits behind is seven,
+        // so no owner can ever be both released and still inside it. Anyone lengthening that
+        // window, or relaxing either check, has to deal with this line first.
         settings.deleteByOwnerId(ownerId);
         writeItDown(owner, null, PassOnOpenKind.SETTINGS_CHANGED, UNDONE_NOTE);
     }
