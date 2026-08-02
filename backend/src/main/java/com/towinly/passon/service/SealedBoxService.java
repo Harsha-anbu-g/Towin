@@ -171,6 +171,8 @@ public class SealedBoxService {
     private final KeyholderService keyholders;
     /** Where a family writes when the day comes. Null until a deployment sets it. */
     private final ReleaseContact releaseContact;
+    /** Whether a person has released this owner's things. Nothing here ever sets it. */
+    private final ReleaseGate releases;
     private final Clock clock;
 
     // ── reading ──
@@ -296,6 +298,7 @@ public class SealedBoxService {
     /** Seals one item and saves it. Nothing readable reaches the row, including the name. */
     @Transactional
     public SealedItemSummary add(UUID ownerId, SealedItemRequest request) {
+        requireNotReleased(ownerId);
         requireCryptoAvailable();
         User owner = getUser(ownerId);
 
@@ -333,6 +336,7 @@ public class SealedBoxService {
      */
     @Transactional
     public void delete(UUID ownerId, UUID itemId) {
+        requireNotReleased(ownerId);
         User owner = getUser(ownerId);
         SealedItem item = sealedItems.findByIdAndOwnerId(itemId, ownerId)
                 .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND));
@@ -366,6 +370,7 @@ public class SealedBoxService {
      */
     @Transactional
     public void arm(UUID ownerId, PassOnArmRequest request) {
+        requireNotReleased(ownerId);
         // Availability first: a box armed while the key is missing is a promise we cannot
         // keep, and the elder would have no way of knowing.
         requireCryptoAvailable();
@@ -448,6 +453,7 @@ public class SealedBoxService {
      */
     @Transactional
     public void undoSetup(UUID ownerId) {
+        requireNotReleased(ownerId);
         User owner = getUser(ownerId);
         PassOnSettings row = settings.findById(ownerId)
                 .orElseThrow(() -> new IllegalArgumentException(NOT_SET_UP));
@@ -455,12 +461,17 @@ public class SealedBoxService {
         if (!withinCoolingOff(row)) throw new IllegalArgumentException(ALREADY_SETTLED);
 
         keyholders.removeAll(ownerId);
-        // This row may carry released_at, and deleting it is the only thing in the codebase that
-        // can un-release somebody — her held letters would close again and her page would reopen
-        // to editing. It is unreachable today and the two checks above are why: a release takes a
-        // Keyholder quorum plus thirty days, and the cooling-off window this sits behind is seven,
-        // so no owner can ever be both released and still inside it. Anyone lengthening that
-        // window, or relaxing either check, has to deal with this line first.
+        // This row carries released_at, so this delete is the only thing in the codebase that can
+        // un-release somebody. The guard at the top of this method is what stops it, and it is
+        // load-bearing rather than defensive.
+        //
+        // An earlier version of this comment argued the guard was unnecessary, on the grounds
+        // that the seven days are measured once from arming and a release takes a quorum plus
+        // thirty days, so nobody could ever be both released and inside the window. That was
+        // wrong. The window is not measured once: arm() rewrites coolingOffUntil to now + 7 with
+        // no re-arm check, and KeyholderService.invite ends in restartTheSevenDays, which does
+        // the same. Either one reopens this undo on demand — and re-arming with her existing
+        // Keyholder ids asks nobody anything, because inviteAll skips people already standing.
         settings.deleteByOwnerId(ownerId);
         writeItDown(owner, null, PassOnOpenKind.SETTINGS_CHANGED, UNDONE_NOTE);
     }
@@ -504,6 +515,34 @@ public class SealedBoxService {
         return "You changed your password recently. For your safety your Sealed box stays shut until "
                 + PLAIN_DATE.format(liftsAt)
                 + ". If that was not you, tell us straight away.";
+    }
+
+    /**
+     * Once a person has released this owner, the whole arrangement is settled: nothing goes into
+     * the box, nothing comes out of it, and the setup can be neither redone nor undone.
+     *
+     * <h3>The two that carry real weight</h3>
+     * {@link #undoSetup} deletes the settings row, and that row is the only thing carrying
+     * {@code released_at} — so an ungated undo was an un-release, closing her letters again and
+     * reopening her page to editing. {@link #arm} is how the undo was reached: it rewrites
+     * {@code coolingOffUntil} to now + 7 with no re-arm check, and re-arming with her existing
+     * Keyholder ids notifies nobody, because {@code inviteAll} skips people already standing.
+     * {@code KeyholderService.invite} restarts the same week by a second route.
+     *
+     * <h3>The two that protect what is in the box</h3>
+     * {@link #add} and {@link #delete} are gated so that whoever holds the account cannot empty
+     * the box before the family open it, or plant something in it that reads as hers.
+     *
+     * <h3>What is deliberately left open</h3>
+     * {@link #markSheetSaved} is not gated. Downloading the saved one-page copy is exactly what a
+     * bereaved family legitimately does on this account, and all that write records is that they
+     * did — it grants nothing and destroys nothing. Reads are not gated either; the release is
+     * about what may still be changed, not about who may look.
+     */
+    private void requireNotReleased(UUID ownerId) {
+        if (releases.isReleased(ownerId)) {
+            throw new IllegalArgumentException(ReleaseGate.ALREADY_PASSED_ON);
+        }
     }
 
     private void requireOwnPassword(User owner) {

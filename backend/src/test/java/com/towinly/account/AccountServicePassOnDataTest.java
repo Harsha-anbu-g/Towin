@@ -100,6 +100,8 @@ class AccountServicePassOnDataTest {
     @Mock KeyholderRepository keyholderRepository;
     @Mock PassOnSettingsRepository passOnSettingsRepository;
     @Mock PassOnOpenRepository passOnOpenRepository;
+    @Mock com.towinly.passon.service.ReleaseGate releaseGate;
+    @Mock com.towinly.passon.service.ReleaseContact releaseContact;
     @Mock S3Service s3Service;
 
     @InjectMocks AccountService accountService;

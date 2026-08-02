@@ -75,6 +75,10 @@ public class AccountService {
     private final KeyholderRepository keyholderRepository;
     private final PassOnSettingsRepository passOnSettingsRepository;
     private final PassOnOpenRepository passOnOpenRepository;
+    /** Whether a person has released this account's owner. Nothing here ever sets it. */
+    private final com.towinly.passon.service.ReleaseGate releaseGate;
+    /** Where a bereaved family writes. Null until a deployment sets it. */
+    private final com.towinly.passon.service.ReleaseContact releaseContact;
 
     private final com.towinly.common.service.S3Service s3Service;
 
@@ -122,11 +126,49 @@ public class AccountService {
         userRepository.delete(user);
     }
 
-    /** The authenticated user deleting their own account. */
+    /**
+     * The authenticated user deleting their own account — unless a person has already released
+     * them, in which case there is no authenticated user, only somebody holding their account.
+     *
+     * <h3>Why erasure stops here</h3>
+     * This endpoint takes nothing but the JWT: no password, no confirmation, no second step. One
+     * call erases every story and letter, including the ones a bereaved daughter has already been
+     * given and read. After a release the data subject is dead, so whoever is pressing this is by
+     * definition not them, and the deceased have no erasure right left to exercise. Refusing is
+     * the honest answer, and it is the cheapest attack on the whole freeze if we do not.
+     *
+     * <h3>Why only this door</h3>
+     * {@link #purgeUserData} is deliberately untouched. It is shared with the admin delete, and
+     * an operator must still be able to honour a real erasure order — including for a living
+     * person released by mistake, which is a case this procedure has to be able to unwind.
+     */
     @Transactional
     public void deleteOwnAccount(UUID userId) {
+        if (releaseGate.isReleased(userId)) {
+            throw new IllegalArgumentException(cannotDeleteAfterRelease(releaseContact.email()));
+        }
         purgeUserData(userId);
     }
+
+    /**
+     * What a bereaved relative reads. It names somewhere to write, because being told "no" with
+     * no next step is how a grieving family conclude the app has eaten their mother's words.
+     *
+     * <p>When no address is configured it says so plainly rather than leaving a blank or printing
+     * a plausible-looking mailbox nobody reads — the same rule {@code ReleaseContact} follows
+     * everywhere else.
+     */
+    static String cannotDeleteAfterRelease(String contactEmail) {
+        return CANNOT_DELETE_AFTER_RELEASE
+                + (contactEmail == null
+                        ? "Towinly has not set an address to write to yet."
+                        : "If you need to talk to somebody about it, write to " + contactEmail + ".");
+    }
+
+    /** Constant prefix so GlobalExceptionHandler can allow the sentence through by its start. */
+    static final String CANNOT_DELETE_AFTER_RELEASE =
+            "What was on this account has been passed on to the people it was meant for, and it "
+                    + "cannot be taken back now. ";
 
     /**
      * Builds a plain-data snapshot of everything the platform holds about the

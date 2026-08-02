@@ -491,8 +491,8 @@ class PassOnControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
-                        "This page has been passed on to the people it was written for. Nothing "
-                                + "here can be added, changed or taken down now."));
+                        "What is kept here was passed on to the people it was meant for. Nothing "
+                                + "can be added, changed or taken down now."));
 
         verify(items, never()).save(any());
     }
@@ -556,8 +556,8 @@ class PassOnControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
-                        "This page has been passed on to the people it was written for. Nothing "
-                                + "here can be added, changed or taken down now."));
+                        "What is kept here was passed on to the people it was meant for. Nothing "
+                                + "can be added, changed or taken down now."));
 
         verify(items, never()).save(any());
     }
@@ -604,7 +604,15 @@ class PassOnControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(1));
 
-        assertThat(lastSaved().getFirstReadAt()).describedAs("the day it reached her").isNotNull();
+        PassOnItem written = lastSaved();
+        assertThat(written.getFirstReadAt()).describedAs("the day it reached her").isNotNull();
+        // The stamp, and nothing else. This is a save() inside a read, on a released owner's
+        // page, so it is the one place a future mutation could reach her words without the
+        // freeze noticing.
+        assertThat(written.getBody()).describedAs("her words, untouched by being read")
+                .isEqualTo("It snowed for four days.");
+        assertThat(written.getTitle()).isEqualTo("What I wish I had told your father");
+        assertThat(written.getReleaseWhen()).isEqualTo(PassOnRelease.AFTER);
     }
 
     // ── what a visitor sees ──

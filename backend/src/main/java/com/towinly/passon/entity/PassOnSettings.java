@@ -72,14 +72,17 @@ public class PassOnSettings {
      * {@code docs/operations/sealed-box-release.md}; see V56 for why there is exactly one of
      * these rather than one per box.
      *
-     * <p>{@code updatable = false} is what makes that sentence true rather than remembered. Every
-     * JPA write of this row is an update — {@code SealedBoxService.arm}, {@code markSheetSaved},
-     * the demo seeder's backdating — and each of them saves the whole entity, so a stray
-     * {@code setReleasedAt} anywhere would reach Postgres. Hibernate now leaves the column out of
-     * the UPDATE entirely. The operator's own SQL is outside JPA and is unaffected, which is the
-     * point: the only hand that can open this is a human hand.
+     * <p>{@code insertable = false, updatable = false} is what makes that sentence true rather
+     * than merely remembered — Hibernate leaves this column out of both statements, so a stray
+     * {@code setReleasedAt} anywhere in the codebase reaches nothing. {@code updatable} alone
+     * would not have done it: JPA still writes a column on INSERT, and {@code SealedBoxService.arm}
+     * builds a fresh row. Nothing sets the field there today, which is why nothing was broken, but
+     * the annotation was claiming a guarantee it did not give.
+     *
+     * <p>The operator's own SQL is outside JPA and is unaffected. That is the point: the only hand
+     * that can open this is a human hand.
      */
-    @Column(name = "released_at", updatable = false)
+    @Column(name = "released_at", insertable = false, updatable = false)
     private LocalDateTime releasedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)

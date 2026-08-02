@@ -97,6 +97,8 @@ public class KeyholderService {
     private final ElderProfileRepository elderProfiles;
     private final HelperProfileRepository helperProfiles;
     private final PassOnAlertService alerts;
+    /** Whether a person has released this owner's things. Nothing here ever sets it. */
+    private final ReleaseGate releases;
     private final Clock clock;
 
     // ── reading ──
@@ -147,6 +149,17 @@ public class KeyholderService {
      */
     @Transactional
     public KeyholderResponse invite(UUID ownerId, UUID personId) {
+        // Once a person has released her, the arrangement is settled and nobody new is asked.
+        //
+        // This looks like the mildest write in the feature and is not. It ends in
+        // restartTheSevenDays, which resets coolingOffUntil to now + 7 — and that window is the
+        // only thing standing in front of SealedBoxService.undoSetup, which deletes the row
+        // carrying released_at. Asking one more person was therefore half of an un-release.
+        // remove() is left open on purpose: it restarts nothing, so it reopens nothing.
+        if (releases.isReleased(ownerId)) {
+            throw new IllegalArgumentException(ReleaseGate.ALREADY_PASSED_ON);
+        }
+
         User owner = getUser(ownerId);
         User person = getUser(personId);
         requireOnFamilyList(ownerId, personId);

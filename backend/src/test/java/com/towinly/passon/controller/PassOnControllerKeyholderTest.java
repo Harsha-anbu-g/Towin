@@ -13,6 +13,7 @@ import com.towinly.passon.repository.KeyholderRepository;
 import com.towinly.passon.repository.PassOnOpenRepository;
 import com.towinly.passon.repository.PassOnSettingsRepository;
 import com.towinly.passon.service.KeyholderService;
+import com.towinly.passon.service.ReleaseGate;
 import com.towinly.passon.service.PassOnAlertService;
 import com.towinly.passon.service.PassOnService;
 import com.towinly.profile.repository.ElderProfileRepository;
@@ -93,7 +94,7 @@ class PassOnControllerKeyholderTest {
 
         KeyholderService service = new KeyholderService(keyholderRepository, familyLinks, settings,
                 opens, users, elderProfiles, helperProfiles, alerts,
-                Clock.fixed(TODAY, ZoneOffset.UTC));
+                new ReleaseGate(settings), Clock.fixed(TODAY, ZoneOffset.UTC));
         mockMvc = MockMvcBuilders.standaloneSetup(
                         new PassOnController(passOnService, service, sealedBox))
                 .setControllerAdvice(new GlobalExceptionHandler())

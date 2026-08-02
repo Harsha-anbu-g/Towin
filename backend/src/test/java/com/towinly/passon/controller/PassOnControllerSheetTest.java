@@ -18,6 +18,7 @@ import com.towinly.passon.repository.PassOnSettingsRepository;
 import com.towinly.passon.repository.SealedItemRepository;
 import com.towinly.passon.security.SealedRevealRateLimiter;
 import com.towinly.passon.service.KeyholderService;
+import com.towinly.passon.service.ReleaseGate;
 import com.towinly.passon.service.PassOnAlertService;
 import com.towinly.passon.service.PassOnService;
 import com.towinly.passon.service.ReleaseContact;
@@ -116,10 +117,10 @@ class PassOnControllerSheetTest {
     void setUp() {
         Clock clock = Clock.fixed(TODAY, ZoneOffset.UTC);
         KeyholderService keyholders = new KeyholderService(keyholderRepository, familyLinks,
-                settings, opens, users, elderProfiles, helperProfiles, alerts, clock);
+                settings, opens, users, elderProfiles, helperProfiles, alerts, new ReleaseGate(settings), clock);
         SealedBoxService sealedBox = new SealedBoxService(sealedItems, settings, opens, users,
                 crypto, passwordEncoder, new SealedRevealRateLimiter(clock), alerts, keyholders,
-                new ReleaseContact(RELEASE_CONTACT_EMAIL), clock);
+                new ReleaseContact(RELEASE_CONTACT_EMAIL), new ReleaseGate(settings), clock);
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new PassOnController(passOnService, keyholders, sealedBox))

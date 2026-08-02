@@ -35,6 +35,20 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReleaseGate {
 
+    /**
+     * One sentence, everywhere the freeze refuses something on the "What I pass on" pages —
+     * her stories and letters, her Sealed box, and the arrangement of Keyholders around it.
+     *
+     * <p>It lives here rather than in any one service because whoever reads it is hitting
+     * whichever route they happened to be on, and being told two slightly different things
+     * about the same fact is how a bereaved family come to believe the app is broken. The
+     * account-deletion refusal is deliberately NOT this sentence: that one names the address
+     * to write to, so it carries a value and lives with the code that has one.
+     */
+    public static final String ALREADY_PASSED_ON =
+            "What is kept here was passed on to the people it was meant for. Nothing can be "
+                    + "added, changed or taken down now.";
+
     private final PassOnSettingsRepository settings;
 
     /** True only once a person has run the release procedure for this owner. */

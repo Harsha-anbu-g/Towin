@@ -50,9 +50,11 @@ public class PassOnService {
     /** Exactly the sentence an elder reads, so a client never has to invent one. */
     static final String STORY_IS_FOR_TODAY =
             "A story is for people to read now. Only a letter can be kept until after you are gone.";
-    static final String ALREADY_PASSED_ON =
-            "This page has been passed on to the people it was written for. Nothing here can be "
-                    + "added, changed or taken down now.";
+    /**
+     * The same sentence the Sealed box and the Keyholder list refuse with. It lives on
+     * {@link ReleaseGate} so that a family hitting three different routes are told one thing.
+     */
+    static final String ALREADY_PASSED_ON = ReleaseGate.ALREADY_PASSED_ON;
     static final String LETTER_IS_FOR_ONE_PERSON = "A letter goes to one person, and only that person.";
     static final String PICK_THE_PERSON = "Please choose the one person this is for.";
     static final String ELDERS_ONLY = "Only elders can write on this page.";

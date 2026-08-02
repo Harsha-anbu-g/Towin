@@ -87,9 +87,9 @@ public class GlobalExceptionHandler {
         // elder should read it, so the key and the message are the same sentence.
         SAFE_MESSAGES.put("A story is for people to read now",
                 "A story is for people to read now. Only a letter can be kept until after you are gone.");
-        SAFE_MESSAGES.put("This page has been passed on",
-                "This page has been passed on to the people it was written for. Nothing here can "
-                        + "be added, changed or taken down now.");
+        SAFE_MESSAGES.put("What is kept here was passed on",
+                "What is kept here was passed on to the people it was meant for. Nothing can be "
+                        + "added, changed or taken down now.");
         SAFE_MESSAGES.put("A letter goes to one person",  "A letter goes to one person, and only that person.");
         SAFE_MESSAGES.put("Please choose the one person", "Please choose the one person this is for.");
         SAFE_MESSAGES.put("Only elders can write on this page", "Only elders can write on this page.");
@@ -156,7 +156,12 @@ public class GlobalExceptionHandler {
             // SealedBoxService.frozenMessage — "…stays shut until 12 August…". The date is the
             // whole point: it is what tells an elder her box is safe rather than broken, and
             // when it will open again.
-            "You changed your password recently. For your safety your Sealed box stays shut until ");
+            "You changed your password recently. For your safety your Sealed box stays shut until ",
+            // AccountService.cannotDeleteAfterRelease — "…write to sealedbox@example.org." The
+            // address is the whole point: a bereaved relative told only "no" concludes the app
+            // has eaten their mother's words, so the sentence has to carry somewhere to go.
+            "What was on this account has been passed on to the people it was meant for, and it "
+                    + "cannot be taken back now. ");
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {

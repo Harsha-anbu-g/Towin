@@ -36,6 +36,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Closing an account that has a Sealed box, against a real Postgres.
@@ -63,7 +64,12 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(AccountService.class)
+// ReleaseGate and ReleaseContact come with AccountService: the self-serve delete asks the gate
+// whether this owner's things have already been passed on, and names the address a bereaved
+// family writes to when they have. @DataJpaTest scans neither, so both are imported by hand.
+@Import({AccountService.class,
+        com.towinly.passon.service.ReleaseGate.class,
+        com.towinly.passon.service.ReleaseContact.class})
 @EnabledIfEnvironmentVariable(named = "TOWINLY_DB_TESTS", matches = "true")
 class AccountPurgePassOnDbTest {
 
@@ -105,6 +111,56 @@ class AccountPurgePassOnDbTest {
         assertThat(settings.findById(margaretId)).isEmpty();
         // The one with no foreign key behind it, and the reason this test exists.
         assertThat(opens.findByOwnerIdOrderByAtDesc(margaretId)).isEmpty();
+    }
+
+    @Test
+    void aReleasedOwnersAccountCannotBeClosedFromInsideTheApp() {
+        // Every other fixture in this class is an owner nobody has released. This one has been,
+        // and it is the case that matters: after a release the person whose account it is has
+        // died, so the hand on the Delete button belongs to somebody else — and one tap would
+        // erase letters their family have already read.
+        UUID margaretId = margaret.getId();
+        givenMargaretHasPassedThingsOn();
+        releaseMargaretByHand();
+        detachEverythingTheFixtureLeftManaged();
+
+        assertThatThrownBy(() -> accountService.deleteOwnAccount(margaretId))
+                .isInstanceOf(IllegalArgumentException.class);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(items.findByOwnerIdOrderByCreatedAtDesc(margaretId))
+                .describedAs("her writing is still there").isNotEmpty();
+        assertThat(settings.findById(margaretId))
+                .describedAs("and so is the row carrying the release").isPresent();
+    }
+
+    @Test
+    void anOperatorCanStillPurgeAReleasedOwner() {
+        // The admin path is deliberately left open. A release can be a mistake, and a court can
+        // still order an erasure; purgeUserData is shared with AdminService for exactly that.
+        UUID margaretId = margaret.getId();
+        givenMargaretHasPassedThingsOn();
+        releaseMargaretByHand();
+        detachEverythingTheFixtureLeftManaged();
+
+        assertThatCode(() -> accountService.purgeUserData(margaretId)).doesNotThrowAnyException();
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(items.findByOwnerIdOrderByCreatedAtDesc(margaretId)).isEmpty();
+        assertThat(settings.findById(margaretId)).isEmpty();
+    }
+
+    /** The operator's own statement, run outside JPA exactly as the procedure says. */
+    private void releaseMargaretByHand() {
+        entityManager.getEntityManager()
+                .createNativeQuery("UPDATE passon_settings SET released_at = now(), "
+                        + "updated_at = now() WHERE owner_id = :ownerId")
+                .setParameter("ownerId", margaret.getId())
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Test

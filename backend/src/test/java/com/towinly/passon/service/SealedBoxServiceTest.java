@@ -99,6 +99,8 @@ class SealedBoxServiceTest {
     @Mock PasswordEncoder passwordEncoder;
     @Mock PassOnAlertService alerts;
     @Mock KeyholderService keyholders;
+    /** Nobody has died unless a test says so — every owner here is alive and unreleased. */
+    @Mock ReleaseGate releases;
 
     private Clock clock;
     private SealedRevealRateLimiter revealLimiter;
@@ -113,7 +115,7 @@ class SealedBoxServiceTest {
         revealLimiter = new SealedRevealRateLimiter(clock);
         service = new SealedBoxService(sealedItems, settings, opens, users, crypto,
                 passwordEncoder, revealLimiter, alerts, keyholders,
-                new ReleaseContact(RELEASE_CONTACT_EMAIL), clock);
+                new ReleaseContact(RELEASE_CONTACT_EMAIL), releases, clock);
 
         margaret = User.builder()
                 .id(UUID.randomUUID())
@@ -491,7 +493,7 @@ class SealedBoxServiceTest {
     void anUnsetAddressArrivesAsNothingAtAllRatherThanAPlaceholder() {
         SealedBoxService unconfigured = new SealedBoxService(sealedItems, settings, opens, users,
                 crypto, passwordEncoder, revealLimiter, alerts, keyholders,
-                new ReleaseContact(""), clock);
+                new ReleaseContact(""), releases, clock);
         expectAnEmptyBox();
 
         assertThat(unconfigured.sheet(margaret.getId()).releaseContactEmail()).isNull();
@@ -650,6 +652,88 @@ class SealedBoxServiceTest {
     }
 
     // ── fixtures ──
+
+    // ── once a person has released her ──
+    //
+    // What made this urgent: undoSetup deletes the settings row, and that row is the only
+    // thing carrying released_at. An undo was therefore an un-release — her held letters
+    // closed again and her whole page reopened to editing.
+    //
+    // The argument that this was unreachable said the seven days are measured once from
+    // arming, so nobody could be both released and inside them. That is false. Both arm()
+    // here and KeyholderService.invite reset coolingOffUntil to now + 7 at any time, so the
+    // window is reopenable on demand by whoever holds her account.
+
+    /** Somebody has run the release procedure for Margaret, by hand. */
+    private void margaretHasBeenReleased() {
+        when(releases.isReleased(margaret.getId())).thenReturn(true);
+    }
+
+    @Test
+    void undoingIsRefusedOnceHerThingsHaveBeenPassedOn() {
+        // The critical one. This delete is the only way in the codebase to un-release anybody.
+        margaretHasBeenReleased();
+
+        assertThatThrownBy(() -> service.undoSetup(margaret.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("What is kept here was passed on to the people it was meant for. "
+                        + "Nothing can be added, changed or taken down now.");
+
+        verify(settings, never()).deleteByOwnerId(any());
+        verify(keyholders, never()).removeAll(any());
+    }
+
+    @Test
+    void armingAgainIsRefusedOnceHerThingsHaveBeenPassedOn() {
+        // Re-arming rewrites coolingOffUntil to now + 7, which is what put the undo above
+        // back within reach however long ago she really armed it.
+        margaretHasBeenReleased();
+
+        assertThatThrownBy(() -> service.arm(margaret.getId(), armRequest()))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(settings, never()).save(any());
+        verify(keyholders, never()).inviteAll(any(), any());
+    }
+
+    @Test
+    void addingToTheBoxIsRefusedOnceHerThingsHaveBeenPassedOn() {
+        margaretHasBeenReleased();
+        SealedItemRequest request = new SealedItemRequest();
+        request.setLabel(LABEL);
+        request.setBody(BODY);
+        request.setKindHint(SealedKind.MONEY);
+
+        assertThatThrownBy(() -> service.add(margaret.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(sealedItems, never()).save(any());
+    }
+
+    @Test
+    void takingSomethingOutOfTheBoxIsRefusedOnceHerThingsHaveBeenPassedOn() {
+        // Otherwise whoever holds the account empties the box before the family open it.
+        margaretHasBeenReleased();
+
+        assertThatThrownBy(() -> service.delete(margaret.getId(), item.getId()))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(sealedItems, never()).delete(any());
+    }
+
+    @Test
+    void theSavedCopyCanStillBeNotedAsTakenAfterARelease() {
+        // Deliberately outside the freeze, and the one write here that is. Downloading the
+        // one-page copy is exactly what a bereaved family legitimately does on this account,
+        // and all this records is that they did. It grants nothing and destroys nothing.
+        // Lenient because the whole point is that this path never asks the gate anything.
+        lenient().when(releases.isReleased(margaret.getId())).thenReturn(true);
+        when(settings.findById(margaret.getId())).thenReturn(Optional.of(armedSettings()));
+
+        service.markSheetSaved(margaret.getId());
+
+        verify(settings).save(any());
+    }
 
     /** What the screen sends when she has picked three people and ticked both boxes. */
     private static PassOnArmRequest armRequest() {

@@ -10,6 +10,7 @@ import com.towinly.passon.repository.PassOnSettingsRepository;
 import com.towinly.passon.repository.SealedItemRepository;
 import com.towinly.passon.security.SealedRevealRateLimiter;
 import com.towinly.passon.service.KeyholderService;
+import com.towinly.passon.service.ReleaseGate;
 import com.towinly.passon.service.PassOnAlertService;
 import com.towinly.passon.service.PassOnService;
 import com.towinly.passon.service.ReleaseContact;
@@ -116,7 +117,7 @@ class PassOnControllerSealedTest {
         SealedBoxService sealedBox = new SealedBoxService(sealedItems, settings, opens, users,
                 new SealedCryptoService(TEST_MASTER_KEY), passwordEncoder,
                 new SealedRevealRateLimiter(clock), alerts, keyholders,
-                new ReleaseContact(RELEASE_CONTACT_EMAIL), clock);
+                new ReleaseContact(RELEASE_CONTACT_EMAIL), new ReleaseGate(settings), clock);
 
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new PassOnController(passOnService, keyholders, sealedBox))

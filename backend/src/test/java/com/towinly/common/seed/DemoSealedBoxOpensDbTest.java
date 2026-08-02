@@ -89,6 +89,7 @@ class DemoSealedBoxOpensDbTest {
                 org.mockito.Mockito.mock(com.towinly.passon.service.PassOnAlertService.class),
                 org.mockito.Mockito.mock(com.towinly.passon.service.KeyholderService.class),
                 new com.towinly.passon.service.ReleaseContact("sealedbox@example.org"),
+                new com.towinly.passon.service.ReleaseGate(settings),
                 Clock.systemUTC());
 
         String tag = UUID.randomUUID().toString().substring(0, 8);

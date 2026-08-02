@@ -73,6 +73,8 @@ class KeyholderServiceTest {
     @Mock ElderProfileRepository elderProfiles;
     @Mock HelperProfileRepository helperProfiles;
     @Mock PassOnAlertService alerts;
+    /** Nobody has died unless a test says so — every owner here is alive and unreleased. */
+    @Mock ReleaseGate releases;
 
     private Clock clock;
     private KeyholderService service;
@@ -85,7 +87,7 @@ class KeyholderServiceTest {
     void setUp() {
         clock = Clock.fixed(TODAY, ZoneOffset.UTC);
         service = new KeyholderService(keyholders, familyLinks, settings, opens, users,
-                elderProfiles, helperProfiles, alerts, clock);
+                elderProfiles, helperProfiles, alerts, releases, clock);
 
         margaret = person("Margaret");
         sarah = person("Sarah");
@@ -565,6 +567,43 @@ class KeyholderServiceTest {
     }
 
     // ── helpers ──
+
+    // ── once a person has released her ──
+
+    @Test
+    void askingSomebodyNewIsRefusedOnceHerThingsHaveBeenPassedOn() {
+        // Inviting ends in restartTheSevenDays, which resets coolingOffUntil to now + 7 on
+        // whatever settings row exists. That is what reopens SealedBoxService.undoSetup — and
+        // undo deletes the row carrying released_at. So this write, which looks like the
+        // harmless end of the arrangement, is one half of an un-release.
+        when(releases.isReleased(margaret.getId())).thenReturn(true);
+        // No family-list stub on purpose: the gate refuses before any of that is looked at.
+
+        assertThatThrownBy(() -> service.invite(margaret.getId(), sarah.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("What is kept here was passed on to the people it was meant for. "
+                        + "Nothing can be added, changed or taken down now.");
+
+        verify(settings, never()).save(any());
+        verify(keyholders, never()).save(any());
+        verifyNoInteractions(alerts);
+    }
+
+    @Test
+    void takingAKeyBackStillWorksAfterARelease() {
+        // Deliberately outside the freeze, and safe to be: remove() is the one change here
+        // that does NOT restart the seven days, so it cannot reopen the undo. Guarding it
+        // would be noise on a path that grants nobody anything.
+        Keyholder holding = row(sarah, KeyholderStatus.ACTIVE);
+        lenient().when(releases.isReleased(margaret.getId())).thenReturn(true);
+        when(keyholders.findByIdAndOwnerId(holding.getId(), margaret.getId()))
+                .thenReturn(Optional.of(holding));
+
+        service.remove(margaret.getId(), holding.getId());
+
+        assertThat(holding.getStatus()).isEqualTo(KeyholderStatus.REMOVED);
+        verifyNoInteractions(settings);
+    }
 
     private void onFamilyList(User familyMember) {
         when(familyLinks.findByElderIdAndFamilyUserId(margaret.getId(), familyMember.getId()))
