@@ -23,7 +23,6 @@ import Trust from './pages/Trust';
 import Streaks from './pages/Streaks';
 import UserProfile from './pages/UserProfile';
 import PeekabooGame from './pages/PeekabooGame';
-import BetaBanner from './components/BetaBanner';
 import FeedbackWidget from './components/FeedbackWidget';
 import AskAiAssistant from './components/AskAiAssistant';
 import VerifyEmail from './pages/VerifyEmail';
@@ -152,13 +151,11 @@ function App() {
     <ThemeProvider>
     <ToastProvider>
         <BrowserRouter>
-          {/* App shell: the beta banner takes its own height and the routed
-              content fills whatever viewport space is left. Without this, any
-              100svh page sits *below* the banner and its bottom is pushed
-              off-screen by the banner's height. */}
+          {/* App shell: any bar above the routes takes its own height and the
+              routed content fills whatever viewport space is left, so 100svh
+              pages never get pushed off-screen. */}
           <div style={{ display: 'flex', flexDirection: 'column', height: '100svh' }}>
           <SkipLink />
-          <BetaBanner />
           <BfCacheGuard />
           <ScrollShell>
           <Routes>
