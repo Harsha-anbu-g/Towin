@@ -4,6 +4,7 @@ import com.towinly.common.entity.User;
 import com.towinly.common.enums.KeyholderStatus;
 import com.towinly.common.enums.PassOnAudience;
 import com.towinly.common.enums.PassOnKind;
+import com.towinly.common.enums.PassOnRelease;
 import com.towinly.common.enums.SealedKind;
 import com.towinly.common.enums.UserRole;
 import com.towinly.common.repository.UserRepository;
@@ -66,22 +67,26 @@ import static org.mockito.Mockito.verify;
 
 /**
  * Task 15: the demo shows "What I pass on" working on day one — stories across all three
- * audiences, letters including one already read, a genuinely encrypted Sealed box, and three
- * Keyholders with one question still unanswered.
+ * audiences, letters including one already read and one held until after she is gone, a
+ * genuinely encrypted Sealed box, and three Keyholders with one question still unanswered.
  *
- * <p>Two of these tests are not about completeness at all. {@link #simulatesNoDeathAnywhere}
- * holds the line every review of this feature drew: no demo account may sit in a state a
- * scheduled job could advance, so a public demo can never regenerate "someone says you have
- * died" every five minutes. {@link #leavesTheSealedBoxAloneWhenThereIsNoMasterKey} holds the
- * other one: locally and in CI there is no master key, and a seeder that let
- * {@code SealedBoxUnavailableException} escape a {@code @Transactional} service would mark the
- * whole seeding transaction rollback-only and take the entire demo down with it.
+ * <p>Three of these tests are not about completeness at all.
+ * {@link #holdsOneLetterForHerSisterAndNeverReleasesHer} and {@link #simulatesNoDeathAnywhere}
+ * hold the line every review of this feature drew: the demo shows the <em>held</em> state and
+ * never the released one, so no demo account sits in a state a job could advance and a public
+ * demo can never regenerate "someone says you have died" every five minutes.
+ * {@link #leavesTheSealedBoxAloneWhenThereIsNoMasterKey} holds the other one: locally and in CI
+ * there is no master key, and a seeder that let {@code SealedBoxUnavailableException} escape a
+ * {@code @Transactional} service would mark the whole seeding transaction rollback-only and take
+ * the entire demo down with it.
  */
 @ExtendWith(MockitoExtension.class)
 class DemoDataSeederPassOnTest {
 
     private static final String MARGARET = DemoDataSeeder.ELDER_DEMO_EMAIL;
     private static final String SARAH = "demo.sarah@towin.app";
+    /** Her sister, and the person the held letter is written to. */
+    private static final String RUTH = "demo.ruth@towin.app";
 
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
@@ -199,8 +204,9 @@ class DemoDataSeederPassOnTest {
 
         assertThat(savedOfKind(PassOnKind.STORY)).allSatisfy(s -> {
             assertThat(s.getReleaseWhen())
-                    .as("nothing waits on a death the demo must never simulate")
-                    .isEqualTo(com.towinly.common.enums.PassOnRelease.NOW);
+                    .as("a story is for people to read now — only a letter may be held back, "
+                            + "and Postgres says the same in ck_passon_story")
+                    .isEqualTo(PassOnRelease.NOW);
             assertThat(s.getAudienceUser())
                     .as("a story is written to a group, never to one person")
                     .isNull();
@@ -210,20 +216,22 @@ class DemoDataSeederPassOnTest {
     // ── Letters ─────────────────────────────────────────────────────────
 
     @Test
-    void seedsTwoLettersEachToOneNamedPerson() {
+    void seedsThreeLettersEachToOneNamedPerson() {
         seeder.run(null);
 
         List<PassOnItem> letters = savedOfKind(PassOnKind.LETTER);
-        assertThat(letters).hasSize(2);
+        assertThat(letters).hasSize(3);
         assertThat(letters).allSatisfy(l -> {
             assertThat(l.getAudience()).isEqualTo(PassOnAudience.PERSON);
             assertThat(l.getAudienceUser()).as("a letter always has a reader").isNotNull();
-            assertThat(l.getReleaseWhen()).isEqualTo(com.towinly.common.enums.PassOnRelease.NOW);
         });
+        assertThat(letters).extracting(PassOnItem::getReleaseWhen)
+                .as("two she means to be read today, one she is holding back")
+                .containsExactlyInAnyOrder(PassOnRelease.NOW, PassOnRelease.NOW, PassOnRelease.AFTER);
     }
 
     @Test
-    void oneLetterHasAlreadyBeenReadAndTheOtherHasNot() {
+    void oneLetterHasAlreadyBeenReadAndTheOthersHaveNot() {
         seeder.run(null);
 
         List<PassOnItem> letters = savedOfKind(PassOnKind.LETTER);
@@ -234,7 +242,49 @@ class DemoDataSeederPassOnTest {
         assertThat(read.get(0).getAudienceUser().getEmail())
                 .as("the read letter is the one the family demo login can open").isEqualTo(SARAH);
         assertThat(read.get(0).getFirstReadAt()).isBefore(LocalDateTime.now());
-        assertThat(unread).as("and the waiting-to-be-read state as well").hasSize(1);
+        assertThat(read.get(0).getReleaseWhen())
+                .as("only a letter readable today can carry a read date")
+                .isEqualTo(PassOnRelease.NOW);
+        assertThat(unread)
+                .as("one waiting to be read, and one that cannot be read at all yet").hasSize(2);
+    }
+
+    /**
+     * The demo's answer to "what does <em>only after I'm gone</em> actually look like": one
+     * letter written, addressed and held — while the woman who wrote it is plainly still here.
+     *
+     * <p>The two halves are one rule, not two. A held letter with no read date and no release is
+     * the state a real elder who picks this lives in for years, and it is the only one the demo
+     * may show: releasing her would freeze her whole page ({@code PassOnService.requireNotReleased})
+     * and hand Ruth the letter — on a public demo that resets every five minutes and would
+     * re-stage a death every time.
+     */
+    @Test
+    void holdsOneLetterForHerSisterAndNeverReleasesHer() {
+        PassOnSettings armed = PassOnSettings.builder().ownerId(UUID.randomUUID()).build();
+        lenient().when(passOnSettingsRepository.findById(any()))
+                .thenReturn(Optional.empty(), Optional.of(armed));
+
+        seeder.run(null);
+
+        List<PassOnItem> held = savedOfKind(PassOnKind.LETTER).stream()
+                .filter(l -> l.getReleaseWhen() == PassOnRelease.AFTER)
+                .toList();
+
+        assertThat(held).as("exactly one letter is held back").hasSize(1);
+        assertThat(held.get(0).getAudienceUser().getEmail())
+                .as("addressed to one named person, like every letter").isEqualTo(RUTH);
+        assertThat(held.get(0).getAudience()).isEqualTo(PassOnAudience.PERSON);
+        assertThat(held.get(0).getBody()).as("warm and ordinary, not a legal notice").isNotBlank();
+        assertThat(held.get(0).getFirstReadAt())
+                .as("nobody can have read it: she has not been released").isNull();
+
+        // The one switch that would open it. Every settings row the seeder writes leaves it null.
+        ArgumentCaptor<PassOnSettings> captor = ArgumentCaptor.forClass(PassOnSettings.class);
+        verify(passOnSettingsRepository, atLeastOnce()).save(captor.capture());
+        assertThat(captor.getAllValues()).allSatisfy(row ->
+                assertThat(row.getReleasedAt())
+                        .as("no demo owner is ever released").isNull());
     }
 
     // ── the Sealed box ──────────────────────────────────────────────────
@@ -339,6 +389,9 @@ class DemoDataSeederPassOnTest {
         seeder.run(null);
 
         verify(transactionManager, never()).rollback(any());
+        // By owner, not by kind or by timing — so the letter she holds until after she is gone
+        // is undone by the same call as everything else she wrote, and a visitor who writes
+        // their own held letter on the demo account leaves nothing behind either.
         verify(passOnItemRepository, atLeastOnce()).deleteByOwnerId(any());
         verify(sealedItemRepository, atLeastOnce()).deleteByOwnerId(any());
         verify(passOnSettingsRepository, atLeastOnce()).deleteByOwnerId(any());

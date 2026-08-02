@@ -839,6 +839,12 @@ public class DemoDataSeeder implements ApplicationRunner {
      * job could advance. A public demo that regenerated "someone says you have died" every few
      * minutes would be a defect, not completeness. The only backdating is her own setup date.
      *
+     * <p>She holds one letter until after she is gone, and she is not gone: her
+     * {@code released_at} stays null, which is the only switch that would open it. That is the
+     * state a real elder who chooses "only after I'm gone" is in for years, and it is the one
+     * the demo shows. Releasing her would instead show a letter nobody can change and a page
+     * she can no longer write on — a permanent frozen account, five minutes after every reset.
+     *
      * <h3>Why it can decline to run</h3>
      * With no master key configured — every local machine and CI — the crypto is unavailable
      * and the Sealed box half is skipped rather than attempted. {@code SealedBoxService} is
@@ -877,6 +883,16 @@ public class DemoDataSeeder implements ApplicationRunner {
                         + "planted it the spring you were born. Prune it hard in February and it will "
                         + "outlast all of us.",
                 null);
+
+        // And one she is keeping back for her sister. Without it "only after I'm gone" is a
+        // choice on a form that nothing in the demo has ever made, and the held state — the one
+        // a woman who picks it lives in for years — is never on screen.
+        ensureHeldLetter(margaret, ruth, "For Ruth, for when I am gone",
+                "You have been my sister all my life and my best friend for most of it. When "
+                        + "you read this, put the kettle on first — you always did think better "
+                        + "with a cup in your hand. Tell the others gently, and then sit in the "
+                        + "garden a while and think of the summer we cycled to the coast. There "
+                        + "is nothing left unsaid between us, and that is the finest thing I have.");
 
         seedMargaretsSealedBox(margaret, sarah, davidSon, ruth);
     }
@@ -974,18 +990,34 @@ public class DemoDataSeeder implements ApplicationRunner {
     }
 
     private void ensureStory(User owner, String title, PassOnAudience audience, String body) {
-        ensurePassOnItem(owner, PassOnKind.STORY, title, body, audience, null, null);
+        ensurePassOnItem(owner, PassOnKind.STORY, title, body, audience, null, null,
+                PassOnRelease.NOW);
     }
 
     private void ensureLetter(User owner, User person, String title, String body,
                               LocalDateTime firstReadAt) {
         ensurePassOnItem(owner, PassOnKind.LETTER, title, body, PassOnAudience.PERSON,
-                person, firstReadAt);
+                person, firstReadAt, PassOnRelease.NOW);
+    }
+
+    /**
+     * A letter held until after the writer is gone: written and addressed today, shut to the
+     * person it names until a human runs the release procedure for this owner by hand.
+     *
+     * <p>There is no first-read date to pass and none is offered. The person it names cannot
+     * have read it — {@code released_at} is null for every demo owner, and
+     * {@code PassOnVisibilityService} turns every reader but the writer away until it is not.
+     * A seeded read date would be the one thing here that could not have happened.
+     */
+    private void ensureHeldLetter(User owner, User person, String title, String body) {
+        ensurePassOnItem(owner, PassOnKind.LETTER, title, body, PassOnAudience.PERSON,
+                person, null, PassOnRelease.AFTER);
     }
 
     /** Guarded by owner + kind + title, so a re-run never writes a second copy of a story. */
     private void ensurePassOnItem(User owner, PassOnKind kind, String title, String body,
-                                  PassOnAudience audience, User person, LocalDateTime firstReadAt) {
+                                  PassOnAudience audience, User person, LocalDateTime firstReadAt,
+                                  PassOnRelease releaseWhen) {
         boolean exists = passOnItemRepository
                 .findByOwnerIdAndKindOrderByCreatedAtDesc(owner.getId(), kind)
                 .stream().anyMatch(item -> title.equals(item.getTitle()));
@@ -998,9 +1030,12 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .body(body)
                 .audience(audience)
                 .audienceUser(person)
-                // NOW everywhere. AFTER is legal in the schema for a later version, and a demo
-                // row waiting on a death is precisely the state this feature must never show.
-                .releaseWhen(PassOnRelease.NOW)
+                // NOW for the stories and for the letters she means to be read today; AFTER for
+                // the one she is holding back, which this version delivers for real. What the
+                // demo must never show is a RELEASED owner: her released_at stays null, so the
+                // held letter sits shut exactly as a living elder's does, and nothing here waits
+                // on a death that a job could then act on.
+                .releaseWhen(releaseWhen)
                 .firstReadAt(firstReadAt)
                 .build());
     }
