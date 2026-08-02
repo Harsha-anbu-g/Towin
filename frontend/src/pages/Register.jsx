@@ -5,50 +5,10 @@ import api from '../api/axios';
 import SiteFooter from '../components/SiteFooter';
 import SmoothInput from '../components/SmoothInput';
 import DemoAccounts from '../components/DemoAccounts';
-
-const TERMS_CONTENT = [
-  { h: '1. Welcome to Towinly',
-    p: 'Towinly is a community platform that connects elders with helpers for companionship, errands, and everyday support. By creating an account, you agree to these Terms of Service. This is a placeholder document. Final terms will be reviewed by counsel before launch.' },
-  { h: '2. Eligibility',
-    p: 'You must be at least 18 years old to use Towinly. By registering, you confirm that the information you provide is accurate and that you will keep it up to date. Accounts created with false information may be suspended at any time.' },
-  { h: '3. Your account',
-    p: 'You are responsible for keeping your password confidential and for any activity on your account. Notify us immediately if you suspect unauthorized use. We may suspend accounts that violate community standards, including harassment, fraud, or unsafe behavior toward another member.' },
-  { h: '4. Community conduct',
-    p: 'Towinly exists to build trust. You agree to treat every elder, helper, and admin with respect. Discrimination, threats, solicitation, or any behavior that compromises another member’s safety is grounds for immediate removal.' },
-  { h: '5. Help requests and meetings',
-    p: 'Helpers and elders may arrange to meet in person once trust has been established through the Trust Journey. Towinly facilitates introductions but is not a party to any agreement between members. Use good judgment, meet in public when possible, and report safety concerns promptly.' },
-  { h: '6. Reviews and trust scores',
-    p: 'Trust scores and reviews reflect community feedback. Reviews must be honest and based on real interactions. Fake or coordinated reviews are not allowed and may result in account action.' },
-  { h: '7. Limitation of liability',
-    p: 'Towinly is provided “as is.” To the maximum extent permitted by law, we are not liable for losses arising from interactions between members. Always use common sense and your local emergency services when needed.' },
-  { h: '8. Changes to these terms',
-    p: 'We may update these terms from time to time. We will notify you of significant changes. Continued use of Towinly after changes take effect means you accept the revised terms.' },
-  { h: '9. Contact',
-    p: 'Questions about these terms can be sent to support@towinly.example. Last updated: May 2026.' },
-];
-
-const PRIVACY_CONTENT = [
-  { h: '1. What we collect',
-    p: 'We collect the information you provide when you register (name, email, phone, role) and the content you create on Towinly (profile, help requests, messages, reviews). We also collect basic device information to keep the service secure.' },
-  { h: '2. Location',
-    p: 'If you share your location, we use it only to match you with nearby helpers or elders. You can turn location off at any time in your device settings. Your account will continue to work, just without distance-based matching.' },
-  { h: '3. How we use your data',
-    p: 'Your data is used to operate Towinly: showing nearby members, enabling messaging, calculating trust scores, and keeping the community safe. We do not sell your personal data to advertisers.' },
-  { h: '4. Who can see what',
-    p: 'Other members can see your name, role, city, bio, interests, and trust score. Your email and phone are visible to a connection only after the trust journey reaches the “Phone Ready” stage. Admins may access account data when investigating safety reports.' },
-  { h: '5. Messages',
-    p: 'Messages between members are stored so you can read your history. Admins may review messages flagged for safety. We do not use the content of your messages for advertising.' },
-  { h: '6. Data retention',
-    p: 'We keep your account data while your account is active. If you delete your account, we remove your profile within 30 days. Anonymized records of past interactions may be retained for safety investigations.' },
-  { h: '7. Your rights',
-    p: 'You can edit or delete your profile information at any time from the Profile page. You can request a copy of your data or full deletion by contacting support@towinly.example.' },
-  { h: '8. Security',
-    p: 'We use industry-standard encryption in transit, so what you send us is protected on its way to Towinly. Once it reaches us, most of your information is stored without a second lock on it. The Sealed box is the exception: whatever you keep there is encrypted while it is stored, and only you can open it. No system is perfectly secure, so please use a strong, unique password and report anything suspicious.' },
-  { h: '9. Children',
-    p: 'Towinly is not directed at children under 18. If we learn we have collected data from a minor, we will delete it.' },
-  { h: '10. Contact',
-    p: 'Privacy questions can be sent to privacy@towinly.example. Last updated: May 2026.' },
-];
+import LegalDraftNotice from '../components/LegalDraftNotice';
+import LegalSections from '../components/LegalSections';
+import { termsSections, privacySections } from '../lib/legalCopy';
+import { legalContactEmail } from '../lib/legalContact';
 
 function LegalModal({ title, sections, onClose }) {
   useEffect(() => {
@@ -99,23 +59,8 @@ function LegalModal({ title, sections, onClose }) {
           >×</button>
         </div>
         <div style={{ padding: '20px 32px 28px', overflowY: 'auto' }}>
-          <p style={{
-            fontSize: '13px', color: 'var(--ink-4)', textTransform: 'uppercase',
-            letterSpacing: '0.5px', fontWeight: 600, margin: '0 0 18px',
-          }}>
-            Placeholder document
-          </p>
-          {sections.map(s => (
-            <div key={s.h} style={{ marginBottom: '20px' }}>
-              <h4 style={{
-                fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)',
-                margin: '0 0 6px',
-              }}>{s.h}</h4>
-              <p style={{
-                fontSize: 'var(--text-sm)', color: 'var(--ink-slate-2)', lineHeight: 1.6, margin: 0,
-              }}>{s.p}</p>
-            </div>
-          ))}
+          <LegalDraftNotice />
+          <LegalSections sections={sections} compact />
         </div>
         <div style={{
           padding: '16px 32px', borderTop: '1px solid var(--border)',
@@ -660,11 +605,13 @@ export default function Register() {
         <SiteFooter style={{ marginTop: 'auto' }} />
       </div>
 
+      {/* The same words as /terms and /privacy, from lib/legalCopy.js — what somebody agrees
+          to here and what they can look up later must never be two different documents. */}
       {legalOpen === 'terms' && (
-        <LegalModal title="Terms of Service" sections={TERMS_CONTENT} onClose={() => setLegalOpen(null)} />
+        <LegalModal title="Terms of Service" sections={termsSections(legalContactEmail())} onClose={() => setLegalOpen(null)} />
       )}
       {legalOpen === 'privacy' && (
-        <LegalModal title="Privacy Policy" sections={PRIVACY_CONTENT} onClose={() => setLegalOpen(null)} />
+        <LegalModal title="Privacy Policy" sections={privacySections(legalContactEmail())} onClose={() => setLegalOpen(null)} />
       )}
     </div>
   );
