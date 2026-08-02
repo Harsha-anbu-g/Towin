@@ -686,6 +686,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureEmergencyContact(margaret, "Sarah (daughter)", "+14165550199", "Family");
 
         seedWhatMargaretPassesOn(margaret, sarah, davidSon, ruth);
+        seedMontrealElderBoxes(david, grace, rose, helen, arthur, nina, priya, tom, claire);
+        seedTamilNaduElderBoxes(lakshmi, meena, karthik, arjun);
 
         for (User u : demoUsers) {
             try {
@@ -984,6 +986,256 @@ public class DemoDataSeeder implements ApplicationRunner {
             row.setCoolingOffUntil(armedAt.plusDays(7));
             passOnSettingsRepository.save(row);
         });
+    }
+
+    /**
+     * The other Montreal elders' boxes. Every demo elder owns a "My boxes" page, and a visitor
+     * who signs in as any of them must find it lived-in: three stories each, one per audience,
+     * so no filter opens on an empty list, and one letter each. The letter form only offers
+     * ACTIVE family and TRUSTED helpers ({@code peopleSheKnows} in PassOn.jsx), so each letter
+     * names a helper its writer genuinely holds at TRUSTED — raising the pair there first,
+     * with the chat that friendship implies, where no such pair existed.
+     *
+     * <p>The Sealed box stays deliberately un-set-up for all of them: setting it up invites
+     * Keyholders, these elders have no family accounts to invite, and the teaching card an
+     * untouched box shows is itself a real state worth keeping on screen. Margaret's box
+     * ({@link #seedMargaretsSealedBox}) already shows the armed one.
+     *
+     * <p>David's letter carries a read date and every other new letter waits unread, so both
+     * halves of the "read on / not opened yet" line stay on show outside Margaret's account too.
+     */
+    private void seedMontrealElderBoxes(User david, User grace, User rose, User helen,
+                                        User arthur, User nina, User priya, User tom, User claire) {
+        // David Chen, 76, the engineer. Nina is already his TRUSTED helper.
+        ensureStory(david, "The bridge I checked for thirty years", PassOnAudience.EVERYONE,
+                "Every morning on my way in I looked up at the same span and asked it the same "
+                        + "question. People think engineering is about building things. It is mostly "
+                        + "about listening to them afterwards. The bridge always answered, and so "
+                        + "will most things in your life, if you keep going back to look.");
+        ensureStory(david, "Your grandmother's dumplings", PassOnAudience.FAMILY,
+                "She never wrote the recipe down and neither will I, because the recipe was "
+                        + "never the point. Saturday mornings, flour on the counter, the radio on. "
+                        + "The filling is pork and cabbage and too much ginger. The rest is the "
+                        + "morning itself, and you have to make that part fresh every time.");
+        ensureStory(david, "The fuse box is not haunted", PassOnAudience.HELPERS,
+                "If half the kitchen goes dark it is the second breaker from the top; it has "
+                        + "been tired since 1994. Flip it fully off and then on — halfway does "
+                        + "nothing. If it trips twice in one evening, stop and call an electrician, "
+                        + "and do not let me talk you out of it.");
+        ensureLetter(david, nina, "For Nina, the soup you asked about",
+                "You asked for the winter soup and I am finally writing it down. Short ribs, "
+                        + "not stewing beef — the butcher on Jean-Talon knows the cut. Star anise, "
+                        + "one only. And you must burn the onion a little; that is not a mistake, "
+                        + "that is the soup. Cook it the day before you need it. Thank you for "
+                        + "eating my experiments all these months and saying kind things.",
+                LocalDateTime.now().minusDays(LETTER_READ_DAYS_AGO));
+
+        // Grace Liu, 70, the painter. Priya is already her TRUSTED helper.
+        ensureStory(grace, "Thirty years behind the counter", PassOnAudience.EVERYONE,
+                "A pharmacy counter is a strange place to learn about people, but I recommend "
+                        + "it. Everyone who came to me was worried about something. Mostly they did "
+                        + "not need advice. They needed one person to take the worry seriously for "
+                        + "two minutes. That is a skill, and anyone can learn it, and it is worth "
+                        + "more than most medicine.");
+        ensureStory(grace, "Which painting is for whom", PassOnAudience.FAMILY,
+                "The harbour in the rain is for Michael, because he stood beside me while I "
+                        + "painted it and never once said hurry up. The little birches are for Anna. "
+                        + "The rest, honestly, you may argue over — it would please me to think of "
+                        + "you all in one room, pointing at my pictures and disagreeing.");
+        ensureStory(grace, "On grey days", PassOnAudience.HELPERS,
+                "If I am quiet when you visit, it is not you. Some days the light is wrong for "
+                        + "painting and wrong for me too. Do not try to cheer me up; just put the "
+                        + "kettle on and tell me something ordinary about your week. Ordinary is "
+                        + "the thing that works.");
+        ensureLetter(grace, priya, "For Priya, about the little painting",
+                "The small watercolour of the park bench — I want you to have it, and I want "
+                        + "you to know why. It is the bench where you sat with me the first "
+                        + "afternoon, when I was new to all this and embarrassed to need help. You "
+                        + "talked about your grandmother in Jaipur and I stopped being embarrassed. "
+                        + "It is not my best painting. It is my favourite.",
+                null);
+
+        // Rose Martin, 74, the librarian. Tom becomes her TRUSTED helper here — the letter
+        // form could offer nobody else, and a trusted friendship without a chat would be
+        // the first silent one in the demo.
+        Connection cRoseTom = ensureConnection(rose, tom, ConnectionStatus.ACTIVE,
+                TrustLevel.TRUSTED, rose,
+                "Hello Tom. My garden gate has been squeaking for a year and my neighbour says "
+                        + "you are good with hinges and patient with talkers. I am both a hinge "
+                        + "and a talker.");
+        seedMessagesIfEmpty(cRoseTom, 2600, List.of(
+                msg(tom, "Rose, the gate is oiled and the latch actually latches now. Also I took the squeak home with me, you're welcome."),
+                msg(rose, "The silence is unsettling. I had grown fond of it announcing my visitors. Thank you, Tom — library voucher is on the hall table."),
+                msg(tom, "You don't have to pay me in books, but I'm also not giving the voucher back.")));
+        ensureStory(rose, "Forty years at the returns desk", PassOnAudience.EVERYONE,
+                "People apologise to librarians constantly — for late books, for silly "
+                        + "questions, for reading romances. Forty years and I never once wanted an "
+                        + "apology. A library is one of the last places you can walk in with "
+                        + "nothing and leave rich. Never apologise for what you love to read.");
+        ensureStory(rose, "The books on the third shelf", PassOnAudience.FAMILY,
+                "The third shelf in the back room is not like the other shelves. Those are the "
+                        + "ones your grandfather gave me, one each birthday, with a note inside the "
+                        + "cover. Read the notes in order some evening — they are better than any "
+                        + "novel in the house, and I include the good ones in that.");
+        ensureStory(rose, "The crossword rule", PassOnAudience.HELPERS,
+                "I do the crossword in pen, and yes, that is vanity. If you visit on a Saturday "
+                        + "you may help, but the rule is you have to say the answer out loud and "
+                        + "let me write it. If I get to hold the pen, the mistakes are mine too, "
+                        + "and I can live with that arrangement.");
+        ensureLetter(rose, tom, "For Tom, one more book",
+                "You told me you were never much of a reader, and then you fixed my gate and "
+                        + "quoted half of Treasure Island while you did it. Somebody read to you "
+                        + "once, and it stuck. The copy on my hall table is for you. It is not a "
+                        + "loan, so there is no due date, but I will be asking questions.",
+                null);
+
+        // Helen Park, 71, the nurse. Claire becomes her TRUSTED helper — same rule as Rose.
+        Connection cHelenClaire = ensureConnection(helen, claire, ConnectionStatus.ACTIVE,
+                TrustLevel.TRUSTED, helen,
+                "Hello Claire. I bake more than one woman can eat and I am told you garden. I "
+                        + "propose an alliance: my shortbread for your company, terms negotiable.");
+        seedMessagesIfEmpty(cHelenClaire, 950, List.of(
+                msg(claire, "Helen, I ate four pieces of the shortbread on the walk home. This alliance is going very well for me."),
+                msg(helen, "Four is respectable. My record patient managed six on a night shift in 1989. Come Thursday, I'm trying a lavender batch."),
+                msg(claire, "Thursday it is. I'll bring cuttings for your window box — the rosemary took.")));
+        ensureStory(helen, "Night shift at the General", PassOnAudience.EVERYONE,
+                "Three in the morning on a hospital ward teaches you what matters. Nobody ever "
+                        + "asked me for anything grand at that hour. They asked for water, for the "
+                        + "curtain opened, for someone to sit down for a minute. Comfort is small "
+                        + "and it is nearly always within reach. That is the whole of what I know.");
+        ensureStory(helen, "The blue scarf pattern", PassOnAudience.FAMILY,
+                "The scarf pattern everyone asks about is in the tin with the knitting "
+                        + "needles, written in my mother's hand with my corrections up the margin. "
+                        + "Her tension was tighter than mine, so go up a needle size if you knit "
+                        + "like me. Every family argument we ever had is in those margins, and we "
+                        + "loved each other completely.");
+        ensureStory(helen, "How I take my tea", PassOnAudience.HELPERS,
+                "Strong, milk first, no sugar, and in the blue mug even though the handle is "
+                        + "chipped — especially because the handle is chipped. If you make it in "
+                        + "the blue mug without being told, you will have understood everything "
+                        + "important about looking after me.");
+        ensureLetter(helen, claire, "For Claire, the shortbread, properly",
+                "Everyone thinks shortbread is butter, sugar, flour, and it is, the way a "
+                        + "hospital is bricks. The trick is rice flour, two spoons, and you must "
+                        + "not overwork it — stop while it still looks wrong. My mother gave me "
+                        + "this recipe the week I qualified, and I am giving it to you for no "
+                        + "occasion at all, which is the best kind.",
+                null);
+
+        // Arthur Miles, 68, the history teacher. Nina becomes his TRUSTED helper — his only
+        // other link is a request James has not answered yet, which the demo keeps pending.
+        Connection cArthurNina = ensureConnection(arthur, nina, ConnectionStatus.ACTIVE,
+                TrustLevel.TRUSTED, arthur,
+                "Hello Nina. I am told you cook and do not mind a talker. I offer a decent "
+                        + "chess game and more history than anyone has ever asked me for.");
+        seedMessagesIfEmpty(cArthurNina, 1500, List.of(
+                msg(nina, "Arthur, same time Thursday? I'm bringing jollof rice and I expect the full lecture on the Plains of Abraham with it."),
+                msg(arthur, "Thursday. I concede last week's game was a fluke and I have prepared accordingly. The lecture is included whether requested or not."),
+                msg(nina, "The lecture is why I keep coming back. The chess is the price of admission.")));
+        ensureStory(arthur, "The lesson I taught five hundred times", PassOnAudience.EVERYONE,
+                "Thirty years of teaching history and every June somebody asked why it "
+                        + "mattered. My answer never changed: history is the only subject that is "
+                        + "entirely made of people deciding things looked permanent when they were "
+                        + "not. Nothing you are afraid of right now is permanent either. That is "
+                        + "the lesson; the dates were packaging.");
+        ensureStory(arthur, "Your great-grandfather's medals", PassOnAudience.FAMILY,
+                "They are in the cedar box on my desk, and the thing I want you to know is "
+                        + "that he never once showed them to me. I found them the way you are "
+                        + "finding them now, after. He was the gentlest man I ever knew. Both of "
+                        + "those things are true, and holding two true things at once is the whole "
+                        + "trick of understanding anybody.");
+        ensureStory(arthur, "Chess with me, honestly", PassOnAudience.HELPERS,
+                "Do not let me win. I will know, I will sulk, and it will be worse than losing. "
+                        + "I play the same opening every time because my father taught it to me "
+                        + "and loyalty outranks strategy. Beat me properly and I will teach you "
+                        + "why the opening deserved better.");
+        ensureLetter(arthur, nina, "For Nina, the Sicilian",
+                "You asked why I never play anything but the same tired opening, and I gave "
+                        + "you the short answer. The long one: my father taught it to me the "
+                        + "winter he came home from the war, one move a night at the kitchen "
+                        + "table, and I have never wanted a better one since. I am writing out his "
+                        + "notes for you on the next page. Play it badly and often, as we did.",
+                null);
+    }
+
+    /**
+     * The Tamil Nadu elders' boxes — same completeness rule as
+     * {@link #seedMontrealElderBoxes}, and the same TRUSTED-first rule for letters. Karthik and
+     * Arjun also gain their first connections here, so the two Tamil Nadu helper accounts stop
+     * opening on empty dashboards of their own.
+     */
+    private void seedTamilNaduElderBoxes(User lakshmi, User meena, User karthik, User arjun) {
+        // Lakshmi Raman, 70, Chennai. Karthik, the engineering student, becomes her TRUSTED
+        // helper — the video calls in her seeded need are the friendship this chat shows.
+        Connection cLakshmiKarthik = ensureConnection(lakshmi, karthik, ConnectionStatus.ACTIVE,
+                TrustLevel.TRUSTED, karthik,
+                "Vanakkam madam. I saw your request about video calls to your son. I set up my "
+                        + "own grandmother's phone and survived — happy to help over filter coffee.");
+        seedMessagesIfEmpty(cLakshmiKarthik, 700, List.of(
+                msg(lakshmi, "Karthik, I pressed the green button all by myself this morning and spoke to Suresh for one full hour. He asked who taught me. I said a boy who takes too much sugar in his coffee."),
+                msg(karthik, "Madam, one hour! Last month you were scared of the camera. Next lesson: sending photos. And the sugar is necessary for teaching, this is proven science."),
+                msg(lakshmi, "Come Saturday morning then. I will make the coffee and you will bring nothing, that is the arrangement.")));
+        ensureStory(lakshmi, "Marina Beach at six in the morning", PassOnAudience.EVERYONE,
+                "For forty years I have walked the same stretch of sand before the city wakes. "
+                        + "The fishermen are bringing the boats in, the vendors are lighting their "
+                        + "stoves, and for one hour Chennai belongs to the people who get up early. "
+                        + "Whatever you are worried about, walk it out by the water. The sea has "
+                        + "heard everything already and it is still calm.");
+        ensureStory(lakshmi, "The songs my mother sang", PassOnAudience.FAMILY,
+                "The kritis I hum in the kitchen are the ones my mother sang in hers, and her "
+                        + "mother before that. I taught them to Suresh when he was small, and he "
+                        + "pretends to have forgotten, and he has not — I heard him humming "
+                        + "Raghuvamsa Sudha to his daughter on our call. Sing them badly if you "
+                        + "must, but sing them in the kitchen. That is where they live.");
+        ensureStory(lakshmi, "My morning walk", PassOnAudience.HELPERS,
+                "I go at six and I am back by seven-thirty, and I have done it in every "
+                        + "weather Chennai owns. If you worry, you may walk with me, but the pace "
+                        + "is mine and the quiet stretch by the lighthouse stays quiet. That hour "
+                        + "is how I stay the woman you know for the other twenty-three.");
+        ensureLetter(lakshmi, karthik, "For Karthik, who gave me back my son",
+                "Before you came, Suresh was a voice on a crackling line once a month. Now I "
+                        + "see his face on Sunday mornings, and his daughter waves at me from "
+                        + "Toronto, and my kitchen is not so quiet after. You call it pressing "
+                        + "three buttons. I am a teacher, Karthik — I know the difference between "
+                        + "a small lesson and a great one, and I know which one you gave me.",
+                null);
+
+        // Meena Krishnan, 73, Coimbatore. Arjun, the delivery rider from Salem, becomes her
+        // TRUSTED helper — the temple rides her need asks for, made into a friendship.
+        Connection cMeenaArjun = ensureConnection(meena, arjun, ConnectionStatus.ACTIVE,
+                TrustLevel.TRUSTED, arjun,
+                "Vanakkam madam. I ride between Salem and Coimbatore most weeks and I know "
+                        + "every temple road in between. Happy to take you for your evening visits.");
+        seedMessagesIfEmpty(cMeenaArjun, 1900, List.of(
+                msg(meena, "Arjun, Thursday is Pradosham. Can we leave a little early, five o'clock? I will pack extra murukku for the ride."),
+                msg(arjun, "Five o'clock, madam. Last week's murukku did not survive past the second signal, so pack accordingly."),
+                msg(meena, "I have raised three children, Arjun. I know how to calculate rations for a growing boy. There will be a second tin.")));
+        ensureStory(meena, "Thirty-one years behind the counter", PassOnAudience.EVERYONE,
+                "At the bank I counted other people's money for thirty-one years, and I will "
+                        + "tell you what I learned: the happiest customers were never the ones "
+                        + "with the largest deposits. They were the ones who knew what enough "
+                        + "looked like. Find your enough early and guard it. Everything after "
+                        + "that number is worry wearing a nice shirt.");
+        ensureStory(meena, "The sambar powder, written down at last", PassOnAudience.FAMILY,
+                "Every one of you has asked and every time I have said 'a little of this, a "
+                        + "little of that', and I am sorry, because my mother did the same to me "
+                        + "and I swore I would not. It is in the red notebook in the kitchen "
+                        + "drawer, measured properly, roasted in the order written. The order "
+                        + "matters. The coriander goes in last. Now none of you can say I never "
+                        + "told you.");
+        ensureStory(meena, "The plants on the back step", PassOnAudience.HELPERS,
+                "The tulsi gets water every morning, a little, and the jasmine every second "
+                        + "day, more than you think. The curry leaf looks dead every January and "
+                        + "it is lying — leave it alone and it comes back in March, same as I do. "
+                        + "Do not rearrange the pots. They are in the order my knees can manage.");
+        ensureLetter(meena, arjun, "For Arjun, before the festival",
+                "You think I do not notice that you refuse petrol money and then eat like a "
+                        + "sparrow to be polite. During the festival you will take the sweets tin "
+                        + "I give you, the full one, and there is a wool scarf in it because you "
+                        + "ride like the wind does not apply to you. A grandmother's arithmetic, "
+                        + "Arjun: rides to the temple cannot be repaid in coins. Sweets are the "
+                        + "accepted currency. Do not argue with a bank clerk about accounts.",
+                null);
     }
 
     /**

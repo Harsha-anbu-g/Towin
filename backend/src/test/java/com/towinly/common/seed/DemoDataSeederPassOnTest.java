@@ -2,10 +2,12 @@ package com.towinly.common.seed;
 
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.KeyholderStatus;
+import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.PassOnAudience;
 import com.towinly.common.enums.PassOnKind;
 import com.towinly.common.enums.PassOnRelease;
 import com.towinly.common.enums.SealedKind;
+import com.towinly.common.enums.TrustLevel;
 import com.towinly.common.enums.UserRole;
 import com.towinly.common.repository.UserRepository;
 import com.towinly.common.service.TrustScoreService;
@@ -51,8 +53,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,6 +91,13 @@ class DemoDataSeederPassOnTest {
     private static final String SARAH = "demo.sarah@towin.app";
     /** Her sister, and the person the held letter is written to. */
     private static final String RUTH = "demo.ruth@towin.app";
+    /** The elder David Chen — not Margaret's keyholder David, who is a FAMILY account. */
+    private static final String DAVID_ELDER = "demo.david@towin.app";
+    private static final String NINA = "demo.nina@towin.app";
+    /** Every demo elder. Each owns a "My boxes" page, and none of it may open empty. */
+    private static final List<String> ELDERS = List.of(MARGARET, DAVID_ELDER,
+            "demo.grace@towin.app", "demo.rose@towin.app", "demo.helen@towin.app",
+            "demo.arthur@towin.app", "demo.lakshmi@towin.app", "demo.meena@towin.app");
 
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
@@ -177,6 +188,11 @@ class DemoDataSeederPassOnTest {
         return savedPassOnItems().stream().filter(i -> i.getKind() == kind).toList();
     }
 
+    private List<PassOnItem> savedOfKindFor(String ownerEmail, PassOnKind kind) {
+        return savedOfKind(kind).stream()
+                .filter(i -> ownerEmail.equals(i.getOwner().getEmail())).toList();
+    }
+
     // ── the Story box ───────────────────────────────────────────────────
 
     @Test
@@ -184,10 +200,8 @@ class DemoDataSeederPassOnTest {
         seeder.run(null);
 
         verify(transactionManager, never()).rollback(any());
-        List<PassOnItem> stories = savedOfKind(PassOnKind.STORY);
+        List<PassOnItem> stories = savedOfKindFor(MARGARET, PassOnKind.STORY);
         assertThat(stories).as("three stories, so no audience filter opens on an empty list").hasSize(3);
-        assertThat(stories).allSatisfy(s ->
-                assertThat(s.getOwner().getEmail()).isEqualTo(MARGARET));
         assertThat(stories).extracting(PassOnItem::getAudience)
                 .as("Anyone, My family and My helpers are all exercised")
                 .containsExactlyInAnyOrder(
@@ -219,7 +233,7 @@ class DemoDataSeederPassOnTest {
     void seedsThreeLettersEachToOneNamedPerson() {
         seeder.run(null);
 
-        List<PassOnItem> letters = savedOfKind(PassOnKind.LETTER);
+        List<PassOnItem> letters = savedOfKindFor(MARGARET, PassOnKind.LETTER);
         assertThat(letters).hasSize(3);
         assertThat(letters).allSatisfy(l -> {
             assertThat(l.getAudience()).isEqualTo(PassOnAudience.PERSON);
@@ -234,7 +248,7 @@ class DemoDataSeederPassOnTest {
     void oneLetterHasAlreadyBeenReadAndTheOthersHaveNot() {
         seeder.run(null);
 
-        List<PassOnItem> letters = savedOfKind(PassOnKind.LETTER);
+        List<PassOnItem> letters = savedOfKindFor(MARGARET, PassOnKind.LETTER);
         List<PassOnItem> read = letters.stream().filter(l -> l.getFirstReadAt() != null).toList();
         List<PassOnItem> unread = letters.stream().filter(l -> l.getFirstReadAt() == null).toList();
 
@@ -287,6 +301,82 @@ class DemoDataSeederPassOnTest {
                         .as("no demo owner is ever released").isNull());
     }
 
+    // ── every elder's boxes ─────────────────────────────────────────────
+
+    @Test
+    void everyDemoElderSeedsThreeStoriesOneForEachAudience() {
+        seeder.run(null);
+
+        for (String elder : ELDERS) {
+            List<PassOnItem> stories = savedOfKindFor(elder, PassOnKind.STORY);
+            assertThat(stories)
+                    .as("%s: three stories, so no audience filter opens on an empty list", elder)
+                    .hasSize(3);
+            assertThat(stories).extracting(PassOnItem::getAudience)
+                    .containsExactlyInAnyOrder(
+                            PassOnAudience.EVERYONE, PassOnAudience.FAMILY, PassOnAudience.HELPERS);
+        }
+    }
+
+    @Test
+    void everyDemoElderSeedsAtLeastOneLetterToANamedPerson() {
+        seeder.run(null);
+
+        for (String elder : ELDERS) {
+            List<PassOnItem> letters = savedOfKindFor(elder, PassOnKind.LETTER);
+            assertThat(letters).as("%s: the Letter box never opens empty", elder).isNotEmpty();
+            assertThat(letters).allSatisfy(l -> {
+                assertThat(l.getAudience()).isEqualTo(PassOnAudience.PERSON);
+                assertThat(l.getAudienceUser()).as("a letter always has a reader").isNotNull();
+            });
+        }
+    }
+
+    @Test
+    void davidsLetterIsReadAndEveryOtherNewLetterIsWaiting() {
+        seeder.run(null);
+
+        List<PassOnItem> others = savedOfKind(PassOnKind.LETTER).stream()
+                .filter(l -> !MARGARET.equals(l.getOwner().getEmail())).toList();
+        List<PassOnItem> read = others.stream().filter(l -> l.getFirstReadAt() != null).toList();
+
+        assertThat(read)
+                .as("outside Margaret's box exactly one letter shows the 'read on' line")
+                .hasSize(1);
+        assertThat(read.get(0).getOwner().getEmail()).isEqualTo(DAVID_ELDER);
+        assertThat(read.get(0).getAudienceUser().getEmail()).isEqualTo(NINA);
+        assertThat(read.get(0).getFirstReadAt()).isBefore(LocalDateTime.now());
+    }
+
+    /**
+     * The letter form only offers ACTIVE family links and TRUSTED helpers
+     * ({@code peopleSheKnows} in PassOn.jsx), so a seeded letter to anyone else would put the
+     * elder in a state she could never have reached herself — an addressee her own edit form
+     * could not re-select.
+     */
+    @Test
+    void everyNewLetterNamesAHelperTheElderHoldsAtTrusted() {
+        seeder.run(null);
+
+        ArgumentCaptor<Connection> captor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionRepository, atLeastOnce()).save(captor.capture());
+        Set<String> trusted = new HashSet<>();
+        for (Connection c : captor.getAllValues()) {
+            if (c.getStatus() == ConnectionStatus.ACTIVE
+                    && c.getCurrentTrustLevel() == TrustLevel.TRUSTED) {
+                trusted.add(c.getUserA().getEmail() + "->" + c.getUserB().getEmail());
+                trusted.add(c.getUserB().getEmail() + "->" + c.getUserA().getEmail());
+            }
+        }
+
+        savedOfKind(PassOnKind.LETTER).stream()
+                .filter(l -> !MARGARET.equals(l.getOwner().getEmail()))
+                .forEach(l -> assertThat(trusted)
+                        .as("%s writes to %s, someone the letter form could actually offer",
+                                l.getOwner().getEmail(), l.getAudienceUser().getEmail())
+                        .contains(l.getOwner().getEmail() + "->" + l.getAudienceUser().getEmail()));
+    }
+
     // ── the Sealed box ──────────────────────────────────────────────────
 
     @Test
@@ -318,7 +408,8 @@ class DemoDataSeederPassOnTest {
         verify(sealedBoxService, never()).add(any(), any());
         verify(sealedBoxService, never()).arm(any(), any());
         assertThat(savedOfKind(PassOnKind.STORY))
-                .as("the writing still seeds — only the encrypted half is skipped").hasSize(3);
+                .as("the writing still seeds — only the encrypted half is skipped")
+                .hasSize(3 * ELDERS.size());
     }
 
     // ── Keyholders and the settled state ────────────────────────────────
