@@ -97,7 +97,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             "demo.priya@towin.app", "demo.tom@towin.app", "demo.david@towin.app",
             "demo.grace@towin.app", "demo.nina@towin.app", "demo.rose@towin.app",
             "demo.helen@towin.app", "demo.arthur@towin.app", "demo.sofia@towin.app",
-            "demo.claire@towin.app",
+            "demo.claire@towin.app", "demo.ethan@towin.app",
             "demo.lakshmi@towin.app", "demo.karthik@towin.app",
             "demo.meena@towin.app", "demo.arjun@towin.app",
             "demo.sarah@towin.app");
