@@ -207,13 +207,15 @@ class DemoDataSeederFamilyTest {
     void noReviewsBetweenMargaretAndHerSharedHelper() {
         seeder.run(null);
 
-        // Reviews unlock only at TRUSTED; Margaret ↔ Harsha (the shared
-        // friendship) sit at FIRST_MEET, so the seed must not plant reviews the
-        // app could never create.
+        // Reviews unlock only at TRUSTED; Margaret ↔ Ethan (the shared
+        // friendship) sit at FIRST_MEET, and Margaret ↔ Harsha hold no
+        // connection at all, so the seed must not plant reviews the app could
+        // never create.
         ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
         verify(reviewRepository, atLeastOnce()).save(captor.capture());
         assertThat(captor.getAllValues())
-                .noneMatch(r -> involves(r, DemoDataSeeder.ELDER_DEMO_EMAIL, DemoDataSeeder.HELPER_DEMO_EMAIL));
+                .noneMatch(r -> involves(r, DemoDataSeeder.ELDER_DEMO_EMAIL, DemoDataSeeder.HELPER_DEMO_EMAIL))
+                .noneMatch(r -> involves(r, DemoDataSeeder.ELDER_DEMO_EMAIL, "demo.ethan@towin.app"));
     }
 
     private boolean involves(Review r, String emailA, String emailB) {

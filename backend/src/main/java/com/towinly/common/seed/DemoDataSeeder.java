@@ -187,6 +187,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         User arthur   = ensureUser("demo.arthur@towin.app","+14165550110", UserRole.ELDER,  "DemoArthur!2026");
         User sofia    = ensureUser("demo.sofia@towin.app", "+14165550111", UserRole.HELPER, "DemoSofia!2026");
         User claire   = ensureUser("demo.claire@towin.app","+14165550113", UserRole.HELPER, "DemoClaire!2026");
+        User ethan    = ensureUser("demo.ethan@towin.app", "+14165550114", UserRole.HELPER, "DemoEthan!2026");
 
         // Tamil Nadu cluster — Chennai has both roles so "near me" matches there;
         // Coimbatore and Salem each hold one persona.
@@ -211,7 +212,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         }
 
         List<User> demoUsers = List.of(margaret, james, priya, tom, david, grace, nina, rose, helen, arthur, sofia,
-                claire, lakshmi, karthik, meena, arjun, sarah);
+                claire, ethan, lakshmi, karthik, meena, arjun, sarah);
 
         // Clear anything visitors left on the public demo accounts so the rest of
         // this method re-seeds a clean, minimal showcase (one of each type).
@@ -295,6 +296,12 @@ public class DemoDataSeeder implements ApplicationRunner {
                 Gender.FEMALE, "Landscape Gardener", null,
                 "https://facebook.com/claire.helper.tw", null,
                 new String[]{"English", "French"});
+        ensureHelperProfile(ethan, "Ethan Cole", 25,
+                "Computer science student. I love a good game of chess and can untangle any wifi or gadget trouble.",
+                new String[]{"Chess", "Technology", "Errands"}, new String[]{"Chess", "Board games"},
+                Gender.MALE, "Computer Science Student", null,
+                "https://facebook.com/ethan.helper.tw", null,
+                new String[]{"English"});
         ensureHelperProfile(karthik, "Karthik Subramanian", 24,
                 "Engineering student in Chennai. Happy to help with phones, errands, or a chat over filter coffee.",
                 new String[]{"Technology", "Errands", "Companionship"}, new String[]{"Cricket", "Chess"},
@@ -315,22 +322,23 @@ public class DemoDataSeeder implements ApplicationRunner {
         //    TRUSTED and ReviewService enforces the same gate. Margaret ↔ Claire
         //    and Margaret ↔ Tom carry NO seeded review on purpose so the Review
         //    button is live to press on the elder demo login.
-        //  • FIRST_MEET — Margaret ↔ Harsha, the friendship Margaret shares with
+        //  • FIRST_MEET — Margaret ↔ Ethan, the friendship Margaret shares with
         //    her family, so the Sarah demo shows the "getting ready to meet in
         //    person" highlight on the Family Home journey from day one — and the
         //    whole family story (shared journey, family notes thread, Sarah's
-        //    labeled request) plays out on the two public demo logins.
+        //    labeled request) plays out on the demo logins.
         //  • PHONE_CALL with the helper already confirmed — Margaret sees a live
         //    "confirm to advance" button (the core trust step in action)
         //  • PENDING incoming/outgoing on BOTH demo accounts, so Add Friends →
         //    New Invites and Requested are populated for the elder (Margaret) and
         //    the helper (James) alike — see the four PENDING rows below.
         //
-        // Margaret and Harsha (the two public demo accounts) start connected at
-        // Ready to Meet (user decision 2026-07-19: the family story must be
-        // visible on the demo logins). This supersedes the earlier rule that
-        // kept them unlinked for the live walkthrough recording — a recorded
-        // post → offer → accept flow now needs a different helper than Harsha.
+        // Margaret and Harsha (the two public demo accounts) hold NO connection
+        // to each other (user decision 2026-08-02: Harsha must stay free of
+        // Margaret so a live demo can walk the full connect flow between the two
+        // public logins). This supersedes the 2026-07-19 rule that linked them
+        // for the family story — that story now lives on Ethan, a helper who
+        // exists for exactly this role.
         // confirmedByA=false (Margaret), confirmedByB=true (Priya) → confirm button live for Margaret
         Connection cAdvance = ensureConnection(margaret, priya, ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL, priya,
                 "Hello Margaret! I'm Priya, happy to help with errands or cooking.", false, true);
@@ -342,7 +350,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hello Margaret! I can fix any phone or wifi problem, happy to help.");
         Connection cMargaretClaire = ensureConnection(margaret, claire, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, claire,
                 "Hi Margaret! I hear you keep a lovely garden. I'd be glad to help with the heavy digging, and I never say no to a cup of tea.");
-        Connection cMargaretHarsha = ensureConnection(margaret, james, ConnectionStatus.ACTIVE, TrustLevel.FIRST_MEET, james,
+        Connection cMargaretEthan = ensureConnection(margaret, ethan, ConnectionStatus.ACTIVE, TrustLevel.FIRST_MEET, ethan,
                 "Hello Margaret! I saw you love chess — so do I. Happy to help with anything tech, and maybe a game too.");
         Connection cGraceJames = ensureConnection(grace, james, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED, grace,
                 "Hi Harsha, I'd love a hand learning to video-call my grandchildren.");
@@ -367,6 +375,14 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hi Sofia! Your profile looked wonderful — I'd love a hand getting the hang of my new tablet.",
                 true, false);
 
+        // One-time repair for DBs seeded before Harsha was unlinked from Margaret
+        // (2026-08-02, matters in additive mode only — reset-enabled DBs purge
+        // and rebuild): drop the old Margaret ↔ Harsha friendship with its chat
+        // and family notes, the derived Sarah ↔ Harsha family chat, and the
+        // stale first-meeting alert naming Harsha. Runs BEFORE the family block
+        // below so the ensure* guards re-seed the Ethan story in the same boot.
+        retireHarshaFamilyStory(margaret, james, sarah);
+
         // Family in the trust system: Sarah (daughter) holds an ACTIVE link to
         // Margaret, so the demo shows a linked family member, the elder's +1
         // family trust point, and the Family Home screen with a real elder card.
@@ -381,21 +397,21 @@ public class DemoDataSeeder implements ApplicationRunner {
         // ASKED for it and Margaret hasn't decided, so a visitor signing in as
         // Margaret finds a real approval card waiting on her My family tab.
         // Reviews stay unusable in the demo either way (they unlock at Fully
-        // Trusted; Margaret ↔ Harsha sit at Ready to Meet), so the card itself
+        // Trusted; Margaret ↔ Ethan sit at Ready to Meet), so the card itself
         // is the payoff — and a review is a public word about a helper, which
         // makes it exactly the ask a parent would think over rather than wave
         // through.
         ensureFamilyPowerRequest(margaret, sarah, DelegatedPower.LEAVE_REVIEWS);
         // The elder's choice on display: Margaret shares her friendship with
-        // Harsha (at Ready to Meet, so family sees the meeting highlight) while
+        // Ethan (at Ready to Meet, so family sees the meeting highlight) while
         // her other connections — Tom, Claire, Priya — stay private
         // (shared_with_family keeps its FALSE default).
-        markSharedWithFamily(cMargaretHarsha);
+        markSharedWithFamily(cMargaretEthan);
         // One piece of family news so Sarah's News tab is never empty: the
         // shared friendship sits at Ready to Meet, so the first-meeting alert
         // is the true story (same wording SosService writes in production).
         ensureFamilyAlert(margaret, FamilyAlertType.FIRST_MEET,
-                "Planned a first in-person meeting with Harsha.");
+                "Planned a first in-person meeting with Ethan.");
 
         // One-time repair for DBs seeded before the default changed: earlier seeds
         // set both confirm flags true on active connections, an impossible state
@@ -456,31 +472,31 @@ public class DemoDataSeeder implements ApplicationRunner {
                 msg(claire, "Margaret, the tulips we planted are finally up!"),
                 msg(margaret, "I saw them this morning, a lovely little row of red. Will you come by Saturday for the herb bed?"),
                 msg(claire, "Saturday it is. I'll bring my good trowel, you put the kettle on.")));
-        seedMessagesIfEmpty(cMargaretHarsha, 360, List.of(
-                msg(james,    "Hello Margaret! Shall we plan that first game of chess?"),
+        seedMessagesIfEmpty(cMargaretEthan, 360, List.of(
+                msg(ethan,    "Hello Margaret! Shall we plan that first game of chess?"),
                 msg(margaret, "How lovely! Saturday at the community centre? It's nice and busy in the afternoons."),
-                msg(james,    "Saturday it is. I'll bring my board, you bring your best opening.")));
+                msg(ethan,    "Saturday it is. I'll bring my board, you bring your best opening.")));
         // The family updates thread (Step 3): a living exchange on the one SHARED
         // friendship, so all three demo logins show the thread on day one.
-        seedFamilyNotesIfEmpty(cMargaretHarsha, 320, List.of(
-                msg(james,    "We sorted the wifi today over a video call — the new password is in Margaret's blue notebook. She was in great spirits."),
-                msg(sarah,    "Thank you so much, Harsha. That router has been defeating us for months!"),
-                msg(margaret, "It's true. Harsha fixed it in ten minutes. We play chess on Saturday.")));
+        seedFamilyNotesIfEmpty(cMargaretEthan, 320, List.of(
+                msg(ethan,    "We sorted the wifi today over a video call — the new password is in Margaret's blue notebook. She was in great spirits."),
+                msg(sarah,    "Thank you so much, Ethan. That router has been defeating us for months!"),
+                msg(margaret, "It's true. Ethan fixed it in ten minutes. We play chess on Saturday.")));
         // Trust inheritance demo (2026-07-19): Sarah automatically holds
-        // Margaret's trust with Harsha — the shared friendship sits at Ready to
+        // Margaret's trust with Ethan — the shared friendship sits at Ready to
         // Meet (≥ Messaging), so the standing derives on its own; there is no
         // request and no accept any more. The chat is seeded already open so no
-        // screen is empty: Sarah's card says "Message Harsha", Harsha's card
+        // screen is empty: Sarah's card says "Message Ethan", Ethan's card
         // shows the trust bridge, Margaret's card shows the transparency line.
-        Connection sarahHarsha = ensureConnection(sarah, james, ConnectionStatus.ACTIVE,
+        Connection sarahEthan = ensureConnection(sarah, ethan, ConnectionStatus.ACTIVE,
                 TrustLevel.DISCOVERED, sarah, "Family of Margaret");
-        if (sarahHarsha.getType() != ConnectionType.FAMILY) {
-            sarahHarsha.setType(ConnectionType.FAMILY);
-            connectionRepository.save(sarahHarsha);
+        if (sarahEthan.getType() != ConnectionType.FAMILY) {
+            sarahEthan.setType(ConnectionType.FAMILY);
+            connectionRepository.save(sarahEthan);
         }
-        seedMessagesIfEmpty(sarahHarsha, 280, List.of(
-                msg(sarah, "Hi Harsha! Mum says you're the chess player. Thank you for the wifi rescue."),
-                msg(james, "Happy to help, Sarah. She's already promised to beat me on Saturday."),
+        seedMessagesIfEmpty(sarahEthan, 280, List.of(
+                msg(sarah, "Hi Ethan! Mum says you're the chess player. Thank you for the wifi rescue."),
+                msg(ethan, "Happy to help, Sarah. She's already promised to beat me on Saturday."),
                 msg(sarah, "She will. Text me if she needs anything for the visit.")));
         // Parent↔family private chat (2026-07-21): Margaret and her daughter Sarah
         // message each other directly, gated only by their family link. No "Family
@@ -493,7 +509,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             connectionRepository.save(margaretSarah);
         }
         seedMessagesIfEmpty(margaretSarah, 200, List.of(
-                msg(sarah, "Morning Mum! Did Harsha get the chess board sorted for Saturday?"),
+                msg(sarah, "Morning Mum! Did Ethan get the chess board sorted for Saturday?"),
                 msg(margaret, "He did, love. I'm going to win this time. Are you coming for lunch?"),
                 msg(sarah, "Wouldn't miss it. I'll bring the cake.")));
         seedMessagesIfEmpty(cJamesRose, 900, List.of(
@@ -580,7 +596,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         // Reviews only exist where the app could truly create them: between the two
         // sides of an ACTIVE + TRUSTED connection. Finishing a job together is not a
         // shortcut past the ladder. Pairs still climbing (Margaret ↔ Priya at
-        // PHONE_CALL, Margaret ↔ Harsha at FIRST_MEET, David ↔ Harsha at VIDEO_CALL,
+        // PHONE_CALL, Margaret ↔ Ethan at FIRST_MEET, David ↔ Harsha at VIDEO_CALL,
         // Harsha ↔ Rose just connected) carry no reviews — that's the product
         // rule on display.
         ensureReview(grace, priya, null, 5,
@@ -738,6 +754,29 @@ public class DemoDataSeeder implements ApplicationRunner {
         connectionRepository.findBetweenUsers(sarah.getId(), tom.getId())
                 .filter(c -> c.getType() == ConnectionType.FAMILY && c.getStatus() == ConnectionStatus.PENDING)
                 .ifPresent(connectionRepository::delete);
+    }
+
+    /** See the call site: clears the pre-swap Harsha family story out of
+     *  additive-mode DBs. Unlike the Tom repair, the whole Margaret ↔ Harsha
+     *  connection goes — Harsha (the public helper demo login) must hold no
+     *  connection to Margaret at all, so a live demo can walk the connect flow
+     *  between the two public accounts. The derived Sarah ↔ Harsha family chat
+     *  and the stale first-meeting alert naming Harsha go with it. */
+    private void retireHarshaFamilyStory(User margaret, User harsha, User sarah) {
+        connectionRepository.findBetweenUsers(margaret.getId(), harsha.getId()).ifPresent(c -> {
+            messageRepository.deleteByConnectionId(c.getId());
+            connectionRepository.delete(c);
+        });
+        connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId())
+                .filter(c -> c.getType() == ConnectionType.FAMILY)
+                .ifPresent(c -> {
+                    messageRepository.deleteByConnectionId(c.getId());
+                    connectionRepository.delete(c);
+                });
+        familyAlertRepository.findByElderIdOrderByCreatedAtDesc(margaret.getId()).stream()
+                .filter(a -> FamilyAlertType.FIRST_MEET.name().equals(a.getType())
+                        && a.getBody() != null && a.getBody().contains("Harsha"))
+                .forEach(familyAlertRepository::delete);
     }
 
     private void markSharedWithFamily(Connection c) {
