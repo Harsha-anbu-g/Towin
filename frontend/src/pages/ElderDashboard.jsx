@@ -26,7 +26,7 @@ function TabBadge({ count }) {
       marginLeft: '8px', verticalAlign: 'middle',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       minWidth: '22px', height: '22px', padding: '0 7px', boxSizing: 'border-box',
-      background: 'var(--ink-slate)', color: 'var(--canvas)', fontSize: 'var(--text-xs)', fontWeight: 600,
+      background: 'var(--red)', color: 'var(--canvas)', fontSize: 'var(--text-xs)', fontWeight: 600,
       borderRadius: '9999px', lineHeight: 1,
     }}>{count}</span>
   );
