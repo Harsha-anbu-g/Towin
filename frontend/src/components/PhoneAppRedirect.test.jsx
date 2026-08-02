@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shouldSendToApp } from './PhoneAppRedirect';
+import { shouldSendToApp } from './phoneAppRouting';
 
 // Real user-agent strings, not fabricated ones — the whole feature is a
 // user-agent decision, so the tests must use the strings that actually arrive.
