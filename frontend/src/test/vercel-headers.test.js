@@ -40,9 +40,12 @@ describe('vercel.json security headers', () => {
   });
 
   it('keeps the SPA rewrite so deep links still resolve to index.html', () => {
-    expect(vercelConfig.rewrites).toEqual([
-      { source: '/(.*)', destination: '/index.html' },
-    ]);
+    // It must be LAST: Vercel stops at the first matching rewrite, so a
+    // catch-all above the /app proxy would swallow every app request.
+    expect(vercelConfig.rewrites.at(-1)).toEqual({
+      source: '/(.*)',
+      destination: '/index.html',
+    });
   });
 
   it.each([
@@ -68,6 +71,94 @@ describe('vercel.json security headers', () => {
   it('blocks framing via CSP frame-ancestors, matching the backend', () => {
     expect(cspDirective('frame-ancestors')).toEqual(["'none'"]);
     expect(cspDirective('default-src')).toEqual(["'self'"]);
+  });
+});
+
+describe('vercel.json /app proxy', () => {
+  it('proxies /app into the Expo app project, prefix stripped', () => {
+    // A rewrite is a server-side proxy, so the address bar keeps saying
+    // towinly.com. The app project serves its files at its own root, which is
+    // why :path* is passed through without the /app prefix.
+    const proxied = vercelConfig.rewrites.filter((r) => r.source.startsWith('/app'));
+    expect(proxied).toHaveLength(2);
+    for (const rule of proxied) {
+      expect(rule.destination).toMatch(/^https:\/\//);
+      expect(rule.destination).not.toContain('/app/');
+    }
+  });
+
+  it('keeps the app half out of Google, so only towinly.com is indexed', () => {
+    const appHeaders = (vercelConfig.headers ?? []).find((h) => h.source === '/app/:path*');
+    expect(appHeaders?.headers).toContainEqual({ key: 'X-Robots-Tag', value: 'noindex' });
+  });
+});
+
+// The phone redirect is the piece that can take the marketing site down, so it
+// gets its own suite. Every rule is checked, not just the first.
+describe('vercel.json phone redirect', () => {
+  const redirects = vercelConfig.redirects ?? [];
+
+  it('sends phones from the signed-in pages into the app', () => {
+    expect(redirects.length).toBeGreaterThan(0);
+    for (const rule of redirects) {
+      expect(rule.destination.startsWith('/app/')).toBe(true);
+    }
+  });
+
+  it('is a 307, never a 308 — a 308 is cached forever and blocks rollback', () => {
+    for (const rule of redirects) {
+      expect(rule.permanent).toBe(false);
+    }
+  });
+
+  it('never redirects a path that could be a file', () => {
+    // THE trap: redirecting /assets/index-abc123.js would white-screen the
+    // marketing site on every phone — the page loads and its own JavaScript is
+    // answered with an HTML redirect. Each rule must either name its routes
+    // explicitly or restrict the dynamic segment to [^/.]+, which excludes dots.
+    for (const rule of redirects) {
+      const dynamic = rule.source.match(/:[A-Za-z]+(\([^)]*\))?/g) ?? [];
+      for (const segment of dynamic) {
+        expect(segment, `${rule.source} must constrain ${segment}`).toMatch(/\(.+\)/);
+        if (!segment.includes('|')) expect(segment).toContain('[^/.]+');
+      }
+    }
+  });
+
+  it('only fires for phones — tablets and laptops are untouched', () => {
+    for (const rule of redirects) {
+      const ua = rule.has?.find((h) => h.type === 'header' && h.key === 'user-agent');
+      expect(ua, `${rule.source} must test the user agent`).toBeDefined();
+      expect(ua.value).toContain('iphone');
+      expect(ua.value).toContain('android.*mobile'); // Android tablets omit "Mobile"
+      expect(ua.value).not.toContain('ipad');
+    }
+  });
+
+  it('honours the "Use the full website" cookie', () => {
+    // Without this, someone who asked for the website would be redirected
+    // straight back out of it on the next tap.
+    for (const rule of redirects) {
+      expect(rule.missing).toContainEqual({ type: 'cookie', key: 'towinly_web' });
+    }
+  });
+
+  it('leaves the marketing pages on the website for everyone', () => {
+    // These are the pages Google indexes and the ones a new visitor meets.
+    const stays = [
+      '/', '/how-it-works', '/privacy', '/terms', '/feedback',
+      '/verify-email', '/reset-password', '/admin',
+    ];
+    const named = redirects.map((r) => r.source);
+    for (const page of stays) {
+      expect(named).not.toContain(page);
+      const route = page.replace(/^\//, '');
+      if (!route) continue;
+      // ...and no rule names it inside an alternation either
+      for (const source of named) {
+        expect(source).not.toMatch(new RegExp(`[(|]${route}[)|]`));
+      }
+    }
   });
 });
 

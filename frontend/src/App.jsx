@@ -23,6 +23,7 @@ import Trust from './pages/Trust';
 import Streaks from './pages/Streaks';
 import UserProfile from './pages/UserProfile';
 import PeekabooGame from './pages/PeekabooGame';
+import PhoneAppRedirect from './components/PhoneAppRedirect';
 import FeedbackWidget from './components/FeedbackWidget';
 import AskAiAssistant from './components/AskAiAssistant';
 import VerifyEmail from './pages/VerifyEmail';
@@ -157,6 +158,7 @@ function App() {
           <div style={{ display: 'flex', flexDirection: 'column', height: '100svh' }}>
           <SkipLink />
           <BfCacheGuard />
+          <PhoneAppRedirect />
           <ScrollShell>
           <Routes>
             <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />

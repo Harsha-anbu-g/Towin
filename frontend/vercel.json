@@ -1,5 +1,61 @@
 {
+  "redirects": [
+    {
+      "source": "/:page(login|register|dashboard|streaks|messages|trust|profile|family|family-home|game|emergency-contacts)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(iphone|ipod|android.*mobile).*"
+        }
+      ],
+      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "destination": "/app/:page",
+      "permanent": false
+    },
+    {
+      "source": "/:page(messages|user)/:id([^/.]+)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(iphone|ipod|android.*mobile).*"
+        }
+      ],
+      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "destination": "/app/:page/:id",
+      "permanent": false
+    },
+    {
+      "source": "/profile/change-password",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(iphone|ipod|android.*mobile).*"
+        }
+      ],
+      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "destination": "/app/profile/change-password",
+      "permanent": false
+    },
+    {
+      "source": "/family-home/parent/:elderId([^/.]+)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(iphone|ipod|android.*mobile).*"
+        }
+      ],
+      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "destination": "/app/family-home/parent/:elderId",
+      "permanent": false
+    }
+  ],
   "rewrites": [
+    { "source": "/app", "destination": "https://towinly-app.vercel.app/" },
+    { "source": "/app/:path*", "destination": "https://towinly-app.vercel.app/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
@@ -16,6 +72,10 @@
         { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(self)" }
       ]
+    },
+    {
+      "source": "/app/:path*",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
     }
   ]
 }
