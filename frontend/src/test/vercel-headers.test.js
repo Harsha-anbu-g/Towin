@@ -101,7 +101,7 @@ describe('vercel.json phone redirect', () => {
   it('sends phones from the signed-in pages into the app', () => {
     expect(redirects.length).toBeGreaterThan(0);
     for (const rule of redirects) {
-      expect(rule.destination.startsWith('/app/')).toBe(true);
+      expect(rule.destination.startsWith('/app')).toBe(true);
     }
   });
 
@@ -143,10 +143,42 @@ describe('vercel.json phone redirect', () => {
     }
   });
 
+  it('sends phones on the front page into the app, but never a crawler', () => {
+    // Googlebot's smartphone crawler wears an Android phone user-agent, and
+    // /app/* is noindex — without the crawler guard, adding this rule would
+    // drop towinly.com out of Google.
+    const landing = redirects.find((r) => r.source === '/');
+    expect(landing, 'the landing redirect must exist').toBeDefined();
+    expect(landing.destination).toBe('/app');
+
+    const botGuard = (landing.missing ?? []).find(
+      (m) => m.type === 'header' && m.key === 'user-agent',
+    );
+    expect(botGuard, 'the landing redirect must exclude crawlers').toBeDefined();
+    const GOOGLEBOT_PHONE =
+      'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+    const IPHONE =
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+    // Vercel compiles `(?i)` inline flags; JS RegExp does not — strip it and
+    // pass the flag explicitly instead.
+    const guard = new RegExp(botGuard.value.replace(/^\(\?i\)/, ''), 'i');
+    expect(guard.test(GOOGLEBOT_PHONE)).toBe(true); // crawler matches the guard → rule skipped
+    expect(guard.test(IPHONE)).toBe(false); // a real phone sails through
+  });
+
+  it('every phone redirect carries the crawler guard, keeping both layers in step', () => {
+    for (const rule of redirects) {
+      const botGuard = (rule.missing ?? []).find(
+        (m) => m.type === 'header' && m.key === 'user-agent',
+      );
+      expect(botGuard, `${rule.source} must exclude crawlers`).toBeDefined();
+    }
+  });
+
   it('leaves the marketing pages on the website for everyone', () => {
     // These are the pages Google indexes and the ones a new visitor meets.
     const stays = [
-      '/', '/how-it-works', '/privacy', '/terms', '/feedback',
+      '/how-it-works', '/privacy', '/terms', '/feedback',
       '/verify-email', '/reset-password', '/admin',
     ];
     const named = redirects.map((r) => r.source);

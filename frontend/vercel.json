@@ -1,6 +1,26 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(iphone|ipod|android.*mobile).*"
+        }
+      ],
+      "missing": [
+        { "type": "cookie", "key": "towinly_web" },
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|whatsapp|telegram|skypeuripreview|twitterbot|linkedinbot|pinterest|petal|lighthouse).*"
+        }
+      ],
+      "destination": "/app",
+      "permanent": false
+    },
+    {
       "source": "/:page(login|register|dashboard|streaks|messages|trust|profile|family|family-home|game|emergency-contacts)",
       "has": [
         {
@@ -9,7 +29,14 @@
           "value": "(?i).*(iphone|ipod|android.*mobile).*"
         }
       ],
-      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "missing": [
+        { "type": "cookie", "key": "towinly_web" },
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|whatsapp|telegram|skypeuripreview|twitterbot|linkedinbot|pinterest|petal|lighthouse).*"
+        }
+      ],
       "destination": "/app/:page",
       "permanent": false
     },
@@ -22,7 +49,14 @@
           "value": "(?i).*(iphone|ipod|android.*mobile).*"
         }
       ],
-      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "missing": [
+        { "type": "cookie", "key": "towinly_web" },
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|whatsapp|telegram|skypeuripreview|twitterbot|linkedinbot|pinterest|petal|lighthouse).*"
+        }
+      ],
       "destination": "/app/:page/:id",
       "permanent": false
     },
@@ -35,7 +69,14 @@
           "value": "(?i).*(iphone|ipod|android.*mobile).*"
         }
       ],
-      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "missing": [
+        { "type": "cookie", "key": "towinly_web" },
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|whatsapp|telegram|skypeuripreview|twitterbot|linkedinbot|pinterest|petal|lighthouse).*"
+        }
+      ],
       "destination": "/app/profile/change-password",
       "permanent": false
     },
@@ -48,7 +89,14 @@
           "value": "(?i).*(iphone|ipod|android.*mobile).*"
         }
       ],
-      "missing": [{ "type": "cookie", "key": "towinly_web" }],
+      "missing": [
+        { "type": "cookie", "key": "towinly_web" },
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|whatsapp|telegram|skypeuripreview|twitterbot|linkedinbot|pinterest|petal|lighthouse).*"
+        }
+      ],
       "destination": "/app/family-home/parent/:elderId",
       "permanent": false
     }
