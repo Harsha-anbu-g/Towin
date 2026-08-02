@@ -4,7 +4,8 @@ import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
-import SegmentedTabs from '../components/SegmentedTabs';
+import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
+import { useAuth } from '../context/useAuth';
 import { parseServerDate } from '../lib/utils';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -68,8 +69,22 @@ const rowStyle = (isLast) => ({
 
 // The inbox is grouped by who each chat is with. A helper's chat with a family
 // member, and a family member's chat with their parent, both belong under
-// "Family". Order is fixed; empty sections never render.
-const SECTION_ORDER = ['Elders', 'Helpers', 'Family'];
+// "Family". Every heading this account can ever fill stays on screen even
+// while empty, in a fixed order — one-to-one chats first, then Groups, then
+// Family (user calls 2026-08-02). Only a bucket the role can never fill
+// (e.g. a helper chatting with another helper) is left out.
+const ROLE_TAB_ORDER = {
+  ELDER: ['Helpers', 'Groups', 'Family'],
+  HELPER: ['Elders', 'Groups', 'Family'],
+  FAMILY: ['Helpers', 'Groups', 'Family'],
+};
+const DEFAULT_TAB_ORDER = ['Elders', 'Helpers', 'Groups', 'Family'];
+const EMPTY_TAB_COPY = {
+  groups: 'No group chats yet. When a friendship is shared with family, its updates will show here.',
+  elders: 'No chats with elders yet. Offer to help on your dashboard to start one.',
+  helpers: 'No chats with helpers yet. Connect with someone on your dashboard to start one.',
+  family: 'No family chats yet. When a family member joins you here, your chat with them will show up.',
+};
 function sectionOf(c) {
   if (c.otherUserRole === 'HELPER') return 'Helpers';
   if (c.otherUserRole === 'FAMILY') return 'Family';
@@ -79,6 +94,7 @@ function sectionOf(c) {
 
 export default function MessagesInbox() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
@@ -236,12 +252,16 @@ export default function MessagesInbox() {
 
   // One group of chats on screen at a time, switched with tabs at the top —
   // same segmented-tab pattern as the Family page's Controls / My family tabs
-  // (user call 2026-07-26). Only groups with a conversation get a tab.
-  const sections = [
-    { id: 'groups', label: 'Groups', rows: q ? [] : groupThreads, renderRow: groupRow },
-    ...SECTION_ORDER.map(name => ({ id: name.toLowerCase(), label: name, rows: buckets[name], renderRow: convRow })),
-  ].filter(s => s.rows.length > 0);
-  const activeTab = sections.some(s => s.id === tab) ? tab : sections[0]?.id;
+  // (user call 2026-07-26). Tabs stay fixed per role; a tab with no chats
+  // shows a friendly empty note instead of disappearing.
+  const tabNames = ROLE_TAB_ORDER[user?.role] || DEFAULT_TAB_ORDER;
+  const sections = tabNames.map(name => name === 'Groups'
+    ? { id: 'groups', label: 'Groups', rows: q ? [] : groupThreads, renderRow: groupRow }
+    : { id: name.toLowerCase(), label: name, rows: buckets[name], renderRow: convRow });
+  // Land on the first tab that has a conversation, not on an empty one.
+  const activeTab = sections.some(s => s.id === tab)
+    ? tab
+    : (sections.find(s => s.rows.length > 0) || sections[0]).id;
   const currentSection = sections.find(s => s.id === activeTab);
 
   return (
@@ -347,34 +367,27 @@ export default function MessagesInbox() {
               </div>
             </BlurFade>
 
-            {/* Groups first, then one-to-one chats grouped by who they're with. */}
-            {sections.length > 0 && (
-              <>
-                <div style={{ marginBottom: '18px' }}>
-                  <SegmentedTabs
-                    segments={sections.map(s => ({ id: s.id, label: s.label }))}
-                    value={activeTab}
-                    onChange={setTab}
-                    label="Filter conversations by who they're with"
-                  />
-                </div>
-                {currentSection && (
-                  <div style={listCardStyle}>
-                    {currentSection.rows.map((r, i) => currentSection.renderRow(r, i, currentSection.rows))}
-                  </div>
-                )}
-              </>
-            )}
-
-            {q && filtered.length === 0 && (
-              <div style={{
-                background: 'var(--canvas)', border: '1px solid var(--border)',
-                borderRadius: '18px', padding: '40px 24px', textAlign: 'center',
-              }}>
-                <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
-                  No conversations match “{query.trim()}”.
-                </p>
+            {/* One-to-one chats first, then Groups, then Family. */}
+            <div style={{ marginBottom: '18px' }}>
+              <SegmentedTabs
+                segments={sections.map(s => ({ id: s.id, label: s.label }))}
+                value={activeTab}
+                onChange={setTab}
+                label="Filter conversations by who they're with"
+              />
+            </div>
+            {currentSection.rows.length > 0 ? (
+              <div style={listCardStyle}>
+                {currentSection.rows.map((r, i) => currentSection.renderRow(r, i, currentSection.rows))}
               </div>
+            ) : (
+              <SegmentEmpty icon={
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              }>
+                {q ? `No conversations here match “${query.trim()}”.` : EMPTY_TAB_COPY[currentSection.id]}
+              </SegmentEmpty>
             )}
           </>
         )}
