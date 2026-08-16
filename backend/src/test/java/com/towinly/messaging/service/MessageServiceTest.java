@@ -16,6 +16,7 @@ import com.towinly.messaging.dto.MessageRequest;
 import com.towinly.messaging.dto.MessageResponse;
 import com.towinly.messaging.entity.Message;
 import com.towinly.messaging.repository.MessageRepository;
+import com.towinly.notification.service.ExpoPushService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +55,7 @@ class MessageServiceTest {
     com.towinly.family.service.FamilyStandingService familyStandingService;
     @Mock
     com.towinly.family.service.FamilyDelegationService familyDelegationService;
+    @Mock ExpoPushService expoPushService;
     @InjectMocks
     MessageService messageService;
 

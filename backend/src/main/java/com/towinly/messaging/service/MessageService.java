@@ -17,6 +17,7 @@ import com.towinly.messaging.dto.MessageRequest;
 import com.towinly.messaging.dto.MessageResponse;
 import com.towinly.messaging.entity.Message;
 import com.towinly.messaging.repository.MessageRepository;
+import com.towinly.notification.service.ExpoPushService;
 import com.towinly.profile.entity.ElderProfile;
 import com.towinly.profile.entity.HelperProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,6 +46,7 @@ public class MessageService {
     private final HelperProfileRepository helperProfileRepository;
     private final S3Service s3Service;
     private final com.towinly.family.service.FamilyStandingService familyStandingService;
+    private final ExpoPushService expoPushService;
 
     public Page<MessageResponse> getHistory(UUID connectionId, UUID userId,
                                             MessageChannel channel, Pageable pageable) {
@@ -82,7 +85,32 @@ public class MessageService {
                 .type(request.getType())
                 .channel(channel)
                 .build();
-        return toResponse(messageRepository.save(message), conn);
+        Message saved = messageRepository.save(message);
+        notifyRecipients(conn, sender, channel);
+        return toResponse(saved, conn);
+    }
+
+    /**
+     * The ping mirrors the badge rules: MAIN pings the other person on the
+     * connection, FAMILY_UPDATES pings both participants except whoever wrote
+     * (a family member writing pings elder and helper both). Family members
+     * themselves read the thread in-app — no push for them in v1. The body
+     * never carries the message text: a lock screen is not a private place,
+     * and this product's whole promise is care with what it shows.
+     * ExpoPushService defers past commit, so a rolled-back send stays silent.
+     */
+    private void notifyRecipients(Connection conn, User sender, MessageChannel channel) {
+        String name = displayName(sender);
+        Map<String, Object> data = Map.of(
+                "type", "message",
+                "connectionId", conn.getId().toString(),
+                "channel", channel.name());
+        if (!conn.getUserA().getId().equals(sender.getId())) {
+            expoPushService.sendToUser(conn.getUserA().getId(), name, "sent you a message.", data);
+        }
+        if (!conn.getUserB().getId().equals(sender.getId())) {
+            expoPushService.sendToUser(conn.getUserB().getId(), name, "sent you a message.", data);
+        }
     }
 
     // Count of conversations (people) with at least one unread message — not the

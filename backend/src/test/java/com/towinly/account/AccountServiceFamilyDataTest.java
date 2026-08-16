@@ -4,6 +4,7 @@ import com.towinly.common.entity.User;
 import com.towinly.common.enums.FamilyLinkStatus;
 import com.towinly.common.enums.UserRole;
 import com.towinly.common.repository.UserRepository;
+import com.towinly.notification.repository.PushTokenRepository;
 import com.towinly.common.service.S3Service;
 import com.towinly.connection.repository.ConnectionRepository;
 import com.towinly.emergency.repository.EmergencyContactRepository;
@@ -72,6 +73,7 @@ class AccountServiceFamilyDataTest {
     @Mock com.towinly.passon.service.ReleaseContact releaseContact;
     @Mock S3Service s3Service;
 
+    @Mock PushTokenRepository pushTokenRepository;
     @InjectMocks AccountService accountService;
 
     UUID elderId = UUID.randomUUID();

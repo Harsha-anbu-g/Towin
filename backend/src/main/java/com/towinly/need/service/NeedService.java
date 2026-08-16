@@ -25,6 +25,7 @@ import com.towinly.need.entity.Need;
 import com.towinly.need.entity.NeedApplication;
 import com.towinly.need.repository.NeedApplicationRepository;
 import com.towinly.need.repository.NeedRepository;
+import com.towinly.notification.service.ExpoPushService;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,7 @@ public class NeedService {
     private final ConnectionRepository connectionRepository;
     private final Optional<ConnectionEventProducer> connectionEventProducer;
     private final FamilyDelegationService familyDelegationService;
+    private final ExpoPushService expoPushService;
 
     @Transactional
     public NeedResponse postNeed(UUID callerId, NeedRequest request) {
@@ -198,6 +200,14 @@ public class NeedService {
                 .message(request != null ? request.getMessage() : null)
                 .build();
         applicationRepository.save(application);
+
+        // The offer is the marketplace's heartbeat, and the person it belongs
+        // to is usually at home with the phone locked. Ping the elder who owns
+        // the need; deferred past commit by ExpoPushService.
+        expoPushService.sendToUser(need.getElder().getId(),
+                DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, helper),
+                "offered to help with \"" + need.getTitle() + "\".",
+                Map.of("type", "need", "needId", need.getId().toString()));
     }
 
     @Transactional
@@ -262,6 +272,16 @@ public class NeedService {
                 .senderId(elderId)
                 .recipientId(helper.getId())
                 .build()));
+
+        // Being chosen is the news a helper waits for. The name shown is the
+        // elder's, never the family member who clicked accept on their behalf:
+        // the connection made here is the elder's own, and the ping says so.
+        expoPushService.sendToUser(helper.getId(),
+                DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, need.getElder()),
+                "accepted your offer to help.",
+                Map.of("type", "need_accepted",
+                        "needId", need.getId().toString(),
+                        "connectionId", savedConn.getId().toString()));
 
         return toResponse(needRepository.save(need), null);
     }

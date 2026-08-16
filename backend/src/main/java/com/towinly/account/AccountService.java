@@ -75,6 +75,7 @@ public class AccountService {
     private final KeyholderRepository keyholderRepository;
     private final PassOnSettingsRepository passOnSettingsRepository;
     private final PassOnOpenRepository passOnOpenRepository;
+    private final com.towinly.notification.repository.PushTokenRepository pushTokenRepository;
     /** Whether a person has released this account's owner. Nothing here ever sets it. */
     private final com.towinly.passon.service.ReleaseGate releaseGate;
     /** Where a bereaved family writes. Null until a deployment sets it. */
@@ -106,6 +107,7 @@ public class AccountService {
         familyAlertRepository.deleteByElderId(userId);
         // The DB would cascade these off the user row, but the purge stays the
         // single source of truth for what leaves with an account.
+        pushTokenRepository.deleteByUserId(userId);
         familyDelegatedPowerRepository.deleteByElderIdOrFamilyUserId(userId, userId);
         familyPowerRequestRepository.deleteByElderIdOrFamilyUserId(userId, userId);
         familyLinkRepository.deleteByElderIdOrFamilyUserId(userId, userId);

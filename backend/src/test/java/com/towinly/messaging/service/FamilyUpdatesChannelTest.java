@@ -16,6 +16,7 @@ import com.towinly.messaging.dto.MessageRequest;
 import com.towinly.messaging.dto.MessageResponse;
 import com.towinly.messaging.entity.Message;
 import com.towinly.messaging.repository.MessageRepository;
+import com.towinly.notification.service.ExpoPushService;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,7 @@ class FamilyUpdatesChannelTest {
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock S3Service s3Service;
     @Mock com.towinly.family.service.FamilyDelegationService familyDelegationService;
+    @Mock ExpoPushService expoPushService;
     @InjectMocks MessageService messageService;
 
     private User elder;

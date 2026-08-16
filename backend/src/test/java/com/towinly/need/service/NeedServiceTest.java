@@ -8,6 +8,8 @@ import com.towinly.need.entity.Need;
 import com.towinly.need.entity.NeedApplication;
 import com.towinly.need.repository.NeedApplicationRepository;
 import com.towinly.need.repository.NeedRepository;
+import com.towinly.connection.entity.Connection;
+import com.towinly.notification.service.ExpoPushService;
 import com.towinly.common.repository.UserRepository;
 import com.towinly.profile.repository.ElderProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +40,7 @@ class NeedServiceTest {
     @Mock com.towinly.common.service.TrustScoreService trustScoreService;
     @Mock com.towinly.connection.repository.ConnectionRepository connectionRepository;
     @Mock com.towinly.family.service.FamilyDelegationService familyDelegationService;
+    @Mock ExpoPushService expoPushService;
     NeedService needService;
 
     private User elder;
@@ -51,7 +54,7 @@ class NeedServiceTest {
                 needRepository, applicationRepository, userRepository,
                 elderProfileRepository, helperProfileRepository, s3Service,
                 trustScoreService, connectionRepository, Optional.empty(),
-                familyDelegationService);
+                familyDelegationService, expoPushService);
         elder = buildUser(UUID.randomUUID(), UserRole.ELDER);
         elder.setLocationLat(BigDecimal.valueOf(43.65));
         elder.setLocationLng(BigDecimal.valueOf(-79.38));
@@ -108,6 +111,12 @@ class NeedServiceTest {
         when(applicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(Optional.of(app));
         when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(app));
         when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
+        // The DB always hands back a row with an id; the accepted-offer ping reads it.
+        when(connectionRepository.save(any())).thenAnswer(i -> {
+            Connection c = i.getArgument(0);
+            if (c.getId() == null) c.setId(UUID.randomUUID());
+            return c;
+        });
 
         NeedResponse response = needService.acceptHelper(elder.getId(), need.getId(), helper.getId());
 

@@ -18,6 +18,7 @@ import com.towinly.need.entity.Need;
 import com.towinly.need.entity.NeedApplication;
 import com.towinly.need.repository.NeedApplicationRepository;
 import com.towinly.need.repository.NeedRepository;
+import com.towinly.notification.service.ExpoPushService;
 import com.towinly.profile.entity.ElderProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
@@ -59,6 +60,7 @@ class NeedOnBehalfTest {
     @Mock TrustScoreService trustScoreService;
     @Mock ConnectionRepository connectionRepository;
     @Mock FamilyDelegationService familyDelegationService;
+    @Mock ExpoPushService expoPushService;
     NeedService needService;
 
     private User margaret;   // the parent, who the help is really for
@@ -73,7 +75,7 @@ class NeedOnBehalfTest {
                 needRepository, applicationRepository, userRepository,
                 elderProfileRepository, helperProfileRepository, s3Service,
                 trustScoreService, connectionRepository, Optional.empty(),
-                familyDelegationService);
+                familyDelegationService, expoPushService);
         margaret = User.builder().id(UUID.randomUUID()).username("margaret").role(UserRole.ELDER).build();
         sarah = User.builder().id(UUID.randomUUID()).username("sarah").role(UserRole.FAMILY).build();
         helper = User.builder().id(UUID.randomUUID()).username("helper").role(UserRole.HELPER).build();
@@ -214,7 +216,12 @@ class NeedOnBehalfTest {
         when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(application));
         when(connectionRepository.findBetweenUsers(margaret.getId(), helper.getId()))
                 .thenReturn(Optional.empty());
-        when(connectionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(connectionRepository.save(any())).thenAnswer(inv -> {
+            // The DB always hands back a row with an id; the accepted-offer ping reads it.
+            Connection c = inv.getArgument(0);
+            if (c.getId() == null) c.setId(UUID.randomUUID());
+            return c;
+        });
         when(elderProfileRepository.findNamesByUserIds(any())).thenReturn(List.of());
         when(needRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
