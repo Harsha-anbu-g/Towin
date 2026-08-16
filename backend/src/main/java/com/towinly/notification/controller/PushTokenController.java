@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -24,6 +26,15 @@ import java.util.UUID;
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class PushTokenController {
+
+    /**
+     * A person owns a handful of devices, not a thousand. Without this cap an
+     * account could loop distinct token strings and grow the shared table
+     * without bound (2026-08-16 security review, HIGH). At the cap, the oldest
+     * row leaves: the devices someone actually uses re-register on every
+     * sign-in, so the stale one is always the right one to evict.
+     */
+    static final int MAX_TOKENS_PER_USER = 10;
 
     private final PushTokenRepository pushTokenRepository;
     private final UserRepository userRepository;
@@ -48,6 +59,15 @@ public class PushTokenController {
         // Upsert on the token: a device follows whoever is signed in on it.
         PushToken row = pushTokenRepository.findByToken(token)
                 .orElseGet(() -> PushToken.builder().token(token).build());
+        boolean isNew = row.getId() == null;
+        if (isNew) {
+            List<PushToken> mine = pushTokenRepository.findAllByUserId(userId);
+            if (mine.size() >= MAX_TOKENS_PER_USER) {
+                mine.stream()
+                        .min(Comparator.comparing(PushToken::getUpdatedAt))
+                        .ifPresent(pushTokenRepository::delete);
+            }
+        }
         row.setUser(user);
         row.setPlatform(platform);
         row.setUpdatedAt(LocalDateTime.now());
@@ -57,13 +77,17 @@ public class PushTokenController {
 
     @DeleteMapping("/token")
     @Transactional
-    public ResponseEntity<Void> unregister(@Valid @RequestBody PushTokenRequest request,
-                                           Authentication auth) {
-        UUID userId = UUID.fromString(auth.getName());
-        // Sign-out path: only the owner may silence a device, and silencing an
-        // unknown token is a success, not an error (the goal is already true).
+    public ResponseEntity<Void> unregister(@Valid @RequestBody PushTokenRequest request) {
+        // Sign-out path, and deliberately unauthenticated (SecurityConfig
+        // permits DELETE on this one path): a phone whose session already
+        // expired must still be able to stop ringing for the account that
+        // left. Holding the exact token IS the authorization: it is a
+        // 200-bit unguessable string that only that device ever saw, so the
+        // only thing knowing it lets you do is silence your own phone.
+        // Silencing an unknown token is a success, not an error (the goal is
+        // already true), which also means the endpoint confirms nothing about
+        // which tokens exist.
         pushTokenRepository.findByToken(request.getToken().trim())
-                .filter(row -> row.getUser().getId().equals(userId))
                 .ifPresent(pushTokenRepository::delete);
         return ResponseEntity.noContent().build();
     }

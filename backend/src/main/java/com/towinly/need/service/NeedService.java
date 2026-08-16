@@ -203,10 +203,14 @@ public class NeedService {
 
         // The offer is the marketplace's heartbeat, and the person it belongs
         // to is usually at home with the phone locked. Ping the elder who owns
-        // the need; deferred past commit by ExpoPushService.
+        // the need; deferred past commit by ExpoPushService. The body names no
+        // need title: titles are free text and often say the private thing
+        // itself ("get to my dialysis appointment"), and a lock screen is not
+        // a private place (2026-08-16 security review). The tap opens the
+        // request, which is where the detail belongs.
         expoPushService.sendToUser(need.getElder().getId(),
                 DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, helper),
-                "offered to help with \"" + need.getTitle() + "\".",
+                "offered to help with your request.",
                 Map.of("type", "need", "needId", need.getId().toString()));
     }
 

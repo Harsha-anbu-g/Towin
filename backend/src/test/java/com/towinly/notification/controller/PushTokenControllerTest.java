@@ -91,38 +91,56 @@ class PushTokenControllerTest {
     }
 
     @Test
-    void signOutDeletesOnlyTheCallersOwnToken() {
-        PushToken someoneElses = PushToken.builder()
+    void holdingTheExactTokenIsEnoughToSilenceTheDevice() {
+        // Deliberately no Authentication: a phone whose session expired must
+        // still be able to stop ringing for the account that left. The token
+        // is unguessable, so possession is the authorization.
+        PushToken row = PushToken.builder()
                 .id(UUID.randomUUID())
                 .user(User.builder().id(UUID.randomUUID()).build())
                 .token("ExponentPushToken[abc]")
                 .platform("ios")
                 .updatedAt(LocalDateTime.now())
                 .build();
-        when(auth.getName()).thenReturn(callerId.toString());
-        when(pushTokenRepository.findByToken("ExponentPushToken[abc]")).thenReturn(Optional.of(someoneElses));
+        when(pushTokenRepository.findByToken("ExponentPushToken[abc]")).thenReturn(Optional.of(row));
 
-        ResponseEntity<Void> response = controller.unregister(request("ExponentPushToken[abc]"), auth);
+        ResponseEntity<Void> response = controller.unregister(request("ExponentPushToken[abc]"));
 
-        // Not yours: silence is refused quietly, the row stays.
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+        verify(pushTokenRepository).delete(row);
+    }
+
+    @Test
+    void silencingAnUnknownTokenSaysNothingAboutWhatExists() {
+        when(pushTokenRepository.findByToken("ExponentPushToken[gone]")).thenReturn(Optional.empty());
+
+        ResponseEntity<Void> response = controller.unregister(request("ExponentPushToken[gone]"));
+
         assertThat(response.getStatusCode().value()).isEqualTo(204);
         verify(pushTokenRepository, never()).delete(any());
     }
 
     @Test
-    void signOutDeletesTheTokenWhenItIsTheCallers() {
-        PushToken own = PushToken.builder()
-                .id(UUID.randomUUID())
-                .user(caller)
-                .token("ExponentPushToken[abc]")
-                .platform("ios")
-                .updatedAt(LocalDateTime.now())
-                .build();
+    void theEleventhDeviceEvictsTheStalestRowNotTheTable() {
         when(auth.getName()).thenReturn(callerId.toString());
-        when(pushTokenRepository.findByToken("ExponentPushToken[abc]")).thenReturn(Optional.of(own));
+        when(userRepository.findById(callerId)).thenReturn(Optional.of(caller));
+        when(pushTokenRepository.findByToken("ExponentPushToken[new]")).thenReturn(Optional.empty());
+        java.util.List<PushToken> ten = new java.util.ArrayList<>();
+        for (int i = 0; i < PushTokenController.MAX_TOKENS_PER_USER; i++) {
+            ten.add(PushToken.builder()
+                    .id(UUID.randomUUID())
+                    .user(caller)
+                    .token("ExponentPushToken[t" + i + "]")
+                    .platform("ios")
+                    .updatedAt(LocalDateTime.now().minusDays(i))
+                    .build());
+        }
+        when(pushTokenRepository.findAllByUserId(callerId)).thenReturn(ten);
 
-        controller.unregister(request("ExponentPushToken[abc]"), auth);
+        controller.register(request("ExponentPushToken[new]"), auth);
 
-        verify(pushTokenRepository).delete(own);
+        // The oldest row leaves; the fresh device is saved; nothing else goes.
+        verify(pushTokenRepository).delete(ten.get(PushTokenController.MAX_TOKENS_PER_USER - 1));
+        verify(pushTokenRepository).save(any(PushToken.class));
     }
 }

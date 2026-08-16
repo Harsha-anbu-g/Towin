@@ -74,6 +74,13 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml",
                     "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/feedback").permitAll()
+                // Silencing a device needs only the device's own push token:
+                // the token is a 200-bit unguessable string minted by the
+                // phone, so holding it IS the proof. Public on purpose, so a
+                // phone whose session already expired can still stop ringing
+                // for the account that left (2026-08-16 security review).
+                // Registering (POST on the same path) stays authenticated.
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/notifications/token").permitAll()
                 // "Ask AI" help assistant: public so logged-out visitors get help too.
                 // A JWT, when present, still flows through jwtAuthFilter, so signed-in
                 // users are recognised and get personalized answers. Throttled per IP.

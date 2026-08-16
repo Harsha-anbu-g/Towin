@@ -131,6 +131,30 @@ class ExpoPushServiceTest {
     }
 
     @Test
+    void theLockScreenGuardTurnsScamNamesIntoSomeone() {
+        // The exact attack from the 2026-08-16 review: a profile named as a
+        // scam instruction must never reach an elder's lock screen.
+        assertThat(ExpoPushService.safeTitle("CALL +1-900-555-0123 to claim your refund")).isEqualTo("Someone");
+        assertThat(ExpoPushService.safeTitle("visit towinly-prizes.com now")).isEqualTo("Someone");
+        assertThat(ExpoPushService.safeTitle("http://scam.example")).isEqualTo("Someone");
+        assertThat(ExpoPushService.safeTitle("WWW.FREE.IN")).isEqualTo("Someone");
+        assertThat(ExpoPushService.safeTitle(null)).isEqualTo("Someone");
+        assertThat(ExpoPushService.safeTitle("   ")).isEqualTo("Someone");
+    }
+
+    @Test
+    void theLockScreenGuardLeavesRealNamesAlone() {
+        assertThat(ExpoPushService.safeTitle("Maria")).isEqualTo("Maria");
+        assertThat(ExpoPushService.safeTitle("Harshavardhan Anbuchezhian Gowri")).isEqualTo("Harshavardhan Anbuchezhian Gowri");
+        assertThat(ExpoPushService.safeTitle("Marie-Claire O'Neil")).isEqualTo("Marie-Claire O'Neil");
+        // Control characters vanish, whitespace collapses.
+        assertThat(ExpoPushService.safeTitle("Ma\u0000ria\n  Rose")).isEqualTo("Ma ria Rose");
+        // A name longer than any lock screen needs is capped, not banned.
+        String longName = "A".repeat(60);
+        assertThat(ExpoPushService.safeTitle(longName).length()).isLessThanOrEqualTo(40);
+    }
+
+    @Test
     void aBrokenTokenLookupIsSwallowedNotThrown() {
         PushTokenRepository repo = mock(PushTokenRepository.class);
         when(repo.findAllByUserId(any())).thenThrow(new RuntimeException("db down"));

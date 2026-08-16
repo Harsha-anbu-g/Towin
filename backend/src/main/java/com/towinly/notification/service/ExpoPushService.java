@@ -35,6 +35,12 @@ public class ExpoPushService {
 
     private static final int CONNECT_TIMEOUT_MS = 5000;
     private static final int READ_TIMEOUT_MS = 10000;
+    /** Expo rejects requests above 100 messages; sends are chunked to obey. */
+    private static final int EXPO_MAX_PER_REQUEST = 100;
+    /** Longest title a lock screen needs. Everything past it is not a name. */
+    private static final int MAX_TITLE_LENGTH = 40;
+    private static final java.util.regex.Pattern URLISH = java.util.regex.Pattern.compile(
+            "(?i)(https?:|www\\.|\\b[a-z0-9-]+\\.(com|net|org|info|io|co|ca|in|xyz|me)\\b)");
 
     private final PushTokenRepository pushTokenRepository;
     private final RestClient expo;
@@ -59,9 +65,35 @@ public class ExpoPushService {
     }
 
     /**
+     * The lock-screen guard. Every push title is a user-chosen display name,
+     * and a lock screen renders it under Towinly's trusted app identity with
+     * no report button and no context. A profile named "CALL +1-900-555-0123
+     * to claim your refund" must never reach an elder's lock screen, and that
+     * exact scam is why this exists (2026-08-16 security review, HIGH). A name
+     * that smells like a URL or carries a phone number's worth of digits
+     * becomes "Someone"; control characters go; length is capped.
+     */
+    static String safeTitle(String raw) {
+        if (raw == null) return "Someone";
+        String cleaned = raw
+                .replaceAll("[\\p{Cntrl}\\p{Cf}]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+        if (cleaned.isEmpty()) return "Someone";
+        boolean urlish = URLISH.matcher(cleaned).find();
+        boolean phoneish = cleaned.replaceAll("[^0-9]", "").length() >= 7;
+        if (urlish || phoneish) return "Someone";
+        if (cleaned.length() > MAX_TITLE_LENGTH) {
+            return cleaned.substring(0, MAX_TITLE_LENGTH - 1).trim() + "…";
+        }
+        return cleaned;
+    }
+
+    /**
      * Ping every device this user is signed in on. Title and body are the
      * words on the lock screen; data rides underneath and tells the app which
-     * screen to open on tap.
+     * screen to open on tap. The title passes the lock-screen guard above;
+     * bodies are fixed sentences owned by the callers, never user text.
      */
     public void sendToUser(UUID userId, String title, String body, Map<String, Object> data) {
         // Token lookup happens on the caller's thread, inside its transaction,
@@ -77,10 +109,11 @@ public class ExpoPushService {
         }
         if (tokens.isEmpty()) return;
 
+        String guardedTitle = safeTitle(title);
         List<Map<String, Object>> messages = tokens.stream()
                 .map(token -> Map.<String, Object>of(
                         "to", token,
-                        "title", title,
+                        "title", guardedTitle,
                         "body", body,
                         "sound", "default",
                         "data", data))
@@ -98,8 +131,18 @@ public class ExpoPushService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void post(List<Map<String, Object>> messages, List<String> tokens) {
+        // Expo caps a request at 100 messages. The per-user token cap keeps
+        // real traffic far below this; the chunking keeps the contract honest
+        // even if it is ever exceeded.
+        for (int start = 0; start < messages.size(); start += EXPO_MAX_PER_REQUEST) {
+            int end = Math.min(start + EXPO_MAX_PER_REQUEST, messages.size());
+            postChunk(messages.subList(start, end), tokens.subList(start, end));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void postChunk(List<Map<String, Object>> messages, List<String> tokens) {
         try {
             Map<String, Object> response = expo.post()
                     .uri("/--/api/v2/push/send")
