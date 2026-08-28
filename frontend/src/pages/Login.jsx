@@ -87,7 +87,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Connecting generations,<br />building <span style={{ color: 'var(--trust-gold)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.08em', textShadow: '0 0 7px rgba(255,255,255,0.6), 0 0 2px rgba(255,255,255,0.4)' }}>trust.</span>
+          Connecting generations,<br />building <span style={{ color: 'var(--trust-gold)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.08em' }}>trust.</span>
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
