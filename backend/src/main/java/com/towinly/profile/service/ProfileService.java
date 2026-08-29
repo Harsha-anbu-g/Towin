@@ -10,7 +10,11 @@ import com.towinly.profile.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.towinly.common.enums.ConnectionStatus;
+import com.towinly.common.enums.TrustLevel;
 import com.towinly.common.geo.CoarseLocation;
+import com.towinly.block.service.BlockService;
+import com.towinly.connection.repository.ConnectionRepository;
 import java.util.UUID;
 
 @Service
@@ -23,6 +27,8 @@ public class ProfileService {
     private final TrustScoreService trustScoreService;
     private final com.towinly.geocoding.GeocodingService geocodingService;
     private final S3Service s3Service;
+    private final ConnectionRepository connectionRepository;
+    private final BlockService blockService;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -130,28 +136,59 @@ public class ProfileService {
         return buildProfileResponse(user, null, null);
     }
 
+    /** The owner's own profile, with every private field. Used by /profile/me. */
     public ProfileResponse getProfile(UUID userId) {
-        return getProfile(userId, true);
+        return getProfile(userId, userId);
     }
 
-    public ProfileResponse getProfile(UUID userId, boolean isSelf) {
-        User user = userRepository.findById(userId)
+    /** One person's profile as a named viewer is allowed to see it. */
+    public ProfileResponse getProfile(UUID targetUserId, UUID viewerUserId) {
+        User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        ElderProfile elder = elderProfileRepository.findByUserId(userId).orElse(null);
-        HelperProfile helper = helperProfileRepository.findByUserId(userId).orElse(null);
+        ElderProfile elder = elderProfileRepository.findByUserId(targetUserId).orElse(null);
+        HelperProfile helper = helperProfileRepository.findByUserId(targetUserId).orElse(null);
 
-        return buildProfileResponse(user, elder, helper, isSelf);
+        boolean isSelf = viewerUserId != null && viewerUserId.equals(targetUserId);
+        return buildProfileResponse(user, elder, helper, isSelf,
+                isSelf || socialsUnlocked(viewerUserId, targetUserId));
+    }
+
+    /**
+     * Facebook, Instagram and gender are the trust ladder's step 4. Only the owner,
+     * or someone on an ACTIVE connection that has climbed to VERIFIED, gets them.
+     *
+     * ACTIVE is the load-bearing half: a helper scoring 71+ opens a PENDING request
+     * already stamped VERIFIED (ConnectionService.sendRequest), so a level-only test
+     * would be one connection request away from handing a stranger the handles.
+     *
+     * A family link never reaches VERIFIED (family connections earn no trust points),
+     * so a daughter does not read her mother's handles here. Nothing renders them
+     * today; if that should change it needs its own decision, not a wider gate.
+     */
+    private boolean socialsUnlocked(UUID viewerId, UUID targetId) {
+        if (viewerId == null) return false;
+        // HARD-106: a block outlives the connection it was made on.
+        if (blockService.isHidden(viewerId, targetId)) return false;
+        return connectionRepository.findBetweenUsers(viewerId, targetId)
+                .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE)
+                .map(c -> c.getCurrentTrustLevel() != null
+                        && c.getCurrentTrustLevel().getValue() >= TrustLevel.VERIFIED.getValue())
+                .orElse(false);
     }
 
     private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper) {
-        return buildProfileResponse(user, elder, helper, true);
+        // The write paths (create, update, phone) answer the owner about themselves.
+        return buildProfileResponse(user, elder, helper, true, true);
     }
 
-    private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper, boolean isSelf) {
+    private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper,
+                                                 boolean isSelf, boolean socialsUnlocked) {
         int score = user.getTrustScore() != null ? (int) Math.round(user.getTrustScore()) : 0;
         // Email, phone, date of birth, and sign-in metadata are the owner's
-        // business only — other users get the public fields (name, bio, trust).
+        // business only. Social handles and gender ride the trust ladder on top of
+        // that (see socialsUnlocked); other users get the public card: name, bio,
+        // age, city, occupation and trust.
         ProfileResponse.ProfileResponseBuilder builder = ProfileResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
@@ -177,9 +214,9 @@ public class ProfileService {
                     .interests(elder.getInterests())
                     .languages(elder.getLanguages())
                     .lookingFor(elder.getLookingFor().name())
-                    .gender(elder.getGender() != null ? elder.getGender().name() : null)
-                    .facebookUrl(elder.getFacebookUrl())
-                    .instagramUrl(elder.getInstagramUrl())
+                    .gender(socialsUnlocked && elder.getGender() != null ? elder.getGender().name() : null)
+                    .facebookUrl(socialsUnlocked ? elder.getFacebookUrl() : null)
+                    .instagramUrl(socialsUnlocked ? elder.getInstagramUrl() : null)
                     .occupation(elder.getOccupation());
         }
 
@@ -195,9 +232,9 @@ public class ProfileService {
                     .backgroundCheckStatus(helper.getBackgroundCheckStatus().name())
                     .hobbies(helper.getHobbies())
                     .occupation(helper.getOccupation())
-                    .gender(helper.getGender() != null ? helper.getGender().name() : null)
-                    .facebookUrl(helper.getFacebookUrl())
-                    .instagramUrl(helper.getInstagramUrl());
+                    .gender(socialsUnlocked && helper.getGender() != null ? helper.getGender().name() : null)
+                    .facebookUrl(socialsUnlocked ? helper.getFacebookUrl() : null)
+                    .instagramUrl(socialsUnlocked ? helper.getInstagramUrl() : null);
         }
 
         return builder.build();
