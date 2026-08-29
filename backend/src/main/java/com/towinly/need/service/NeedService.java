@@ -89,10 +89,15 @@ public class NeedService {
         // locate the elder's home just as surely as their profile would. The
         // elder's own stored coordinate is already on the grid, and snapping is
         // idempotent, so the fallback branch costs nothing.
-        BigDecimal lat = request.getLocationLat() != null
+        // A family member posting for their parent may be anywhere: their own
+        // phone's cell is not the parent's home, and the request is the parent's.
+        // So an on-behalf post always uses the elder's stored position and the
+        // body's coordinates are ignored.
+        boolean onBehalf = actedBy != null;
+        BigDecimal lat = (!onBehalf && request.getLocationLat() != null)
                 ? CoarseLocation.snap(request.getLocationLat())
                 : CoarseLocation.snap(elder.getLocationLat());
-        BigDecimal lng = request.getLocationLng() != null
+        BigDecimal lng = (!onBehalf && request.getLocationLng() != null)
                 ? CoarseLocation.snapLng(request.getLocationLng())
                 : CoarseLocation.snapLng(elder.getLocationLng());
 

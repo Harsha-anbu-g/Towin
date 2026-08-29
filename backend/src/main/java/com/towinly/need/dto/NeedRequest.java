@@ -3,6 +3,8 @@ package com.towinly.need.dto;
 import com.towinly.common.enums.NeedCategory;
 import com.towinly.common.enums.NeedSchedule;
 import com.towinly.common.enums.NeedUrgency;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -27,7 +29,11 @@ public class NeedRequest {
 
     private NeedUrgency urgency = NeedUrgency.NORMAL;
 
+    // The same range guard UpdateLocationRequest has carried all along. A need
+    // is stored with a coordinate, so it deserves the same door.
+    @Min(-90) @Max(90)
     private Double locationLat;
+    @Min(-180) @Max(180)
     private Double locationLng;
 
     /**

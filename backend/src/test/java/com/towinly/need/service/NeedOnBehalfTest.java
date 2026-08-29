@@ -345,4 +345,49 @@ class NeedOnBehalfTest {
         verify(familyDelegationService, never())
                 .hasPower(any(), any(), org.mockito.ArgumentMatchers.eq(DelegatedPower.LEAVE_REVIEWS));
     }
+
+    @Test
+    void anOnBehalfPostUsesTheParentsHome_neverTheFamilyMembersOwnPosition() {
+        // SEC-01. Sarah may be in another city when she posts for her mother. Her
+        // phone's position is not Margaret's home, and the request is Margaret's,
+        // so a coordinate on the body is ignored for an on-behalf post.
+        margaret.setLocationLat(new java.math.BigDecimal("45.48"));
+        margaret.setLocationLng(new java.math.BigDecimal("-73.62"));
+        when(userRepository.findById(sarah.getId())).thenReturn(Optional.of(sarah));
+        when(userRepository.findById(margaret.getId())).thenReturn(Optional.of(margaret));
+        when(elderProfileRepository.findByUserId(sarah.getId()))
+                .thenReturn(Optional.of(ElderProfile.builder().name("Sarah").build()));
+        when(elderProfileRepository.findNamesByUserIds(any())).thenReturn(List.of());
+        when(needRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        NeedRequest req = asking("A lift to the doctor", margaret.getId());
+        req.setLocationLat(43.65);   // Sarah's own city
+        req.setLocationLng(-79.38);
+
+        needService.postNeed(sarah.getId(), req);
+
+        ArgumentCaptor<Need> saved = ArgumentCaptor.forClass(Need.class);
+        verify(needRepository).save(saved.capture());
+        assertThat(saved.getValue().getLocationLat()).isEqualByComparingTo(new java.math.BigDecimal("45.48"));
+        assertThat(saved.getValue().getLocationLng()).isEqualByComparingTo(new java.math.BigDecimal("-73.62"));
+    }
+
+    @Test
+    void anElderPostingForThemselfHasTheirCoordinateSnappedToTheGrid() {
+        // SEC-01: the website attaches the raw browser fix to every posted need.
+        when(userRepository.findById(margaret.getId())).thenReturn(Optional.of(margaret));
+        when(elderProfileRepository.findNamesByUserIds(any())).thenReturn(List.of());
+        when(needRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        NeedRequest req = asking("A lift", null);
+        req.setLocationLat(45.47651234);
+        req.setLocationLng(-73.61279876);
+
+        needService.postNeed(margaret.getId(), req);
+
+        ArgumentCaptor<Need> saved = ArgumentCaptor.forClass(Need.class);
+        verify(needRepository).save(saved.capture());
+        assertThat(saved.getValue().getLocationLat()).isEqualByComparingTo(new java.math.BigDecimal("45.48"));
+        assertThat(saved.getValue().getLocationLng()).isEqualByComparingTo(new java.math.BigDecimal("-73.62"));
+    }
 }
