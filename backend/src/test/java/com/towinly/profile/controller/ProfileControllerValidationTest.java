@@ -1,5 +1,6 @@
 package com.towinly.profile.controller;
 
+import com.towinly.block.service.BlockService;
 import com.towinly.common.exception.GlobalExceptionHandler;
 import com.towinly.common.service.S3Service;
 import com.towinly.profile.service.ProfileService;
@@ -25,8 +26,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -123,5 +127,21 @@ class ProfileControllerValidationTest {
                 .andExpect(status().isOk());
 
         verify(profileService).getProfile(eq(userId), eq(userId));
+    }
+
+    // ── R2-PROF: a blocked read comes out as the refusal every other block gate uses ──
+
+    @Test
+    @DisplayName("a blocked profile read is a 409 carrying the words the rest of the app uses")
+    void aBlockedProfileReadIsRefusedWithTheSharedSentence() throws Exception {
+        UUID otherId = UUID.randomUUID();
+        when(profileService.getProfile(eq(otherId), eq(userId)))
+                .thenThrow(new IllegalStateException(BlockService.NOT_AVAILABLE));
+
+        // This is what both clients actually receive, so it is worth pinning at the edge
+        // rather than only at the service: a 409 and a sentence that names no block.
+        mockMvc.perform(get("/api/profile/" + otherId).principal(auth))
+                .andExpect(status().isConflict())
+                .andExpect(content().string(containsString(BlockService.NOT_AVAILABLE)));
     }
 }

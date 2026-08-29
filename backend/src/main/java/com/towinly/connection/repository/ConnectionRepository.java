@@ -43,6 +43,16 @@ public interface ConnectionRepository extends JpaRepository<Connection, UUID> {
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :a AND c.userB.id = :b) OR (c.userA.id = :b AND c.userB.id = :a)")
     Optional<Connection> findBetweenUsers(@Param("a") UUID userAId, @Param("b") UUID userBId);
 
+    // Every row for a pair, in either seat. Two can legitimately exist: sendRequest inserts
+    // (sender, target) without normalising the seats and only reuses a row it already finds
+    // PENDING or ACTIVE, so a decline followed by a request from the other person leaves both
+    // (A,B) and (B,A) in the table. findBetweenUsers above then throws
+    // IncorrectResultSizeDataAccessException, which is a 500 for that pair until somebody
+    // deletes a row by hand. A caller that must not fail on an ordinary user flow reads the
+    // list and decides for itself which rows count.
+    @Query("SELECT c FROM Connection c WHERE (c.userA.id = :a AND c.userB.id = :b) OR (c.userA.id = :b AND c.userB.id = :a)")
+    List<Connection> findAllBetweenUsers(@Param("a") UUID userAId, @Param("b") UUID userBId);
+
     @Query("SELECT COUNT(c) FROM Connection c WHERE c.initiatedBy.id = :userId AND c.createdAt >= :since")
     long countRequestsSince(@Param("userId") UUID userId, @Param("since") LocalDateTime since);
 

@@ -8,7 +8,9 @@ import com.towinly.profile.dto.ElderProfileRequest;
 import com.towinly.profile.entity.ElderProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.block.service.BlockService;
 import com.towinly.common.enums.ConnectionStatus;
+import com.towinly.common.enums.ConnectionType;
 import com.towinly.common.enums.Gender;
 import com.towinly.common.enums.TrustLevel;
 import com.towinly.connection.entity.Connection;
@@ -17,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
@@ -245,13 +249,41 @@ class ProfileServiceTest {
         when(helperProfileRepository.findByUserId(id)).thenReturn(Optional.of(helper));
     }
 
+    /** An ordinary friendship row. Connection.type defaults to SOCIAL. */
+    private Connection connection(ConnectionStatus status, TrustLevel level) {
+        return Connection.builder().status(status).currentTrustLevel(level).build();
+    }
+
+    /** A FAMILY-typed row: the coordination chat, which earns no trust of its own. */
+    private Connection familyConnection(ConnectionStatus status, TrustLevel level) {
+        return Connection.builder().type(ConnectionType.FAMILY).status(status).currentTrustLevel(level).build();
+    }
+
     private void givenConnection(UUID viewerId, UUID targetId, ConnectionStatus status, TrustLevel level) {
-        when(connectionRepository.findBetweenUsers(viewerId, targetId)).thenReturn(Optional.of(
-                Connection.builder().status(status).currentTrustLevel(level).build()));
+        givenConnections(viewerId, targetId, connection(status, level));
+    }
+
+    /** Every row the table holds for this pair. Two is a legitimate number; see below. */
+    private void givenConnections(UUID viewerId, UUID targetId, Connection... rows) {
+        when(connectionRepository.findAllBetweenUsers(viewerId, targetId)).thenReturn(List.of(rows));
     }
 
     private void givenNoConnection(UUID viewerId, UUID targetId) {
-        when(connectionRepository.findBetweenUsers(viewerId, targetId)).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(viewerId, targetId)).thenReturn(List.of());
+    }
+
+    /**
+     * A block standing between two people. BlockService.isHidden is symmetric - true when
+     * either one blocked the other - so the stub answers symmetrically too. Without that
+     * a direction test would only be pinning the argument order this service happens to
+     * use, not the behaviour a real block produces.
+     */
+    private void givenBlockBetween(UUID one, UUID other) {
+        when(blockService.isHidden(any(), any())).thenAnswer(call -> {
+            UUID a = call.getArgument(0);
+            UUID b = call.getArgument(1);
+            return (a.equals(one) && b.equals(other)) || (a.equals(other) && b.equals(one));
+        });
     }
 
     @Test
@@ -308,6 +340,7 @@ class ProfileServiceTest {
         profileService.getProfile(userId, userId);
 
         verify(connectionRepository, never()).findBetweenUsers(any(), any());
+        verify(connectionRepository, never()).findAllBetweenUsers(any(), any());
         verify(blockService, never()).isHidden(any(), any());
     }
 
@@ -401,23 +434,22 @@ class ProfileServiceTest {
     }
 
     @Test
-    void blockedPairAtTrusted_hidesSocialsButStillReturnsTheProfile() {
+    void blockedPairAtTrusted_refusesTheWholeRead() {
         UUID targetId = UUID.randomUUID();
         UUID viewerId = UUID.randomUUID();
         User user = subject(targetId, UserRole.ELDER);
         user.setCity("Montreal");
-        givenElder(targetId, user, elderWithSocials(user));
-        when(blockService.isHidden(viewerId, targetId)).thenReturn(true);
+        when(userRepository.findById(targetId)).thenReturn(Optional.of(user));
+        givenBlockBetween(viewerId, targetId);
 
-        var response = profileService.getProfile(targetId, viewerId);
-
-        assertThat(response.getFacebookUrl()).isNull();
-        assertThat(response.getInstagramUrl()).isNull();
-        // HARD-106 hides the handles, never the 200: the phone renders its own
-        // "you blocked this person" state from this very response.
-        assertThat(response.getName()).isEqualTo("Margaret");
-        assertThat(response.getCity()).isEqualTo("Montreal");
-        assertThat(response.getTrustScore()).isEqualTo(40);
+        // Supersedes the SEC-06 version of this case, which asserted a 200 carrying the
+        // public card. That was written before the read had a block gate at all, and it
+        // left the name, city, photo and trust score flowing to a blocked person while
+        // the family screens had already dropped their card. The handles are still gone,
+        // now because nothing comes back at all.
+        assertThatThrownBy(() -> profileService.getProfile(targetId, viewerId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
     }
 
     @Test
@@ -461,5 +493,174 @@ class ProfileServiceTest {
         // header, and "Retired schoolteacher" identifies nobody. Blanking it is a
         // product decision for the owner, not part of this security fix.
         assertThat(response.getOccupation()).isEqualTo("Retired schoolteacher");
+    }
+
+    // ── R2-PROF: two rows for one pair, the block gate, family-typed connections ──
+
+    @Test
+    void twoRowsForOnePair_answerTheProfileInsteadOfCrashing() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.ELDER);
+        givenElder(targetId, user, elderWithSocials(user));
+
+        // Two rows for one pair is an ordinary user flow, not an attack: sendRequest
+        // inserts (sender, target) without normalising the seats and only reuses a row
+        // it finds PENDING or ACTIVE, so a decline followed by a request from the other
+        // person leaves both (H,E) and (E,H) in the table. Read through an
+        // Optional-returning finder that is exactly what Spring Data throws, and
+        // GET /api/profile/{id} was a 500 for that pair from then on.
+        lenient().when(connectionRepository.findBetweenUsers(viewerId, targetId))
+                .thenThrow(new IncorrectResultSizeDataAccessException(1, 2));
+        givenConnections(viewerId, targetId,
+                connection(ConnectionStatus.DECLINED, TrustLevel.DISCOVERED),
+                connection(ConnectionStatus.ACTIVE, TrustLevel.VERIFIED));
+
+        var response = profileService.getProfile(targetId, viewerId);
+
+        assertThat(response.getName()).isEqualTo("Margaret");
+        // The live row is the answer. A stale declined row must not shut a real
+        // friendship out of what it has earned.
+        assertThat(response.getFacebookUrl()).isEqualTo(FACEBOOK);
+        assertThat(response.getInstagramUrl()).isEqualTo(INSTAGRAM);
+    }
+
+    @Test
+    void twoTerminalRowsForOnePair_answerTheProfileWithNoSocials() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.ELDER);
+        givenElder(targetId, user, elderWithSocials(user));
+        givenConnections(viewerId, targetId,
+                connection(ConnectionStatus.DECLINED, TrustLevel.TRUSTED),
+                connection(ConnectionStatus.ENDED, TrustLevel.TRUSTED));
+
+        var response = profileService.getProfile(targetId, viewerId);
+
+        // Tolerating two rows must not become "any row will do": neither is live.
+        assertThat(response.getName()).isEqualTo("Margaret");
+        assertThat(response.getFacebookUrl()).isNull();
+        assertThat(response.getInstagramUrl()).isNull();
+    }
+
+    @Test
+    void aViewerWhoBlockedTheOwner_cannotReadTheProfileAtAll() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.ELDER);
+        when(userRepository.findById(targetId)).thenReturn(Optional.of(user));
+        givenBlockBetween(viewerId, targetId);
+
+        assertThatThrownBy(() -> profileService.getProfile(targetId, viewerId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+    }
+
+    @Test
+    void anOwnerWhoBlockedTheViewer_closesTheProfileTheSameWay() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.HELPER);
+        when(userRepository.findById(targetId)).thenReturn(Optional.of(user));
+        givenBlockBetween(targetId, viewerId);
+
+        // The other direction. Both are refused with the same sentence, which names no
+        // block: the blocked person is never told.
+        assertThatThrownBy(() -> profileService.getProfile(targetId, viewerId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+    }
+
+    @Test
+    void aRefusedReadNeverLoadsTheProfileItRefuses() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.ELDER);
+        when(userRepository.findById(targetId)).thenReturn(Optional.of(user));
+        givenBlockBetween(viewerId, targetId);
+
+        assertThatThrownBy(() -> profileService.getProfile(targetId, viewerId))
+                .isInstanceOf(IllegalStateException.class);
+
+        // Nothing about the person is read, so nothing about them can leak into a log
+        // line or a later refactor of the response.
+        verify(elderProfileRepository, never()).findByUserId(any());
+        verify(helperProfileRepository, never()).findByUserId(any());
+        verify(connectionRepository, never()).findAllBetweenUsers(any(), any());
+    }
+
+    @Test
+    void aBlockBetweenTwoOtherPeople_neverClosesAFamilyMembersRead() {
+        UUID helperId = UUID.randomUUID();
+        UUID elderId = UUID.randomUUID();
+        UUID familyMemberId = UUID.randomUUID();
+        User helperUser = subject(helperId, UserRole.HELPER);
+        givenHelper(helperId, helperUser, helperWithSocials(helperUser));
+        // The elder and the helper blocked each other. The family member is a third
+        // party to that block.
+        givenBlockBetween(elderId, helperId);
+        givenNoConnection(familyMemberId, helperId);
+
+        var response = profileService.getProfile(helperId, familyMemberId);
+
+        // A block cuts contact between the two people in it. It must never become a way
+        // to switch off somebody else's oversight: the daughter watching over her
+        // mother still reads the helper who comes to the house.
+        assertThat(response.getName()).isEqualTo("James");
+        assertThat(response.getTrustScore()).isEqualTo(40);
+    }
+
+    @Test
+    void aFamilyTypedConnectionAtVerified_stillHidesSocials() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.ELDER);
+        givenElder(targetId, user, elderWithSocials(user));
+        givenConnections(viewerId, targetId, familyConnection(ConnectionStatus.ACTIVE, TrustLevel.VERIFIED));
+
+        var response = profileService.getProfile(targetId, viewerId);
+
+        // A coordination chat is not a friendship, exactly as
+        // PassOnVisibilityService.hasFullyTrustedFriendship already reads it.
+        assertThat(response.getFacebookUrl()).isNull();
+        assertThat(response.getInstagramUrl()).isNull();
+        assertThat(response.getGender()).isNull();
+    }
+
+    @Test
+    void aResurrectedFamilyChatCarriesItsOldLevelAndStillHidesSocials() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.HELPER);
+        givenHelper(targetId, user, helperWithSocials(user));
+        givenConnections(viewerId, targetId, familyConnection(ConnectionStatus.ACTIVE, TrustLevel.TRUSTED));
+
+        var response = profileService.getProfile(targetId, viewerId);
+
+        // This is how a FAMILY row gets above VERIFIED, and it is why the type filter
+        // has to exist. FamilyStandingService.openHelperChat and openFamilyMemberChat
+        // reopen a terminal row by stamping it FAMILY and ACTIVE, and they set the trust
+        // level only when it is null - so a friendship that once reached TRUSTED comes
+        // back as a coordination chat still holding TRUSTED.
+        assertThat(response.getFacebookUrl()).isNull();
+        assertThat(response.getInstagramUrl()).isNull();
+        assertThat(response.getGender()).isNull();
+    }
+
+    @Test
+    void aRealFriendshipAlongsideAFamilyRow_stillReleasesSocials() {
+        UUID targetId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        User user = subject(targetId, UserRole.ELDER);
+        givenElder(targetId, user, elderWithSocials(user));
+        givenConnections(viewerId, targetId,
+                familyConnection(ConnectionStatus.ACTIVE, TrustLevel.TRUSTED),
+                connection(ConnectionStatus.ACTIVE, TrustLevel.VERIFIED));
+
+        var response = profileService.getProfile(targetId, viewerId);
+
+        // Skipping FAMILY rows must not cost a pair the friendship they actually built.
+        assertThat(response.getFacebookUrl()).isEqualTo(FACEBOOK);
+        assertThat(response.getInstagramUrl()).isEqualTo(INSTAGRAM);
     }
 }
