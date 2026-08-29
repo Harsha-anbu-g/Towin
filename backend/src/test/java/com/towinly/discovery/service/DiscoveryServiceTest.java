@@ -428,4 +428,142 @@ class DiscoveryServiceTest {
 
         assertThat(result.get(0).getDistanceKm()).isEqualTo(5.0);
     }
+
+    // ── SEC-07: the page size and the radius are the server's decision ────────
+
+    @Test
+    void discoverElders_clampsAnOversizedPageSizeToTheServerMaximum() {
+        elders(manyEldersNearby(60));
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setSize(100_000);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result).hasSize(50);
+    }
+
+    @Test
+    void discoverElders_leavesAnOrdinarySizedRequestAlone() {
+        elders(manyEldersNearby(25));
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, new DiscoveryFilter());
+
+        assertThat(result).hasSize(20);
+    }
+
+    @Test
+    void discoverElders_clampsAHugeRadiusToTheServerMaximum() {
+        ElderProfile near = elderAt("Near", HOME_LAT + 0.01, HOME_LNG);          // ~2 km
+        ElderProfile anotherCity = elderAt("AnotherCity", HOME_LAT + 1.35, HOME_LNG); // ~150 km
+        elders(near, anotherCity);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setRadiusKm(100_000.0);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Near");
+    }
+
+    @Test
+    void discoverElders_treatsAnEmptyRadiusAsTheDefaultInsteadOfFailing() {
+        ElderProfile near = elderAt("Near", HOME_LAT + 0.01, HOME_LNG);
+        elders(near);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setRadiusKm(null);   // "?radiusKm=" binds to null, and used to be a 500
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Near");
+    }
+
+    @Test
+    void discoverElders_treatsANegativePageAsTheFirstPage() {
+        ElderProfile nearest = elderAt("Nearest", HOME_LAT + 0.01, HOME_LNG);
+        ElderProfile second = elderAt("Second", HOME_LAT + 0.03, HOME_LNG);
+        elders(second, nearest);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setPage(-1);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Nearest", "Second");
+    }
+
+    @Test
+    void discoverHelpers_clampsAnOversizedPageSizeToTheServerMaximum() {
+        helpers(manyHelpersNearby(60));
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setSize(100_000);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, filter);
+
+        assertThat(result).hasSize(50);
+    }
+
+    @Test
+    void discoverHelpers_clampsTheSizeEvenForACallerWithNoLocationAtAll() {
+        // With no location the radius is skipped entirely, so the page size is the only bound.
+        requester.setLocationLat(null);
+        requester.setLocationLng(null);
+        helpers(manyHelpersNearby(60));
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setSize(100_000);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, filter);
+
+        assertThat(result).hasSize(50);
+    }
+
+    @Test
+    void discoverElders_stillFallsBackToTheNearestPeopleForADemoSeat_butOnlyOnePage() {
+        // Store reviewers sign in on the demo seat; an empty screen looks broken, so the
+        // radius is ignored for them. The clamp must bound that fallback, not remove it.
+        requester.setEmail(com.towinly.common.seed.DemoDataSeeder.ELDER_DEMO_EMAIL);
+        elders(manyEldersFarAway(60));
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setSize(100_000);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result).hasSize(50);
+    }
+
+    @Test
+    void bothDiscoveryCachesKeyOnThePageSize() throws Exception {
+        // The answer depends on size, so two callers asking for different sizes must not
+        // share a cached list. A Mockito unit test cannot see the cache proxy, so read the key.
+        assertThat(cacheKeyOf("discoverElders")).contains("size");
+        assertThat(cacheKeyOf("discoverHelpers")).contains("size");
+    }
+
+    private String cacheKeyOf(String method) throws Exception {
+        return DiscoveryService.class
+                .getMethod(method, UUID.class, DiscoveryFilter.class)
+                .getAnnotation(org.springframework.cache.annotation.Cacheable.class)
+                .key();
+    }
+
+    private ElderProfile[] manyEldersNearby(int count) {
+        ElderProfile[] profiles = new ElderProfile[count];
+        for (int i = 0; i < count; i++) {
+            profiles[i] = elderAt("Elder " + i, HOME_LAT + 0.01, HOME_LNG);
+        }
+        return profiles;
+    }
+
+    private ElderProfile[] manyEldersFarAway(int count) {
+        ElderProfile[] profiles = new ElderProfile[count];
+        for (int i = 0; i < count; i++) {
+            profiles[i] = elderAt("Elder " + i, HOME_LAT + 1.35, HOME_LNG);  // ~150 km
+        }
+        return profiles;
+    }
+
+    private HelperProfile[] manyHelpersNearby(int count) {
+        HelperProfile[] profiles = new HelperProfile[count];
+        for (int i = 0; i < count; i++) {
+            profiles[i] = helperAt("Helper " + i, HOME_LAT + 0.01, HOME_LNG);
+        }
+        return profiles;
+    }
 }

@@ -25,6 +25,28 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Browsing elders and helpers, nearest first.
+ *
+ * <p>SEC-07, deliberately left in memory: every active profile is loaded, ranked in
+ * Java and then cut to one page. The response is bounded (the filter clamps the page
+ * size to {@link com.towinly.common.web.PageLimits#MAX_PAGE_SIZE}), so no caller can
+ * take the directory in one request any more, but the query itself is still unbounded.
+ *
+ * <p>Ordering in the database instead would mean a native query that re-implements
+ * {@link CoarseLocation#snap} and the haversine in SQL. That duplicates the one control
+ * SEC-01 just centralised, in a second language where it can drift out of step; it moves
+ * the demo-seat fallback below (which deliberately ignores the radius) onto a path this
+ * repo cannot exercise, since database tests are gated behind TOWINLY_DB_TESTS; and it
+ * moves ordering out of reach of the unit tests that pin the distance bands. That is a
+ * bad trade for a memory saving on a directory that fits in memory today.
+ *
+ * <p>The safe next step, when the directory outgrows this, is a bounding-box predicate on
+ * the repository query (lat/lng BETWEEN the box for the clamped radius, widened by one
+ * 0.02 degree cell so a row stored before SEC-01 cannot fall out) with the current
+ * unbounded query kept for the demo fallback. A box contains its circle, so that is
+ * provably behaviour-preserving. It belongs in its own story with its own tests.
+ */
 @Service
 @RequiredArgsConstructor
 public class DiscoveryService {
@@ -36,7 +58,7 @@ public class DiscoveryService {
     private final S3Service s3Service;
     private final BlockService blockService;
 
-    @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
+    @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page + '-' + #filter.size")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         // SEC-01: measure from the caller's cell, never from a swept origin.
@@ -68,7 +90,7 @@ public class DiscoveryService {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page")
+    @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page + '-' + #filter.size")
     public List<DiscoveredUserResponse> discoverHelpers(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         double[] origin = CoarseLocation.origin(filter.getLat(), filter.getLng(),
