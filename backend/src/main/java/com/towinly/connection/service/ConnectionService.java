@@ -355,7 +355,15 @@ public class ConnectionService {
         Object[] card = profiles.get(other.getId());
         String otherName = card != null ? (String) card[1] : plainName(other);
 
-        boolean phoneUnlocked = connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
+        // SEC-02: a phone number opens on a friendship that is LIVE and has climbed
+        // to Phone Ready, never on the rung alone. The score head start in
+        // sendRequest stands a brand-new PENDING request at PHONE_CALL, so a
+        // rung-only test hands a stranger's number out on a request nobody has
+        // answered, and keeps handing it out after the request is declined or the
+        // friendship ended. Status first, then the rung, the same shape as
+        // MessageService.familyGateHolds and PassOnVisibilityService.
+        boolean phoneUnlocked = connection.getStatus() == ConnectionStatus.ACTIVE
+                && connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
         // Rows are [connectionId, content, createdAt].
         Object[] last = lastMessages.get(connection.getId());

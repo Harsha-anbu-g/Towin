@@ -3,6 +3,7 @@ package com.towinly.connection.service;
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.ConnectionType;
+import com.towinly.common.enums.TrustLevel;
 import com.towinly.common.enums.UserRole;
 import com.towinly.common.enums.VerificationStatus;
 import com.towinly.common.repository.UserRepository;
@@ -383,6 +384,139 @@ class ConnectionServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
         verify(connectionRepository, never()).save(any(Connection.class));
+    }
+
+    // ------------------------------------------------------------------
+    // SEC-02: a phone number opens on a friendship that is LIVE and has
+    // climbed to Phone Ready. The rung alone is not enough. The score head
+    // start in sendRequest stands a brand-new PENDING request at PHONE_CALL,
+    // and a declined or ended friendship keeps whatever rung it died on.
+    // ------------------------------------------------------------------
+
+    @Test
+    void sendRequest_keepsTheHeadStartRungButHandsOutNoPhoneOnAPendingRequest() {
+        // The harvest: a helper with a decent score sends a request nobody has
+        // answered, and reads the target's number straight out of the reply.
+        sender.setTrustScore(60.0);
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.SOCIAL);
+
+        ConnectionResponse response = connectionService.sendRequest(sender.getId(), request);
+
+        ArgumentCaptor<Connection> captor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionRepository).save(captor.capture());
+        // The head start is a product feature and is left exactly as it was.
+        assertThat(captor.getValue().getStatus()).isEqualTo(ConnectionStatus.PENDING);
+        assertThat(captor.getValue().getCurrentTrustLevel()).isEqualTo(TrustLevel.PHONE_CALL);
+        assertThat(response.getCurrentTrustLevel()).isEqualTo(TrustLevel.PHONE_CALL);
+        assertThat(response.getOtherUserPhone())
+                .as("nobody has answered this request, so the number stays private")
+                .isNull();
+    }
+
+    @Test
+    void respond_decliningARequest_paysTheSenderNoPhoneNumber() {
+        Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
+        pending.setCurrentTrustLevel(TrustLevel.PHONE_CALL);
+        when(connectionRepository.findById(pending.getId())).thenReturn(Optional.of(pending));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
+
+        RespondToConnectionRequest request = new RespondToConnectionRequest();
+        request.setAccept(false);
+
+        ConnectionResponse response = connectionService.respond(target.getId(), pending.getId(), request);
+
+        assertThat(response.getStatus()).isEqualTo(ConnectionStatus.DECLINED);
+        assertThat(response.getOtherUserPhone())
+                .as("turning someone down must never pay you their number")
+                .isNull();
+    }
+
+    @Test
+    void respond_acceptingAtPhoneReady_doesHandOverTheNumber() {
+        // The legitimate case, which must keep working: consent plus the rung.
+        Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
+        pending.setCurrentTrustLevel(TrustLevel.PHONE_CALL);
+        when(connectionRepository.findById(pending.getId())).thenReturn(Optional.of(pending));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
+
+        RespondToConnectionRequest request = new RespondToConnectionRequest();
+        request.setAccept(true);
+
+        ConnectionResponse response = connectionService.respond(target.getId(), pending.getId(), request);
+
+        assertThat(response.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+        assertThat(response.getOtherUserPhone()).isEqualTo("+1234567890");
+    }
+
+    @Test
+    void getMyConnections_hidesThePhoneOnAPendingConnection() {
+        // The replay route: re-reading the inbox costs the attacker no new request.
+        assertThat(inboxPhoneFor(ConnectionStatus.PENDING, TrustLevel.PHONE_CALL)).isNull();
+    }
+
+    @Test
+    void getMyConnections_hidesThePhoneOnADeclinedConnection() {
+        assertThat(inboxPhoneFor(ConnectionStatus.DECLINED, TrustLevel.VERIFIED)).isNull();
+    }
+
+    @Test
+    void getMyConnections_hidesThePhoneOnAnEndedConnection() {
+        // Ending a friendship takes the number back, which it never used to.
+        assertThat(inboxPhoneFor(ConnectionStatus.ENDED, TrustLevel.TRUSTED)).isNull();
+    }
+
+    @Test
+    void getMyConnections_hidesThePhoneOnAPausedConnection() {
+        // Deliberate: a paused friendship stops reporting the number until it
+        // resumes. No screen shows it today, and resuming brings it straight back.
+        assertThat(inboxPhoneFor(ConnectionStatus.PAUSED, TrustLevel.TRUSTED)).isNull();
+    }
+
+    @Test
+    void getMyConnections_showsThePhoneOnALiveConnectionAtPhoneReady() {
+        assertThat(inboxPhoneFor(ConnectionStatus.ACTIVE, TrustLevel.PHONE_CALL)).isEqualTo("+1234567890");
+    }
+
+    @Test
+    void getMyConnections_showsThePhoneOnALiveConnectionAbovePhoneReady() {
+        assertThat(inboxPhoneFor(ConnectionStatus.ACTIVE, TrustLevel.TRUSTED)).isEqualTo("+1234567890");
+    }
+
+    @Test
+    void getMyConnections_stillHidesThePhoneOnALiveConnectionBelowPhoneReady() {
+        // The rung half of the rule, pinned so adding the status half cannot drop it.
+        assertThat(inboxPhoneFor(ConnectionStatus.ACTIVE, TrustLevel.MESSAGING)).isNull();
+    }
+
+    @Test
+    void setFamilyVisibility_handsOutNoPhoneOnAConnectionThatIsNotLive() {
+        // The elder seat can toggle sharing on a row of any status and gets a full
+        // response back, so this route needs the same gate as the inbox.
+        Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
+        pending.setCurrentTrustLevel(TrustLevel.PHONE_CALL);
+        when(connectionRepository.findById(pending.getId())).thenReturn(Optional.of(pending));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
+
+        ConnectionResponse response =
+                connectionService.setFamilyVisibility(sender.getId(), pending.getId(), true);
+
+        assertThat(response.getOtherUserPhone()).isNull();
+    }
+
+    /** The counterparty phone the inbox would show for a single connection in this state. */
+    private String inboxPhoneFor(ConnectionStatus status, TrustLevel level) {
+        Connection c = buildConnection(sender, target, status);
+        c.setCurrentTrustLevel(level);
+        when(connectionRepository.findAllByUser(eq(sender.getId()), any(Pageable.class))).thenReturn(List.of(c));
+        return connectionService.getMyConnections(sender.getId(), null).get(0).getOtherUserPhone();
     }
 
     private User buildUser(UUID id, String email) {
