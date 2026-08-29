@@ -31,8 +31,8 @@ public class ProfileController {
         // Only the owner sees email, phone, date of birth, and sign-in metadata;
         // another user's phone is gated behind the trust journey (exposed via
         // the connections endpoint instead).
-        boolean isSelf = auth != null && id.toString().equals(auth.getName());
-        return ResponseEntity.ok(profileService.getProfile(id, isSelf));
+        UUID viewerId = auth != null ? UUID.fromString(auth.getName()) : null;
+        return ResponseEntity.ok(profileService.getProfile(id, viewerId));
     }
 
     @PutMapping("/elder")
