@@ -41,6 +41,7 @@ import com.towinly.review.repository.ReviewRepository;
 import com.towinly.streak.entity.UserStreak;
 import com.towinly.streak.repository.UserStreakRepository;
 import com.towinly.trust.repository.TrustProgressionLogRepository;
+import com.towinly.common.service.CoarseLocation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -1422,9 +1423,22 @@ public class DemoDataSeeder implements ApplicationRunner {
         if (!userRepository.existsByPhone(preferred)) u.setPhone(preferred);
     }
 
-    /** Small deterministic offset (≤ ~0.6 km) so personas aren't stacked on one point. */
+    /**
+     * Deterministic offset in WHOLE grid cells so personas aren't stacked on one
+     * point (0 to 4 cells, about 0 to 9 km).
+     *
+     * <p>It used to be a sub-cell offset of up to ~0.6 km. Once SEC-01 put every
+     * stored coordinate on the 0.02 degree grid, an offset smaller than one cell
+     * rounded away: every demo persona collapsed onto a single vertex and read
+     * "0 km" from every other, which makes the distance filter look broken to
+     * anyone trying the demo seats, a store reviewer included. Moving in whole
+     * cells keeps the personas genuinely apart and on the grid at the same time.
+     */
     private BigDecimal jitter(String key) {
-        return new BigDecimal(Math.abs(key.hashCode()) % 60).movePointLeft(4);
+        int cells = Math.abs(key.hashCode()) % 5;
+        return BigDecimal.valueOf(CoarseLocation.GRID_DEGREES)
+                .multiply(BigDecimal.valueOf(cells))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     /**

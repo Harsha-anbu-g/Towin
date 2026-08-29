@@ -29,6 +29,7 @@ import com.towinly.notification.service.ExpoPushService;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
 import com.towinly.block.service.BlockService;
+import com.towinly.common.service.CoarseLocation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -82,12 +83,18 @@ public class NeedService {
         }
         User elder = getUser(elderId);
 
+        // SEC-01: a request carries a place, so it is snapped to the same 0.02
+        // degree cell as a profile before it is stored. /needs/nearby answers a
+        // distance from a caller-chosen origin, so a precise point here would
+        // locate the elder's home just as surely as their profile would. The
+        // elder's own stored coordinate is already on the grid, and snapping is
+        // idempotent, so the fallback branch costs nothing.
         BigDecimal lat = request.getLocationLat() != null
-                ? BigDecimal.valueOf(request.getLocationLat())
-                : elder.getLocationLat();
+                ? CoarseLocation.snap(request.getLocationLat())
+                : CoarseLocation.snap(elder.getLocationLat());
         BigDecimal lng = request.getLocationLng() != null
-                ? BigDecimal.valueOf(request.getLocationLng())
-                : elder.getLocationLng();
+                ? CoarseLocation.snapLng(request.getLocationLng())
+                : CoarseLocation.snapLng(elder.getLocationLng());
 
         Need need = Need.builder()
                 .elder(elder)

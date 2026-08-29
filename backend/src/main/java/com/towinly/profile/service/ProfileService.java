@@ -7,6 +7,7 @@ import com.towinly.common.service.TrustScoreService;
 import com.towinly.profile.dto.*;
 import com.towinly.profile.entity.*;
 import com.towinly.profile.repository.*;
+import com.towinly.common.service.CoarseLocation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,10 @@ public class ProfileService {
     private final TrustScoreService trustScoreService;
     private final com.towinly.geocoding.GeocodingService geocodingService;
     private final S3Service s3Service;
+    // SEC-06: the ladder's own rung 4 is named "Socials", so the handles are
+    // gated on reaching it. A repository has no dependencies of its own, so
+    // reading connections here introduces no cycle.
+    private final com.towinly.connection.repository.ConnectionRepository connectionRepository;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -87,8 +92,14 @@ public class ProfileService {
     public void updateLocation(UUID userId, Double lat, Double lng, String cityHint) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        user.setLocationLat(lat != null ? BigDecimal.valueOf(lat) : null);
-        user.setLocationLng(lng != null ? BigDecimal.valueOf(lng) : null);
+        // SEC-01: snap to the 0.02 degree cell before storing. The phone already
+        // coarsens, but the website sends the raw browser fix and any other API
+        // client could too, so the grid is enforced here where every caller meets
+        // it. /discover answers a distance from a caller-chosen origin, so a
+        // precise stored point is trilaterable to a doorstep; a grid vertex is
+        // only ever recoverable as its own ~2.2 km cell.
+        user.setLocationLat(CoarseLocation.snap(lat));
+        user.setLocationLng(CoarseLocation.snapLng(lng));
         if (lat != null && lng != null) {
             // Prefer a reverse-geocoded name; fall back to the city the frontend
             // resolved via forward geocode (cityHint) so the field is never blank.
@@ -129,25 +140,52 @@ public class ProfileService {
         return buildProfileResponse(user, null, null);
     }
 
+    /** The owner reading their own profile (GET /profile/me). */
     public ProfileResponse getProfile(UUID userId) {
-        return getProfile(userId, true);
+        return getProfile(userId, userId);
     }
 
-    public ProfileResponse getProfile(UUID userId, boolean isSelf) {
+    /**
+     * A profile as one viewer sees it. viewerId is the signed-in caller, or null
+     * for an unauthenticated read; passing the subject's own id means self.
+     */
+    public ProfileResponse getProfile(UUID userId, UUID viewerId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         ElderProfile elder = elderProfileRepository.findByUserId(userId).orElse(null);
         HelperProfile helper = helperProfileRepository.findByUserId(userId).orElse(null);
 
-        return buildProfileResponse(user, elder, helper, isSelf);
+        boolean isSelf = viewerId != null && viewerId.equals(userId);
+        return buildProfileResponse(user, elder, helper, isSelf, isSelf || socialsUnlocked(viewerId, userId));
+    }
+
+    /**
+     * Whether these two have reached the rung the ladder calls "Socials"
+     * (TrustLevel.VERIFIED, stage 5 of 7). The handles used to be public to any
+     * signed-in stranger, which handed out the cross-platform link the ladder
+     * exists to withhold until both people have chosen to go that far (SEC-06).
+     * A paused friendship keeps what it earned; a request that was never
+     * accepted, declined or ended earns nothing.
+     */
+    private boolean socialsUnlocked(UUID viewerId, UUID subjectId) {
+        if (viewerId == null || viewerId.equals(subjectId)) return false;
+        return connectionRepository.findBetweenUsers(viewerId, subjectId)
+                .filter(c -> c.getStatus() == com.towinly.common.enums.ConnectionStatus.ACTIVE
+                        || c.getStatus() == com.towinly.common.enums.ConnectionStatus.PAUSED)
+                .map(c -> c.getCurrentTrustLevel() != null
+                        && c.getCurrentTrustLevel().getValue()
+                                >= com.towinly.common.enums.TrustLevel.VERIFIED.getValue())
+                .orElse(false);
     }
 
     private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper) {
-        return buildProfileResponse(user, elder, helper, true);
+        // The owner reading or saving their own profile: everything is theirs.
+        return buildProfileResponse(user, elder, helper, true, true);
     }
 
-    private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper, boolean isSelf) {
+    private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper,
+                                                 boolean isSelf, boolean socialsVisible) {
         int score = user.getTrustScore() != null ? (int) Math.round(user.getTrustScore()) : 0;
         // Email, phone, date of birth, and sign-in metadata are the owner's
         // business only — other users get the public fields (name, bio, trust).
@@ -177,8 +215,8 @@ public class ProfileService {
                     .languages(elder.getLanguages())
                     .lookingFor(elder.getLookingFor().name())
                     .gender(elder.getGender() != null ? elder.getGender().name() : null)
-                    .facebookUrl(elder.getFacebookUrl())
-                    .instagramUrl(elder.getInstagramUrl())
+                    .facebookUrl(socialsVisible ? elder.getFacebookUrl() : null)
+                    .instagramUrl(socialsVisible ? elder.getInstagramUrl() : null)
                     .occupation(elder.getOccupation());
         }
 
@@ -195,8 +233,8 @@ public class ProfileService {
                     .hobbies(helper.getHobbies())
                     .occupation(helper.getOccupation())
                     .gender(helper.getGender() != null ? helper.getGender().name() : null)
-                    .facebookUrl(helper.getFacebookUrl())
-                    .instagramUrl(helper.getInstagramUrl());
+                    .facebookUrl(socialsVisible ? helper.getFacebookUrl() : null)
+                    .instagramUrl(socialsVisible ? helper.getInstagramUrl() : null);
         }
 
         return builder.build();
