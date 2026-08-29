@@ -37,3 +37,9 @@ build/
 /*.svg
 /*.jpeg
 /*.jpg
+
+# Offline API docs: generated locally by docs/architecture/build-offline-api-docs.sh,
+# expose the whole API surface, local only (docs/architecture/README.md)
+docs/architecture/towinly-api-docs.html
+docs/architecture/towinly-openapi.json
+docs/architecture/towinly-openapi.yaml
