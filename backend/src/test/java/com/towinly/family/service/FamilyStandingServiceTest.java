@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -496,5 +497,92 @@ class FamilyStandingServiceTest {
         assertThat(rows).hasSize(1);
         assertThat(rows.get(0).getHelperName()).isEqualTo("Harsha");
         assertThat(rows.get(0).isInherited()).isFalse();
+    }
+
+    // ── Round two: the block hides the pair it stands between, not a third party ──
+
+    @Test
+    void standingsFor_dropsAParentTheFamilyMemberBlocked() {
+        // The list streams the parent's name, their helper roster and each helper's
+        // live trust stage. When those two have blocked each other, none of it goes.
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(margaret.getId()));
+
+        assertThat(standings()).isEmpty();
+        verify(connectionRepository, never()).findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE);
+    }
+
+    @Test
+    void standingsFor_keepsTheParentWhenTheBlockIsWithSomebodyElse() {
+        when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(UUID.randomUUID()));
+
+        assertThat(standings()).hasSize(1);
+    }
+
+    // ── A rung belongs to the relationship that earned it ──
+    // ConnectionService.sendRequest stands a brand-new request at Phone Ready for a
+    // sender scoring 51+, and at Social Media for 71+. Flipping such a row ACTIVE
+    // without resetting it would hand over the phone number (SEC-02) or the social
+    // handles (SEC-06) with no ladder step, and even after an explicit decline.
+
+    @Test
+    void materializeChat_reopensADeadRowAtTheBottomOfTheLadder() {
+        when(connectionRepository.findById(sharedConnection.getId()))
+                .thenReturn(Optional.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        Connection declined = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(harsha)
+                .type(ConnectionType.SOCIAL).status(ConnectionStatus.DECLINED)
+                .currentTrustLevel(TrustLevel.PHONE_CALL).initiatedBy(sarah).build();
+        when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(Optional.of(declined));
+        bothUsersResolve();
+
+        service.materializeChat(sarah.getId(), sharedConnection.getId());
+
+        assertThat(declined.getType()).isEqualTo(ConnectionType.FAMILY);
+        assertThat(declined.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+        assertThat(declined.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void openFamilyMemberChat_reopensADeadRowAtTheBottomOfTheLadder() {
+        // Lenient because familyLinkExists asks both seats and only one is stubbed.
+        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        Connection ended = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(margaret)
+                .type(ConnectionType.SOCIAL).status(ConnectionStatus.ENDED)
+                .currentTrustLevel(TrustLevel.VERIFIED).initiatedBy(sarah).build();
+        when(connectionRepository.findBetweenUsers(sarah.getId(), margaret.getId()))
+                .thenReturn(Optional.of(ended));
+        bothUsersResolve();
+
+        service.openFamilyMemberChat(sarah.getId(), margaret.getId());
+
+        assertThat(ended.getType()).isEqualTo(ConnectionType.FAMILY);
+        assertThat(ended.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+        assertThat(ended.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void openFamilyMemberChat_leavesTheRungOfTheChatTheyAlreadyHaveOpen() {
+        // Only a row that has to be brought back from the dead starts again. A
+        // live family chat keeps every step the two of them climbed together.
+        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        Connection live = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(margaret)
+                .type(ConnectionType.FAMILY).status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.MESSAGING).initiatedBy(sarah).build();
+        when(connectionRepository.findBetweenUsers(sarah.getId(), margaret.getId()))
+                .thenReturn(Optional.of(live));
+        bothUsersResolve();
+
+        service.openFamilyMemberChat(sarah.getId(), margaret.getId());
+
+        assertThat(live.getCurrentTrustLevel()).isEqualTo(TrustLevel.MESSAGING);
     }
 }
