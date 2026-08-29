@@ -165,6 +165,67 @@ class AuthServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    // SEC-08: "Email already registered" confirmed the address belonged to a real
+    // Towinly account, so a list of emails could be sifted for members before anyone
+    // was targeted. Login and forgot-password were already anti-enumeration; register
+    // was the outlier. A username may still be named: it is public in this product.
+    @Test
+    void register_doesNotRevealThatAnEmailAlreadyBelongsToAMember() {
+        RegisterRequest req = registerRequest();
+        req.setEmail("known@member.com");
+        when(userRepository.existsByEmail("known@member.com")).thenReturn(true);
+
+        assertThatCode(() -> authService.register(req)).doesNotThrowAnyException();
+
+        // No second account, no second pending signup, and no email to the address:
+        // the person who owns it learns nothing from a stranger's attempt.
+        verify(userRepository, never()).save(any());
+        verify(pendingRepository, never()).save(any(PendingRegistration.class));
+        verify(emailService, never()).sendVerificationEmail(any(), anyString());
+    }
+
+    @Test
+    void register_answersANewEmailAndAKnownEmailTheSameWay() {
+        RegisterRequest fresh = registerRequest();
+        fresh.setEmail("nobody@nowhere.com");
+        RegisterRequest known = registerRequest();
+        known.setEmail("known@member.com");
+        when(userRepository.existsByEmail("nobody@nowhere.com")).thenReturn(false);
+        when(userRepository.existsByEmail("known@member.com")).thenReturn(true);
+
+        assertThatCode(() -> authService.register(fresh)).doesNotThrowAnyException();
+        assertThatCode(() -> authService.register(known)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void register_checksThePasswordPolicyBeforeTheEmail_soAWeakPasswordIsNotAnOracle() {
+        // If the duplicate-email return came first, a deliberately weak password would
+        // answer "no complaint" for a member and "too weak" for a stranger — the same
+        // oracle by another door.
+        RegisterRequest req = registerRequest();
+        req.setEmail("known@member.com");
+        // Once the policy runs first, this stub is never reached — hence lenient.
+        lenient().when(userRepository.existsByEmail("known@member.com")).thenReturn(true);
+        doThrow(new IllegalArgumentException("Password is too weak"))
+                .when(passwordPolicy).validate(any(), any(), any());
+
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("too weak");
+    }
+
+    @Test
+    void register_stillSaysPlainlyWhenAUsernameIsTaken() {
+        // A username is public in this product: the person must pick another one.
+        RegisterRequest req = registerRequest();
+        req.setEmail("known@member.com");
+        when(userRepository.existsByUsername("testuser")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username already taken");
+    }
+
     private RegisterRequest registerRequest() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("testuser");

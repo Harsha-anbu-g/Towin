@@ -64,13 +64,26 @@ public class AuthService {
                 && request.getRole() != UserRole.FAMILY) {
             throw new IllegalArgumentException("Role must be ELDER, HELPER, BOTH, or FAMILY");
         }
+        // A username is public in this product, so naming a clash tells an attacker
+        // nothing they could not read off a profile, and the person must pick another.
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username already taken");
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered");
-        }
+        // The password is judged BEFORE the address is looked at, on purpose: if the
+        // duplicate-email return came first, a deliberately weak password would draw
+        // no complaint for a member and "too weak" for a stranger, which is the same
+        // oracle by another door.
         passwordPolicy.validate(request.getPassword(), request.getUsername(), request.getEmail());
+
+        // Anti-enumeration (SEC-08): an address that already belongs to an account
+        // gets the very same answer a fresh one does. Saying "Email already
+        // registered" confirmed which people on a list were members. Nothing is
+        // written and no mail is sent, so no second account exists and the owner of
+        // the address is not troubled by a stranger's attempt. login and
+        // forgotPassword above already work this way; this path was the outlier.
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return;
+        }
 
         // Replace any earlier unverified attempt for this email so re-registering just refreshes the link.
         pendingRepository.deleteByEmail(request.getEmail());
