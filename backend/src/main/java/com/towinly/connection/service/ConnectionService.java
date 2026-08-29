@@ -355,7 +355,15 @@ public class ConnectionService {
         Object[] card = profiles.get(other.getId());
         String otherName = card != null ? (String) card[1] : plainName(other);
 
-        boolean phoneUnlocked = connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
+        // SEC-02: the phone number is shared only on an ACCEPTED connection. The
+        // score head-start builds a PENDING request at PHONE_CALL level, so a
+        // trust-level check alone leaked the target's phone before they ever
+        // accepted (and kept leaking on DECLINED/ENDED). ACTIVE and PAUSED are
+        // the accepted states; every other status hides the phone.
+        boolean accepted = connection.getStatus() == ConnectionStatus.ACTIVE
+                || connection.getStatus() == ConnectionStatus.PAUSED;
+        boolean phoneUnlocked = accepted
+                && connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
         // Rows are [connectionId, content, createdAt].
         Object[] last = lastMessages.get(connection.getId());

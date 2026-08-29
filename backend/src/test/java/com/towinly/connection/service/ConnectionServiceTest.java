@@ -83,6 +83,35 @@ class ConnectionServiceTest {
     }
 
     @Test
+    void phoneIsHiddenOnAnUnacceptedRequestDespiteTheScoreHeadStart() {
+        // SEC-02: a sender with a trust score >= 51 gets a PHONE_CALL-level
+        // head start, but the connection is still PENDING. The target's phone
+        // must not leak until they accept.
+        sender.setTrustScore(60.0);
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
+            Connection c = i.getArgument(0);
+            c.setCreatedAt(LocalDateTime.now());
+            c.setUpdatedAt(LocalDateTime.now());
+            return c;
+        });
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.SOCIAL);
+
+        ConnectionResponse response = connectionService.sendRequest(sender.getId(), request);
+
+        assertThat(response.getCurrentTrustLevel())
+                .isEqualTo(com.towinly.common.enums.TrustLevel.PHONE_CALL);
+        assertThat(response.getStatus()).isEqualTo(ConnectionStatus.PENDING);
+        assertThat(response.getOtherUserPhone()).isNull();
+    }
+
+    @Test
     void familyLinkedPair_isAutoTypedFamily_andSkipsCapacityLimits() {
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
