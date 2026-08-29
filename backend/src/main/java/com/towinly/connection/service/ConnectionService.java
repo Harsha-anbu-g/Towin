@@ -247,6 +247,19 @@ public class ConnectionService {
      * US-006: the elder participant chooses, per friendship, whether their linked
      * family can see it. Elder seat = role ELDER/BOTH (same rule as FamilyService);
      * the helper side of the connection gets a 403, never a silent no-op.
+     *
+     * Gated like its siblings respond and getMyConnections: the switch is a write on
+     * a LIVE friendship, and never across a block. It used to check participation and
+     * the elder seat and nothing more, which left two holes. It answers with a full
+     * ConnectionResponse, newest message preview included, so it was a second door
+     * onto the content SEC-03 closed on the messaging side; and it wrote the family
+     * switch on a request that had been declined or a friendship that was over.
+     *
+     * The refusal stops the write and nothing else. sharedWithFamily is never flipped
+     * off here and no family read path is touched, so a friendship the elder had
+     * already shared stays on their family's screens after a block. A block is contact
+     * control between the two people in it, never a way for one of them to blind the
+     * family watching over the elder.
      */
     @Transactional
     public ConnectionResponse setFamilyVisibility(UUID callerId, UUID connectionId, boolean shared) {
@@ -259,6 +272,17 @@ public class ConnectionService {
         boolean elderSeat = caller.getRole() == UserRole.ELDER || caller.getRole() == UserRole.BOTH;
         if (!elderSeat) {
             throw new ForbiddenException("Only the elder can choose whether family sees this friendship");
+        }
+        // Only a live friendship has a family view to switch. A paused one is absent
+        // from the family journey (ACTIVE and shared, both) until it resumes, and a
+        // declined or ended one has nothing left to show. Same words as endConnection.
+        if (connection.getStatus() != ConnectionStatus.ACTIVE) {
+            throw new IllegalArgumentException("Only active connections can be shared with family");
+        }
+        // HARD-106, in the order respond uses: the rules that answer the same with or
+        // without a block go first, so a refusal here never tells anyone a block exists.
+        if (blockService.isHidden(connection.getUserA().getId(), connection.getUserB().getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
         }
         connection.setSharedWithFamily(shared);
         return toResponse(connectionRepository.save(connection), callerId);

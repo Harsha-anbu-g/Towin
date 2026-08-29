@@ -498,17 +498,20 @@ class ConnectionServiceTest {
 
     @Test
     void setFamilyVisibility_handsOutNoPhoneOnAConnectionThatIsNotLive() {
-        // The elder seat can toggle sharing on a row of any status and gets a full
-        // response back, so this route needs the same gate as the inbox.
+        // SEC-02 pinned this route because the elder seat could toggle sharing on a
+        // row of ANY status and read a full response back, so the phone gate had to
+        // hold here too. R2-CONN closed the route itself: a friendship that is not
+        // live cannot be written at all, so the number can no longer even be asked
+        // for this way. Same guarantee, one step earlier.
         Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
         pending.setCurrentTrustLevel(TrustLevel.PHONE_CALL);
         when(connectionRepository.findById(pending.getId())).thenReturn(Optional.of(pending));
-        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
 
-        ConnectionResponse response =
-                connectionService.setFamilyVisibility(sender.getId(), pending.getId(), true);
-
-        assertThat(response.getOtherUserPhone()).isNull();
+        assertThatThrownBy(() ->
+                connectionService.setFamilyVisibility(sender.getId(), pending.getId(), true))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Only active connections");
+        verify(connectionRepository, never()).save(any(Connection.class));
     }
 
     /** The counterparty phone the inbox would show for a single connection in this state. */
