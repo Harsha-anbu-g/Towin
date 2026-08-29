@@ -317,6 +317,12 @@ public class NeedService {
 
     public NeedResponse getOne(UUID callerId, UUID needId) {
         Need need = getNeed(needId);
+        // HARD-106: reading one request by its id is refused across a block, the same
+        // way the feeds already drop it. Without this a blocked helper kept the id
+        // from the open feed and went on reading the request and its live status.
+        if (blockService.isHidden(callerId, need.getElder().getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
         // Only the posting elder may see the applicant list (names + free-text
         // messages) — and the family member they trusted to pick a helper for them,
         // who cannot choose one without reading who applied.

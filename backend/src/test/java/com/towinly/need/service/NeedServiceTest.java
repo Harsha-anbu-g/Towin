@@ -315,6 +315,41 @@ class NeedServiceTest {
         verify(applicationRepository, never()).save(any());
     }
 
+    // HARD-106 (SEC-04): every other need read path subtracts blocks; getOne did not,
+    // so a blocked helper holding the id from the open feed kept reading the elder's
+    // request content and its live status.
+    @Test
+    void getOne_isRefusedAcrossABlock_withoutSayingWhy() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(blockService.isHidden(helper.getId(), elder.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> needService.getOne(helper.getId(), need.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+    }
+
+    @Test
+    void getOne_stillReachesAHelperWithNoBlock() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+
+        NeedResponse response = needService.getOne(helper.getId(), need.getId());
+
+        assertThat(response.getId()).isEqualTo(need.getId());
+        assertThat(response.getApplications()).isNull();
+    }
+
+    @Test
+    void getOne_stillReachesThePostingElder() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+
+        NeedResponse response = needService.getOne(elder.getId(), need.getId());
+
+        assertThat(response.getId()).isEqualTo(need.getId());
+    }
+
     private User buildUser(UUID id, UserRole role) {
         return User.builder()
                 .id(id).email(id + "@test.com").phone("+1234567890")
