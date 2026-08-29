@@ -2,6 +2,7 @@ package com.towinly.need.service;
 
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.*;
+import com.towinly.common.web.PageLimits;
 import com.towinly.need.dto.NeedRequest;
 import com.towinly.need.dto.NeedResponse;
 import com.towinly.need.entity.Need;
@@ -19,6 +20,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -472,5 +474,203 @@ class NeedServiceTest {
         List<NeedResponse> result = needService.browseNearby(helper.getId(), 44.66, -79.39, 500.0, 0, 20);
 
         assertThat(result.get(0).getDistanceKm()).isEqualTo(2.0);
+    }
+
+    // ── R2 (1): the applications list is /needs/{id} by another route ────────
+    // SEC-04 closed GET /needs/{id}. GET /needs/applications hands a helper the
+    // very same fields for every request they ever offered on — title,
+    // description, elder name and the LIVE status — and the shipped app polls it.
+
+    @Test
+    void getMyApplications_dropsTheRequestsOfAnyoneBlockedInEitherDirection() {
+        User otherElder = buildUser(UUID.randomUUID(), UserRole.ELDER);
+        Need hiddenNeed = buildNeed(elder, NeedStatus.ASSIGNED);
+        hiddenNeed.setTitle("Change my catheter dressing");
+        hiddenNeed.setDescription("Front door code is 4417");
+        Need shownNeed = buildNeed(otherElder, NeedStatus.OPEN);
+        NeedApplication onHidden = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(hiddenNeed).helper(helper)
+                .status(ApplicationStatus.ACCEPTED).createdAt(java.time.LocalDateTime.now()).build();
+        NeedApplication onShown = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(shownNeed).helper(helper)
+                .status(ApplicationStatus.PENDING).createdAt(java.time.LocalDateTime.now().minusMinutes(5)).build();
+        when(applicationRepository.findByHelperId(helper.getId())).thenReturn(List.of(onHidden, onShown));
+        when(blockService.hiddenFor(helper.getId())).thenReturn(java.util.Set.of(elder.getId()));
+
+        List<NeedResponse> result = needService.getMyApplications(helper.getId());
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(shownNeed.getId());
+        assertThat(result).extracting(NeedResponse::getTitle).doesNotContain("Change my catheter dressing");
+        assertThat(result).extracting(NeedResponse::getDescription).doesNotContain("Front door code is 4417");
+        assertThat(result).extracting(NeedResponse::getElderId).doesNotContain(elder.getId());
+        assertThat(result).extracting(NeedResponse::getStatus).doesNotContain(NeedStatus.ASSIGNED);
+    }
+
+    @Test
+    void getMyApplications_keepsEveryOfferThatNoBlockStandsOn() {
+        Need mine = buildNeed(elder, NeedStatus.ASSIGNED);
+        NeedApplication app = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(mine).helper(helper)
+                .status(ApplicationStatus.ACCEPTED).createdAt(java.time.LocalDateTime.now()).build();
+        when(applicationRepository.findByHelperId(helper.getId())).thenReturn(List.of(app));
+
+        List<NeedResponse> result = needService.getMyApplications(helper.getId());
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(mine.getId());
+        assertThat(result.get(0).getMyApplicationStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
+    }
+
+    // ── R2 (2): a resurrected friendship never keeps the rung it died on ─────
+    // acceptHelper reuses whatever row already joins the pair. Brought back to
+    // ACTIVE with its old rung, a turned-down request pays out everything that
+    // rung unlocks with no ladder step taken — sharpest with the score head
+    // start, which stands a brand-new request at Phone Ready.
+
+    @Test
+    void acceptHelper_bringsADeclinedRequestBackAtTheBottomRung_soNoPhoneOpens() {
+        Connection saved = acceptWithExistingConnection(ConnectionStatus.DECLINED, TrustLevel.PHONE_CALL);
+
+        assertThat(saved.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+        assertThat(saved.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void acceptHelper_bringsAnUnansweredRequestBackAtTheBottomRung() {
+        Connection saved = acceptWithExistingConnection(ConnectionStatus.PENDING, TrustLevel.PHONE_CALL);
+
+        assertThat(saved.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void acceptHelper_bringsAnEndedFriendshipBackAtTheBottomRung() {
+        Connection saved = acceptWithExistingConnection(ConnectionStatus.ENDED, TrustLevel.TRUSTED);
+
+        assertThat(saved.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void acceptHelper_leavesALiveFriendshipsRungExactlyWhereItWas() {
+        Connection saved = acceptWithExistingConnection(ConnectionStatus.ACTIVE, TrustLevel.VERIFIED);
+
+        assertThat(saved.getCurrentTrustLevel()).isEqualTo(TrustLevel.VERIFIED);
+    }
+
+    // A pause is reversible by design: TrustService.resumeProgression hands the
+    // same rung back on one press, and the app's pause promises nothing is lost.
+    // Wiping the ladder here would destroy earned trust, not protect anybody.
+    @Test
+    void acceptHelper_leavesAPausedFriendshipsRungExactlyWhereItWas() {
+        Connection saved = acceptWithExistingConnection(ConnectionStatus.PAUSED, TrustLevel.TRUSTED);
+
+        assertThat(saved.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+        assertThat(saved.getCurrentTrustLevel()).isEqualTo(TrustLevel.TRUSTED);
+    }
+
+    /** Accepts this helper on a fresh open request when the pair already have a row. */
+    private Connection acceptWithExistingConnection(ConnectionStatus status, TrustLevel rung) {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        NeedApplication app = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(need).helper(helper).status(ApplicationStatus.PENDING).build();
+        Connection existing = Connection.builder()
+                .id(UUID.randomUUID()).userA(elder).userB(helper)
+                .type(ConnectionType.SOCIAL).initiatedBy(helper)
+                .currentTrustLevel(rung).status(status).build();
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(applicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(Optional.of(app));
+        when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(app));
+        when(connectionRepository.findBetweenUsers(elder.getId(), helper.getId())).thenReturn(Optional.of(existing));
+        when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
+        when(connectionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        needService.acceptHelper(elder.getId(), need.getId(), helper.getId());
+
+        ArgumentCaptor<Connection> saved = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionRepository).save(saved.capture());
+        return saved.getValue();
+    }
+
+    // ── R2 (3): the browse routes are the server's decision, not the caller's ─
+    // SEC-07 clamped /api/discover and left PageLimits with one consumer, so
+    // ?size=100000&radiusKm=100000 still worked here.
+
+    @Test
+    void browseNearby_clampsAPageSizeBiggerThanTheServerAllows() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        List<Need> many = new java.util.ArrayList<>();
+        for (int i = 0; i < PageLimits.MAX_PAGE_SIZE + 20; i++) many.add(buildNeed(elder, NeedStatus.OPEN));
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(many);
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, 10.0, 0, 100000);
+
+        assertThat(result).hasSize(PageLimits.MAX_PAGE_SIZE);
+    }
+
+    @Test
+    void browseNearby_clampsARadiusWiderThanTheServerAllows() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        Need farAway = buildNeed(elder, NeedStatus.OPEN);
+        farAway.setLocationLat(BigDecimal.valueOf(45.65));   // ~220 km north of the helper
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(List.of(farAway));
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, 100000.0, 0, 20);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void browseNearby_answersNormallyWhenThePageNumberIsNegative() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        Need near = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(List.of(near));
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, 10.0, -1, 20);
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(near.getId());
+    }
+
+    @Test
+    void browseNearby_fallsBackToTheDefaultRadiusWhenNoneIsGiven() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        Need near = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(List.of(near));
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, null, 0, 20);
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(near.getId());
+    }
+
+    @Test
+    void getMyNeeds_clampsAnOversizedPageSizeAndANegativePage() {
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        when(needRepository.findByElderIdOrderByCreatedAtDesc(eq(elder.getId()), pageable.capture()))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        needService.getMyNeeds(elder.getId(), -3, 100000);
+
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(PageLimits.MAX_PAGE_SIZE);
+        assertThat(pageable.getValue().getPageNumber()).isZero();
+    }
+
+    @Test
+    void getAllOpen_clampsAPageSizeBiggerThanTheServerAllows() {
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        when(needRepository.findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), pageable.capture()))
+                .thenReturn(List.of());
+
+        needService.getAllOpen(helper.getId(), PageRequest.of(0, 100000));
+
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(PageLimits.MAX_PAGE_SIZE);
+    }
+
+    @Test
+    void getAllOpen_answersAnUnpagedRequestWithOnePageRatherThanTheWholeTable() {
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        when(needRepository.findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), pageable.capture()))
+                .thenReturn(List.of());
+
+        needService.getAllOpen(helper.getId(), Pageable.unpaged());
+
+        assertThat(pageable.getValue().isPaged()).isTrue();
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(NeedService.DEFAULT_PAGE_SIZE);
     }
 }
