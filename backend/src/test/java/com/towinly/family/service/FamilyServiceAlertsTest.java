@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 /** US-007: GET /api/family/alerts — the caller's ACTIVE linked elders' alerts, newest first. */
 class FamilyServiceAlertsTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;

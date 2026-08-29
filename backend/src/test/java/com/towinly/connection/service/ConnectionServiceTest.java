@@ -233,6 +233,20 @@ class ConnectionServiceTest {
     }
 
     @Test
+    void respond_isRefusedAcrossABlock_soNoFriendshipTheBlockerNeverAgreedTo() {
+        Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
+        when(connectionRepository.findById(pending.getId())).thenReturn(Optional.of(pending));
+        when(blockService.isHidden(sender.getId(), target.getId())).thenReturn(true);
+        RespondToConnectionRequest request = new RespondToConnectionRequest();
+        request.setAccept(true);
+
+        assertThatThrownBy(() -> connectionService.respond(target.getId(), pending.getId(), request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+        verify(connectionRepository, never()).save(any(Connection.class));
+    }
+
+    @Test
     void acceptingFamilyRequestSkipsTheConnectionCap() {
         Connection pending = buildConnection(sender, target, ConnectionStatus.PENDING);
         pending.setType(ConnectionType.FAMILY);

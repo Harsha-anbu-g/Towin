@@ -32,6 +32,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class FamilyServiceTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock com.towinly.family.repository.FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;
@@ -51,7 +52,7 @@ class FamilyServiceTest {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
                 familyDelegationService, elderProfileRepository, helperProfileRepository,
-                keyholderService);
+                keyholderService, blockService);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
     }
@@ -77,6 +78,19 @@ class FamilyServiceTest {
         when(userRepository.findById(caller.getId())).thenReturn(Optional.of(caller));
         when(userRepository.findByUsername(target.getUsername())).thenReturn(Optional.of(target));
         when(familyLinkRepository.save(any(FamilyLink.class))).thenAnswer(i -> i.getArgument(0));
+    }
+
+    // HARD-106: a blocked person cannot put a family request in front of the blocker.
+    @Test
+    void createRequest_isRefusedAcrossABlock_withoutSayingWhy() {
+        when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
+        when(userRepository.findByUsername(daughter.getUsername())).thenReturn(Optional.of(daughter));
+        when(blockService.isHidden(elder.getId(), daughter.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> familyService.createRequest(elder.getId(), request("sarah_daughter", "family")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+        verify(familyLinkRepository, never()).save(any(FamilyLink.class));
     }
 
     // --- create: side = "family" (caller is the elder adding a family member) ---

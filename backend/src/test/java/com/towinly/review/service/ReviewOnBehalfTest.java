@@ -49,6 +49,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ReviewOnBehalfTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock ReviewRepository reviewRepository;
     @Mock UserRepository userRepository;
     @Mock NeedRepository needRepository;

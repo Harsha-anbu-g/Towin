@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -123,7 +124,11 @@ public class MessageService {
         // The navbar polls this: one grouped count for every connection, not one per row.
         // The grouped query only returns connections that have unread messages, so the
         // number of rows it gives back is the count.
+        // HARD-106: a conversation the inbox hides must not light the badge, or the
+        // number can never be cleared (markSeen needs a row the person cannot open).
+        Set<UUID> hidden = blockService.hiddenFor(userId);
         List<UUID> connectionIds = connectionRepository.findAllByUser(userId).stream()
+                .filter(c -> !hidden.contains(c.getOtherUser(userId).getId()))
                 .map(Connection::getId)
                 .collect(Collectors.toList());
         if (connectionIds.isEmpty()) return 0;

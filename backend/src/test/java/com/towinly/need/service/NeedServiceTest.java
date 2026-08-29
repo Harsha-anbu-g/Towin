@@ -232,7 +232,7 @@ class NeedServiceTest {
         User otherElder = buildUser(UUID.randomUUID(), UserRole.ELDER);
         Need hidden = buildNeed(elder, NeedStatus.OPEN);
         Need shown = buildNeed(otherElder, NeedStatus.OPEN);
-        when(needRepository.findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), any(Pageable.class)))
+        when(needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN))
                 .thenReturn(List.of(hidden, shown));
         when(blockService.hiddenFor(helper.getId())).thenReturn(java.util.Set.of(elder.getId()));
 
@@ -253,6 +253,54 @@ class NeedServiceTest {
         List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, 50.0, 0, 20);
 
         assertThat(result).extracting(NeedResponse::getId).containsExactly(shown.getId());
+    }
+
+    @Test
+    void acceptHelper_isRefusedAcrossABlock_soNoConnectionAndNoPushCrossIt() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(blockService.isHidden(elder.getId(), helper.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> needService.acceptHelper(elder.getId(), need.getId(), helper.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+        verify(applicationRepository, never()).save(any());
+        verify(connectionRepository, never()).save(any());
+        verify(expoPushService, never()).sendToUser(any(), any(), any(), any());
+    }
+
+    @Test
+    void getMyNeeds_dropsABlockedHelperFromTheApplicantList() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        User shown = buildUser(UUID.randomUUID(), UserRole.HELPER);
+        NeedApplication fromHidden = NeedApplication.builder().id(UUID.randomUUID()).need(need).helper(helper)
+                .message("Let me in").status(ApplicationStatus.PENDING).build();
+        NeedApplication fromShown = NeedApplication.builder().id(UUID.randomUUID()).need(need).helper(shown)
+                .message("Happy to help").status(ApplicationStatus.PENDING).build();
+        when(needRepository.findByElderIdOrderByCreatedAtDesc(eq(elder.getId()), any(Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(need)));
+        when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(fromHidden, fromShown));
+        when(blockService.hiddenFor(elder.getId())).thenReturn(java.util.Set.of(helper.getId()));
+
+        NeedResponse response = needService.getMyNeeds(elder.getId(), 0, 20).getContent().get(0);
+
+        assertThat(response.getApplications()).extracting(a -> a.getHelperId()).containsExactly(shown.getId());
+    }
+
+    @Test
+    void getAllOpen_filtersBeforeThePageIsCut_soAPageIsNeverShortBecauseOfABlock() {
+        User otherElder = buildUser(UUID.randomUUID(), UserRole.ELDER);
+        List<Need> all = new java.util.ArrayList<>();
+        for (int i = 0; i < NeedService.DEFAULT_PAGE_SIZE; i++) all.add(buildNeed(elder, NeedStatus.OPEN));
+        Need visible = buildNeed(otherElder, NeedStatus.OPEN);
+        all.add(visible);
+        when(needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN)).thenReturn(all);
+        when(blockService.hiddenFor(helper.getId())).thenReturn(java.util.Set.of(elder.getId()));
+
+        List<NeedResponse> result = needService.getAllOpen(helper.getId());
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(visible.getId());
+        verify(needRepository, never()).findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), any(Pageable.class));
     }
 
     @Test

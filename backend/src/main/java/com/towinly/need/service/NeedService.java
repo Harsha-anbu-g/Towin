@@ -111,10 +111,17 @@ public class NeedService {
     public List<NeedResponse> getAllOpen(UUID helperId, Pageable pageable) {
         Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
         // HARD-106: a blocked elder's requests never reach this helper's feed, either way round.
+        // With nobody hidden the page comes straight from the database. With a block
+        // in play the filter must run BEFORE the page is cut, or a page can come back
+        // short (even empty) while later pages hold visible requests.
         Set<UUID> hidden = blockService.hiddenFor(helperId);
-        List<Need> needs = needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN, pageable).stream()
-                .filter(n -> !hidden.contains(n.getElder().getId()))
-                .collect(Collectors.toList());
+        List<Need> needs = hidden.isEmpty()
+                ? needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN, pageable)
+                : needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN).stream()
+                        .filter(n -> !hidden.contains(n.getElder().getId()))
+                        .skip(pageable.getOffset())
+                        .limit(pageable.getPageSize())
+                        .collect(Collectors.toList());
         Map<UUID, String> elderNames = elderNameMap(needs);
         return needs.stream()
                 .map(n -> toResponse(n, null, false, myApps.get(n.getId()), elderNames))
@@ -246,6 +253,12 @@ public class NeedService {
         // between the elder and the helper. A family member accepting for their
         // parent must not quietly put themselves on that connection instead.
         UUID elderId = need.getElder().getId();
+        // HARD-106: an application that predates a block can never be accepted
+        // across it; accepting would create a connection and push a notification
+        // naming the blocker to the person they blocked.
+        if (blockService.isHidden(elderId, helperId)) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
         if (need.getStatus() != NeedStatus.OPEN) {
             throw new IllegalArgumentException("Need is not open");
         }
@@ -420,7 +433,12 @@ public class NeedService {
 
         List<ApplicantDto> applications = null;
         if (includeApplicants) {
-            List<NeedApplication> apps = applicationRepository.findByNeedId(need.getId());
+            // HARD-106: a blocked helper's application leaves the elder's own list
+            // (name, photo and message) the moment the block lands.
+            Set<UUID> hidden = blockService.hiddenFor(need.getElder().getId());
+            List<NeedApplication> apps = applicationRepository.findByNeedId(need.getId()).stream()
+                    .filter(a -> !hidden.contains(a.getHelper().getId()))
+                    .collect(Collectors.toList());
             Set<UUID> helperIds = apps.stream()
                     .map(a -> a.getHelper().getId())
                     .collect(Collectors.toSet());

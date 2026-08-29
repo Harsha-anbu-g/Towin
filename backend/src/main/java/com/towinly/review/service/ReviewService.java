@@ -19,6 +19,7 @@ import com.towinly.review.dto.ReviewRequest;
 import com.towinly.review.dto.ReviewResponse;
 import com.towinly.review.entity.Review;
 import com.towinly.review.repository.ReviewRepository;
+import com.towinly.block.service.BlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class ReviewService {
     private final TrustScoreService trustScoreService;
     private final ConnectionRepository connectionRepository;
     private final FamilyDelegationService familyDelegationService;
+    private final BlockService blockService;
 
     @Transactional
     public ReviewResponse submitReview(UUID callerId, ReviewRequest request) {
@@ -69,6 +71,11 @@ public class ReviewService {
 
         User reviewer = getUser(reviewerId);
         User reviewee = getUser(request.getRevieweeId());
+        // HARD-106: a block ends the two-way relationship; the blocked person keeps
+        // no lever over the blocker's trust score or profile.
+        if (blockService.isHidden(reviewerId, reviewee.getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
         User actedBy = writingForElder ? getUser(callerId) : null;
 
         // Only fully trusted friends may review each other. A review feeds the trust

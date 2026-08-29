@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FamilyServiceTrustRecalcTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;
@@ -48,7 +49,7 @@ class FamilyServiceTrustRecalcTest {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
                 familyDelegationService, elderProfileRepository, helperProfileRepository,
-                keyholderService);
+                keyholderService, blockService);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
     }

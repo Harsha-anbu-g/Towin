@@ -17,6 +17,7 @@ import com.towinly.family.entity.FamilyAlert;
 import com.towinly.family.entity.FamilyLink;
 import com.towinly.family.repository.FamilyAlertRepository;
 import com.towinly.family.repository.FamilyLinkRepository;
+import com.towinly.block.service.BlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,7 @@ public class FamilyService {
     private final com.towinly.profile.repository.HelperProfileRepository helperProfileRepository;
     // Unlinking ends a Keyholder's key too. See the note in revoke().
     private final com.towinly.passon.service.KeyholderService keyholderService;
+    private final BlockService blockService;
 
     @Transactional
     public FamilyLinkResponse createRequest(UUID callerId, FamilyRequest request) {
@@ -75,6 +77,11 @@ public class FamilyService {
         }
         if (!targetIsFamilySeat && !hasElderSeat(target)) {
             throw new IllegalArgumentException(NOT_FOUND_MESSAGE);
+        }
+        // HARD-106: a block in either direction stops a family request too; the
+        // blocker's Family tab must never carry the blocked person's name.
+        if (blockService.isHidden(callerId, target.getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
         }
 
         User elder = targetIsFamilySeat ? caller : target;

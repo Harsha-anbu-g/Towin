@@ -233,6 +233,22 @@ class MessageServiceTest {
     }
 
     @Test
+    void unreadConversationCount_leavesOutConversationsABlockHides_soTheBadgeCanClear() {
+        Connection second = Connection.builder()
+                .id(UUID.randomUUID()).userA(userA).userB(User.builder().id(UUID.randomUUID()).build())
+                .status(ConnectionStatus.ACTIVE).currentTrustLevel(TrustLevel.MESSAGING).build();
+        when(connectionRepository.findAllByUser(userA.getId())).thenReturn(List.of(connection, second));
+        when(blockService.hiddenFor(userA.getId())).thenReturn(java.util.Set.of(userB.getId()));
+        org.mockito.ArgumentCaptor<java.util.Collection<UUID>> asked = org.mockito.ArgumentCaptor.forClass(java.util.Collection.class);
+        when(messageRepository.countUnreadByConnectionIds(asked.capture(), eq(userA.getId()), eq(MessageChannel.MAIN)))
+                .thenReturn(List.<Object[]>of());
+
+        messageService.unreadConversationCount(userA.getId());
+
+        assertThat(asked.getValue()).containsExactly(second.getId());
+    }
+
+    @Test
     void markSeen_stampsTheConversationInOneBulkUpdate() {
         when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
 

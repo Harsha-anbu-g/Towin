@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 
 class ReviewServiceTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock ReviewRepository reviewRepository;
     @Mock UserRepository userRepository;
     @Mock NeedRepository needRepository;
@@ -108,6 +109,18 @@ class ReviewServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("cannot review yourself");
 
+        verify(reviewRepository, never()).save(any());
+        verify(trustScoreService, never()).recalculate(any());
+    }
+
+    @Test
+    void reviewAcrossABlock_isRefused_soTheBlockedKeepNoLeverOnTheScore() {
+        bothUsersExist();
+        when(blockService.isHidden(reviewerId, revieweeId)).thenReturn(true);
+
+        assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, null, 1)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
         verify(reviewRepository, never()).save(any());
         verify(trustScoreService, never()).recalculate(any());
     }

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class FamilyServiceRespondRevokePrimaryTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock com.towinly.family.repository.FamilyAlertRepository familyAlertRepository;
     @Mock UserRepository userRepository;
@@ -45,7 +46,7 @@ class FamilyServiceRespondRevokePrimaryTest {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
                 familyDelegationService, elderProfileRepository, helperProfileRepository,
-                keyholderService);
+                keyholderService, blockService);
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
         stranger = buildUser("steve_stranger", UserRole.HELPER);

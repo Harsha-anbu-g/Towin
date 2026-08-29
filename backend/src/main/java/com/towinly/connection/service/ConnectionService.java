@@ -93,17 +93,18 @@ public class ConnectionService {
         User sender = getUser(senderId);
         User target = getUser(request.getTargetUserId());
 
-        // HARD-106: a block in either direction ends the conversation before it
-        // starts. The words say nothing about a block; the blocked person is never told.
-        if (blockService.isHidden(senderId, target.getId())) {
-            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
-        }
-
         connectionRepository.findBetweenUsers(senderId, target.getId()).ifPresent(c -> {
             if (c.getStatus() == ConnectionStatus.PENDING || c.getStatus() == ConnectionStatus.ACTIVE) {
                 throw new IllegalArgumentException("A connection already exists between these users");
             }
         });
+
+        // HARD-106: a block in either direction ends the conversation before it
+        // starts. Checked after the existing-connection rule so a connected pair gets
+        // the same answer with or without a block; the blocked person is never told.
+        if (blockService.isHidden(senderId, target.getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
 
         // Step 4: a pair that already holds an ACTIVE family link is always typed
         // FAMILY (a daughter helping her own mother earns no points), and FAMILY
@@ -185,6 +186,11 @@ public class ConnectionService {
         if (connection.getStatus() != ConnectionStatus.PENDING) {
             throw new IllegalArgumentException("Connection is not pending");
         }
+        // HARD-106: a request that predates a block cannot be answered across it;
+        // accepting would hand the blocker a friendship they never agreed to.
+        if (blockService.isHidden(connection.getUserA().getId(), connection.getUserB().getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
 
         ConnectionEvent.Type eventType;
         if (Boolean.TRUE.equals(request.getAccept())) {
@@ -263,16 +269,20 @@ public class ConnectionService {
     }
 
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status, Pageable pageable) {
-        List<Connection> fetched = (status != null)
-                ? connectionRepository.findByUserAndStatus(userId, status, pageable)
-                : connectionRepository.findAllByUser(userId, pageable);
-
         // HARD-106: anyone hidden by a block, in either direction, leaves the list
         // here at the source, so the inbox, the header count and the navbar poll all
-        // agree. The row itself stays; unblocking brings it back untouched.
+        // agree. The row itself stays; unblocking brings it back untouched. A pair
+        // holds at most one connection, so asking for hidden.size() extra rows keeps
+        // the page exact (same ordering, never short) after the filter.
         Set<UUID> hidden = blockService.hiddenFor(userId);
+        Pageable wide = hidden.isEmpty() ? pageable
+                : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize() + hidden.size());
+        List<Connection> fetched = (status != null)
+                ? connectionRepository.findByUserAndStatus(userId, status, wide)
+                : connectionRepository.findAllByUser(userId, wide);
         List<Connection> connections = hidden.isEmpty() ? fetched : fetched.stream()
                 .filter(c -> !hidden.contains(c.getOtherUser(userId).getId()))
+                .limit(pageable.getPageSize())
                 .collect(Collectors.toList());
 
         // Three queries for the whole page — the inbox, the Messages header and the
