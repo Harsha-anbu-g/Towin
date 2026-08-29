@@ -48,7 +48,8 @@ class AuthServiceFamilyRegistrationTest {
 
     @Test
     void register_acceptsFamilyRole() {
-        when(userRepository.existsByUsername("sarah_daughter")).thenReturn(false);
+        // No existsByUsername stub: signup deliberately stopped asking that question
+        // (SEC-08), so stubbing it here would be stubbing a call that never happens.
         when(userRepository.existsByEmail("sarah@example.com")).thenReturn(false);
         when(passwordEncoder.encode("longenoughpw")).thenReturn("hashed");
 
