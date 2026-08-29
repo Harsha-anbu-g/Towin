@@ -35,9 +35,11 @@ import java.util.UUID;
  * family. Locked rules (2026-07-18 plan):
  *  - a connection appears iff status ACTIVE and shared_with_family — private
  *    friendships are entirely absent, never greyed or counted;
- *  - a helper blocked in either direction is absent too (HARD-106); the parent's
- *    own row, check-in and open needs stay, because the block is between the
- *    family member and that helper and is never about the parent;
+ *  - a parent the caller has blocked (in either direction) is absent entirely;
+ *    a block hides the two people it stands between and nobody else, so a helper
+ *    the caller blocked STAYS on the card: this payload is the family's oversight
+ *    of the parent's home, never a contact list, and a helper who blocks the
+ *    daughter must not be able to switch off her view of who is in that home;
  *  - no phone/email/social details ever cross to family;
  *  - check-in + open-needs are elder-level (like SOS) and ignore share switches;
  *  - PENDING/REVOKED family links contribute nothing.
@@ -57,18 +59,20 @@ public class FamilyJourneyService {
 
     @Transactional(readOnly = true)
     public FamilyJourneyResponse getJourney(UUID callerId) {
-        // HARD-106: this is the payload the parent screen draws the helper card
-        // from, so a blocked helper has to leave here too, not only from the
-        // standings list. Asked once for the whole page, never once per row.
+        // A parent this caller and their family member have blocked each other from
+        // drops out whole: name, photo, check-in, open requests and helper roster all
+        // go, because those two are the pair the block stands between. Asked once for
+        // the whole page, never once per row. Nothing else is subtracted here.
         Set<UUID> hidden = blockService.hiddenFor(callerId);
         List<ElderJourney> elders = familyLinkRepository
                 .findByFamilyUserIdAndStatus(callerId, FamilyLinkStatus.ACTIVE).stream()
-                .map(link -> toElderJourney(link.getElder(), hidden))
+                .filter(link -> !hidden.contains(link.getElder().getId()))
+                .map(link -> toElderJourney(link.getElder()))
                 .toList();
         return FamilyJourneyResponse.builder().elders(elders).build();
     }
 
-    private ElderJourney toElderJourney(User elder, Set<UUID> hidden) {
+    private ElderJourney toElderJourney(User elder) {
         LocalDate lastCheckin = streakRepository.findByUserId(elder.getId())
                 .map(s -> s.getLastCheckinDate())
                 .orElse(null);
@@ -86,10 +90,13 @@ public class FamilyJourneyService {
                         .build())
                 .toList();
 
+        // Deliberately not block-filtered. A helper who blocks the family member is
+        // still in the parent's home, and dropping them here printed a false
+        // "nothing shared" on the very screen the family watches over that home with.
+        // Cutting contact between those two is right; cutting this view is not.
         List<SharedHelper> sharedHelpers = connectionRepository
                 .findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE).stream()
                 .filter(c -> Boolean.TRUE.equals(c.getSharedWithFamily()))
-                .filter(c -> !hidden.contains(c.getOtherUser(elder.getId()).getId()))
                 .map(c -> toSharedHelper(c, elder.getId()))
                 .toList();
 

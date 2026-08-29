@@ -62,8 +62,14 @@ public class FamilyStandingService {
 
     @Transactional(readOnly = true)
     public FamilyStandingsResponse standingsFor(UUID familyUserId) {
+        // An ACTIVE family link survives a block, so without this the list still
+        // streamed the parent's name and their whole helper roster, with each
+        // helper's live trust stage, to the person that parent had blocked. Those
+        // two are the pair the block stands between, so the parent drops out here.
+        Set<UUID> hidden = blockService.hiddenFor(familyUserId);
         List<Standing> standings = new ArrayList<>();
-        familyLinkRepository.findByFamilyUserIdAndStatus(familyUserId, FamilyLinkStatus.ACTIVE)
+        familyLinkRepository.findByFamilyUserIdAndStatus(familyUserId, FamilyLinkStatus.ACTIVE).stream()
+                .filter(link -> !hidden.contains(link.getElder().getId()))
                 .forEach(link -> collectStandings(familyUserId, link.getElder(), standings));
         return FamilyStandingsResponse.builder().standings(standings).build();
     }
@@ -204,6 +210,7 @@ public class FamilyStandingService {
         // A previous revoke may have left an ENDED FAMILY row (or a terminal
         // non-FAMILY row) — reopen it instead of violating the one-row-per-pair
         // shape the rest of the app assumes.
+        boolean reopened = isNotAlreadyLive(existing);
         Connection chat = existing != null ? existing : Connection.builder()
                 .userA(familyUser)
                 .userB(helper)
@@ -212,7 +219,7 @@ public class FamilyStandingService {
                 .build();
         chat.setType(ConnectionType.FAMILY);
         chat.setStatus(ConnectionStatus.ACTIVE);
-        if (chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        if (reopened || chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         return connectionRepository.save(chat).getId();
     }
 
@@ -246,6 +253,7 @@ public class FamilyStandingService {
                 && existing.getStatus() == ConnectionStatus.ACTIVE) {
             return existing.getId();
         }
+        boolean reopened = isNotAlreadyLive(existing);
         Connection chat = existing != null ? existing : Connection.builder()
                 .userA(caller)
                 .userB(other)
@@ -253,8 +261,24 @@ public class FamilyStandingService {
                 .build();
         chat.setType(ConnectionType.FAMILY);
         chat.setStatus(ConnectionStatus.ACTIVE);
-        if (chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        if (reopened || chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         return connectionRepository.save(chat).getId();
+    }
+
+    /**
+     * True when this row is being brought back from the dead rather than carried on:
+     * it exists, but it is not already a live FAMILY chat. A rung belongs to the
+     * relationship that earned it, so such a row starts again at the bottom of the
+     * ladder. ConnectionService.sendRequest stands a brand-new request at Phone Ready
+     * for a sender scoring 51 or more, and at Social Media for 71 or more; flipping a
+     * stale PENDING, DECLINED or ENDED row of that kind to ACTIVE while keeping its
+     * rung would hand over the phone number, or the social handles, with no step
+     * climbed and even after the person explicitly declined.
+     */
+    private boolean isNotAlreadyLive(Connection existing) {
+        return existing != null
+                && !(existing.getType() == ConnectionType.FAMILY
+                        && existing.getStatus() == ConnectionStatus.ACTIVE);
     }
 
     /** An ACTIVE family link joins the two people, in either seat. */
