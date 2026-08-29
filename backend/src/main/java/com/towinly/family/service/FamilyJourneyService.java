@@ -1,5 +1,6 @@
 package com.towinly.family.service;
 
+import com.towinly.block.service.BlockService;
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.FamilyLinkStatus;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -33,6 +35,9 @@ import java.util.UUID;
  * family. Locked rules (2026-07-18 plan):
  *  - a connection appears iff status ACTIVE and shared_with_family — private
  *    friendships are entirely absent, never greyed or counted;
+ *  - a helper blocked in either direction is absent too (HARD-106); the parent's
+ *    own row, check-in and open needs stay, because the block is between the
+ *    family member and that helper and is never about the parent;
  *  - no phone/email/social details ever cross to family;
  *  - check-in + open-needs are elder-level (like SOS) and ignore share switches;
  *  - PENDING/REVOKED family links contribute nothing.
@@ -48,17 +53,22 @@ public class FamilyJourneyService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final S3Service s3Service;
+    private final BlockService blockService;
 
     @Transactional(readOnly = true)
     public FamilyJourneyResponse getJourney(UUID callerId) {
+        // HARD-106: this is the payload the parent screen draws the helper card
+        // from, so a blocked helper has to leave here too, not only from the
+        // standings list. Asked once for the whole page, never once per row.
+        Set<UUID> hidden = blockService.hiddenFor(callerId);
         List<ElderJourney> elders = familyLinkRepository
                 .findByFamilyUserIdAndStatus(callerId, FamilyLinkStatus.ACTIVE).stream()
-                .map(link -> toElderJourney(link.getElder()))
+                .map(link -> toElderJourney(link.getElder(), hidden))
                 .toList();
         return FamilyJourneyResponse.builder().elders(elders).build();
     }
 
-    private ElderJourney toElderJourney(User elder) {
+    private ElderJourney toElderJourney(User elder, Set<UUID> hidden) {
         LocalDate lastCheckin = streakRepository.findByUserId(elder.getId())
                 .map(s -> s.getLastCheckinDate())
                 .orElse(null);
@@ -79,6 +89,7 @@ public class FamilyJourneyService {
         List<SharedHelper> sharedHelpers = connectionRepository
                 .findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE).stream()
                 .filter(c -> Boolean.TRUE.equals(c.getSharedWithFamily()))
+                .filter(c -> !hidden.contains(c.getOtherUser(elder.getId()).getId()))
                 .map(c -> toSharedHelper(c, elder.getId()))
                 .toList();
 

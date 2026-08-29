@@ -1,5 +1,6 @@
 package com.towinly.family.service;
 
+import com.towinly.block.service.BlockService;
 import com.towinly.common.entity.User;
 import com.towinly.common.repository.UserRepository;
 import com.towinly.common.enums.ConnectionStatus;
@@ -57,6 +58,7 @@ public class FamilyStandingService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final S3Service s3Service;
+    private final BlockService blockService;
 
     @Transactional(readOnly = true)
     public FamilyStandingsResponse standingsFor(UUID familyUserId) {
@@ -131,6 +133,12 @@ public class FamilyStandingService {
         if (state == FamilyStandingState.REVOKED) return null;
 
         User helper = c.getOtherUser(elder.getId());
+        // HARD-106: a block ends the bridge. Every standing in the app is derived
+        // here, so this one line takes the blocked helper out of the family
+        // member's standings, out of the helper's behind-me list, out of the
+        // elder's inherited transparency rows and out of the chat gate behind them.
+        if (blockService.isHidden(familyUserId, helper.getId())) return null;
+
         UUID chatConnectionId = connectionRepository
                 .findBetweenUsers(familyUserId, helper.getId())
                 .filter(fc -> fc.getType() == ConnectionType.FAMILY
@@ -158,6 +166,17 @@ public class FamilyStandingService {
      */
     @Transactional
     public UUID materializeChat(UUID familyUserId, UUID standingConnectionId) {
+        // HARD-106: this is the one family path that CREATES (or reopens) a
+        // connection, so it refuses a block in its own right rather than leaning on
+        // the derivation below returning null. Same words as every other refused
+        // write, so the blocked person is never named and never told.
+        Connection elderConnection = connectionRepository.findById(standingConnectionId).orElse(null);
+        UUID elderId = elderConnection == null ? null : elderIdFor(familyUserId, elderConnection);
+        if (elderId != null
+                && blockService.isHidden(familyUserId, elderConnection.getOtherUser(elderId).getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
+
         Standing standing = standingFor(familyUserId, standingConnectionId);
         if (standing == null) {
             throw new IllegalStateException("This friendship isn't shared for family chat right now");
@@ -209,6 +228,11 @@ public class FamilyStandingService {
     public UUID openFamilyMemberChat(UUID callerId, UUID otherUserId) {
         if (callerId.equals(otherUserId) || !familyLinkExists(callerId, otherUserId)) {
             throw new IllegalStateException("You can only message someone in your family here.");
+        }
+        // HARD-106: the family link still stands after a block, so it cannot be the
+        // only consent. Refused here too, or the same hole reopens on this door.
+        if (blockService.isHidden(callerId, otherUserId)) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
         }
         User caller = userRepository.findById(callerId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -331,6 +355,11 @@ public class FamilyStandingService {
             Set<UUID> chattingHelpers = new HashSet<>();
             for (Connection c : connectionRepository.findByUserAndStatus(familyMember.getId(), ConnectionStatus.ACTIVE)) {
                 if (c.getType() != ConnectionType.FAMILY) continue;
+                // Deliberately not block-filtered: the elder is a third party to any
+                // block between their family member and a helper, and the locked rule
+                // is that nothing family-facing is hidden from the elder. The chat row
+                // exists, so the elder sees it. The inherited rows below do drop,
+                // because after a block the standing genuinely no longer exists.
                 User other = c.getOtherUser(familyMember.getId());
                 chattingHelpers.add(other.getId());
                 rows.add(ElderTransparencyResponse.Row.builder()

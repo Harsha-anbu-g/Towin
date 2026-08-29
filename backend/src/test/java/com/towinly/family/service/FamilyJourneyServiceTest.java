@@ -1,5 +1,6 @@
 package com.towinly.family.service;
 
+import com.towinly.block.service.BlockService;
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.FamilyLinkStatus;
@@ -28,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +51,7 @@ class FamilyJourneyServiceTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock S3Service s3Service;
+    @Mock BlockService blockService;
 
     FamilyJourneyService service;
 
@@ -59,7 +62,8 @@ class FamilyJourneyServiceTest {
     void setUp() {
         service = new FamilyJourneyService(
                 familyLinkRepository, connectionRepository, streakRepository,
-                needRepository, elderProfileRepository, helperProfileRepository, s3Service);
+                needRepository, elderProfileRepository, helperProfileRepository, s3Service,
+                blockService);
         elder = buildUser("margaret_elder", UserRole.ELDER, 24.0);
         familyUser = buildUser("sarah_daughter", UserRole.FAMILY, 0.0);
         lenient().when(elderProfileRepository.findByUserId(any())).thenReturn(Optional.empty());
@@ -290,5 +294,31 @@ class FamilyJourneyServiceTest {
                 .getElders().get(0).getSharedHelpers().get(0);
 
         assertThat(h.getHelperPhotoUrl()).isEqualTo("https://signed/photo");
+    }
+
+    // --- HARD-106 / SEC-05: a blocked helper leaves the family's journey card ---
+
+    @Test
+    void blockedHelperLeavesTheJourney_theRestOfTheElderRowStays() {
+        // The card the app draws (app/family/parent/[elderId].jsx) is built from
+        // sharedHelpers, so a block has to subtract the helper here, not only from
+        // /api/family/standings. Everything elder-level survives: the block is
+        // between the family member and the helper, never about the parent.
+        linkActive(elder);
+        User blockedHelper = buildUser("harry_helper", UserRole.HELPER, 30.0);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(
+                        connection(elder, blockedHelper, ConnectionStatus.ACTIVE, true, TrustLevel.FIRST_MEET)));
+        com.towinly.need.entity.Need need = com.towinly.need.entity.Need.builder()
+                .id(UUID.randomUUID()).title("Help with my tablet").status(NeedStatus.OPEN).build();
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN))
+                .thenReturn(List.of(need));
+        when(blockService.hiddenFor(familyUser.getId())).thenReturn(Set.of(blockedHelper.getId()));
+
+        ElderJourney entry = service.getJourney(familyUser.getId()).getElders().get(0);
+
+        assertThat(entry.getSharedHelpers()).isEmpty();
+        assertThat(entry.getElderId()).isEqualTo(elder.getId());
+        assertThat(entry.getOpenNeedsCount()).isEqualTo(1);
     }
 }
