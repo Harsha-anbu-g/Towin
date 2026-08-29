@@ -79,4 +79,45 @@ class CoarseLocationTest {
         assertThat(CoarseLocation.snap(new BigDecimal("45.4765")))
                 .isEqualByComparingTo(CoarseLocation.snap(45.4765));
     }
+
+    @Test
+    void agreesWithTheMigrationsSqlOnAnExactHalfCell_includingNegativeLongitudes() {
+        // V59 coarsens the rows already stored, so its arithmetic has to land on
+        // the same vertex this class does or a migrated row and a re-saved row sit
+        // a full cell apart. The trap is the half: Java's Math.round goes toward
+        // positive infinity, Postgres ROUND() goes away from zero, and they part
+        // company on exactly the negative half cells this app's longitudes live
+        // on. V59 therefore uses FLOOR(x + 0.5), which is Math.round's definition,
+        // and this test is what says so out loud.
+        for (double v : new double[]{-73.61, -0.01, -45.47, 45.47, 73.61, -73.63}) {
+            assertThat(CoarseLocation.snap(v))
+                    .as("grid vertex for %s", v)
+                    .isEqualByComparingTo(sqlFloorHalfUp(v));
+        }
+    }
+
+    @Test
+    void theOldAwayFromZeroRoundingWouldHaveMissedByAWholeCell() {
+        // Proof that the test above has teeth. A plain ROUND() in Postgres rounds
+        // -73.61 away from zero to -73.62, while the application stores -73.60:
+        // one cell apart, about 1.6 km at this latitude, silently.
+        assertThat(sqlAwayFromZero(-73.61)).isNotEqualByComparingTo(CoarseLocation.snap(-73.61));
+        // And they still agree wherever the half does not fall at a negative value.
+        assertThat(sqlAwayFromZero(45.47)).isEqualByComparingTo(CoarseLocation.snap(45.47));
+    }
+
+    /** What V59 computes: ROUND(FLOOR(x / 0.02 + 0.5) * 0.02, 2). */
+    private static BigDecimal sqlFloorHalfUp(double v) {
+        double cells = Math.floor(v / CoarseLocation.GRID_DEGREES + 0.5);
+        return BigDecimal.valueOf(cells * CoarseLocation.GRID_DEGREES)
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
+    /** What a plain Postgres ROUND() would compute: half away from zero. */
+    private static BigDecimal sqlAwayFromZero(double v) {
+        return BigDecimal.valueOf(v / CoarseLocation.GRID_DEGREES)
+                .setScale(0, java.math.RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(CoarseLocation.GRID_DEGREES))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+    }
 }

@@ -1352,7 +1352,8 @@ public class DemoDataSeeder implements ApplicationRunner {
             boolean dirty = false;
             // Demo accounts must be discoverable: pin them to their home cluster if unset
             if (u.getLocationLat() == null || u.getLocationLng() == null) {
-                u.setLocationLat(home.lat()); u.setLocationLng(home.lng()); dirty = true;
+                u.setLocationLat(CoarseLocation.snap(home.lat()));
+                u.setLocationLng(CoarseLocation.snapLng(home.lng())); dirty = true;
             }
             if (u.getVerificationStatus() != VerificationStatus.VERIFIED) {
                 u.setVerificationStatus(VerificationStatus.VERIFIED); dirty = true;
@@ -1365,8 +1366,8 @@ public class DemoDataSeeder implements ApplicationRunner {
             // Full reset: snap account settings a visitor may have changed (their
             // location, date of birth, city, phone, verification) back to baseline.
             if (resetEnabled) {
-                u.setLocationLat(home.lat().add(jitter(email)));
-                u.setLocationLng(home.lng().add(jitter(email + "lng")));
+                u.setLocationLat(CoarseLocation.snap(home.lat().add(jitter(email))));
+                u.setLocationLng(CoarseLocation.snapLng(home.lng().add(jitter(email + "lng"))));
                 u.setCity(home.city());
                 u.setDateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(2003, 3, 14));
                 u.setVerificationStatus(VerificationStatus.VERIFIED);
@@ -1396,8 +1397,8 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .role(role)
                 .verificationStatus(VerificationStatus.VERIFIED)
                 .emailVerified(true)
-                .locationLat(home.lat().add(jitter(email)))
-                .locationLng(home.lng().add(jitter(email + "lng")))
+                .locationLat(CoarseLocation.snap(home.lat().add(jitter(email))))
+                .locationLng(CoarseLocation.snapLng(home.lng().add(jitter(email + "lng"))))
                 .city(home.city())
                 .isActive(true)
                 .dateOfBirth(role == UserRole.ELDER ? LocalDate.of(1953, 5, 14) : LocalDate.of(2003, 3, 14))
