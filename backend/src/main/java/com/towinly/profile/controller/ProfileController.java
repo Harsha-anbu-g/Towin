@@ -32,7 +32,9 @@ public class ProfileController {
         // another user's phone is gated behind the trust journey (exposed via
         // the connections endpoint instead). SEC-06: social handles and gender
         // ride that journey too, so the service is told who is asking rather
-        // than a bare yes-or-no about self.
+        // than a bare yes-or-no about self. A block between the two closes the
+        // whole read, which reaches the client as the same 409 the chat and the
+        // help request already answer with.
         UUID viewerId = callerId(auth);
         return ResponseEntity.ok(profileService.getProfile(id, viewerId));
     }
