@@ -49,6 +49,7 @@ class FamilyStandingServiceTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock S3Service s3Service;
+    @Mock com.towinly.block.service.BlockService blockService;
     @InjectMocks FamilyStandingService service;
 
     private User sarah, margaret, harsha;
@@ -345,5 +346,70 @@ class FamilyStandingServiceTest {
                         .state(FamilyStandingState.REVOKED).build()));
 
         assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
+
+    // HARD-106 (SEC-05): every other listing subtracts blocks; the family standing
+    // surface subtracted none, so a helper who had blocked a family member stayed
+    // visible to them with name, photo and trust stage, and stayed chat-able.
+    @Test
+    void standingsFor_dropsAHelperTheFamilyMemberBlocked() {
+        when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(java.util.Set.of(harsha.getId()));
+
+        assertThat(standings()).isEmpty();
+    }
+
+    @Test
+    void standingsFor_asksForTheBlockListOnceForTheWholePage_notOncePerRow() {
+        Connection second = connection(TrustLevel.TRUSTED, true);
+        when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection, second));
+
+        assertThat(standings()).hasSize(2);
+
+        verify(blockService, org.mockito.Mockito.times(1)).hiddenFor(sarah.getId());
+        verify(blockService, never()).isHidden(any(), any());
+    }
+
+    @Test
+    void familyBehind_dropsAFamilyMemberTheHelperBlocked() {
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndStatus(margaret.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(FamilyLink.builder().elder(margaret).familyUser(sarah)
+                        .initiatedBy(sarah).status(FamilyLinkStatus.ACTIVE).build()));
+        when(blockService.hiddenFor(harsha.getId())).thenReturn(java.util.Set.of(sarah.getId()));
+
+        assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
+
+    @Test
+    void familyBehind_stillNamesAFamilyMemberWithNoBlock() {
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndStatus(margaret.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(FamilyLink.builder().elder(margaret).familyUser(sarah)
+                        .initiatedBy(sarah).status(FamilyLinkStatus.ACTIVE).build()));
+
+        assertThat(service.familyBehind(harsha.getId()).getEntries())
+                .extracting(e -> e.getFamilyUserId()).containsExactly(sarah.getId());
+    }
+
+    @Test
+    void materializeChat_isRefusedAcrossABlock_soNoConnectionIsCreated() {
+        when(connectionRepository.findById(sharedConnection.getId()))
+                .thenReturn(Optional.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(FamilyLink.builder()
+                        .elder(margaret).familyUser(sarah).initiatedBy(sarah)
+                        .status(FamilyLinkStatus.ACTIVE).build()));
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(java.util.Set.of(harsha.getId()));
+
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() -> service.materializeChat(sarah.getId(), sharedConnection.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("This friendship isn't shared for family chat right now");
+        verify(connectionRepository, never()).save(any(Connection.class));
     }
 }

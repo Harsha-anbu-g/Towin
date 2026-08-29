@@ -1,5 +1,6 @@
 package com.towinly.family.service;
 
+import com.towinly.block.service.BlockService;
 import com.towinly.common.entity.User;
 import com.towinly.common.repository.UserRepository;
 import com.towinly.common.enums.ConnectionStatus;
@@ -57,12 +58,15 @@ public class FamilyStandingService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final S3Service s3Service;
+    private final BlockService blockService;
 
     @Transactional(readOnly = true)
     public FamilyStandingsResponse standingsFor(UUID familyUserId) {
         List<Standing> standings = new ArrayList<>();
+        // HARD-106: one block list for the whole page, never one lookup per row.
+        Set<UUID> hidden = blockService.hiddenFor(familyUserId);
         familyLinkRepository.findByFamilyUserIdAndStatus(familyUserId, FamilyLinkStatus.ACTIVE)
-                .forEach(link -> collectStandings(familyUserId, link.getElder(), standings));
+                .forEach(link -> collectStandings(familyUserId, link.getElder(), standings, hidden));
         return FamilyStandingsResponse.builder().standings(standings).build();
     }
 
@@ -74,11 +78,14 @@ public class FamilyStandingService {
     @Transactional(readOnly = true)
     public FamilyBehindResponse familyBehind(UUID helperUserId) {
         List<FamilyBehindResponse.Entry> entries = new ArrayList<>();
+        // HARD-106: the helper is the fixed side of every pair on this page, so one
+        // block list covers them all.
+        Set<UUID> hidden = blockService.hiddenFor(helperUserId);
         for (Connection c : connectionRepository.findByUserAndStatus(helperUserId, ConnectionStatus.ACTIVE)) {
             if (c.getType() == ConnectionType.FAMILY) continue;
             User elder = c.getOtherUser(helperUserId);
             for (FamilyLink link : familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE)) {
-                Standing standing = toStanding(link.getFamilyUser().getId(), elder, c);
+                Standing standing = toStanding(link.getFamilyUser().getId(), elder, c, hidden);
                 if (standing == null) continue;
                 entries.add(FamilyBehindResponse.Entry.builder()
                         .connectionId(c.getId())
@@ -105,19 +112,25 @@ public class FamilyStandingService {
                     .findByElderIdAndFamilyUserId(participant.getId(), familyUserId)
                     .filter(l -> l.getStatus() == FamilyLinkStatus.ACTIVE)
                     .isPresent();
-            if (linked) return toStanding(familyUserId, participant, c);
+            if (linked) return toStanding(familyUserId, participant, c, blockService.hiddenFor(familyUserId));
         }
         return null;
     }
 
-    private void collectStandings(UUID familyUserId, User elder, List<Standing> out) {
+    private void collectStandings(UUID familyUserId, User elder, List<Standing> out, Set<UUID> hidden) {
         connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE).stream()
-                .map(c -> toStanding(familyUserId, elder, c))
+                .map(c -> toStanding(familyUserId, elder, c, hidden))
                 .filter(s -> s != null)
                 .forEach(out::add);
     }
 
-    private Standing toStanding(UUID familyUserId, User elder, Connection c) {
+    /**
+     * HARD-106: {@code hidden} is everyone hidden from whichever of the two sides the
+     * caller batched its lookup on. A block hides each person from the other, and
+     * nobody can block themselves, so testing both ids is right whichever side it was.
+     * The set is a required argument on purpose: a caller cannot forget the block.
+     */
+    private Standing toStanding(UUID familyUserId, User elder, Connection c, Set<UUID> hidden) {
         // FAMILY-type rows are coordination chats, not trust journeys to inherit.
         if (c.getType() == ConnectionType.FAMILY) return null;
         if (c.getStatus() != ConnectionStatus.ACTIVE) return null;
@@ -131,6 +144,8 @@ public class FamilyStandingService {
         if (state == FamilyStandingState.REVOKED) return null;
 
         User helper = c.getOtherUser(elder.getId());
+        if (hidden.contains(helper.getId()) || hidden.contains(familyUserId)) return null;
+
         UUID chatConnectionId = connectionRepository
                 .findBetweenUsers(familyUserId, helper.getId())
                 .filter(fc -> fc.getType() == ConnectionType.FAMILY
@@ -292,12 +307,13 @@ public class FamilyStandingService {
     }
 
     private boolean bridgeExists(User familySide, User helperSide) {
+        Set<UUID> hidden = blockService.hiddenFor(familySide.getId());
         return familyLinkRepository.findByFamilyUserIdAndStatus(familySide.getId(), FamilyLinkStatus.ACTIVE)
                 .stream()
                 .anyMatch(link -> connectionRepository
                         .findByUserAndStatus(link.getElder().getId(), ConnectionStatus.ACTIVE).stream()
                         .filter(c -> c.getOtherUser(link.getElder().getId()).getId().equals(helperSide.getId()))
-                        .anyMatch(c -> toStanding(familySide.getId(), link.getElder(), c) != null
+                        .anyMatch(c -> toStanding(familySide.getId(), link.getElder(), c, hidden) != null
                                 && !isPaused(familySide.getId(), c.getId())));
     }
 
@@ -342,7 +358,11 @@ public class FamilyStandingService {
                         .build());
             }
             for (Connection c : connectionRepository.findByUserAndStatus(elderId, ConnectionStatus.ACTIVE)) {
-                Standing s = toStanding(familyMember.getId(), link.getElder(), c);
+                // Deliberately unfiltered (empty set): this page is the elder's own
+                // disclosure of who their family can reach, and the locked rule is that
+                // nothing family-facing is hidden from the elder. No blocked party reads
+                // it, so subtracting blocks here would only take truth from the elder.
+                Standing s = toStanding(familyMember.getId(), link.getElder(), c, Set.of());
                 if (s == null || chattingHelpers.contains(s.getHelperUserId())) continue;
                 rows.add(ElderTransparencyResponse.Row.builder()
                         .familyMemberName(plainName(familyMember))
