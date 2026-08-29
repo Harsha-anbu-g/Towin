@@ -64,11 +64,12 @@ public class MessageService {
     @Transactional
     public MessageResponse send(UUID connectionId, UUID senderId,
                                 MessageChannel channel, MessageRequest request) {
+        // getAuthorizedConnection carries the block gate (SEC-03), so one authority
+        // closes reading, seen-stamping and sending, and it is asked once per call.
         Connection conn = getAuthorizedConnection(connectionId, senderId, channel);
         if (conn.getStatus() != ConnectionStatus.ACTIVE) {
             throw new IllegalStateException("Can only message an active connection");
         }
-        requireNoBlock(conn, senderId);
         // MAIN keeps its own trust gate; the FAMILY_UPDATES gate (ACTIVE + shared
         // + >= FIRST_MEET) is already enforced for family in getAuthorizedConnection,
         // and participants always keep their thread (Step 3 locked rule 1). FAMILY-type
@@ -161,12 +162,14 @@ public class MessageService {
                 throw new IllegalStateException(
                         "This chat is closed right now. It opens through the shared trust or family link behind it.");
             }
+            requireNoBlock(conn, userId);
             return conn;
         }
         // Family members reach ONLY the updates thread, and only through the double
         // gate; flipping shared_with_family off cuts them immediately.
         if (channel == MessageChannel.FAMILY_UPDATES
                 && familyGateHolds(conn) && hasActiveFamilyLink(conn, userId)) {
+            requireNoBlock(conn, userId);
             return conn;
         }
         throw new IllegalStateException("Not a participant of this connection");
@@ -262,15 +265,18 @@ public class MessageService {
 
     /**
      * HARD-106: a block between the two people on the connection closes the chat, and so
-     * does a block between a family member posting into the thread and either of them.
+     * does a block between a family member reading or posting in the thread and either of
+     * them. SEC-03: this guards reading and seen-stamping as well as sending — a blocked
+     * party keeps the connection id long after the row leaves their inbox (an old push
+     * payload, the /chat/&lt;id&gt; link), so the thread refuses them at the door.
      * The sentence names no block; the blocked person is never told.
      */
-    private void requireNoBlock(Connection conn, UUID senderId) {
+    private void requireNoBlock(Connection conn, UUID callerId) {
         UUID a = conn.getUserA().getId();
         UUID b = conn.getUserB().getId();
         boolean closed = blockService.isHidden(a, b)
-                || (!senderId.equals(a) && !senderId.equals(b)
-                    && (blockService.isHidden(senderId, a) || blockService.isHidden(senderId, b)));
+                || (!callerId.equals(a) && !callerId.equals(b)
+                    && (blockService.isHidden(callerId, a) || blockService.isHidden(callerId, b)));
         if (closed) {
             throw new IllegalStateException(BlockService.CHAT_CLOSED);
         }

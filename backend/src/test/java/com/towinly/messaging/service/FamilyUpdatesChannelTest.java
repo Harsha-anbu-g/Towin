@@ -313,4 +313,54 @@ class FamilyUpdatesChannelTest {
                 eq(connId), eq(MessageChannel.MAIN), any());
         verify(messageRepository, never()).findByConnectionIdOrderByCreatedAtDesc(any(), any());
     }
+
+    // --- SEC-03: a block closes the family window onto the thread too ---
+    // The shared thread is a window onto the same conversation, so a block that
+    // closes the chat has to close the window with it, in either pairing.
+
+    @Test
+    void familyMemberIsRefusedTheSharedThreadWhenABlockStandsBetweenThemAndTheHelper() {
+        linkSarahToElder(FamilyLinkStatus.ACTIVE);
+        // The pair walk in full: the two on the connection are clear of each other,
+        // and so is Sarah of the elder. Only Sarah and the helper are blocked.
+        when(blockService.isHidden(elder.getId(), helper.getId())).thenReturn(false);
+        when(blockService.isHidden(sarah.getId(), elder.getId())).thenReturn(false);
+        when(blockService.isHidden(sarah.getId(), helper.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
+
+    @Test
+    void familyMemberLosesTheSharedThreadWhenTheElderBlockedTheHelper() {
+        linkSarahToElder(FamilyLinkStatus.ACTIVE);
+        when(blockService.isHidden(elder.getId(), helper.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
+
+    // A participant reading the shared thread is refused on the same terms.
+    @Test
+    void elderIsRefusedTheSharedThreadWhenTheHelperIsBlocked() {
+        when(blockService.isHidden(elder.getId(), helper.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, elder.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
 }

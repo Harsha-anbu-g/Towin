@@ -290,4 +290,89 @@ class MessageServiceTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getContent()).isEqualTo("Hi");
     }
+
+    // --- SEC-03: a block closes reading and seen-stamping, not only sending ---
+    // The blocked party still holds the connection id long after the row leaves
+    // their inbox (an old push payload, the /chat/<id> link, a screenshot), so the
+    // thread has to refuse them at the door rather than trust the inbox to hide it.
+
+    @Test
+    void getHistory_isRefusedAcrossABlock_soTheThreadStopsBeingReadable() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, userB.getId(), MessageChannel.MAIN, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        // Refused at the door: not one message row is loaded.
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
+
+    // The same wall stands for whoever did the blocking. The row already left both
+    // inboxes when the block went in, so neither side reaches the thread by id.
+    @Test
+    void getHistory_isRefusedForTheBlockerToo_soTheWallStandsBothWays() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, userA.getId(), MessageChannel.MAIN, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
+
+    // The write half of the same hole: marking seen stamps the OTHER person's
+    // messages, so a blocked party could flip her "Sent" to "Seen" after she
+    // blocked him. That is a live read receipt from the person she cut off.
+    @Test
+    void markSeen_isRefusedAcrossABlock_soTheBlockedCannotStampTheThreadSeen() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.markSeen(connId, userB.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never()).markSeenByConnectionId(any(), any(), any(), any());
+    }
+
+    @Test
+    void markSeen_isRefusedForTheBlockerToo_soNeitherSideStampsTheOther() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.markSeen(connId, userA.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never()).markSeenByConnectionId(any(), any(), any(), any());
+    }
+
+    // The gate is asked on every read, and an ordinary pair walks straight through it.
+    @Test
+    void getHistory_stillReadsTheThreadWhenNobodyIsBlocked() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(false);
+        Message m = Message.builder()
+                .id(UUID.randomUUID())
+                .connection(connection)
+                .sender(userA)
+                .content("Hi")
+                .type(MessageType.TEXT)
+                .build();
+        when(messageRepository.findByConnectionIdAndChannelOrderByCreatedAtDesc(
+                eq(connId), eq(MessageChannel.MAIN), any())).thenReturn(new PageImpl<>(List.of(m)));
+
+        Page<MessageResponse> result = messageService.getHistory(
+                connId, userB.getId(), MessageChannel.MAIN, PageRequest.of(0, 30));
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(blockService).isHidden(userA.getId(), userB.getId());
+    }
 }
