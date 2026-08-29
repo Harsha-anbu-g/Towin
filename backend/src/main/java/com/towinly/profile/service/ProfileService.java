@@ -10,7 +10,7 @@ import com.towinly.profile.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
+import com.towinly.common.geo.CoarseLocation;
 import java.util.UUID;
 
 @Service
@@ -87,8 +87,9 @@ public class ProfileService {
     public void updateLocation(UUID userId, Double lat, Double lng, String cityHint) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        user.setLocationLat(lat != null ? BigDecimal.valueOf(lat) : null);
-        user.setLocationLng(lng != null ? BigDecimal.valueOf(lng) : null);
+        // SEC-01: the cell is stored, never the fix. The city lookup keeps the fix.
+        user.setLocationLat(CoarseLocation.snapOrNull(lat));
+        user.setLocationLng(CoarseLocation.snapOrNull(lng));
         if (lat != null && lng != null) {
             // Prefer a reverse-geocoded name; fall back to the city the frontend
             // resolved via forward geocode (cityHint) so the field is never blank.

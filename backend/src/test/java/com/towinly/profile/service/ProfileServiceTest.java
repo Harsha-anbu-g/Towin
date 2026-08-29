@@ -69,7 +69,7 @@ class ProfileServiceTest {
         profileService.updateLocation(userId, 43.65, -79.38, null);
 
         assertThat(user.getCity()).isEqualTo("Toronto");
-        assertThat(user.getLocationLat().doubleValue()).isEqualTo(43.65);
+        assertThat(user.getLocationLat().doubleValue()).isEqualTo(43.66); // 43.65 sits on a half cell; the cell wins
     }
 
     @Test
@@ -159,5 +159,22 @@ class ProfileServiceTest {
         assertThatThrownBy(() -> profileService.createOrUpdateElderProfile(userId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("User not found");
+    }
+
+
+    // ── SEC-01: the server stores the cell, never the fix ────────────────────
+
+    @Test
+    void updateLocation_storesTheCellNotTheRawFix() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).isActive(true).build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(geocodingService.reverseGeocode(anyDouble(), anyDouble())).thenReturn(null);
+
+        profileService.updateLocation(userId, 45.4823, -73.5674, null);
+
+        assertThat(user.getLocationLat()).isEqualByComparingTo("45.48");
+        assertThat(user.getLocationLng()).isEqualByComparingTo("-73.56");
     }
 }

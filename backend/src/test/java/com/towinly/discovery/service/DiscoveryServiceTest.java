@@ -84,9 +84,9 @@ class DiscoveryServiceTest {
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getName()).isEqualTo("Near");
-        assertThat(result.get(0).getDistanceKm()).isEqualTo(1.1);
+        assertThat(result.get(0).getDistanceKm()).isEqualTo(5.0);   // one cell, banded
         assertThat(result.get(1).getName()).isEqualTo("Far");
-        assertThat(result.get(1).getDistanceKm()).isEqualTo(5.6);
+        assertThat(result.get(1).getDistanceKm()).isEqualTo(10.0);  // three cells, banded
     }
 
     @Test
@@ -163,7 +163,7 @@ class DiscoveryServiceTest {
         List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDistanceKm()).isEqualTo(1.1);
+        assertThat(result.get(0).getDistanceKm()).isEqualTo(5.0);
     }
 
     @Test
@@ -361,5 +361,71 @@ class DiscoveryServiceTest {
                 .age(30)
                 .languages(new String[]{"English"})
                 .build();
+    }
+
+
+    // ── SEC-01: coarse on the server, banded on the wire ─────────────────────
+
+    @Test
+    void discoverElders_returnsDistanceInWideBandsNotAHundredMetreFloat() {
+        ElderProfile near = elderAt("Near", HOME_LAT + 0.01, HOME_LNG);   // one cell north, ~2.2 km
+        ElderProfile mid = elderAt("Mid", HOME_LAT + 0.05, HOME_LNG);     // three cells, ~6.7 km
+        elders(near, mid);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getDistanceKm).containsExactly(5.0, 10.0);
+    }
+
+    @Test
+    void discoverElders_snapsALegacyRawCoordinateBeforeMeasuring() {
+        // A row stored before the server rounded: inside the requester's own cell.
+        ElderProfile sameCell = elderAt("SameCell", HOME_LAT + 0.004, HOME_LNG + 0.004);
+        elders(sameCell);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, new DiscoveryFilter());
+
+        assertThat(result.get(0).getDistanceKm()).isEqualTo(0.0);
+    }
+
+    @Test
+    void discoverElders_ignoresASuppliedOriginFarFromTheCallersOwnCell() {
+        ElderProfile near = elderAt("Near", HOME_LAT + 0.01, HOME_LNG);
+        elders(near);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setLat(HOME_LAT + 1.0);   // ~111 km away: an origin sweep, not a person
+        filter.setLng(HOME_LNG);
+        filter.setRadiusKm(500.0);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result.get(0).getDistanceKm()).isEqualTo(5.0);
+    }
+
+    @Test
+    void discoverElders_snapsASuppliedOriginToTheCell() {
+        ElderProfile near = elderAt("Near", HOME_LAT + 0.01, HOME_LNG);
+        elders(near);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setLat(HOME_LAT + 0.009);  // inside the home cell: must not move the origin
+        filter.setLng(HOME_LNG + 0.009);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result.get(0).getDistanceKm()).isEqualTo(5.0);
+    }
+
+    @Test
+    void discoverHelpers_returnsBandedDistancesAndIgnoresAFarOrigin() {
+        HelperProfile near = helperAt("Near", HOME_LAT + 0.01, HOME_LNG);
+        helpers(near);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setLat(HOME_LAT - 1.0);
+        filter.setLng(HOME_LNG);
+        filter.setRadiusKm(500.0);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, filter);
+
+        assertThat(result.get(0).getDistanceKm()).isEqualTo(5.0);
     }
 }

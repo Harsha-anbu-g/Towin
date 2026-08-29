@@ -328,4 +328,49 @@ class NeedServiceTest {
                 .category(NeedCategory.ERRANDS).status(status)
                 .locationLat(BigDecimal.valueOf(43.65)).locationLng(BigDecimal.valueOf(-79.38)).build();
     }
+
+
+    // ── SEC-01: coarse on the server, banded on the wire ─────────────────────
+
+    @Test
+    void postNeed_storesTheCellNotTheRawFix() {
+        when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
+        when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
+        NeedRequest request = new NeedRequest();
+        request.setTitle("Groceries");
+        request.setCategory(NeedCategory.ERRANDS);
+        request.setLocationLat(43.6532);
+        request.setLocationLng(-79.3832);
+
+        needService.postNeed(elder.getId(), request);
+
+        org.mockito.ArgumentCaptor<Need> saved = org.mockito.ArgumentCaptor.forClass(Need.class);
+        verify(needRepository).save(saved.capture());
+        assertThat(saved.getValue().getLocationLat()).isEqualByComparingTo("43.66");
+        assertThat(saved.getValue().getLocationLng()).isEqualByComparingTo("-79.38");
+    }
+
+    @Test
+    void browseNearby_returnsBandedDistancesNotAHundredMetreFloat() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        Need close = buildNeed(elder, NeedStatus.OPEN);                       // next cell west, ~1.6 km
+        Need farther = buildNeed(elder, NeedStatus.OPEN);
+        farther.setLocationLat(BigDecimal.valueOf(43.75));                    // ~11 km north
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(List.of(farther, close));
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, 50.0, 0, 20);
+
+        assertThat(result).extracting(NeedResponse::getDistanceKm).containsExactly(2.0, 20.0);
+    }
+
+    @Test
+    void browseNearby_ignoresAnOriginFarFromTheHelpersOwnCell() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        Need close = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(List.of(close));
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), 44.66, -79.39, 500.0, 0, 20);
+
+        assertThat(result.get(0).getDistanceKm()).isEqualTo(2.0);
+    }
 }

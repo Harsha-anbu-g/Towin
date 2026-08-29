@@ -12,6 +12,7 @@ import com.towinly.profile.entity.HelperProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
 import com.towinly.block.service.BlockService;
+import com.towinly.common.geo.CoarseLocation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -38,8 +39,12 @@ public class DiscoveryService {
     @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
-        double lat = resolvedLat(filter, requester);
-        double lng = resolvedLng(filter, requester);
+        // SEC-01: measure from the caller's cell, never from a swept origin.
+        double[] origin = CoarseLocation.origin(filter.getLat(), filter.getLng(),
+                requester.getLocationLat(), requester.getLocationLng());
+        if (origin == null) throw new IllegalArgumentException("Location required for discovery");
+        double lat = origin[0];
+        double lng = origin[1];
 
         // HARD-106: a block in either direction removes the person here, before ranking.
         Set<UUID> hidden = blockService.hiddenFor(requestingUserId);
@@ -48,9 +53,7 @@ public class DiscoveryService {
                 .filter(p -> !hidden.contains(p.getUser().getId()))
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .filter(p -> matchesInterest(filter, p.getInterests()))
-                .map(p -> Map.entry(p, haversineKm(lat, lng,
-                        p.getUser().getLocationLat().doubleValue(),
-                        p.getUser().getLocationLng().doubleValue())))
+                .map(p -> Map.entry(p, cellDistanceKm(lat, lng, p.getUser())))
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
                 .collect(Collectors.toList());
 
@@ -68,9 +71,11 @@ public class DiscoveryService {
     @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverHelpers(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
-        Double lat = resolvedLatOptional(filter, requester);
-        Double lng = resolvedLngOptional(filter, requester);
-        boolean hasLocation = lat != null && lng != null;
+        double[] origin = CoarseLocation.origin(filter.getLat(), filter.getLng(),
+                requester.getLocationLat(), requester.getLocationLng());
+        boolean hasLocation = origin != null;
+        double lat = hasLocation ? origin[0] : 0.0;
+        double lng = hasLocation ? origin[1] : 0.0;
 
         Set<UUID> hidden = blockService.hiddenFor(requestingUserId);
         List<Map.Entry<HelperProfile, Double>> ranked = helperProfileRepository.findAllActiveWithLocation(requestingUserId)
@@ -80,9 +85,7 @@ public class DiscoveryService {
                 .map(p -> {
                     boolean helperHasLocation = p.getUser().getLocationLat() != null && p.getUser().getLocationLng() != null;
                     double dist = (hasLocation && helperHasLocation)
-                            ? haversineKm(lat, lng,
-                                    p.getUser().getLocationLat().doubleValue(),
-                                    p.getUser().getLocationLng().doubleValue())
+                            ? cellDistanceKm(lat, lng, p.getUser())
                             : 0.0;
                     return Map.entry(p, dist);
                 })
@@ -113,7 +116,7 @@ public class DiscoveryService {
                 .city(p.getUser().getCity())
                 .trustScore(score)
                 .trustTier(TrustScoreService.tierFor(score))
-                .distanceKm(Math.round(distanceKm * 10.0) / 10.0)
+                .distanceKm(CoarseLocation.bandKm(distanceKm))
                 .build();
     }
 
@@ -131,8 +134,18 @@ public class DiscoveryService {
                 .city(p.getUser().getCity())
                 .trustScore(score)
                 .trustTier(TrustScoreService.tierFor(score))
-                .distanceKm(Math.round(distanceKm * 10.0) / 10.0)
+                .distanceKm(CoarseLocation.bandKm(distanceKm))
                 .build();
+    }
+
+    /**
+     * Distance from the origin to the person's cell. Their stored coordinate is
+     * snapped here as well as on write, so rows saved before SEC-01 leak nothing.
+     */
+    private double cellDistanceKm(double lat, double lng, User person) {
+        return CoarseLocation.haversineKm(lat, lng,
+                CoarseLocation.snap(person.getLocationLat()).doubleValue(),
+                CoarseLocation.snap(person.getLocationLng()).doubleValue());
     }
 
     /**
@@ -159,45 +172,8 @@ public class DiscoveryService {
         return Arrays.asList(interests).contains(filter.getInterest());
     }
 
-    private double resolvedLat(DiscoveryFilter filter, User user) {
-        if (filter.getLat() != null) return filter.getLat();
-        if (user.getLocationLat() != null) return user.getLocationLat().doubleValue();
-        throw new IllegalArgumentException("Location required for discovery");
-    }
-
-    private double resolvedLng(DiscoveryFilter filter, User user) {
-        if (filter.getLng() != null) return filter.getLng();
-        if (user.getLocationLng() != null) return user.getLocationLng().doubleValue();
-        throw new IllegalArgumentException("Location required for discovery");
-    }
-
-    private Double resolvedLatOptional(DiscoveryFilter filter, User user) {
-        if (filter.getLat() != null) return filter.getLat();
-        if (user.getLocationLat() != null) return user.getLocationLat().doubleValue();
-        return null;
-    }
-
-    private Double resolvedLngOptional(DiscoveryFilter filter, User user) {
-        if (filter.getLng() != null) return filter.getLng();
-        if (user.getLocationLng() != null) return user.getLocationLng().doubleValue();
-        return null;
-    }
-
     private User getUser(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-    }
-
-    /**
-     * Haversine formula — returns distance in km between two lat/lng points.
-     */
-    private double haversineKm(double lat1, double lng1, double lat2, double lng2) {
-        final double R = 6371.0;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLng = Math.toRadians(lng2 - lng1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 }

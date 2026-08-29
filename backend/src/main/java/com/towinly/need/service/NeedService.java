@@ -1,5 +1,6 @@
 package com.towinly.need.service;
 
+import com.towinly.common.geo.CoarseLocation;
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.ApplicationStatus;
 import com.towinly.common.enums.ConnectionStatus;
@@ -82,12 +83,13 @@ public class NeedService {
         }
         User elder = getUser(elderId);
 
-        BigDecimal lat = request.getLocationLat() != null
+        // SEC-01: a request is stored on its cell, never on the raw fix.
+        BigDecimal lat = CoarseLocation.snap(request.getLocationLat() != null
                 ? BigDecimal.valueOf(request.getLocationLat())
-                : elder.getLocationLat();
-        BigDecimal lng = request.getLocationLng() != null
+                : elder.getLocationLat());
+        BigDecimal lng = CoarseLocation.snap(request.getLocationLng() != null
                 ? BigDecimal.valueOf(request.getLocationLng())
-                : elder.getLocationLng();
+                : elder.getLocationLng());
 
         Need need = Need.builder()
                 .elder(elder)
@@ -131,15 +133,18 @@ public class NeedService {
     public List<NeedResponse> browseNearby(UUID helperId, Double lat, Double lng, Double radiusKm, int page, int size) {
         User helper = getUser(helperId);
         Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
-        double helperLat = lat != null ? lat : (helper.getLocationLat() != null ? helper.getLocationLat().doubleValue() : 0);
-        double helperLng = lng != null ? lng : (helper.getLocationLng() != null ? helper.getLocationLng().doubleValue() : 0);
+        // SEC-01: measure from the helper's cell, never from a swept origin.
+        double[] origin = CoarseLocation.origin(lat, lng, helper.getLocationLat(), helper.getLocationLng());
+        double helperLat = origin != null ? origin[0] : 0;
+        double helperLng = origin != null ? origin[1] : 0;
 
         Set<UUID> hidden = blockService.hiddenFor(helperId);
         List<Object[]> ranked = needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)
                 .stream()
                 .filter(n -> !hidden.contains(n.getElder().getId()))
-                .map(n -> new Object[]{n, haversineKm(helperLat, helperLng,
-                        n.getLocationLat().doubleValue(), n.getLocationLng().doubleValue())})
+                .map(n -> new Object[]{n, CoarseLocation.haversineKm(helperLat, helperLng,
+                        CoarseLocation.snap(n.getLocationLat()).doubleValue(),
+                        CoarseLocation.snap(n.getLocationLng()).doubleValue())})
                 .sorted((a, b) -> Double.compare((double) a[1], (double) b[1]))
                 .collect(Collectors.toList());
 
@@ -473,7 +478,7 @@ public class NeedService {
                 .urgency(need.getUrgency())
                 .status(need.getStatus())
                 .myApplicationStatus(myStatus)
-                .distanceKm(distanceKm != null ? Math.round(distanceKm * 10.0) / 10.0 : null)
+                .distanceKm(distanceKm != null ? CoarseLocation.bandKm(distanceKm) : null)
                 .createdAt(need.getCreatedAt())
                 .applications(applications)
                 // Guardian mode: say plainly who wrote this for the elder. It rides on
@@ -489,15 +494,6 @@ public class NeedService {
         return DisplayNameResolver.resolve(elderProfileRepository, helperProfileRepository, actor);
     }
 
-    private double haversineKm(double lat1, double lng1, double lat2, double lng2) {
-        final double R = 6371.0;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLng = Math.toRadians(lng2 - lng1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
 
     private Need getNeed(UUID needId) {
         return needRepository.findById(needId)
