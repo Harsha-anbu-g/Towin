@@ -11,6 +11,7 @@ import com.towinly.profile.entity.ElderProfile;
 import com.towinly.profile.entity.HelperProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.block.service.BlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,7 @@ public class DiscoveryService {
     private final UserRepository userRepository;
     private final TrustScoreService trustScoreService;
     private final S3Service s3Service;
+    private final BlockService blockService;
 
     @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
@@ -38,8 +41,11 @@ public class DiscoveryService {
         double lat = resolvedLat(filter, requester);
         double lng = resolvedLng(filter, requester);
 
+        // HARD-106: a block in either direction removes the person here, before ranking.
+        Set<UUID> hidden = blockService.hiddenFor(requestingUserId);
         List<Map.Entry<ElderProfile, Double>> ranked = elderProfileRepository.findAllActiveWithLocation(requestingUserId)
                 .stream()
+                .filter(p -> !hidden.contains(p.getUser().getId()))
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .filter(p -> matchesInterest(filter, p.getInterests()))
                 .map(p -> Map.entry(p, haversineKm(lat, lng,
@@ -66,8 +72,10 @@ public class DiscoveryService {
         Double lng = resolvedLngOptional(filter, requester);
         boolean hasLocation = lat != null && lng != null;
 
+        Set<UUID> hidden = blockService.hiddenFor(requestingUserId);
         List<Map.Entry<HelperProfile, Double>> ranked = helperProfileRepository.findAllActiveWithLocation(requestingUserId)
                 .stream()
+                .filter(p -> !hidden.contains(p.getUser().getId()))
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .map(p -> {
                     boolean helperHasLocation = p.getUser().getLocationLat() != null && p.getUser().getLocationLng() != null;

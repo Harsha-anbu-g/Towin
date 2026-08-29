@@ -41,6 +41,7 @@ class NeedServiceTest {
     @Mock com.towinly.connection.repository.ConnectionRepository connectionRepository;
     @Mock com.towinly.family.service.FamilyDelegationService familyDelegationService;
     @Mock ExpoPushService expoPushService;
+    @Mock com.towinly.block.service.BlockService blockService;
     NeedService needService;
 
     private User elder;
@@ -54,7 +55,7 @@ class NeedServiceTest {
                 needRepository, applicationRepository, userRepository,
                 elderProfileRepository, helperProfileRepository, s3Service,
                 trustScoreService, connectionRepository, Optional.empty(),
-                familyDelegationService, expoPushService);
+                familyDelegationService, expoPushService, blockService);
         elder = buildUser(UUID.randomUUID(), UserRole.ELDER);
         elder.setLocationLat(BigDecimal.valueOf(43.65));
         elder.setLocationLng(BigDecimal.valueOf(-79.38));
@@ -222,6 +223,48 @@ class NeedServiceTest {
 
         assertThat(pageable.getValue().getPageSize()).isEqualTo(NeedService.DEFAULT_PAGE_SIZE);
         verify(needRepository, never()).findByStatusOrderByCreatedAtDesc(any());
+    }
+
+    // HARD-106: a blocked elder's requests never reach the helper's feeds, and an
+    // offer from a blocked helper is refused without saying why.
+    @Test
+    void getAllOpen_hidesRequestsFromAnyoneBlockedInEitherDirection() {
+        User otherElder = buildUser(UUID.randomUUID(), UserRole.ELDER);
+        Need hidden = buildNeed(elder, NeedStatus.OPEN);
+        Need shown = buildNeed(otherElder, NeedStatus.OPEN);
+        when(needRepository.findByStatusOrderByCreatedAtDesc(eq(NeedStatus.OPEN), any(Pageable.class)))
+                .thenReturn(List.of(hidden, shown));
+        when(blockService.hiddenFor(helper.getId())).thenReturn(java.util.Set.of(elder.getId()));
+
+        List<NeedResponse> result = needService.getAllOpen(helper.getId());
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(shown.getId());
+    }
+
+    @Test
+    void browseNearby_hidesRequestsFromAnyoneBlockedInEitherDirection() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        User otherElder = buildUser(UUID.randomUUID(), UserRole.ELDER);
+        Need hidden = buildNeed(elder, NeedStatus.OPEN);
+        Need shown = buildNeed(otherElder, NeedStatus.OPEN);
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(List.of(hidden, shown));
+        when(blockService.hiddenFor(helper.getId())).thenReturn(java.util.Set.of(elder.getId()));
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, 50.0, 0, 20);
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(shown.getId());
+    }
+
+    @Test
+    void apply_isRefusedWhenEitherPersonBlockedTheOther_withoutSayingWhy() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(blockService.isHidden(helper.getId(), elder.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> needService.apply(helper.getId(), need.getId(), null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+        verify(applicationRepository, never()).save(any());
     }
 
     private User buildUser(UUID id, UserRole role) {

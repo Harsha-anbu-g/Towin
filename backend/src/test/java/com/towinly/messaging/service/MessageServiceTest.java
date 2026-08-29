@@ -56,6 +56,7 @@ class MessageServiceTest {
     @Mock
     com.towinly.family.service.FamilyDelegationService familyDelegationService;
     @Mock ExpoPushService expoPushService;
+    @Mock com.towinly.block.service.BlockService blockService;
     @InjectMocks
     MessageService messageService;
 
@@ -97,6 +98,21 @@ class MessageServiceTest {
 
         assertThat(response.getContent()).isEqualTo("Hello!");
         assertThat(response.getSenderId()).isEqualTo(userA.getId());
+    }
+
+    // HARD-106: a block between the two people closes the chat. The words say
+    // nothing about a block; the blocked person is never told.
+    @Test
+    void send_isRefusedWhenEitherPersonBlockedTheOther() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+        MessageRequest req = new MessageRequest();
+        req.setContent("Hello?");
+
+        assertThatThrownBy(() -> messageService.send(connId, userA.getId(), MessageChannel.MAIN, req))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+        verify(messageRepository, never()).save(any());
     }
 
     @Test

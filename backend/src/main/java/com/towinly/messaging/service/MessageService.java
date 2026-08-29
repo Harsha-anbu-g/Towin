@@ -22,6 +22,7 @@ import com.towinly.profile.entity.ElderProfile;
 import com.towinly.profile.entity.HelperProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.block.service.BlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +48,7 @@ public class MessageService {
     private final S3Service s3Service;
     private final com.towinly.family.service.FamilyStandingService familyStandingService;
     private final ExpoPushService expoPushService;
+    private final BlockService blockService;
 
     public Page<MessageResponse> getHistory(UUID connectionId, UUID userId,
                                             MessageChannel channel, Pageable pageable) {
@@ -65,6 +67,7 @@ public class MessageService {
         if (conn.getStatus() != ConnectionStatus.ACTIVE) {
             throw new IllegalStateException("Can only message an active connection");
         }
+        requireNoBlock(conn, senderId);
         // MAIN keeps its own trust gate; the FAMILY_UPDATES gate (ACTIVE + shared
         // + >= FIRST_MEET) is already enforced for family in getAuthorizedConnection,
         // and participants always keep their thread (Step 3 locked rule 1). FAMILY-type
@@ -251,4 +254,20 @@ public class MessageService {
     }
 
     private boolean notBlank(String s) { return s != null && !s.isBlank(); }
+
+    /**
+     * HARD-106: a block between the two people on the connection closes the chat, and so
+     * does a block between a family member posting into the thread and either of them.
+     * The sentence names no block; the blocked person is never told.
+     */
+    private void requireNoBlock(Connection conn, UUID senderId) {
+        UUID a = conn.getUserA().getId();
+        UUID b = conn.getUserB().getId();
+        boolean closed = blockService.isHidden(a, b)
+                || (!senderId.equals(a) && !senderId.equals(b)
+                    && (blockService.isHidden(senderId, a) || blockService.isHidden(senderId, b)));
+        if (closed) {
+            throw new IllegalStateException(BlockService.CHAT_CLOSED);
+        }
+    }
 }

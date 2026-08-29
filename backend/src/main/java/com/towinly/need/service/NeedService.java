@@ -28,6 +28,7 @@ import com.towinly.need.repository.NeedRepository;
 import com.towinly.notification.service.ExpoPushService;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.block.service.BlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +63,7 @@ public class NeedService {
     private final Optional<ConnectionEventProducer> connectionEventProducer;
     private final FamilyDelegationService familyDelegationService;
     private final ExpoPushService expoPushService;
+    private final BlockService blockService;
 
     @Transactional
     public NeedResponse postNeed(UUID callerId, NeedRequest request) {
@@ -108,7 +110,11 @@ public class NeedService {
 
     public List<NeedResponse> getAllOpen(UUID helperId, Pageable pageable) {
         Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
-        List<Need> needs = needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN, pageable);
+        // HARD-106: a blocked elder's requests never reach this helper's feed, either way round.
+        Set<UUID> hidden = blockService.hiddenFor(helperId);
+        List<Need> needs = needRepository.findByStatusOrderByCreatedAtDesc(NeedStatus.OPEN, pageable).stream()
+                .filter(n -> !hidden.contains(n.getElder().getId()))
+                .collect(Collectors.toList());
         Map<UUID, String> elderNames = elderNameMap(needs);
         return needs.stream()
                 .map(n -> toResponse(n, null, false, myApps.get(n.getId()), elderNames))
@@ -121,8 +127,10 @@ public class NeedService {
         double helperLat = lat != null ? lat : (helper.getLocationLat() != null ? helper.getLocationLat().doubleValue() : 0);
         double helperLng = lng != null ? lng : (helper.getLocationLng() != null ? helper.getLocationLng().doubleValue() : 0);
 
+        Set<UUID> hidden = blockService.hiddenFor(helperId);
         List<Object[]> ranked = needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)
                 .stream()
+                .filter(n -> !hidden.contains(n.getElder().getId()))
                 .map(n -> new Object[]{n, haversineKm(helperLat, helperLng,
                         n.getLocationLat().doubleValue(), n.getLocationLng().doubleValue())})
                 .sorted((a, b) -> Double.compare((double) a[1], (double) b[1]))
@@ -177,6 +185,10 @@ public class NeedService {
         Need need = getNeed(needId);
         if (need.getStatus() != NeedStatus.OPEN) {
             throw new IllegalArgumentException("Need is not open for applications");
+        }
+        // HARD-106: an offer across a block is refused without saying why.
+        if (blockService.isHidden(helperId, need.getElder().getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
         }
         // Guardian mode: the family member who looks after this parent's help
         // requests sits on the deciding side of them, so she must not also stand on

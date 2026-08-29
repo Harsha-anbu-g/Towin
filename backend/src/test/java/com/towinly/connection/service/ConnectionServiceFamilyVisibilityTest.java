@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ConnectionServiceFamilyVisibilityTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock ConnectionRepository connectionRepository;
     @Mock UserRepository userRepository;
     @Mock ElderProfileRepository elderProfileRepository;
@@ -57,7 +58,7 @@ class ConnectionServiceFamilyVisibilityTest {
         connectionService = new ConnectionService(
                 connectionRepository, userRepository, elderProfileRepository,
                 helperProfileRepository, Optional.empty(), messageRepository, trustScoreService, s3Service,
-                familyLinkRepository);
+                familyLinkRepository, blockService);
         elder = buildUser(UUID.randomUUID(), "elder@test.com", UserRole.ELDER);
         helper = buildUser(UUID.randomUUID(), "helper@test.com", UserRole.HELPER);
         connection = buildConnection(elder, helper, ConnectionStatus.ACTIVE);

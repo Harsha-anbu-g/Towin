@@ -9,6 +9,7 @@ import com.towinly.common.service.DisplayNameResolver;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +35,26 @@ public class BlockService {
 
     static final String CANNOT_BLOCK_SELF = "You cannot block yourself";
 
+    /**
+     * What a write path says when a block stands between two people. Deliberately the
+     * same shape and tone as the other 409s the composer already understands, and
+     * deliberately silent about the reason: the blocked person must never learn it.
+     */
+    public static final String CHAT_CLOSED = "This chat is closed right now.";
+    public static final String NOT_AVAILABLE = "This isn't available right now.";
+
     private final UserBlockRepository blockRepository;
     private final UserRepository userRepository;
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
 
-    /** Hides {@code blockedId} from {@code blockerId} and the other way round. Idempotent. */
+    /**
+     * Hides {@code blockedId} from {@code blockerId} and the other way round. Idempotent.
+     * Discovery answers are cached for five minutes; a block must not wait that long
+     * (trust-and-safety rule: gone from the other party's surfaces immediately).
+     */
     @Transactional
+    @CacheEvict(cacheNames = {"discovery-elders", "discovery-helpers"}, allEntries = true)
     public BlockResponse block(UUID blockerId, UUID blockedId) {
         if (blockerId.equals(blockedId)) {
             throw new IllegalArgumentException(CANNOT_BLOCK_SELF);
@@ -56,6 +70,7 @@ public class BlockService {
 
     /** Removes the block if there is one. Never an error when there is not. */
     @Transactional
+    @CacheEvict(cacheNames = {"discovery-elders", "discovery-helpers"}, allEntries = true)
     public void unblock(UUID blockerId, UUID blockedId) {
         blockRepository.deleteByBlockerIdAndBlockedId(blockerId, blockedId);
     }
@@ -72,6 +87,7 @@ public class BlockService {
      * caller's own id and accounts that no longer exist, and returns the whole list.
      */
     @Transactional
+    @CacheEvict(cacheNames = {"discovery-elders", "discovery-helpers"}, allEntries = true)
     public List<BlockResponse> sync(UUID blockerId, Collection<UUID> blockedIds) {
         Set<UUID> wanted = new LinkedHashSet<>(blockedIds);
         wanted.remove(blockerId);

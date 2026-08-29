@@ -51,6 +51,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class NeedOnBehalfTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock NeedRepository needRepository;
     @Mock NeedApplicationRepository applicationRepository;
     @Mock UserRepository userRepository;
@@ -75,7 +76,7 @@ class NeedOnBehalfTest {
                 needRepository, applicationRepository, userRepository,
                 elderProfileRepository, helperProfileRepository, s3Service,
                 trustScoreService, connectionRepository, Optional.empty(),
-                familyDelegationService, expoPushService);
+                familyDelegationService, expoPushService, blockService);
         margaret = User.builder().id(UUID.randomUUID()).username("margaret").role(UserRole.ELDER).build();
         sarah = User.builder().id(UUID.randomUUID()).username("sarah").role(UserRole.FAMILY).build();
         helper = User.builder().id(UUID.randomUUID()).username("helper").role(UserRole.HELPER).build();

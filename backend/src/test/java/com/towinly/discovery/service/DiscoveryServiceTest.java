@@ -33,6 +33,7 @@ class DiscoveryServiceTest {
     @Mock UserRepository userRepository;
     @Mock TrustScoreService trustScoreService;
     @Mock S3Service s3Service;
+    @Mock com.towinly.block.service.BlockService blockService;
 
     @InjectMocks DiscoveryService discoveryService;
 
@@ -276,6 +277,31 @@ class DiscoveryServiceTest {
     }
 
     // ── Fixtures ─────────────────────────────────────────────────────────────
+
+    // HARD-106: discovery never shows a person either side has blocked.
+    @Test
+    void discoverElders_hidesPeopleBlockedInEitherDirection() {
+        ElderProfile hidden = elderAt("Hidden", HOME_LAT + 0.01, HOME_LNG);
+        ElderProfile shown = elderAt("Shown", HOME_LAT + 0.02, HOME_LNG);
+        elders(hidden, shown);
+        when(blockService.hiddenFor(requesterId)).thenReturn(java.util.Set.of(hidden.getUser().getId()));
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Shown");
+    }
+
+    @Test
+    void discoverHelpers_hidesPeopleBlockedInEitherDirection() {
+        HelperProfile hidden = helperAt("Hidden", HOME_LAT + 0.01, HOME_LNG);
+        HelperProfile shown = helperAt("Shown", HOME_LAT + 0.02, HOME_LNG);
+        helpers(hidden, shown);
+        when(blockService.hiddenFor(requesterId)).thenReturn(java.util.Set.of(hidden.getUser().getId()));
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Shown");
+    }
 
     private void elders(ElderProfile... profiles) {
         when(elderProfileRepository.findAllActiveWithLocation(requesterId)).thenReturn(List.of(profiles));

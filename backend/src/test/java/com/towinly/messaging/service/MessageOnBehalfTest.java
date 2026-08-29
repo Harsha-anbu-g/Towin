@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class MessageOnBehalfTest {
 
+    @Mock com.towinly.block.service.BlockService blockService;
     @Mock MessageRepository messageRepository;
     @Mock ConnectionRepository connectionRepository;
     @Mock FamilyLinkRepository familyLinkRepository;

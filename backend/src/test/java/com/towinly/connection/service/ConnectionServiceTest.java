@@ -40,6 +40,7 @@ class ConnectionServiceTest {
     @Mock com.towinly.common.service.TrustScoreService trustScoreService;
     @Mock com.towinly.common.service.S3Service s3Service;
     @Mock com.towinly.family.repository.FamilyLinkRepository familyLinkRepository;
+    @Mock com.towinly.block.service.BlockService blockService;
     ConnectionService connectionService;
 
     private User sender;
@@ -52,7 +53,7 @@ class ConnectionServiceTest {
         connectionService = new ConnectionService(
                 connectionRepository, userRepository, elderProfileRepository,
                 helperProfileRepository, Optional.empty(), messageRepository, trustScoreService, s3Service,
-                familyLinkRepository);
+                familyLinkRepository, blockService);
         sender = buildUser(UUID.randomUUID(), "sender@test.com");
         target = buildUser(UUID.randomUUID(), "target@test.com");
     }
@@ -337,6 +338,37 @@ class ConnectionServiceTest {
 
         assertThat(pageable.getValue().getPageSize()).isEqualTo(ConnectionService.DEFAULT_PAGE_SIZE);
         verify(connectionRepository, never()).findAllByUser(any());
+    }
+
+    // HARD-106: a block hides each person from the other, in both directions,
+    // at the source. The inbox never lists them and a request never reaches them.
+    @Test
+    void getMyConnections_hidesAnyoneBlockedInEitherDirection() {
+        User second = buildUser(UUID.randomUUID(), "second@test.com");
+        Connection withBlocked = buildConnection(sender, target, ConnectionStatus.ACTIVE);
+        Connection clean = buildConnection(sender, second, ConnectionStatus.ACTIVE);
+        when(connectionRepository.findAllByUser(eq(sender.getId()), any(Pageable.class)))
+                .thenReturn(List.of(withBlocked, clean));
+        when(blockService.hiddenFor(sender.getId())).thenReturn(java.util.Set.of(target.getId()));
+
+        List<ConnectionResponse> result = connectionService.getMyConnections(sender.getId(), null);
+
+        assertThat(result).extracting(ConnectionResponse::getOtherUserId).containsExactly(second.getId());
+    }
+
+    @Test
+    void sendRequest_isRefusedWhenEitherPersonBlockedTheOther_withoutSayingWhy() {
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(blockService.isHidden(sender.getId(), target.getId())).thenReturn(true);
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.SOCIAL);
+
+        assertThatThrownBy(() -> connectionService.sendRequest(sender.getId(), request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+        verify(connectionRepository, never()).save(any(Connection.class));
     }
 
     private User buildUser(UUID id, String email) {

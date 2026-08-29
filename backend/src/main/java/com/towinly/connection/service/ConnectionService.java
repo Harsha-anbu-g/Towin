@@ -19,6 +19,7 @@ import com.towinly.profile.entity.ElderProfile;
 import com.towinly.profile.entity.HelperProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
+import com.towinly.block.service.BlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -81,6 +82,7 @@ public class ConnectionService {
     private final com.towinly.common.service.TrustScoreService trustScoreService;
     private final com.towinly.common.service.S3Service s3Service;
     private final com.towinly.family.repository.FamilyLinkRepository familyLinkRepository;
+    private final BlockService blockService;
 
     @Transactional
     public ConnectionResponse sendRequest(UUID senderId, ConnectionRequest request) {
@@ -90,6 +92,12 @@ public class ConnectionService {
 
         User sender = getUser(senderId);
         User target = getUser(request.getTargetUserId());
+
+        // HARD-106: a block in either direction ends the conversation before it
+        // starts. The words say nothing about a block; the blocked person is never told.
+        if (blockService.isHidden(senderId, target.getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
 
         connectionRepository.findBetweenUsers(senderId, target.getId()).ifPresent(c -> {
             if (c.getStatus() == ConnectionStatus.PENDING || c.getStatus() == ConnectionStatus.ACTIVE) {
@@ -255,9 +263,17 @@ public class ConnectionService {
     }
 
     public List<ConnectionResponse> getMyConnections(UUID userId, ConnectionStatus status, Pageable pageable) {
-        List<Connection> connections = (status != null)
+        List<Connection> fetched = (status != null)
                 ? connectionRepository.findByUserAndStatus(userId, status, pageable)
                 : connectionRepository.findAllByUser(userId, pageable);
+
+        // HARD-106: anyone hidden by a block, in either direction, leaves the list
+        // here at the source, so the inbox, the header count and the navbar poll all
+        // agree. The row itself stays; unblocking brings it back untouched.
+        Set<UUID> hidden = blockService.hiddenFor(userId);
+        List<Connection> connections = hidden.isEmpty() ? fetched : fetched.stream()
+                .filter(c -> !hidden.contains(c.getOtherUser(userId).getId()))
+                .collect(Collectors.toList());
 
         // Three queries for the whole page — the inbox, the Messages header and the
         // navbar poll all land here, so it must never be one lookup per row.
