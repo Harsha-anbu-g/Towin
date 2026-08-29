@@ -303,6 +303,72 @@ class DiscoveryServiceTest {
         assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Shown");
     }
 
+    // SEC-07: size arrives straight from the query string. Uncapped it read
+    // "?size=100000" and handed back the whole member directory in one response.
+    // No client has ever sent size at all — the two dashboards use the default 20 —
+    // so the cap costs a real screen nothing.
+    @Test
+    void discoverElders_clampsAnOversizedPageToTheServerMaximum() {
+        ElderProfile[] directory = new ElderProfile[DiscoveryFilter.MAX_PAGE_SIZE + 25];
+        for (int i = 0; i < directory.length; i++) {
+            directory[i] = elderAt("Elder " + i, HOME_LAT + 0.0001 * i, HOME_LNG);
+        }
+        elders(directory);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setSize(100000);
+        filter.setRadiusKm(100000.0);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, filter);
+
+        assertThat(result).hasSize(DiscoveryFilter.MAX_PAGE_SIZE);
+    }
+
+    @Test
+    void discoverHelpers_clampsAnOversizedPageToTheServerMaximum() {
+        HelperProfile[] directory = new HelperProfile[DiscoveryFilter.MAX_PAGE_SIZE + 25];
+        for (int i = 0; i < directory.length; i++) {
+            directory[i] = helperAt("Helper " + i, HOME_LAT + 0.0001 * i, HOME_LNG);
+        }
+        helpers(directory);
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setSize(100000);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, filter);
+
+        assertThat(result).hasSize(DiscoveryFilter.MAX_PAGE_SIZE);
+    }
+
+    @Test
+    void anOrdinaryRequestIsUntouched() {
+        DiscoveryFilter filter = new DiscoveryFilter();
+
+        // What every real caller sends today: nothing at all, so the defaults stand.
+        assertThat(filter.getSize()).isEqualTo(20);
+        assertThat(filter.getRadiusKm()).isEqualTo(10.0);
+
+        // And the largest values the radius selector actually offers still pass through.
+        filter.setRadiusKm(100.0);
+        filter.setSize(50);
+        assertThat(filter.getRadiusKm()).isEqualTo(100.0);
+        assertThat(filter.getSize()).isEqualTo(50);
+    }
+
+    @Test
+    void theFilterClampsBothBoundsAtBindingTime() {
+        DiscoveryFilter filter = new DiscoveryFilter();
+
+        filter.setSize(100000);
+        filter.setRadiusKm(100000.0);
+        assertThat(filter.getSize()).isEqualTo(DiscoveryFilter.MAX_PAGE_SIZE);
+        assertThat(filter.getRadiusKm()).isEqualTo(DiscoveryFilter.MAX_RADIUS_KM);
+
+        // A size of zero or below would otherwise reach Stream.limit and throw.
+        filter.setSize(0);
+        assertThat(filter.getSize()).isEqualTo(1);
+        filter.setSize(-5);
+        assertThat(filter.getSize()).isEqualTo(1);
+    }
+
     private void elders(ElderProfile... profiles) {
         when(elderProfileRepository.findAllActiveWithLocation(requesterId)).thenReturn(List.of(profiles));
     }
