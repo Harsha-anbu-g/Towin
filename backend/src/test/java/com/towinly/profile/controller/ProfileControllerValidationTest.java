@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -100,5 +101,27 @@ class ProfileControllerValidationTest {
                 .andExpect(status().isOk());
 
         verify(profileService).updateLocation(eq(userId), isNull(), isNull(), eq("Bengaluru"));
+    }
+
+    // ── SEC-06: the endpoint has to say who is asking ────────────────────────
+
+    @Test
+    @DisplayName("names the caller as the viewer when reading someone else's profile")
+    void passesTheCallerAsTheViewerOfAnotherProfile() throws Exception {
+        UUID otherId = UUID.randomUUID();
+
+        mockMvc.perform(get("/api/profile/" + otherId).principal(auth))
+                .andExpect(status().isOk());
+
+        verify(profileService).getProfile(eq(otherId), eq(userId));
+    }
+
+    @Test
+    @DisplayName("names the owner as their own viewer, so /profile/{id} on yourself is still a self view")
+    void passesTheOwnerAsTheirOwnViewer() throws Exception {
+        mockMvc.perform(get("/api/profile/" + userId).principal(auth))
+                .andExpect(status().isOk());
+
+        verify(profileService).getProfile(eq(userId), eq(userId));
     }
 }

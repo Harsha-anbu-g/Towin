@@ -30,9 +30,11 @@ public class ProfileController {
     public ResponseEntity<ProfileResponse> getProfile(Authentication auth, @PathVariable UUID id) {
         // Only the owner sees email, phone, date of birth, and sign-in metadata;
         // another user's phone is gated behind the trust journey (exposed via
-        // the connections endpoint instead).
-        boolean isSelf = auth != null && id.toString().equals(auth.getName());
-        return ResponseEntity.ok(profileService.getProfile(id, isSelf));
+        // the connections endpoint instead). SEC-06: social handles and gender
+        // ride that journey too, so the service is told who is asking rather
+        // than a bare yes-or-no about self.
+        UUID viewerId = callerId(auth);
+        return ResponseEntity.ok(profileService.getProfile(id, viewerId));
     }
 
     @PutMapping("/elder")
@@ -77,5 +79,15 @@ public class ProfileController {
         String url = s3Service.uploadPhoto(userId, file);
         profileService.updatePhotoUrl(userId, url);
         return ResponseEntity.ok(Map.of("photoUrl", s3Service.presignedUrl(url)));
+    }
+
+    /** The signed-in user's id, or null when the principal is missing or not a uuid. */
+    private static UUID callerId(Authentication auth) {
+        if (auth == null || auth.getName() == null) return null;
+        try {
+            return UUID.fromString(auth.getName());
+        } catch (IllegalArgumentException notAUuid) {
+            return null;
+        }
     }
 }
