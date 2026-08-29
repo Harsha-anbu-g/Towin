@@ -13,6 +13,7 @@ import com.towinly.common.seed.DemoDataSeeder;
 import com.towinly.common.service.DisplayNameResolver;
 import com.towinly.common.service.S3Service;
 import com.towinly.common.service.TrustScoreService;
+import com.towinly.common.web.PageLimits;
 import com.towinly.connection.entity.Connection;
 import com.towinly.common.enums.DelegatedPower;
 import com.towinly.connection.repository.ConnectionRepository;
@@ -51,7 +52,8 @@ import java.util.stream.Collectors;
 public class NeedService {
 
     // Same bound as /needs/nearby: the open-needs feed is a browse list, not an archive.
-    public static final int DEFAULT_PAGE_SIZE = 20;
+    // SEC-07's numbers, so the three browse routes in this class cannot drift apart.
+    public static final int DEFAULT_PAGE_SIZE = PageLimits.DEFAULT_PAGE_SIZE;
 
     private final NeedRepository needRepository;
     private final NeedApplicationRepository applicationRepository;
@@ -120,7 +122,19 @@ public class NeedService {
         return getAllOpen(helperId, PageRequest.of(0, DEFAULT_PAGE_SIZE));
     }
 
-    public List<NeedResponse> getAllOpen(UUID helperId, Pageable pageable) {
+    public List<NeedResponse> getAllOpen(UUID helperId, Pageable requested) {
+        // SEC-07: how much of the feed one request may take is the server's decision.
+        // Spring's own ceiling is 2000 rows, and every row carries an elder's name,
+        // title and description. The sort is carried across untouched - only the size
+        // moves - so a caller asking for 100000 gets a normal page, not an error.
+        // An unpaged request asks for the whole table, which is the hole itself, so it
+        // is answered with the default page rather than honoured.
+        Pageable pageable = requested.isPaged()
+                ? PageRequest.of(
+                        PageLimits.page(requested.getPageNumber()),
+                        PageLimits.size(requested.getPageSize()),
+                        requested.getSort())
+                : PageRequest.of(0, DEFAULT_PAGE_SIZE);
         Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
         // HARD-106: a blocked elder's requests never reach this helper's feed, either way round.
         // With nobody hidden the page comes straight from the database. With a block
@@ -140,7 +154,16 @@ public class NeedService {
                 .collect(Collectors.toList());
     }
 
-    public List<NeedResponse> browseNearby(UUID helperId, Double lat, Double lng, Double radiusKm, int page, int size) {
+    public List<NeedResponse> browseNearby(UUID helperId, Double lat, Double lng, Double radiusKm,
+                                           int requestedPage, int requestedSize) {
+        // SEC-07: ?size=100000&radiusKm=100000 used to hand back every open request in
+        // one response - each one a named elder, a title that often says the private
+        // thing itself, and a distance. The bounds are the server's, the same numbers
+        // /api/discover uses. Clamped, never refused: a stale link keeps working, and
+        // "?radiusKm=" (which binds to null) no longer unboxes into a 500.
+        int page = PageLimits.page(requestedPage);
+        int size = PageLimits.size(requestedSize);
+        double radius = PageLimits.radiusKm(radiusKm);
         User helper = getUser(helperId);
         Map<UUID, ApplicationStatus> myApps = helperApplicationMap(helperId);
         double helperLat = lat != null ? lat : (helper.getLocationLat() != null ? helper.getLocationLat().doubleValue() : 0);
@@ -156,7 +179,7 @@ public class NeedService {
                 .collect(Collectors.toList());
 
         List<Object[]> withinRadius = ranked.stream()
-                .filter(pair -> (double) pair[1] <= radiusKm)
+                .filter(pair -> (double) pair[1] <= radius)
                 .collect(Collectors.toList());
 
         // Sample/demo accounts must never show an empty list — if nothing is within the
@@ -180,9 +203,30 @@ public class NeedService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * The helper's own offers and jobs, newest first: withdrawn ones gone, and nothing
+     * belonging to anyone blocked in either direction.
+     */
     public List<NeedResponse> getMyApplications(UUID helperId) {
+        // SEC-04 by another route. Every row here carries the elder's title,
+        // description, name and LIVE status - exactly what GET /needs/{id} now refuses
+        // across a block - and the app polls this list, so a blocked helper kept
+        // watching a named person's home through it: ASSIGNED says a stranger has been
+        // let in, COMPLETED says when they left. So it subtracts blocks like the two
+        // feeds above it, and like the applicant list the elder sees.
+        //
+        // The whole row goes rather than a stripped one. A block already removes this
+        // pair from every other surface: the offer leaves the elder's applicant list,
+        // her requests leave both feeds, the friendship leaves the connections list and
+        // the chat is closed. A row kept back as an id and a status would be the only
+        // trace left of a relationship that has vanished everywhere else, and both
+        // clients build these rows out of the elder's own fields (title, name,
+        // category), so a hollowed-out row draws as a blank line. Nothing is lost:
+        // unblocking brings the offer and its history straight back.
+        Set<UUID> hidden = blockService.hiddenFor(helperId);
         List<NeedApplication> applications = applicationRepository.findByHelperId(helperId).stream()
                 .filter(a -> a.getStatus() != ApplicationStatus.WITHDRAWN)
+                .filter(a -> !hidden.contains(a.getNeed().getElder().getId()))
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .collect(Collectors.toList());
         Map<UUID, String> elderNames = elderNameMap(applications.stream()
@@ -194,7 +238,10 @@ public class NeedService {
     }
 
     public Page<NeedResponse> getMyNeeds(UUID elderId, int page, int size) {
-        Page<Need> needs = needRepository.findByElderIdOrderByCreatedAtDesc(elderId, PageRequest.of(page, size));
+        // SEC-07, and it also stops a 500: PageRequest.of throws on a negative page or
+        // a zero size, so ?page=-1 used to be an error screen on the elder's own list.
+        Page<Need> needs = needRepository.findByElderIdOrderByCreatedAtDesc(
+                elderId, PageRequest.of(PageLimits.page(page), PageLimits.size(size)));
         Map<UUID, String> elderNames = elderNameMap(needs.getContent());
         return needs.map(n -> toResponse(n, null, true, null, elderNames));
     }
@@ -291,17 +338,33 @@ public class NeedService {
         need.setStatus(NeedStatus.ASSIGNED);
 
         User helper = application.getHelper();
-        Connection connection = connectionRepository.findBetweenUsers(elderId, helper.getId())
-                .orElseGet(() -> Connection.builder()
-                        .userA(need.getElder())
-                        .userB(helper)
-                        .type(ConnectionType.SERVICE)
-                        .initiatedBy(need.getElder())
-                        .currentTrustLevel(TrustLevel.DISCOVERED)
-                        .status(ConnectionStatus.ACTIVE)
-                        .build());
+        Connection existing = connectionRepository.findBetweenUsers(elderId, helper.getId()).orElse(null);
+        // A pause is the one non-live state that keeps its rung, because a pause is
+        // reversible by design: TrustService.resumeProgression hands the same rung back
+        // on one press, and the app promises nothing is lost while a friendship is
+        // paused. Accepting this helper's offer is the elder asking for them again, so
+        // it must not quietly wipe a ladder the two of them actually climbed.
+        boolean wasLive = existing != null
+                && (existing.getStatus() == ConnectionStatus.ACTIVE
+                        || existing.getStatus() == ConnectionStatus.PAUSED);
+        Connection connection = existing != null ? existing : Connection.builder()
+                .userA(need.getElder())
+                .userB(helper)
+                .type(ConnectionType.SERVICE)
+                .initiatedBy(need.getElder())
+                .currentTrustLevel(TrustLevel.DISCOVERED)
+                .status(ConnectionStatus.ACTIVE)
+                .build();
         connection.setStatus(ConnectionStatus.ACTIVE);
-        if (connection.getCurrentTrustLevel() == null) {
+        // Whatever rung a dead row died on dies with it. Accepting an offer reuses the
+        // one row the pair are allowed, so a PENDING, DECLINED or ENDED row used to
+        // come back ACTIVE still standing where it stopped - and the rung is what opens
+        // the phone number (SEC-02: ACTIVE and Phone Ready). The score head start makes
+        // that a two-step harvest: a helper scoring 51 or more sends a friend request
+        // that starts at Phone Ready, the elder turns it down, the helper offers on any
+        // open request, and being accepted hands over her number with no ladder step
+        // ever taken. Coming back is a new beginning, so it begins at the bottom.
+        if (!wasLive || connection.getCurrentTrustLevel() == null) {
             connection.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         }
         connection.resetConfirmations();
