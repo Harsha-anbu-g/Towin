@@ -51,6 +51,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DiscoveryService {
 
+    /**
+     * The distance sent when the caller has no location of their own, so nothing was
+     * measured. It stays 0.0 rather than becoming a null: both clients read a 0 as
+     * "no distance to show" and print the city alone, and a null would have to be
+     * taught to software already on people's phones.
+     */
+    private static final double DISTANCE_NOT_MEASURED_KM = 0.0;
+
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final UserRepository userRepository;
@@ -75,6 +83,10 @@ public class DiscoveryService {
                 .filter(p -> !hidden.contains(p.getUser().getId()))
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .filter(p -> matchesInterest(filter, p.getInterests()))
+                // R2-DISC: the query guards the latitude only, and the location endpoint
+                // accepts a latitude without a longitude. Half a coordinate cannot be
+                // measured from, and used to throw here - blanking the screen for everyone.
+                .filter(p -> hasStoredCell(p.getUser()))
                 .map(p -> Map.entry(p, cellDistanceKm(lat, lng, p.getUser())))
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
                 .collect(Collectors.toList());
@@ -95,22 +107,23 @@ public class DiscoveryService {
         User requester = getUser(requestingUserId);
         double[] origin = CoarseLocation.origin(filter.getLat(), filter.getLng(),
                 requester.getLocationLat(), requester.getLocationLng());
+        // Deliberate: a caller who has no location of their own still gets helpers,
+        // measured against nothing, rather than an error screen.
         boolean hasLocation = origin != null;
-        double lat = hasLocation ? origin[0] : 0.0;
-        double lng = hasLocation ? origin[1] : 0.0;
 
         Set<UUID> hidden = blockService.hiddenFor(requestingUserId);
         List<Map.Entry<HelperProfile, Double>> ranked = helperProfileRepository.findAllActiveWithLocation(requestingUserId)
                 .stream()
                 .filter(p -> !hidden.contains(p.getUser().getId()))
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
-                .map(p -> {
-                    boolean helperHasLocation = p.getUser().getLocationLat() != null && p.getUser().getLocationLng() != null;
-                    double dist = (hasLocation && helperHasLocation)
-                            ? cellDistanceKm(lat, lng, p.getUser())
-                            : 0.0;
-                    return Map.entry(p, dist);
-                })
+                // R2-DISC: someone we cannot place is left out instead of being handed a
+                // distance of nought. That nought was a false claim of being next door, it
+                // sorted them above every real neighbour, and because 0 is inside every
+                // ceiling it walked straight through the radius SEC-07 clamped.
+                .filter(p -> hasStoredCell(p.getUser()))
+                .map(p -> Map.entry(p, hasLocation
+                        ? cellDistanceKm(origin[0], origin[1], p.getUser())
+                        : DISTANCE_NOT_MEASURED_KM))
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
                 .collect(Collectors.toList());
 
@@ -158,6 +171,15 @@ public class DiscoveryService {
                 .trustTier(TrustScoreService.tierFor(score))
                 .distanceKm(CoarseLocation.bandKm(distanceKm))
                 .build();
+    }
+
+    /**
+     * True when both halves of this person's cell are stored, so a distance to them
+     * can actually be measured. Anything less is not a location, and treating it as
+     * one is how a person ends up shown as 0 km from an elder they have never met.
+     */
+    private static boolean hasStoredCell(User person) {
+        return person.getLocationLat() != null && person.getLocationLng() != null;
     }
 
     /**
