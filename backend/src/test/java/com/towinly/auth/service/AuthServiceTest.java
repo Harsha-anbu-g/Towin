@@ -38,13 +38,18 @@ class AuthServiceTest {
     @InjectMocks AuthService authService;
 
     @Test
-    void shouldThrowWhenUsernameAlreadyExists() {
+    void shouldNotSayWhetherAUsernameIsAlreadyTaken() {
+        // This used to throw "Username already taken" straight back at whoever asked,
+        // which let anyone check a handle against the member list. Signup now answers a
+        // taken handle exactly as it answers a free one; the clash is settled when the
+        // emailed link is opened, by the person holding that mailbox
+        // (AuthServiceVerifyEmailTest).
         RegisterRequest req = registerRequest();
-        when(userRepository.existsByUsername("testuser")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.register(req))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Username already taken");
+        assertThatCode(() -> authService.register(req)).doesNotThrowAnyException();
+
+        verify(userRepository, never()).existsByUsername(anyString());
+        verify(pendingRepository).save(any(PendingRegistration.class));
     }
 
     @Test

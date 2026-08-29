@@ -55,6 +55,14 @@ public class AuthService {
     /**
      * Manual signup. We do NOT create a real account here — we hold the signup in
      * pending_registrations and only create the User when the email link is clicked.
+     *
+     * <p>It never says whether the address or the handle already belongs to somebody
+     * (SEC-08). Towinly's members are elderly, and being one implies living alone and
+     * letting strangers in, so "is this person registered?" is a targeting question,
+     * and an email list plus this endpoint used to answer it in bulk. Login and
+     * forgot-password have always answered everybody the same way; this now matches
+     * them. A duplicate is settled through the inbox instead: the address that already
+     * exists is written to, and the caller — who may be anybody — is told nothing.
      */
     @Transactional
     public void register(RegisterRequest request) {
@@ -64,16 +72,16 @@ public class AuthService {
                 && request.getRole() != UserRole.FAMILY) {
             throw new IllegalArgumentException("Role must be ELDER, HELPER, BOTH, or FAMILY");
         }
-        // A username is public in this product, so naming a clash tells an attacker
-        // nothing they could not read off a profile, and the person must pick another.
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username already taken");
-        }
         // The password is judged BEFORE the address is looked at, on purpose: if the
         // duplicate-email return came first, a deliberately weak password would draw
         // no complaint for a member and "too weak" for a stranger, which is the same
         // oracle by another door.
         passwordPolicy.validate(request.getPassword(), request.getUsername(), request.getEmail());
+
+        // Hashed on every path, including the duplicate one below. Bcrypt is by far the
+        // slowest thing register does, so skipping it for a known address would let a
+        // stopwatch answer the question the response refuses to.
+        String passwordHash = passwordEncoder.encode(request.getPassword());
 
         // Anti-enumeration (SEC-08): an address that already belongs to an account
         // gets the very same answer a fresh one does. Saying "Email already
@@ -90,6 +98,10 @@ public class AuthService {
             emailService.sendAlreadyRegisteredEmail(request.getEmail(), verifyBaseUrl + "/login");
             return;
         }
+        // Deliberately no existsByUsername check here - that was the same probe wearing a
+        // different hat ("Username already taken" answered a stranger's question about a
+        // name they read off a profile). verifyEmail still enforces uniqueness, and by
+        // then the answer is going to whoever opened the link in that mailbox.
 
         // Replace any earlier unverified attempt for this email so re-registering just refreshes the link.
         pendingRepository.deleteByEmail(request.getEmail());
@@ -98,7 +110,7 @@ public class AuthService {
         PendingRegistration pending = PendingRegistration.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .passwordHash(passwordHash)
                 .role(request.getRole().name())
                 .dateOfBirth(request.getDateOfBirth())
                 .token(verificationToken)
@@ -175,8 +187,14 @@ public class AuthService {
             pendingRepository.delete(pending);
             throw new IllegalArgumentException("Email already registered");
         }
+        // Signup stopped answering this (see register), so a clash lands here instead.
+        // Saying it plainly is safe now: this link reached one mailbox, and whoever opened
+        // it is holding that mailbox. The staged row goes too — it can never become an
+        // account, and leaving it would only let "resend" walk them into the same wall.
         if (userRepository.existsByUsername(pending.getUsername())) {
-            throw new IllegalArgumentException("Username already taken");
+            pendingRepository.delete(pending);
+            throw new IllegalArgumentException(
+                    "Username already taken. Please sign up again and pick a different one.");
         }
 
         User user = User.builder()

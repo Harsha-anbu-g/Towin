@@ -58,6 +58,26 @@ class AuthServiceVerifyEmailTest {
     }
 
     @Test
+    void verifyEmail_saysPlainlyWhenTheUsernameWasTakenAndClearsTheDeadSignup() {
+        // Signup itself no longer answers "is this handle taken?" (SEC-08), so this is
+        // where a clash surfaces. Saying it here reveals nothing: the person reading it
+        // opened a link that only their own mailbox received. The staged row goes with
+        // it, because that link can never succeed now and re-sending it would only
+        // walk the same person into the same wall.
+        PendingRegistration p = pending("tok", LocalDateTime.now().plusHours(1));
+        when(pendingRepository.findByToken("tok")).thenReturn(Optional.of(p));
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(userRepository.existsByUsername("alice")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.verifyEmail("tok"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username already taken");
+
+        verify(userRepository, never()).save(any());
+        verify(pendingRepository).delete(p);
+    }
+
+    @Test
     void verifyEmail_rejectsUnknownToken() {
         when(pendingRepository.findByToken("nope")).thenReturn(Optional.empty());
 
