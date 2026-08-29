@@ -1,5 +1,6 @@
 package com.towinly.family.service;
 
+import com.towinly.block.service.BlockService;
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.ConnectionType;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -49,6 +51,7 @@ class FamilyStandingServiceTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock S3Service s3Service;
+    @Mock BlockService blockService;
     @InjectMocks FamilyStandingService service;
 
     private User sarah, margaret, harsha;
@@ -345,5 +348,153 @@ class FamilyStandingServiceTest {
                         .state(FamilyStandingState.REVOKED).build()));
 
         assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
+
+    // ── HARD-106 / SEC-05: a block ends the bridge ──
+    // isHidden is symmetric on the server (it asks whether EITHER person blocked
+    // the other), so one stub covers both directions and no test duplicates them.
+
+    private FamilyLink activeLinkMargaretSarah() {
+        return FamilyLink.builder()
+                .elder(margaret).familyUser(sarah).initiatedBy(sarah)
+                .relationship("Daughter").status(FamilyLinkStatus.ACTIVE).build();
+    }
+
+    private void bothUsersResolve() {
+        lenient().when(userRepository.findById(sarah.getId())).thenReturn(Optional.of(sarah));
+        lenient().when(userRepository.findById(harsha.getId())).thenReturn(Optional.of(harsha));
+        lenient().when(userRepository.findById(margaret.getId())).thenReturn(Optional.of(margaret));
+        lenient().when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
+    }
+
+    @Test
+    void standingsFor_dropsAHelperBlockedInEitherDirection() {
+        when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
+
+        assertThat(standings()).isEmpty();
+    }
+
+    @Test
+    void familyBehind_dropsAFamilyMemberBlockedInEitherDirection() {
+        when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        linkSarahBehindMargaret();
+        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
+
+        assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+    }
+
+    @Test
+    void standingFor_derivesNothingAcrossABlock() {
+        when(connectionRepository.findById(sharedConnection.getId()))
+                .thenReturn(Optional.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
+
+        assertThat(service.standingFor(sarah.getId(), sharedConnection.getId())).isNull();
+    }
+
+    @Test
+    void materializeChat_isRefusedAcrossABlock_soNoConnectionIsCreated() {
+        when(connectionRepository.findById(sharedConnection.getId()))
+                .thenReturn(Optional.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        bothUsersResolve();
+        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> service.materializeChat(sarah.getId(), sharedConnection.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+        verify(connectionRepository, never()).save(any(Connection.class));
+    }
+
+    @Test
+    void materializeChat_doesNotReopenATerminalRowAcrossABlock() {
+        when(connectionRepository.findById(sharedConnection.getId()))
+                .thenReturn(Optional.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        // The dead SOCIAL row the unblocked path reopens as FAMILY. Across a block
+        // it must be left exactly as it is: half of it belongs to the blocked person.
+        Connection declined = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(harsha)
+                .type(ConnectionType.SOCIAL).status(ConnectionStatus.DECLINED)
+                .currentTrustLevel(TrustLevel.DISCOVERED).initiatedBy(sarah).build();
+        lenient().when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(Optional.of(declined));
+        bothUsersResolve();
+        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> service.materializeChat(sarah.getId(), sharedConnection.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+        assertThat(declined.getType()).isEqualTo(ConnectionType.SOCIAL);
+        assertThat(declined.getStatus()).isEqualTo(ConnectionStatus.DECLINED);
+        verify(connectionRepository, never()).save(any(Connection.class));
+    }
+
+    @Test
+    void openFamilyMemberChat_isRefusedAcrossABlock() {
+        // The family link still stands; the block closes the door anyway.
+        // Lenient because familyLinkExists asks both seats and only one is stubbed.
+        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        bothUsersResolve();
+        when(blockService.isHidden(sarah.getId(), margaret.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> service.openFamilyMemberChat(sarah.getId(), margaret.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+        verify(connectionRepository, never()).save(any(Connection.class));
+    }
+
+    @Test
+    void chatAllowed_isFalseAcrossABlock_soAnOpenFamilyChatStopsLoading() {
+        Connection familyChat = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(harsha)
+                .type(ConnectionType.FAMILY).status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.DISCOVERED).initiatedBy(sarah).build();
+        when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedConnection));
+        when(familyLinkRepository.findByFamilyUserIdAndStatus(harsha.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of());
+        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
+
+        assertThat(service.chatAllowed(familyChat)).isFalse();
+    }
+
+    @Test
+    void transparency_dropsABlockedStandingButKeepsTheChatTheFamilyAlreadyOpened() {
+        // Locked rule: nothing family-facing is hidden from the elder. A chat their
+        // daughter already opened stays on this page even across a block, because
+        // the elder is a third party to it. The inherited standing goes, because
+        // after the block it is no longer true that she can reach that helper.
+        User devi = User.builder().id(UUID.randomUUID()).fullName("Devi").build();
+        when(familyLinkRepository.findByElderIdAndStatus(margaret.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(activeLinkMargaretSarah()));
+        Connection openedChat = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(harsha)
+                .type(ConnectionType.FAMILY).status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.DISCOVERED).initiatedBy(sarah).build();
+        when(connectionRepository.findByUserAndStatus(sarah.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(openedChat));
+        Connection sharedWithDevi = Connection.builder()
+                .id(UUID.randomUUID()).userA(margaret).userB(devi)
+                .type(ConnectionType.SOCIAL).status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.FIRST_MEET).sharedWithFamily(true)
+                .initiatedBy(devi).build();
+        when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(sharedWithDevi));
+        when(blockService.isHidden(sarah.getId(), devi.getId())).thenReturn(true);
+
+        var rows = service.transparency(margaret.getId()).getConnections();
+
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).getHelperName()).isEqualTo("Harsha");
+        assertThat(rows.get(0).isInherited()).isFalse();
     }
 }
