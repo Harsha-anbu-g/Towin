@@ -13,7 +13,14 @@ public interface HelperProfileRepository extends JpaRepository<HelperProfile, UU
 
     // JOIN FETCH: the user is read for every row (location, trust score), so load
     // it in the same query instead of one lazy select per profile (N+1).
-    @Query("SELECT p FROM HelperProfile p JOIN FETCH p.user u WHERE u.isActive = true AND u.id != :excludeUserId")
+    //
+    // R2-DISC: the name is now true. Without the two location tests, a helper who never
+    // shared a location was loaded anyway, given a manufactured distance of nought, and
+    // so sorted ahead of every real neighbour and passed any radius. Both halves of the
+    // coordinate are checked, because a latitude on its own cannot be measured from
+    // (PUT /api/profile/location accepts one without the other).
+    @Query("SELECT p FROM HelperProfile p JOIN FETCH p.user u WHERE u.isActive = true "
+            + "AND u.locationLat IS NOT NULL AND u.locationLng IS NOT NULL AND u.id != :excludeUserId")
     List<HelperProfile> findAllActiveWithLocation(@org.springframework.data.repository.query.Param("excludeUserId") UUID excludeUserId);
 
     /** Display names and photos for a batch of user ids in one query: rows of [userId, name, photoUrl]. */

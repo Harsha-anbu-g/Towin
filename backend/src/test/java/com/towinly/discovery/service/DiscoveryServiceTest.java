@@ -190,6 +190,21 @@ class DiscoveryServiceTest {
     }
 
     @Test
+    void discoverElders_skipsARowWithHalfACoordinateInsteadOfFailingTheWholeScreen() {
+        // PUT /api/profile/location takes a latitude with no longitude, and the elder query
+        // guards the latitude only, so such a row reached the distance maths and threw:
+        // one account could blank the discovery screen for everybody.
+        ElderProfile halfPlaced = elderAt("HalfPlaced", HOME_LAT + 0.01, HOME_LNG);
+        halfPlaced.getUser().setLocationLng(null);
+        ElderProfile placed = elderAt("Placed", HOME_LAT + 0.01, HOME_LNG);
+        elders(halfPlaced, placed);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverElders(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Placed");
+    }
+
+    @Test
     void discoverElders_defaultsNullScoreAndArraysSafely() {
         ElderProfile elder = elderAt("Bare", HOME_LAT + 0.01, HOME_LNG);
         elder.setInterests(null);
@@ -207,19 +222,77 @@ class DiscoveryServiceTest {
 
     // ── discoverHelpers ──────────────────────────────────────────────────────
 
+    // R2-DISC: a distance we never measured is not a distance of nought.
+    // This test used to assert the opposite - that a helper with no stored coordinate
+    // is listed at 0.0 km, ahead of the real neighbour - which is the hole itself.
     @Test
-    void discoverHelpers_includesHelpersWithoutLocationAtZeroDistance() {
+    void discoverHelpers_hidesAHelperWithNoStoredLocationInsteadOfPlacingThemAtZeroKm() {
         HelperProfile located = helperAt("Located", HOME_LAT + 0.01, HOME_LNG);
         HelperProfile nomad = helperWithoutLocation("Nomad");
         helpers(located, nomad);
 
         List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, new DiscoveryFilter());
 
-        assertThat(result).hasSize(2);
-        // Distance for a helper with no location defaults to 0.0, so they sort first.
-        assertThat(result.get(0).getName()).isEqualTo("Nomad");
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Located");
+    }
+
+    @Test
+    void discoverHelpers_doesNotLetAnUnplaceableHelperSlipPastTheRadius() {
+        // 0.0 is inside every ceiling, so a helper who never shared a location used to
+        // pass the radius filter for every caller on earth, however narrow the ask.
+        helpers(helperWithoutLocation("Nomad"));
+        DiscoveryFilter filter = new DiscoveryFilter();
+        filter.setRadiusKm(1.0);
+
+        assertThat(discoveryService.discoverHelpers(requesterId, filter)).isEmpty();
+    }
+
+    @Test
+    void discoverHelpers_forACallerWithNoLocationListsPlacedHelpersAndSkipsTheRest() {
+        // The caller keeps their results (the deliberate short circuit), but nothing was
+        // measured, so nobody is claimed to be nearby and an unplaceable helper stays out.
+        requester.setLocationLat(null);
+        requester.setLocationLng(null);
+        helpers(helperAt("Anywhere", HOME_LAT + 0.5, HOME_LNG), helperWithoutLocation("Nomad"));
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Anywhere");
         assertThat(result.get(0).getDistanceKm()).isEqualTo(0.0);
-        assertThat(result.get(1).getName()).isEqualTo("Located");
+    }
+
+    @Test
+    void discoverHelpers_stillFallsBackToTheNearestHelpersForADemoSeat() {
+        // A store reviewer signs in on the demo seat; an empty helper screen looks broken,
+        // so the radius is ignored for them. Dropping unplaceable helpers must not end that.
+        requester.setEmail(com.towinly.common.seed.DemoDataSeeder.ELDER_DEMO_EMAIL);
+        helpers(helperAt("FarAway", HOME_LAT + 1.35, HOME_LNG));   // ~150 km, well past the 10 km default
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("FarAway");
+    }
+
+    @Test
+    void discoverHelpers_demoFallbackDoesNotBringBackAnUnplaceableHelper() {
+        requester.setEmail(com.towinly.common.seed.DemoDataSeeder.ELDER_DEMO_EMAIL);
+        helpers(helperAt("FarAway", HOME_LAT + 1.35, HOME_LNG), helperWithoutLocation("Nomad"));
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("FarAway");
+    }
+
+    @Test
+    void theHelperDirectoryQueryOnlyLoadsPeopleWhoHaveAStoredLocation() throws Exception {
+        // The service filters as well, but a row we can never place should not leave the
+        // database at all - the method is called findAllActiveWithLocation, so let it mean it.
+        String jpql = HelperProfileRepository.class
+                .getMethod("findAllActiveWithLocation", UUID.class)
+                .getAnnotation(org.springframework.data.jpa.repository.Query.class)
+                .value();
+
+        assertThat(jpql).contains("u.locationLat IS NOT NULL").contains("u.locationLng IS NOT NULL");
     }
 
     @Test
