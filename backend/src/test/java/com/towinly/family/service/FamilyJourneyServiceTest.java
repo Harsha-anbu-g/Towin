@@ -35,6 +35,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -296,14 +298,13 @@ class FamilyJourneyServiceTest {
         assertThat(h.getHelperPhotoUrl()).isEqualTo("https://signed/photo");
     }
 
-    // --- HARD-106 / SEC-05: a blocked helper leaves the family's journey card ---
+    // --- A block never subtracts a third party from the family's journey ---
 
     @Test
-    void blockedHelperLeavesTheJourney_theRestOfTheElderRowStays() {
-        // The card the app draws (app/family/parent/[elderId].jsx) is built from
-        // sharedHelpers, so a block has to subtract the helper here, not only from
-        // /api/family/standings. Everything elder-level survives: the block is
-        // between the family member and the helper, never about the parent.
+    void aHelperWhoBlockedTheFamilyMemberStaysOnTheJourney() {
+        // The journey card is oversight, not a contact list. SEC-05 dropped this
+        // row, so a helper could blank the family's view of the parent's home by
+        // blocking the daughter, and the screen printed a false "nothing shared".
         linkActive(elder);
         User blockedHelper = buildUser("harry_helper", UserRole.HELPER, 30.0);
         when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
@@ -317,8 +318,20 @@ class FamilyJourneyServiceTest {
 
         ElderJourney entry = service.getJourney(familyUser.getId()).getElders().get(0);
 
-        assertThat(entry.getSharedHelpers()).isEmpty();
+        assertThat(entry.getSharedHelpers()).hasSize(1);
+        assertThat(entry.getSharedHelpers().get(0).getHelperUserId()).isEqualTo(blockedHelper.getId());
         assertThat(entry.getElderId()).isEqualTo(elder.getId());
         assertThat(entry.getOpenNeedsCount()).isEqualTo(1);
+    }
+
+    @Test
+    void aParentTheFamilyMemberBlockedLeavesTheJourneyAltogether() {
+        // This is the pair the block stands between, so this is what it hides:
+        // no name, no photo, no check-in, no open requests, no helper roster.
+        linkActive(elder);
+        when(blockService.hiddenFor(familyUser.getId())).thenReturn(Set.of(elder.getId()));
+
+        assertThat(service.getJourney(familyUser.getId()).getElders()).isEmpty();
+        verify(connectionRepository, never()).findByUserAndStatus(any(), any());
     }
 }
