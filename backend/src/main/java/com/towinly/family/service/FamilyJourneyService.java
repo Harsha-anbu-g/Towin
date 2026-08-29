@@ -9,6 +9,7 @@ import com.towinly.common.service.DisplayNameResolver;
 import com.towinly.common.service.S3Service;
 import com.towinly.common.service.TrustScoreService;
 import com.towinly.connection.entity.Connection;
+import com.towinly.block.service.BlockService;
 import com.towinly.connection.repository.ConnectionRepository;
 import com.towinly.family.dto.FamilyJourneyResponse;
 import com.towinly.family.dto.FamilyJourneyResponse.ElderJourney;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -33,6 +35,11 @@ import java.util.UUID;
  * family. Locked rules (2026-07-18 plan):
  *  - a connection appears iff status ACTIVE and shared_with_family — private
  *    friendships are entirely absent, never greyed or counted;
+ *  - a parent the caller has blocked (in either direction) is absent entirely;
+ *    a block hides the two people it stands between and nobody else, so a helper
+ *    the caller blocked STAYS on the card: this payload is the family's oversight
+ *    of the parent's home, never a contact list, and a helper who blocks the
+ *    daughter must not be able to switch off her view of who is in that home;
  *  - no phone/email/social details ever cross to family;
  *  - check-in + open-needs are elder-level (like SOS) and ignore share switches;
  *  - PENDING/REVOKED family links contribute nothing.
@@ -48,11 +55,18 @@ public class FamilyJourneyService {
     private final ElderProfileRepository elderProfileRepository;
     private final HelperProfileRepository helperProfileRepository;
     private final S3Service s3Service;
+    private final BlockService blockService;
 
     @Transactional(readOnly = true)
     public FamilyJourneyResponse getJourney(UUID callerId) {
+        // A parent this caller and their family member have blocked each other from
+        // drops out whole: name, photo, check-in, open requests and helper roster all
+        // go, because those two are the pair the block stands between. Asked once for
+        // the whole page, never once per row. Nothing else is subtracted here.
+        Set<UUID> hidden = blockService.hiddenFor(callerId);
         List<ElderJourney> elders = familyLinkRepository
                 .findByFamilyUserIdAndStatus(callerId, FamilyLinkStatus.ACTIVE).stream()
+                .filter(link -> !hidden.contains(link.getElder().getId()))
                 .map(link -> toElderJourney(link.getElder()))
                 .toList();
         return FamilyJourneyResponse.builder().elders(elders).build();
@@ -76,6 +90,10 @@ public class FamilyJourneyService {
                         .build())
                 .toList();
 
+        // Deliberately not block-filtered. A helper who blocks the family member is
+        // still in the parent's home, and dropping them here printed a false
+        // "nothing shared" on the very screen the family watches over that home with.
+        // Cutting contact between those two is right; cutting this view is not.
         List<SharedHelper> sharedHelpers = connectionRepository
                 .findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE).stream()
                 .filter(c -> Boolean.TRUE.equals(c.getSharedWithFamily()))

@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -165,15 +166,17 @@ public class MessageService {
             // HARD-106: a block closes the thread for reading and seen-stamping too,
             // not only for new sends. The blocked party may still hold this
             // connectionId from before the block.
-            requireNoBlock(conn, userId);
+            requireNoBlock(conn);
             return conn;
         }
         // Family members reach ONLY the updates thread, and only through the double
         // gate; flipping shared_with_family off cuts them immediately.
-        if (channel == MessageChannel.FAMILY_UPDATES
-                && familyGateHolds(conn) && hasActiveFamilyLink(conn, userId)) {
-            requireNoBlock(conn, userId);
-            return conn;
+        if (channel == MessageChannel.FAMILY_UPDATES && familyGateHolds(conn)) {
+            UUID watchedElderId = familyLinkedSeat(conn, userId);
+            if (watchedElderId != null) {
+                requireFamilyWindowOpen(conn, userId, watchedElderId);
+                return conn;
+            }
         }
         throw new IllegalStateException("Not a participant of this connection");
     }
@@ -197,9 +200,17 @@ public class MessageService {
                 && conn.getCurrentTrustLevel().getValue() >= TrustLevel.FIRST_MEET.getValue();
     }
 
-    private boolean hasActiveFamilyLink(Connection conn, UUID userId) {
-        return activeLinkTo(conn.getUserA().getId(), userId).isPresent()
-                || activeLinkTo(conn.getUserB().getId(), userId).isPresent();
+    /**
+     * The seat this family member holds an ACTIVE link to — the parent they are here
+     * to watch over — or null when no link joins them to either seat. Either seat is
+     * asked, because the elder is userA on some rows and userB on others.
+     */
+    private UUID familyLinkedSeat(Connection conn, UUID familyUserId) {
+        UUID a = conn.getUserA().getId();
+        UUID b = conn.getUserB().getId();
+        if (activeLinkTo(a, familyUserId).isPresent()) return a;
+        if (activeLinkTo(b, familyUserId).isPresent()) return b;
+        return null;
     }
 
     private Optional<FamilyLink> activeLinkTo(UUID elderId, UUID familyUserId) {
@@ -267,19 +278,59 @@ public class MessageService {
     private boolean notBlank(String s) { return s != null && !s.isBlank(); }
 
     /**
-     * HARD-106: a block between the two people on the connection closes the chat, and so
-     * does a block between a family member reaching the thread and either of them. It
-     * closes it for every use of the thread — reading, seen-stamping and sending alike.
+     * HARD-106: a block between the two people on the connection closes their chat.
+     * SEC-03: it guards reading and seen-stamping as well as sending — a blocked party
+     * keeps the connection id long after the row leaves their inbox (an old push payload,
+     * the /chat/&lt;id&gt; link), so the thread refuses them at the door.
      * The sentence names no block; the blocked person is never told.
+     *
+     * Only participants come through here. A family member reading the shared window
+     * onto this thread is judged by {@link #requireFamilyWindowOpen} instead, because
+     * the two people on the connection are not the pair their block stands between.
      */
-    private void requireNoBlock(Connection conn, UUID actorId) {
-        UUID a = conn.getUserA().getId();
-        UUID b = conn.getUserB().getId();
-        boolean closed = blockService.isHidden(a, b)
-                || (!actorId.equals(a) && !actorId.equals(b)
-                    && (blockService.isHidden(actorId, a) || blockService.isHidden(actorId, b)));
+    private void requireNoBlock(Connection conn) {
+        if (blockService.isHidden(conn.getUserA().getId(), conn.getUserB().getId())) {
+            throw new IllegalStateException(BlockService.CHAT_CLOSED);
+        }
+    }
+
+    /**
+     * The block gate for a family member's window onto the shared thread.
+     *
+     * A block is contact control between the two people it stands between. It must never
+     * become a way to switch off somebody else's oversight, so this branch never asks
+     * about the block between the two on the connection: a helper cannot blind a family
+     * member by blocking them, and an elder cutting contact with their helper does not
+     * blank their own family's archive of that thread.
+     *
+     * What does close the window is a block the reader is party to: with the parent they
+     * watch, or with another family member who reads and writes in the same shared thread.
+     * The block list is asked once, and when the reader has blocked nobody (the ordinary
+     * case) nothing further is looked up.
+     */
+    private void requireFamilyWindowOpen(Connection conn, UUID familyReaderId, UUID watchedElderId) {
+        Set<UUID> hidden = blockService.hiddenFor(familyReaderId);
+        if (hidden.isEmpty()) return;
+        boolean closed = hidden.contains(watchedElderId)
+                || otherFamilyReaders(conn, familyReaderId).stream().anyMatch(hidden::contains);
         if (closed) {
             throw new IllegalStateException(BlockService.CHAT_CLOSED);
         }
+    }
+
+    /**
+     * The other family members who can reach this shared thread: anyone holding an
+     * ACTIVE family link to either seat. requireNoBlock only ever knew the two seats,
+     * so without this a block between two of a parent's children left the room they
+     * share wide open in both directions.
+     */
+    private Set<UUID> otherFamilyReaders(Connection conn, UUID familyReaderId) {
+        Set<UUID> readers = new HashSet<>();
+        for (UUID seat : List.of(conn.getUserA().getId(), conn.getUserB().getId())) {
+            familyLinkRepository.findByElderIdAndStatus(seat, FamilyLinkStatus.ACTIVE)
+                    .forEach(link -> readers.add(link.getFamilyUser().getId()));
+        }
+        readers.remove(familyReaderId);
+        return readers;
     }
 }

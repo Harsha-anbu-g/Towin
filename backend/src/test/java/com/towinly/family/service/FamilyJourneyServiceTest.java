@@ -7,6 +7,7 @@ import com.towinly.common.enums.NeedStatus;
 import com.towinly.common.enums.TrustLevel;
 import com.towinly.common.enums.UserRole;
 import com.towinly.common.service.S3Service;
+import com.towinly.block.service.BlockService;
 import com.towinly.connection.entity.Connection;
 import com.towinly.connection.repository.ConnectionRepository;
 import com.towinly.family.dto.FamilyJourneyResponse;
@@ -28,11 +29,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -49,6 +53,7 @@ class FamilyJourneyServiceTest {
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
     @Mock S3Service s3Service;
+    @Mock BlockService blockService;
 
     FamilyJourneyService service;
 
@@ -59,7 +64,8 @@ class FamilyJourneyServiceTest {
     void setUp() {
         service = new FamilyJourneyService(
                 familyLinkRepository, connectionRepository, streakRepository,
-                needRepository, elderProfileRepository, helperProfileRepository, s3Service);
+                needRepository, elderProfileRepository, helperProfileRepository, s3Service,
+                blockService);
         elder = buildUser("margaret_elder", UserRole.ELDER, 24.0);
         familyUser = buildUser("sarah_daughter", UserRole.FAMILY, 0.0);
         lenient().when(elderProfileRepository.findByUserId(any())).thenReturn(Optional.empty());
@@ -290,5 +296,43 @@ class FamilyJourneyServiceTest {
                 .getElders().get(0).getSharedHelpers().get(0);
 
         assertThat(h.getHelperPhotoUrl()).isEqualTo("https://signed/photo");
+    }
+
+
+    // --- A block never subtracts a third party from the family's journey ---
+
+    @Test
+    void aHelperWhoBlockedTheFamilyMemberStaysOnTheJourney() {
+        // The journey card is oversight, not a contact list. SEC-05 dropped this
+        // row, so a helper could blank the family's view of the parent's home by
+        // blocking the daughter, and the screen printed a false "nothing shared".
+        linkActive(elder);
+        User blockedHelper = buildUser("harry_helper", UserRole.HELPER, 30.0);
+        when(connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE))
+                .thenReturn(List.of(
+                        connection(elder, blockedHelper, ConnectionStatus.ACTIVE, true, TrustLevel.FIRST_MEET)));
+        com.towinly.need.entity.Need need = com.towinly.need.entity.Need.builder()
+                .id(UUID.randomUUID()).title("Help with my tablet").status(NeedStatus.OPEN).build();
+        when(needRepository.findByElderIdAndStatusOrderByCreatedAtDesc(elder.getId(), NeedStatus.OPEN))
+                .thenReturn(List.of(need));
+        when(blockService.hiddenFor(familyUser.getId())).thenReturn(Set.of(blockedHelper.getId()));
+
+        ElderJourney entry = service.getJourney(familyUser.getId()).getElders().get(0);
+
+        assertThat(entry.getSharedHelpers()).hasSize(1);
+        assertThat(entry.getSharedHelpers().get(0).getHelperUserId()).isEqualTo(blockedHelper.getId());
+        assertThat(entry.getElderId()).isEqualTo(elder.getId());
+        assertThat(entry.getOpenNeedsCount()).isEqualTo(1);
+    }
+
+    @Test
+    void aParentTheFamilyMemberBlockedLeavesTheJourneyAltogether() {
+        // This is the pair the block stands between, so this is what it hides:
+        // no name, no photo, no check-in, no open requests, no helper roster.
+        linkActive(elder);
+        when(blockService.hiddenFor(familyUser.getId())).thenReturn(Set.of(elder.getId()));
+
+        assertThat(service.getJourney(familyUser.getId()).getElders()).isEmpty();
+        verify(connectionRepository, never()).findByUserAndStatus(any(), any());
     }
 }

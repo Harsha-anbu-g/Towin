@@ -32,6 +32,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,13 +94,18 @@ class FamilyUpdatesChannelTest {
     }
 
     private void linkSarahToElder(FamilyLinkStatus status) {
+        linkToElder(sarah, status);
+    }
+
+    private FamilyLink linkToElder(User familyMember, FamilyLinkStatus status) {
         FamilyLink link = FamilyLink.builder()
-                .id(UUID.randomUUID()).elder(elder).familyUser(sarah)
-                .initiatedBy(sarah).relationship("Daughter").status(status).build();
-        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(elder.getId(), sarah.getId()))
+                .id(UUID.randomUUID()).elder(elder).familyUser(familyMember)
+                .initiatedBy(familyMember).relationship("Daughter").status(status).build();
+        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(elder.getId(), familyMember.getId()))
                 .thenReturn(Optional.of(link));
-        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(helper.getId(), sarah.getId()))
+        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(helper.getId(), familyMember.getId()))
                 .thenReturn(Optional.empty());
+        return link;
     }
 
     private void stubEmptyHistory() {
@@ -314,16 +320,108 @@ class FamilyUpdatesChannelTest {
         verify(messageRepository, never()).findByConnectionIdOrderByCreatedAtDesc(any(), any());
     }
 
-    // HARD-106 (SEC-03): a block between the family reader and either participant
-    // closes the updates thread for reading, exactly as it already closes sending.
+    // --- A block on the family window: whose block closes it, and whose does not ---
+    // A block is contact control between the two people it stands between. It is
+    // never a way to switch off somebody else's view of a parent, so the two on
+    // the connection are not asked about here at all. What closes this window is
+    // a block between the family reader and the parent they watch, or between two
+    // family members who both read the same shared thread.
+
     @Test
-    void familyMemberBlockedByAParticipantCannotReadTheThread() {
+    void familyMemberKeepsTheSharedThreadWhenTheHelperBlockedThem() {
+        // The helper blocked Sarah. That cuts the two of them off from each other;
+        // it does not hand the helper a switch on Sarah's view of her mother's care.
         linkSarahToElder(FamilyLinkStatus.ACTIVE);
-        when(blockService.isHidden(elder.getId(), helper.getId())).thenReturn(false);
-        when(blockService.isHidden(sarah.getId(), elder.getId())).thenReturn(true);
+        stubEmptyHistory();
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(helper.getId()));
+
+        Page<MessageResponse> page = messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30));
+
+        assertThat(page).isNotNull();
+    }
+
+    @Test
+    void familyMemberKeepsTheSharedThreadWhenTheElderBlockedTheHelper() {
+        // Margaret cutting contact with her helper must not blank her daughter's
+        // archive of what was said while that helper was in the house. Their block
+        // is deliberately not stubbed: the point is that this branch never asks,
+        // so whatever the answer would have been cannot close Sarah's window.
+        linkSarahToElder(FamilyLinkStatus.ACTIVE);
+        stubEmptyHistory();
+
+        Page<MessageResponse> page = messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30));
+
+        assertThat(page).isNotNull();
+        verify(blockService, never()).isHidden(elder.getId(), helper.getId());
+        verify(blockService, never()).isHidden(helper.getId(), elder.getId());
+    }
+
+    @Test
+    void familyMemberLosesTheSharedThreadWhenTheParentTheyWatchBlockedThem() {
+        // This is the pair the block is actually between, so this is the window
+        // that closes. Symmetric: it reads the same whichever of them blocked.
+        linkSarahToElder(FamilyLinkStatus.ACTIVE);
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(elder.getId()));
 
         assertThatThrownBy(() -> messageService.getHistory(
                 connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
+
+    @Test
+    void twoFamilyMembersOfTheSameParentWhoBlockedEachOtherBothLoseTheSharedThread() {
+        // The shared thread is a room they both write in, so a block between them
+        // closes it for the pair — and only for the pair.
+        User tom = User.builder().id(UUID.randomUUID()).role(UserRole.FAMILY)
+                .fullName("Tom").username("tom").build();
+        FamilyLink sarahLink = linkToElder(sarah, FamilyLinkStatus.ACTIVE);
+        FamilyLink tomLink = linkToElder(tom, FamilyLinkStatus.ACTIVE);
+        when(familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(sarahLink, tomLink));
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(tom.getId()));
+        when(blockService.hiddenFor(tom.getId())).thenReturn(Set.of(sarah.getId()));
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, tom.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
+
+    @Test
+    void familyMemberKeepsTheSharedThreadWhenTheirBlockIsWithSomebodyOutsideIt() {
+        FamilyLink sarahLink = linkToElder(sarah, FamilyLinkStatus.ACTIVE);
+        when(familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(sarahLink));
+        when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(UUID.randomUUID()));
+        stubEmptyHistory();
+
+        Page<MessageResponse> page = messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30));
+
+        assertThat(page).isNotNull();
+    }
+
+    // A participant reading the shared thread is refused on the same terms as
+    // the private chat: their own block with the other seat closes it (SEC-03).
+    @Test
+    void elderIsRefusedTheSharedThreadWhenTheHelperIsBlocked() {
+        when(blockService.isHidden(elder.getId(), helper.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, elder.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
 
