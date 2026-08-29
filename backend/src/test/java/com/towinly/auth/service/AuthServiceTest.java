@@ -177,11 +177,27 @@ class AuthServiceTest {
 
         assertThatCode(() -> authService.register(req)).doesNotThrowAnyException();
 
-        // No second account, no second pending signup, and no email to the address:
-        // the person who owns it learns nothing from a stranger's attempt.
+        // No second account and no second pending signup. No verification mail
+        // either: that would hand a stranger a working signup for someone else's
+        // address. The owner does get a separate note, covered by the next test.
         verify(userRepository, never()).save(any());
         verify(pendingRepository, never()).save(any(PendingRegistration.class));
         verify(emailService, never()).sendVerificationEmail(any(), anyString());
+    }
+
+    // The caller is told nothing, so without this note a person who simply forgot
+    // they had an account would wait forever for a mail that is never coming, with
+    // no way to find out why. It goes only to the address that already exists, so
+    // a stranger learns nothing from it, and it carries the way back in.
+    @Test
+    void register_tellsTheRealOwnerWhenSomeoneTriesTheirAddress() {
+        RegisterRequest req = registerRequest();
+        req.setEmail("known@member.com");
+        when(userRepository.existsByEmail("known@member.com")).thenReturn(true);
+
+        authService.register(req);
+
+        verify(emailService).sendAlreadyRegisteredEmail(eq("known@member.com"), anyString());
     }
 
     @Test

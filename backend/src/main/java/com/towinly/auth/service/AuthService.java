@@ -82,6 +82,12 @@ public class AuthService {
         // the address is not troubled by a stranger's attempt. login and
         // forgotPassword above already work this way; this path was the outlier.
         if (userRepository.existsByEmail(request.getEmail())) {
+            // The caller is told nothing, but the address's real owner is: a person
+            // who simply forgot they had an account would otherwise wait forever for
+            // a verification mail that is never coming, with no way to find out why.
+            // The note goes only to the address that already exists, so it tells a
+            // stranger nothing, and it carries the way back in.
+            emailService.sendAlreadyRegisteredEmail(request.getEmail(), verifyBaseUrl + "/login");
             return;
         }
 

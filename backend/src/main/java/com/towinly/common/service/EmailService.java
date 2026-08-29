@@ -75,6 +75,23 @@ public class EmailService {
                 "This link expires in 24 hours. If you didn't sign up, you can ignore this email.");
     }
 
+    /**
+     * Sent when someone tries to sign up with an address that already has an
+     * account. The person who typed it is told nothing (SEC-08: naming the clash
+     * confirms who is a member), so this note to the real owner is the only way
+     * a person who simply forgot they had an account learns what happened and
+     * how to get back in.
+     */
+    public void sendAlreadyRegisteredEmail(String to, String loginLink) {
+        send(to, "You already have a Towinly account",
+                "Someone just tried to sign up with this email address.\n\n" +
+                "You already have a Towinly account, so we did not make a second one.\n" +
+                "You can log in here:\n" +
+                loginLink + "\n\n" +
+                "If you forgot your password, choose \"Forgot password\" on that page.\n" +
+                "If this was not you, you can ignore this email. Nothing has changed.");
+    }
+
     public void sendPasswordResetEmail(String to, String resetLink) {
         send(to, "Reset your Towinly password",
                 "We received a request to reset your Towinly password.\n\n" +
