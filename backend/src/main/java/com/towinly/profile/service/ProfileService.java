@@ -11,6 +11,10 @@ import com.towinly.common.service.CoarseLocation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.towinly.common.enums.ConnectionStatus;
+import com.towinly.common.enums.ConnectionType;
+import com.towinly.common.enums.TrustLevel;
+import com.towinly.block.service.BlockService;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -28,6 +32,8 @@ public class ProfileService {
     // gated on reaching it. A repository has no dependencies of its own, so
     // reading connections here introduces no cycle.
     private final com.towinly.connection.repository.ConnectionRepository connectionRepository;
+    // A block refuses the whole profile read, in both directions (see requireNoBlock).
+    private final BlockService blockService;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -153,30 +159,72 @@ public class ProfileService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        boolean isSelf = viewerId != null && viewerId.equals(userId);
+        requireNoBlock(viewerId, userId, isSelf);
+
         ElderProfile elder = elderProfileRepository.findByUserId(userId).orElse(null);
         HelperProfile helper = helperProfileRepository.findByUserId(userId).orElse(null);
 
-        boolean isSelf = viewerId != null && viewerId.equals(userId);
-        return buildProfileResponse(user, elder, helper, isSelf, isSelf || socialsUnlocked(viewerId, userId));
+        return buildProfileResponse(user, elder, helper, isSelf,
+                isSelf || socialsUnlocked(viewerId, userId));
     }
 
     /**
-     * Whether these two have reached the rung the ladder calls "Socials"
-     * (TrustLevel.VERIFIED, stage 5 of 7). The handles used to be public to any
-     * signed-in stranger, which handed out the cross-platform link the ladder
-     * exists to withhold until both people have chosen to go that far (SEC-06).
-     * A paused friendship keeps what it earned; a request that was never
-     * accepted, declined or ended earns nothing.
+     * HARD-106: a block closes this read the way it already closes the chat, the help
+     * request and every listing. Without it the family screens dropped a blocked helper's
+     * card while the profile that card linked to still served her name, photo, bio and
+     * trust score to the person she had cut off.
+     *
+     * The pair here is the two people in the read and nobody else, so this cuts contact
+     * and never a third party's sight of anyone: an elder blocking a helper leaves her
+     * family's read of that helper exactly as it was, which is a safeguarding surface and
+     * not the blocker's to switch off.
+     *
+     * Refused with the sentence every other block gate throws, which names no block: the
+     * blocked person is never told. It runs after the lookup above so an account that is
+     * really gone still reads as gone, and before the profile rows so a refused read
+     * loads nothing about the person it refuses.
      */
-    private boolean socialsUnlocked(UUID viewerId, UUID subjectId) {
-        if (viewerId == null || viewerId.equals(subjectId)) return false;
-        return connectionRepository.findBetweenUsers(viewerId, subjectId)
-                .filter(c -> c.getStatus() == com.towinly.common.enums.ConnectionStatus.ACTIVE
-                        || c.getStatus() == com.towinly.common.enums.ConnectionStatus.PAUSED)
-                .map(c -> c.getCurrentTrustLevel() != null
-                        && c.getCurrentTrustLevel().getValue()
-                                >= com.towinly.common.enums.TrustLevel.VERIFIED.getValue())
-                .orElse(false);
+    private void requireNoBlock(UUID viewerId, UUID targetId, boolean isSelf) {
+        // Nobody can block themselves, and /profile/me must never pay for a block query.
+        if (isSelf || viewerId == null) return;
+        if (blockService.isHidden(viewerId, targetId)) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
+    }
+
+    /**
+     * Facebook, Instagram and gender are the trust ladder's step 4. Only the owner, or
+     * someone on a live friendship that has climbed to VERIFIED, gets them.
+     *
+     * ACTIVE (or PAUSED — a paused friendship keeps what it earned) is one
+     * load-bearing half: a helper scoring 71+ opens a PENDING request already stamped
+     * VERIFIED (ConnectionService.sendRequest), so a level-only test would be one
+     * connection request away from handing a stranger the handles.
+     *
+     * Skipping FAMILY is the other, exactly as PassOnVisibilityService reads the same
+     * question. A FAMILY row is a coordination chat that earns no trust points of its
+     * own, but it can still carry a high level: FamilyStandingService.openHelperChat and
+     * openFamilyMemberChat reopen a terminal row by stamping it FAMILY and ACTIVE, and
+     * they set the trust level only when it is null. A friendship that once reached
+     * TRUSTED therefore comes back as a coordination chat still holding TRUSTED, and
+     * without this filter that chat would open somebody's handles.
+     *
+     * A block never reaches here: requireNoBlock has already refused the whole read.
+     *
+     * The pair is read as a list and not as one row. Two rows for one pair is an ordinary
+     * outcome (see ConnectionRepository.findAllBetweenUsers), and any live row that
+     * qualifies is enough: a stale declined row must not shut a real friendship out of
+     * what it earned, and a single-row read threw on that pair instead of answering.
+     */
+    private boolean socialsUnlocked(UUID viewerId, UUID targetId) {
+        if (viewerId == null) return false;
+        return connectionRepository.findAllBetweenUsers(viewerId, targetId).stream()
+                .filter(c -> c.getType() != ConnectionType.FAMILY)
+                .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE
+                        || c.getStatus() == ConnectionStatus.PAUSED)
+                .anyMatch(c -> c.getCurrentTrustLevel() != null
+                        && c.getCurrentTrustLevel().getValue() >= TrustLevel.VERIFIED.getValue());
     }
 
     private ProfileResponse buildProfileResponse(User user, ElderProfile elder, HelperProfile helper) {
