@@ -315,6 +315,106 @@ class NeedServiceTest {
         verify(applicationRepository, never()).save(any());
     }
 
+    // ── SEC-04: reading one request by its id ────────────────────────────────
+    // Every other need read path already subtracts blocks and the open feed only
+    // ever carries OPEN requests. getOne handed the title, description, elder name
+    // and live status to anyone holding the id: a blocked helper who kept the id
+    // from the feed, and a stranger polling a request that had long left it.
+
+    // The pair asked about is the caller and the elder who posted, and isHidden is
+    // the two-way question (BlockServiceTest.isHidden_asksTheRepositoryForEitherDirection),
+    // so it makes no difference which of the two pressed block.
+    @Test
+    void getOne_isRefusedAcrossABlock_withoutSayingWhy() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(blockService.isHidden(helper.getId(), elder.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> needService.getOne(helper.getId(), need.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+    }
+
+    @Test
+    void getOne_asksTheBlockQuestionAboutTheCallerAndThePostingElder() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+
+        needService.getOne(helper.getId(), need.getId());
+
+        verify(blockService).isHidden(helper.getId(), elder.getId());
+    }
+
+    @Test
+    void getOne_stillReadsAnOpenRequestForAHelperWithNoBlock() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+
+        NeedResponse response = needService.getOne(helper.getId(), need.getId());
+
+        assertThat(response.getId()).isEqualTo(need.getId());
+        assertThat(response.getTitle()).isEqualTo("Test Need");
+        // Who applied stays the elder's business, exactly as before.
+        assertThat(response.getApplications()).isNull();
+    }
+
+    // A request leaves /needs/open and /needs/nearby the moment it stops being
+    // OPEN. Holding its id was a way to keep reading it: OPEN to ASSIGNED says a
+    // stranger has been let into that named person's home, COMPLETED says when
+    // they left, and the title often names the private thing itself.
+    @Test
+    void getOne_refusesAStrangerARequestThatHasLeftTheOpenFeed() {
+        Need need = buildNeed(elder, NeedStatus.ASSIGNED);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(applicationRepository.existsByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(false);
+
+        assertThatThrownBy(() -> needService.getOne(helper.getId(), need.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not found");
+    }
+
+    @Test
+    void getOne_stillReadsAClosedRequestForTheHelperWhoOfferedOnIt() {
+        Need need = buildNeed(elder, NeedStatus.ASSIGNED);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(applicationRepository.existsByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(true);
+
+        NeedResponse response = needService.getOne(helper.getId(), need.getId());
+
+        assertThat(response.getId()).isEqualTo(need.getId());
+        assertThat(response.getStatus()).isEqualTo(NeedStatus.ASSIGNED);
+    }
+
+    @Test
+    void getOne_neverRefusesTheElderTheirOwnRequest() {
+        Need need = buildNeed(elder, NeedStatus.CANCELLED);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+
+        NeedResponse response = needService.getOne(elder.getId(), need.getId());
+
+        assertThat(response.getId()).isEqualTo(need.getId());
+        assertThat(response.getApplications()).isNotNull();
+        verify(blockService, never()).isHidden(any(), any());
+        verify(applicationRepository, never()).existsByNeedIdAndHelperId(any(), any());
+    }
+
+    @Test
+    void getOne_dropsABlockedHelperFromTheApplicantListItHandsTheOwner() {
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        User shown = buildUser(UUID.randomUUID(), UserRole.HELPER);
+        NeedApplication fromHidden = NeedApplication.builder().id(UUID.randomUUID()).need(need).helper(helper)
+                .message("Let me in").status(ApplicationStatus.PENDING).build();
+        NeedApplication fromShown = NeedApplication.builder().id(UUID.randomUUID()).need(need).helper(shown)
+                .message("Happy to help").status(ApplicationStatus.PENDING).build();
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(fromHidden, fromShown));
+        when(blockService.hiddenFor(elder.getId())).thenReturn(java.util.Set.of(helper.getId()));
+
+        NeedResponse response = needService.getOne(elder.getId(), need.getId());
+
+        assertThat(response.getApplications()).extracting(a -> a.getHelperId()).containsExactly(shown.getId());
+    }
+
     private User buildUser(UUID id, UserRole role) {
         return User.builder()
                 .id(id).email(id + "@test.com").phone("+1234567890")

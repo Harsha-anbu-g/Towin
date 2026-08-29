@@ -322,12 +322,39 @@ public class NeedService {
 
     public NeedResponse getOne(UUID callerId, UUID needId) {
         Need need = getNeed(needId);
+        UUID elderId = need.getElder().getId();
         // Only the posting elder may see the applicant list (names + free-text
         // messages) — and the family member they trusted to pick a helper for them,
         // who cannot choose one without reading who applied.
-        boolean isOwner = need.getElder().getId().equals(callerId)
+        boolean isOwner = elderId.equals(callerId)
                 || familyDelegationService.hasPower(
-                        callerId, need.getElder().getId(), DelegatedPower.MANAGE_HELP_REQUESTS);
+                        callerId, elderId, DelegatedPower.MANAGE_HELP_REQUESTS);
+        if (!isOwner) {
+            // SEC-04, the same rule the feeds already follow: an OPEN request is
+            // public to every helper (getAllOpen hands out the very same title and
+            // description), but it leaves both feeds the moment it stops being open,
+            // and holding its id is not a licence to keep reading it. Only the
+            // helpers who actually offered may still open a closed one. Without this
+            // an id captured from the feed became a watch on a named elder's home:
+            // OPEN to ASSIGNED says a stranger has been let in, COMPLETED says when
+            // they left, and the title itself often names the private thing.
+            // Refused with the words a missing request gets, so an id tells a
+            // stranger nothing about whether it exists or whose it is.
+            if (need.getStatus() != NeedStatus.OPEN
+                    && !applicationRepository.existsByNeedIdAndHelperId(needId, callerId)) {
+                throw new IllegalArgumentException("Need not found: " + needId);
+            }
+        }
+        // HARD-106: a block closes this read exactly as it closes the feeds and the
+        // offer. It runs after the check above on purpose — a blocked stranger must
+        // get the same 404 an unblocked one gets, or the pair of answers would tell
+        // them they had been blocked. The elder reading their own request is never
+        // asked (nobody can block themselves), but a family member is: the grant and
+        // the block are both the elder's own act, and the later one wins, the same
+        // way FamilyService.createRequest already refuses across a block.
+        if (!elderId.equals(callerId) && blockService.isHidden(callerId, elderId)) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
         return toResponse(need, null, isOwner);
     }
 

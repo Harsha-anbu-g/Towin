@@ -345,4 +345,41 @@ class NeedOnBehalfTest {
         verify(familyDelegationService, never())
                 .hasPower(any(), any(), org.mockito.ArgumentMatchers.eq(DelegatedPower.LEAVE_REVIEWS));
     }
+
+    // ── SEC-04: reading one request by its id ────────────────────────────────
+
+    @Test
+    void getOne_stillGivesTheFamilyMemberWhoLooksAfterTheRequestTheApplicantList() {
+        // She cannot pick a helper for her mother without reading who offered, and
+        // the new gates on this read must not take that away — including after the
+        // request has been assigned and left the open feed.
+        Need need = existingNeed(NeedStatus.ASSIGNED);
+        NeedApplication application = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(need).helper(helper)
+                .status(ApplicationStatus.ACCEPTED).build();
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(application));
+        sarahMayManageRequests(true);
+
+        NeedResponse response = needService.getOne(sarah.getId(), need.getId());
+
+        assertThat(response.getElderId()).isEqualTo(margaret.getId());
+        assertThat(response.getApplications()).extracting(a -> a.getHelperId())
+                .containsExactly(helper.getId());
+    }
+
+    @Test
+    void getOne_isRefusedWhenABlockStandsBetweenTheParentAndTheFamilyMember() {
+        // The grant and the block are both Margaret's own acts, and the later one
+        // wins: a family request is already refused across a block
+        // (FamilyService.createRequest), and reading her requests is too.
+        Need need = existingNeed(NeedStatus.OPEN);
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        sarahMayManageRequests(true);
+        when(blockService.isHidden(sarah.getId(), margaret.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> needService.getOne(sarah.getId(), need.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+    }
 }
