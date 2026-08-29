@@ -313,4 +313,21 @@ class FamilyUpdatesChannelTest {
                 eq(connId), eq(MessageChannel.MAIN), any());
         verify(messageRepository, never()).findByConnectionIdOrderByCreatedAtDesc(any(), any());
     }
+
+    // HARD-106 (SEC-03): a block between the family reader and either participant
+    // closes the updates thread for reading, exactly as it already closes sending.
+    @Test
+    void familyMemberBlockedByAParticipantCannotReadTheThread() {
+        linkSarahToElder(FamilyLinkStatus.ACTIVE);
+        when(blockService.isHidden(elder.getId(), helper.getId())).thenReturn(false);
+        when(blockService.isHidden(sarah.getId(), elder.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
 }

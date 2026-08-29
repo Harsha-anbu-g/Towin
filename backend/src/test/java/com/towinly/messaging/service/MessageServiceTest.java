@@ -290,4 +290,33 @@ class MessageServiceTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getContent()).isEqualTo("Hi");
     }
+
+    // HARD-106 (SEC-03): a block closes the READ and SEEN paths too, not only sends.
+    // The blocked party may still hold the connectionId from before the block; the
+    // words are the same ones a blocked send gets, and name no block.
+    @Test
+    void getHistory_isRefusedWhenEitherPersonBlockedTheOther() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.getHistory(
+                connId, userA.getId(), MessageChannel.MAIN, PageRequest.of(0, 30)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never())
+                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+    }
+
+    @Test
+    void markSeen_isRefusedWhenEitherPersonBlockedTheOther() {
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> messageService.markSeen(connId, userA.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
+
+        verify(messageRepository, never()).markSeenByConnectionId(any(), any(), any(), any());
+    }
 }
