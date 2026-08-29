@@ -40,6 +40,7 @@ class RepositoryQueryParsingTest {
             UserRepository.class,
             ReviewRepository.class,
             ReportRepository.class,
+            com.towinly.block.repository.UserBlockRepository.class,
     };
 
     private static EntityManagerFactory entityManagerFactory;
