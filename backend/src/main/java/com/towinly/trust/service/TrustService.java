@@ -6,6 +6,7 @@ import com.towinly.common.enums.TrustLevel;
 import com.towinly.common.enums.DelegatedPower;
 import com.towinly.common.enums.UserRole;
 import com.towinly.common.repository.UserRepository;
+import com.towinly.block.service.BlockService;
 import com.towinly.family.service.FamilyDelegationService;
 import com.towinly.connection.entity.Connection;
 import com.towinly.connection.repository.ConnectionRepository;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class TrustService {
 
     private final ConnectionRepository connectionRepository;
+    private final BlockService blockService;
     private final TrustProgressionLogRepository trustLogRepository;
     private final UserRepository userRepository;
     private final SosService sosService;
@@ -73,6 +75,13 @@ public class TrustService {
                     ? "Only the person who started this connection can begin the next step. You can accept it once they do."
                     : "Only the elder can start the next step. You can accept it once they do.");
         }
+
+        // HARD-106, in the order respond uses: block is checked LAST, after
+        // participant, active, the double-confirm and the whose-turn rules, so a
+        // refusal never tells the blocked party that a block is what stopped them.
+        // Judged on the pair the connection is about, so it freezes the ladder
+        // between those two and never reaches the family watching over the elder.
+        requireNoBlockBetween(connection);
 
         connection.setConfirmedByUser(seatId, true);
         // Remember who really pressed it. Passing null when the elder pressed their
@@ -134,6 +143,9 @@ public class TrustService {
     @Transactional
     public TrustStatusResponse pauseProgression(UUID userId, UUID connectionId) {
         Connection connection = getActiveConnection(connectionId, userId);
+        // Block last, after participant and active: pausing is a write on the pair's
+        // ladder, refused across a block with the same words as the other paths.
+        requireNoBlockBetween(connection);
         connection.setStatus(ConnectionStatus.PAUSED);
         connection.setIsPausedBy(getUser(userId));
         connectionRepository.save(connection);
@@ -147,6 +159,9 @@ public class TrustService {
         if (connection.getStatus() != ConnectionStatus.PAUSED) {
             throw new IllegalArgumentException("Connection is not paused");
         }
+        // Block last, after participant and the paused check: reopening the ladder is
+        // a write on the pair, refused across a block just like pause and confirm.
+        requireNoBlockBetween(connection);
         connection.setStatus(ConnectionStatus.ACTIVE);
         connection.setIsPausedBy(null);
         connectionRepository.save(connection);
@@ -156,6 +171,14 @@ public class TrustService {
 
     public TrustStatusResponse getStatus(UUID callerId, UUID connectionId) {
         Connection connection = findConnection(connectionId);
+        // No block gate here, deliberately. This is a read, and it is the read the
+        // family uses to watch over the parent: setFamilyVisibility keeps a shared
+        // friendship on the family's screens after a block, so blinding this read
+        // would be the very oversight regression this round exists to stop (an elder
+        // blocking their helper must not blank their own family's view of the ladder).
+        // A blocked participant reading their own frozen ladder leaks no new PII: the
+        // phone and socials stay gated by their own services on the trust LEVEL, which
+        // cannot advance across the block, so nothing here helps bypass those gates.
         // Seeing where the trust has got to is part of moving it along — nobody can
         // sensibly take the next step blind. So the same family member who may
         // advance it may read it, from the elder's seat and no wider.
@@ -223,6 +246,22 @@ public class TrustService {
     private void requireActive(Connection connection) {
         if (connection.getStatus() != ConnectionStatus.ACTIVE) {
             throw new IllegalArgumentException("Connection is not active");
+        }
+    }
+
+    /**
+     * Refuses a write to the ladder once a block stands between the two people the
+     * connection is about. Symmetric on purpose (either party's block cuts their
+     * shared contact), and about the pair only, never the caller, so a family member
+     * moving the elder's ladder is stopped only by a block between the elder and the
+     * helper, never by their own falling-out with either. Same 409 and same words as
+     * ConnectionService.respond, so the refusal keeps a block indistinguishable from
+     * any other "not right now". Callers must place it LAST, after the rules that
+     * answer the same with or without a block.
+     */
+    private void requireNoBlockBetween(Connection connection) {
+        if (blockService.isHidden(connection.getUserA().getId(), connection.getUserB().getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
         }
     }
 

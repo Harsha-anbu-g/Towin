@@ -55,6 +55,7 @@ class TrustOnBehalfTest {
     @Mock FamilyDelegationService familyDelegationService;
     @Mock ElderProfileRepository elderProfileRepository;
     @Mock HelperProfileRepository helperProfileRepository;
+    @Mock com.towinly.block.service.BlockService blockService;
     @InjectMocks TrustService trustService;
 
     private User margaret;   // the parent, and the elder seat on the ladder

@@ -7,6 +7,7 @@ import com.towinly.common.enums.TrustLevel;
 import com.towinly.common.enums.UserRole;
 import com.towinly.common.enums.VerificationStatus;
 import com.towinly.common.repository.UserRepository;
+import com.towinly.block.service.BlockService;
 import com.towinly.connection.entity.Connection;
 import com.towinly.connection.repository.ConnectionRepository;
 import com.towinly.common.service.TrustScoreService;
@@ -37,6 +38,7 @@ class TrustServiceTest {
     @Mock SosService sosService;
     @Mock TrustScoreService trustScoreService;
     @Mock com.towinly.family.service.FamilyDelegationService familyDelegationService;
+    @Mock BlockService blockService;
     @InjectMocks TrustService trustService;
 
     private User userA;
@@ -192,6 +194,117 @@ class TrustServiceTest {
         assertThatThrownBy(() -> trustService.confirmTrustLevel(userA.getId(), connection.getId(), null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("not active");
+    }
+
+    // ----- HARD-106 / R3-TRUST: a block freezes the ladder for the pair -----
+    // The block check is last, after participant, active and turn rules, so a refusal
+    // never tells the blocked party a block is what stopped them. It answers on the
+    // pair the connection is about, so it cuts the two people's contact without ever
+    // reaching a third party's oversight. NOT_AVAILABLE, the same 409 respond raises.
+
+    @Test
+    void confirmIsRefusedAcrossABlockWhenTheElderActs() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(userRepository.findById(userA.getId())).thenReturn(Optional.of(userA));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> trustService.confirmTrustLevel(userA.getId(), connection.getId(), null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+
+        assertThat(connection.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+        assertThat(connection.isConfirmedByUser(userA.getId())).isFalse();
+    }
+
+    @Test
+    void confirmIsRefusedAcrossABlockWhenTheHelperActs() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED);
+        connection.setConfirmedByUser(userA.getId(), true); // elder already started the step
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(userRepository.findById(userB.getId())).thenReturn(Optional.of(userB));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> trustService.confirmTrustLevel(userB.getId(), connection.getId(), null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+
+        assertThat(connection.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+        assertThat(connection.isConfirmedByUser(userB.getId())).isFalse();
+    }
+
+    @Test
+    void pauseIsRefusedAcrossABlockWhenTheElderActs() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.MESSAGING);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> trustService.pauseProgression(userA.getId(), connection.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+
+        assertThat(connection.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+    }
+
+    @Test
+    void pauseIsRefusedAcrossABlockWhenTheHelperActs() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.MESSAGING);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> trustService.pauseProgression(userB.getId(), connection.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+
+        assertThat(connection.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+    }
+
+    @Test
+    void resumeIsRefusedAcrossABlockWhenTheElderActs() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.PAUSED, TrustLevel.MESSAGING);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> trustService.resumeProgression(userA.getId(), connection.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+
+        assertThat(connection.getStatus()).isEqualTo(ConnectionStatus.PAUSED);
+    }
+
+    @Test
+    void resumeIsRefusedAcrossABlockWhenTheHelperActs() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.PAUSED, TrustLevel.MESSAGING);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> trustService.resumeProgression(userB.getId(), connection.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(BlockService.NOT_AVAILABLE);
+
+        assertThat(connection.getStatus()).isEqualTo(ConnectionStatus.PAUSED);
+    }
+
+    @Test
+    void theLadderStillClimbsNormallyWhenNoBlockStandsBetweenThePair() {
+        Connection connection = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED);
+        connection.setConfirmedByUser(userA.getId(), true);
+
+        when(connectionRepository.findById(connection.getId())).thenReturn(Optional.of(connection));
+        when(userRepository.findById(userB.getId())).thenReturn(Optional.of(userB));
+        when(trustLogRepository.findByConnectionIdOrderByCreatedAtDesc(connection.getId())).thenReturn(List.of());
+        when(connectionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(blockService.isHidden(userA.getId(), userB.getId())).thenReturn(false);
+
+        TrustStatusResponse response = trustService.confirmTrustLevel(userB.getId(), connection.getId(), null);
+
+        assertThat(response.getCurrentLevel()).isEqualTo(TrustLevel.MESSAGING);
     }
 
     private User buildUser(UUID id, UserRole role) {
