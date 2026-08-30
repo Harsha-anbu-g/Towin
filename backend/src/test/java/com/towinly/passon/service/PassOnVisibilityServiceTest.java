@@ -1,5 +1,6 @@
 package com.towinly.passon.service;
 
+import com.towinly.block.service.BlockService;
 import com.towinly.common.entity.User;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.ConnectionType;
@@ -30,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * The whole mitigation for the feature's biggest risk: there is no database-level backstop
@@ -45,6 +47,7 @@ class PassOnVisibilityServiceTest {
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock ConnectionRepository connectionRepository;
     @Mock ReleaseGate releases;
+    @Mock BlockService blocks;
     @InjectMocks PassOnVisibilityService service;
 
     private User margaret, sarah, tom, nina, stranger;
@@ -64,6 +67,8 @@ class PassOnVisibilityServiceTest {
                 .thenReturn(Optional.empty());
         // And Margaret is alive. Nothing has been released unless a test says so.
         lenient().when(releases.isReleased(any())).thenReturn(false);
+        // Nobody has blocked anybody unless a test says so.
+        lenient().when(blocks.isHidden(any(), any())).thenReturn(false);
     }
 
     private User user(String name) {
@@ -256,6 +261,66 @@ class PassOnVisibilityServiceTest {
         assertThat(service.canRead(story(PassOnAudience.FAMILY), margaret.getId())).isTrue();
         assertThat(service.canRead(story(PassOnAudience.HELPERS), margaret.getId())).isTrue();
         assertThat(service.canRead(letterTo(sarah), margaret.getId())).isTrue();
+    }
+
+    // ── a block cuts off the reader ──
+    //
+    // Reading what an elder wrote is contact, and a block cuts contact between the two people
+    // it is about. The gate sits above every audience and above the read-receipt stamp, so a
+    // blocked reader can neither reach an audience that would say yes nor leave a footprint.
+
+    @Test
+    void aReaderTheElderBlockedCannotReadEvenAtTheTopOfTheLadder() {
+        // Tom climbed all the way to the top of the trust ladder, which HELPERS opens to.
+        // Then Margaret blocked him. The block is checked first and the ladder is never asked.
+        friendshipBetween(margaret, tom, friendship(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED));
+        when(blocks.isHidden(margaret.getId(), tom.getId())).thenReturn(true);
+
+        assertThat(service.canRead(story(PassOnAudience.HELPERS), tom.getId())).isFalse();
+        verify(connectionRepository, never()).findBetweenUsers(any(), any());
+    }
+
+    @Test
+    void aReaderWhoBlockedTheElderIsAlsoRefused() {
+        // The other direction: Tom blocked Margaret. isHidden folds both directions together
+        // (proven in BlockServiceTest.isHidden_asksTheRepositoryForEitherDirection), so canRead
+        // asks the one two-way question and shuts him out whichever of them cut contact.
+        friendshipBetween(margaret, tom, friendship(margaret, tom, ConnectionStatus.ACTIVE, TrustLevel.TRUSTED));
+        when(blocks.isHidden(margaret.getId(), tom.getId())).thenReturn(true);
+
+        assertThat(service.canRead(story(PassOnAudience.HELPERS), tom.getId())).isFalse();
+        // The gate consults the symmetric accessor, never a one-way one that could miss a side.
+        verify(blocks).isHidden(margaret.getId(), tom.getId());
+    }
+
+    @Test
+    void aBlockedFamilyMemberCannotReadTheFamilyAudience() {
+        // On the family list and active, which FAMILY opens to — but blocked, so the link is
+        // never even looked at.
+        familyLink(margaret, sarah, FamilyLinkStatus.ACTIVE);
+        when(blocks.isHidden(margaret.getId(), sarah.getId())).thenReturn(true);
+
+        assertThat(service.canRead(story(PassOnAudience.FAMILY), sarah.getId())).isFalse();
+        verify(familyLinkRepository, never()).findByElderIdAndFamilyUserId(any(), any());
+    }
+
+    @Test
+    void aBlockedPersonCannotReadTheLetterAddressedToThem() {
+        // The most private thing in the product: a letter Margaret wrote to Sarah by name.
+        // A block stops even the named person, and because this returns false, the read path
+        // never reaches the first-read stamp — no footprint is left on the letter.
+        PassOnItem letter = letterTo(sarah);
+        when(blocks.isHidden(margaret.getId(), sarah.getId())).thenReturn(true);
+
+        assertThat(service.canRead(letter, sarah.getId())).isFalse();
+    }
+
+    @Test
+    void theWriterIsNeverAskedAboutABlockOnHerOwnPage() {
+        // The owner short circuit sits above the block gate. A person is not hidden from
+        // herself, and she must never be asked.
+        assertThat(service.canRead(story(PassOnAudience.HELPERS), margaret.getId())).isTrue();
+        verify(blocks, never()).isHidden(any(), any());
     }
 
     // ── "after I am gone", and the one thing that opens it ──
