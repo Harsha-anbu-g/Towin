@@ -29,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -171,7 +170,7 @@ public class MessageService {
         if (channel == MessageChannel.FAMILY_UPDATES && familyGateHolds(conn)) {
             UUID watchedElderId = familyLinkedSeat(conn, userId);
             if (watchedElderId != null) {
-                requireFamilyWindowOpen(conn, userId, watchedElderId);
+                requireFamilyWindowOpen(userId, watchedElderId);
                 return conn;
             }
         }
@@ -294,40 +293,20 @@ public class MessageService {
     /**
      * The block gate for a family member's window onto the shared thread.
      *
-     * A block is contact control between the two people it stands between. It must never
-     * become a way to switch off somebody else's oversight, so this branch never asks
-     * about the block between the two on the connection: a helper cannot blind a family
-     * member by blocking them, and an elder cutting contact with their helper does not
-     * blank their own family's archive of that thread.
+     * A block is contact control between the two people it stands between, and the
+     * ONE block that closes this window is the one the reader is party to WITH THE
+     * PARENT THEY WATCH. Nothing else does.
      *
-     * What does close the window is a block the reader is party to: with the parent they
-     * watch, or with another family member who reads and writes in the same shared thread.
-     * The block list is asked once, and when the reader has blocked nobody (the ordinary
-     * case) nothing further is looked up.
+     * In particular a block between two family members who both read this same thread
+     * is a falling-out between them; it is not a lever either can pull on the other's
+     * oversight of the parent. Two siblings at odds over their mother's care must each
+     * keep their own view of it, so this gate no longer looks at the other readers.
+     * Whether two blocked siblings should be stopped from messaging EACH OTHER is a
+     * write/contact concern for a different door, never a reason to blank one's read.
      */
-    private void requireFamilyWindowOpen(Connection conn, UUID familyReaderId, UUID watchedElderId) {
-        Set<UUID> hidden = blockService.hiddenFor(familyReaderId);
-        if (hidden.isEmpty()) return;
-        boolean closed = hidden.contains(watchedElderId)
-                || otherFamilyReaders(conn, familyReaderId).stream().anyMatch(hidden::contains);
-        if (closed) {
+    private void requireFamilyWindowOpen(UUID familyReaderId, UUID watchedElderId) {
+        if (blockService.hiddenFor(familyReaderId).contains(watchedElderId)) {
             throw new IllegalStateException(BlockService.CHAT_CLOSED);
         }
-    }
-
-    /**
-     * The other family members who can reach this shared thread: anyone holding an
-     * ACTIVE family link to either seat. requireNoBlock only ever knew the two seats,
-     * so without this a block between two of a parent's children left the room they
-     * share wide open in both directions.
-     */
-    private Set<UUID> otherFamilyReaders(Connection conn, UUID familyReaderId) {
-        Set<UUID> readers = new HashSet<>();
-        for (UUID seat : List.of(conn.getUserA().getId(), conn.getUserB().getId())) {
-            familyLinkRepository.findByElderIdAndStatus(seat, FamilyLinkStatus.ACTIVE)
-                    .forEach(link -> readers.add(link.getFamilyUser().getId()));
-        }
-        readers.remove(familyReaderId);
-        return readers;
     }
 }

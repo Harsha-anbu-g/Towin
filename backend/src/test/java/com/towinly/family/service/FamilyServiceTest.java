@@ -25,6 +25,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -80,16 +81,20 @@ class FamilyServiceTest {
         when(familyLinkRepository.save(any(FamilyLink.class))).thenAnswer(i -> i.getArgument(0));
     }
 
-    // HARD-106: a blocked person cannot put a family request in front of the blocker.
+    // HARD-106 + SEC-08: a blocked person cannot put a family request in front of the
+    // blocker, and the refusal is INDISTINGUISHABLE from a real send — a distinct
+    // "not available" would itself confirm the person exists. Nothing is saved.
     @Test
-    void createRequest_isRefusedAcrossABlock_withoutSayingWhy() {
+    void createRequest_acrossABlock_answersLikeARealSend_andSavesNothing() {
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
         when(userRepository.findByUsername(daughter.getUsername())).thenReturn(Optional.of(daughter));
         when(blockService.isHidden(elder.getId(), daughter.getId())).thenReturn(true);
 
-        assertThatThrownBy(() -> familyService.createRequest(elder.getId(), request("sarah_daughter", "family")))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
+        FamilyLinkResponse response =
+                familyService.createRequest(elder.getId(), request("sarah_daughter", "family"));
+
+        assertThat(response.getStatus()).isEqualTo(FamilyLinkStatus.PENDING);
+        assertThat(response.getOtherUserName()).isNull();
         verify(familyLinkRepository, never()).save(any(FamilyLink.class));
     }
 
@@ -142,29 +147,80 @@ class FamilyServiceTest {
     }
 
     @Test
-    void targetOfSideElderMustBeAnElder_rejectedWithGenericMessage() {
-        // A HELPER cannot take the elder seat; the message stays generic so
-        // identifiers cannot be probed for account existence/role.
+    void targetOfSideElderThatIsNotAnElder_answeredLikeARealSend_soRoleCannotBeProbed() {
+        // A HELPER cannot take the elder seat, but the answer is the same
+        // acknowledgement a real send returns — so an identifier cannot be probed
+        // for whether it is a member, nor for its role (SEC-08). Nothing is saved.
         User helper = buildUser("harry_helper", UserRole.HELPER);
         when(userRepository.findById(daughter.getId())).thenReturn(Optional.of(daughter));
         when(userRepository.findByUsername("harry_helper")).thenReturn(Optional.of(helper));
 
-        assertThatThrownBy(() -> familyService.createRequest(daughter.getId(), request("harry_helper", "elder")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("We couldn't find that person");
+        FamilyLinkResponse response =
+                familyService.createRequest(daughter.getId(), request("harry_helper", "elder"));
+
+        assertThat(response.getStatus()).isEqualTo(FamilyLinkStatus.PENDING);
+        assertThat(response.getOtherUserName()).isNull();
         verify(familyLinkRepository, never()).save(any());
     }
 
     // --- identifier resolution (reuses the login lookup semantics) ---
 
     @Test
-    void unknownIdentifierRejectedWithGenericMessage() {
+    void unknownIdentifier_answeredLikeARealSend_soAbsenceCannotBeProbed() {
+        // An identifier that belongs to nobody gets the same acknowledgement a real
+        // send returns (SEC-08): the response never confirms a person is NOT a member,
+        // just as it never confirms they are. Nothing is saved.
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
         when(userRepository.findByUsername("nobody")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> familyService.createRequest(elder.getId(), request("nobody", "family")))
+        FamilyLinkResponse response =
+                familyService.createRequest(elder.getId(), request("nobody", "family"));
+
+        assertThat(response.getStatus()).isEqualTo(FamilyLinkStatus.PENDING);
+        assertThat(response.getOtherUserName()).isNull();
+        verify(familyLinkRepository, never()).save(any());
+    }
+
+    @Test
+    void createRequest_answersAStrangerExactlyLikeARealMember_soMembershipCannotBeProbed() {
+        // A real, invitable member.
+        when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
+        when(userRepository.findByUsername("sarah_daughter")).thenReturn(Optional.of(daughter));
+        when(familyLinkRepository.save(any(FamilyLink.class))).thenAnswer(i -> i.getArgument(0));
+        FamilyLinkResponse forMember =
+                familyService.createRequest(elder.getId(), request("sarah_daughter", "family"));
+
+        // An identifier that belongs to nobody.
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+        FamilyLinkResponse forStranger =
+                familyService.createRequest(elder.getId(), request("ghost", "family"));
+
+        // Byte-for-byte the same acknowledgement, and never the member's name: there
+        // is no way to tell a member from a stranger off this response.
+        assertThat(forStranger.getStatus()).isEqualTo(forMember.getStatus());
+        assertThat(forMember.getOtherUserName()).isNull();
+        assertThat(forStranger.getOtherUserName()).isNull();
+        assertThat(forMember.getOtherUserId()).isNull();
+        assertThat(forStranger.getOtherUserId()).isNull();
+        // The real invite saved once; the stranger saved nothing.
+        verify(familyLinkRepository, times(1)).save(any(FamilyLink.class));
+    }
+
+    @Test
+    void dailyCap_isCheckedBeforeTheTargetIsResolved_soACappedCallerCannotEnumerate() {
+        when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
+        when(familyLinkRepository.countByInitiatedByIdAndCreatedAtAfter(
+                eq(elder.getId()), any(LocalDateTime.class))).thenReturn(10L);
+
+        assertThatThrownBy(() -> familyService.createRequest(elder.getId(), request("anybody", "family")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("We couldn't find that person");
+                .hasMessageContaining("Daily family request limit reached");
+
+        // The identifier is never even looked up, so a capped account cannot use this
+        // endpoint to probe who exists.
+        verify(userRepository, never()).findByUsername(anyString());
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(userRepository, never()).findByPhone(anyString());
     }
 
     @Test
@@ -249,8 +305,10 @@ class FamilyServiceTest {
 
     @Test
     void elderCapAtFiveCountsPendingPlusActive() {
+        // The caller holds the elder seat here (side = family), so their family cap is
+        // evaluated before the target is resolved — no findByUsername stub, because the
+        // resolve is never reached once the cap is hit.
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
-        when(userRepository.findByUsername("sarah_daughter")).thenReturn(Optional.of(daughter));
         when(familyLinkRepository.countByElderIdAndStatusIn(eq(elder.getId()), anyCollection()))
                 .thenReturn(5L);
 
@@ -267,8 +325,9 @@ class FamilyServiceTest {
 
     @Test
     void rateLimitTenRequestsPerDayPerUser() {
+        // The daily cap is the caller's own, evaluated before the target is resolved,
+        // so no findByUsername stub is needed (the resolve is never reached).
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
-        when(userRepository.findByUsername("sarah_daughter")).thenReturn(Optional.of(daughter));
         when(familyLinkRepository.countByInitiatedByIdAndCreatedAtAfter(eq(elder.getId()), any(LocalDateTime.class)))
                 .thenReturn(10L);
 

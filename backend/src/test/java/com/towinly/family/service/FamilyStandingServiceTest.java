@@ -369,33 +369,40 @@ class FamilyStandingServiceTest {
     }
 
     @Test
-    void standingsFor_dropsAHelperBlockedInEitherDirection() {
+    void standingsFor_keepsAHelperBlockedByOrAgainstTheFamilyMember() {
+        // R3-FAM item 1: oversight of a shared helper is not a contact list. A helper
+        // who blocks the daughter (or whom she blocks) stays on her standings, exactly
+        // as they stay on the journey screen. Cutting their contact is handled where
+        // contact happens (materializeChat/chatAllowed), never by blanking this view.
         when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of(sharedConnection));
-        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
 
-        assertThat(standings()).isEmpty();
+        assertThat(standings()).hasSize(1);
     }
 
     @Test
-    void familyBehind_dropsAFamilyMemberBlockedInEitherDirection() {
+    void familyBehind_keepsAFamilyMemberBlockedByOrAgainstTheHelper() {
+        // The same rule from the helper's seat: the family member who watches over the
+        // shared elder stays on the helper's behind-me list even across a block. The
+        // block cuts their contact, not the helper's awareness of who can watch.
         when(connectionRepository.findByUserAndStatus(harsha.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of(sharedConnection));
         linkSarahBehindMargaret();
-        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
 
-        assertThat(service.familyBehind(harsha.getId()).getEntries()).isEmpty();
+        assertThat(service.familyBehind(harsha.getId()).getEntries()).hasSize(1);
     }
 
     @Test
-    void standingFor_derivesNothingAcrossABlock() {
+    void standingFor_stillDerivesAcrossABlock_becauseContactIsGatedElsewhere() {
+        // standingFor is the single-connection derivation behind the view. It no longer
+        // returns null across a block: the helper stays visible, and the block is
+        // enforced at the doors (materializeChat, chatAllowed), not in the derivation.
         when(connectionRepository.findById(sharedConnection.getId()))
                 .thenReturn(Optional.of(sharedConnection));
         when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
                 .thenReturn(Optional.of(activeLinkMargaretSarah()));
-        when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
 
-        assertThat(service.standingFor(sarah.getId(), sharedConnection.getId())).isNull();
+        assertThat(service.standingFor(sarah.getId(), sharedConnection.getId())).isNotNull();
     }
 
     @Test
@@ -455,25 +462,24 @@ class FamilyStandingServiceTest {
 
     @Test
     void chatAllowed_isFalseAcrossABlock_soAnOpenFamilyChatStopsLoading() {
+        // The send gate is where the family↔helper block is now enforced: the two on
+        // the chat are exactly the pair the block stands between, so it shuts here even
+        // while the standing above stays visible. Checked up front, before any bridge.
         Connection familyChat = Connection.builder()
                 .id(UUID.randomUUID()).userA(sarah).userB(harsha)
                 .type(ConnectionType.FAMILY).status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.DISCOVERED).initiatedBy(sarah).build();
-        when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
-                .thenReturn(List.of(sharedConnection));
-        when(familyLinkRepository.findByFamilyUserIdAndStatus(harsha.getId(), FamilyLinkStatus.ACTIVE))
-                .thenReturn(List.of());
         when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
 
         assertThat(service.chatAllowed(familyChat)).isFalse();
     }
 
     @Test
-    void transparency_dropsABlockedStandingButKeepsTheChatTheFamilyAlreadyOpened() {
-        // Locked rule: nothing family-facing is hidden from the elder. A chat their
-        // daughter already opened stays on this page even across a block, because
-        // the elder is a third party to it. The inherited standing goes, because
-        // after the block it is no longer true that she can reach that helper.
+    void transparency_keepsAnInheritedStandingAcrossABlock_nothingIsHiddenFromTheElder() {
+        // Locked rule: nothing family-facing is hidden from the elder, and R3-FAM item
+        // 1: a block never blanks oversight. A chat the daughter opened stays (the elder
+        // is a third party to it), AND the inherited standing stays too — after the
+        // block it is STILL true that the standing exists, only contact is cut.
         User devi = User.builder().id(UUID.randomUUID()).fullName("Devi").build();
         when(familyLinkRepository.findByElderIdAndStatus(margaret.getId(), FamilyLinkStatus.ACTIVE))
                 .thenReturn(List.of(activeLinkMargaretSarah()));
@@ -490,13 +496,11 @@ class FamilyStandingServiceTest {
                 .initiatedBy(devi).build();
         when(connectionRepository.findByUserAndStatus(margaret.getId(), ConnectionStatus.ACTIVE))
                 .thenReturn(List.of(sharedWithDevi));
-        when(blockService.isHidden(sarah.getId(), devi.getId())).thenReturn(true);
 
         var rows = service.transparency(margaret.getId()).getConnections();
 
-        assertThat(rows).hasSize(1);
-        assertThat(rows.get(0).getHelperName()).isEqualTo("Harsha");
-        assertThat(rows.get(0).isInherited()).isFalse();
+        assertThat(rows).hasSize(2);
+        assertThat(rows).extracting(r -> r.getHelperName()).contains("Harsha", "Devi");
     }
 
     // ── Round two: the block hides the pair it stands between, not a third party ──
@@ -548,7 +552,10 @@ class FamilyStandingServiceTest {
     }
 
     @Test
-    void openFamilyMemberChat_reopensADeadRowAtTheBottomOfTheLadder() {
+    void openFamilyMemberChat_keepsTheEarnedRungWhenReopeningARowThatWasReallyActive() {
+        // R3-FAM item 5 / shared rule: an ENDED row was genuinely ACTIVE once, so it
+        // keeps the rung the pair actually climbed. Resetting a real, since-ended
+        // friendship would silently drop that person out of the family's standing.
         // Lenient because familyLinkExists asks both seats and only one is stubbed.
         lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
                 .thenReturn(Optional.of(activeLinkMargaretSarah()));
@@ -564,7 +571,51 @@ class FamilyStandingServiceTest {
 
         assertThat(ended.getType()).isEqualTo(ConnectionType.FAMILY);
         assertThat(ended.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
-        assertThat(ended.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+        assertThat(ended.getCurrentTrustLevel()).isEqualTo(TrustLevel.VERIFIED);
+    }
+
+    @Test
+    void openFamilyMemberChat_resetsANeverActiveRowToTheBottom() {
+        // A DECLINED row was never a real connection — only ever a granted head start,
+        // and here explicitly refused — so it restarts at DISCOVERED, dropping any
+        // head-start rung it carried.
+        lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        Connection declined = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(margaret)
+                .type(ConnectionType.SOCIAL).status(ConnectionStatus.DECLINED)
+                .currentTrustLevel(TrustLevel.VERIFIED).initiatedBy(sarah).build();
+        when(connectionRepository.findBetweenUsers(sarah.getId(), margaret.getId()))
+                .thenReturn(Optional.of(declined));
+        bothUsersResolve();
+
+        service.openFamilyMemberChat(sarah.getId(), margaret.getId());
+
+        assertThat(declined.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+    }
+
+    @Test
+    void materializeChat_keepsTheEarnedRungWhenReopeningAnEndedFriendship() {
+        // The pair had a real, since-ended friendship (VERIFIED). Reopening the family
+        // chat keeps that earned rung — only never-active rows restart at the bottom.
+        // The same rule as openFamilyMemberChat, applied here so the two cannot diverge.
+        when(connectionRepository.findById(sharedConnection.getId()))
+                .thenReturn(Optional.of(sharedConnection));
+        when(familyLinkRepository.findByElderIdAndFamilyUserId(margaret.getId(), sarah.getId()))
+                .thenReturn(Optional.of(activeLinkMargaretSarah()));
+        Connection ended = Connection.builder()
+                .id(UUID.randomUUID()).userA(sarah).userB(harsha)
+                .type(ConnectionType.SOCIAL).status(ConnectionStatus.ENDED)
+                .currentTrustLevel(TrustLevel.VERIFIED).initiatedBy(sarah).build();
+        when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(Optional.of(ended));
+        bothUsersResolve();
+
+        service.materializeChat(sarah.getId(), sharedConnection.getId());
+
+        assertThat(ended.getType()).isEqualTo(ConnectionType.FAMILY);
+        assertThat(ended.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+        assertThat(ended.getCurrentTrustLevel()).isEqualTo(TrustLevel.VERIFIED);
     }
 
     @Test
