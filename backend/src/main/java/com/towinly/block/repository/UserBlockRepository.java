@@ -37,4 +37,16 @@ public interface UserBlockRepository extends JpaRepository<UserBlock, UUID> {
            OR (b.blocker.id = :b AND b.blocked.id = :a)
         """)
     boolean existsBetween(@Param("a") UUID a, @Param("b") UUID b);
+
+    /**
+     * The people this user has blocked. One direction only: the callers that need to tell
+     * "I cut contact with them" apart from "they cut contact with me" cannot use
+     * {@link #findHiddenUserIds}, which folds both directions together.
+     */
+    @Query("SELECT b.blocked.id FROM UserBlock b WHERE b.blocker.id = :userId")
+    List<UUID> findBlockedByUserIds(@Param("userId") UUID userId);
+
+    /** The people who have blocked this user. The other direction of {@link #findBlockedByUserIds}. */
+    @Query("SELECT b.blocker.id FROM UserBlock b WHERE b.blocked.id = :userId")
+    List<UUID> findBlockersOfUserIds(@Param("userId") UUID userId);
 }
