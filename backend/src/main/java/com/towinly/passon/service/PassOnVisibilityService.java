@@ -5,6 +5,7 @@ import com.towinly.common.enums.ConnectionType;
 import com.towinly.common.enums.FamilyLinkStatus;
 import com.towinly.common.enums.PassOnRelease;
 import com.towinly.common.enums.TrustLevel;
+import com.towinly.block.service.BlockService;
 import com.towinly.connection.entity.Connection;
 import com.towinly.connection.repository.ConnectionRepository;
 import com.towinly.family.entity.FamilyLink;
@@ -35,6 +36,11 @@ import java.util.UUID;
  *   HELPERS  — a live friendship that reached the top of the trust ladder. Never a
  *              coordination chat, and never a stranger who connected this week.
  *   PERSON   — that one person and nobody else, not even her family.
+ *
+ * A block sits above every one of those. Reading what she wrote is contact, and a block cuts
+ * contact between the two people it is about, so a reader hidden from the owner is refused
+ * before any audience is even consulted — and, because the read-receipt stamp fires only when
+ * this says yes, without leaving a footprint on her letter.
  */
 @Service
 @RequiredArgsConstructor
@@ -43,6 +49,7 @@ public class PassOnVisibilityService {
     private final FamilyLinkRepository familyLinkRepository;
     private final ConnectionRepository connectionRepository;
     private final ReleaseGate releases;
+    private final BlockService blocks;
 
     /** May this reader open this story or letter, right now? */
     @Transactional(readOnly = true)
@@ -51,8 +58,18 @@ public class PassOnVisibilityService {
 
         UUID ownerId = item.getOwner().getId();
         // Her own page, always — no audience, no link and no ladder stands between a person
-        // and what she wrote herself.
+        // and what she wrote herself. The block gate below is never asked about the writer
+        // reading her own writing; a person is not hidden from herself.
         if (ownerId.equals(viewerId)) return true;
+
+        // A block cuts contact between these two, and reading her most private writing is
+        // contact. If either of them blocked the other, this reader is hidden from the owner
+        // and reads nothing — checked here, above everything else, so a blocked reader can
+        // reach neither an audience that would say yes nor the read-receipt stamp in
+        // PassOnService.from, which only fires when this returns true. isHidden folds both
+        // directions together (proven in BlockServiceTest.isHidden_asksTheRepositoryForEitherDirection),
+        // so a helper who blocked the elder and an elder who blocked the helper are both shut out.
+        if (blocks.isHidden(ownerId, viewerId)) return false;
 
         // "After I am gone." Shut to everyone but the writer until a person has run the release
         // procedure by hand for this owner — a death certificate read with somebody's eyes, her
