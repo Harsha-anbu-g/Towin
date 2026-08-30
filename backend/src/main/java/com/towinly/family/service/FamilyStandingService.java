@@ -71,7 +71,7 @@ public class FamilyStandingService {
         List<Standing> standings = new ArrayList<>();
         familyLinkRepository.findByFamilyUserIdAndStatus(familyUserId, FamilyLinkStatus.ACTIVE).stream()
                 .filter(link -> !hidden.contains(link.getElder().getId()))
-                .forEach(link -> collectStandings(familyUserId, link.getElder(), standings, hidden));
+                .forEach(link -> collectStandings(familyUserId, link.getElder(), standings));
         return FamilyStandingsResponse.builder().standings(standings).build();
     }
 
@@ -83,14 +83,11 @@ public class FamilyStandingService {
     @Transactional(readOnly = true)
     public FamilyBehindResponse familyBehind(UUID helperUserId) {
         List<FamilyBehindResponse.Entry> entries = new ArrayList<>();
-        // HARD-106: the helper is the fixed side of every pair on this page, so one
-        // block list covers them all.
-        Set<UUID> hidden = blockService.hiddenFor(helperUserId);
         for (Connection c : connectionRepository.findByUserAndStatus(helperUserId, ConnectionStatus.ACTIVE)) {
             if (c.getType() == ConnectionType.FAMILY) continue;
             User elder = c.getOtherUser(helperUserId);
             for (FamilyLink link : familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE)) {
-                Standing standing = toStanding(link.getFamilyUser().getId(), elder, c, hidden);
+                Standing standing = toStanding(link.getFamilyUser().getId(), elder, c);
                 if (standing == null) continue;
                 entries.add(FamilyBehindResponse.Entry.builder()
                         .connectionId(c.getId())
@@ -117,25 +114,19 @@ public class FamilyStandingService {
                     .findByElderIdAndFamilyUserId(participant.getId(), familyUserId)
                     .filter(l -> l.getStatus() == FamilyLinkStatus.ACTIVE)
                     .isPresent();
-            if (linked) return toStanding(familyUserId, participant, c, blockService.hiddenFor(familyUserId));
+            if (linked) return toStanding(familyUserId, participant, c);
         }
         return null;
     }
 
-    private void collectStandings(UUID familyUserId, User elder, List<Standing> out, Set<UUID> hidden) {
+    private void collectStandings(UUID familyUserId, User elder, List<Standing> out) {
         connectionRepository.findByUserAndStatus(elder.getId(), ConnectionStatus.ACTIVE).stream()
-                .map(c -> toStanding(familyUserId, elder, c, hidden))
+                .map(c -> toStanding(familyUserId, elder, c))
                 .filter(s -> s != null)
                 .forEach(out::add);
     }
 
-    /**
-     * HARD-106: {@code hidden} is everyone hidden from whichever of the two sides the
-     * caller batched its lookup on. A block hides each person from the other, and
-     * nobody can block themselves, so testing both ids is right whichever side it was.
-     * The set is a required argument on purpose: a caller cannot forget the block.
-     */
-    private Standing toStanding(UUID familyUserId, User elder, Connection c, Set<UUID> hidden) {
+    private Standing toStanding(UUID familyUserId, User elder, Connection c) {
         // FAMILY-type rows are coordination chats, not trust journeys to inherit.
         if (c.getType() == ConnectionType.FAMILY) return null;
         if (c.getStatus() != ConnectionStatus.ACTIVE) return null;
@@ -149,7 +140,17 @@ public class FamilyStandingService {
         if (state == FamilyStandingState.REVOKED) return null;
 
         User helper = c.getOtherUser(elder.getId());
-        if (hidden.contains(helper.getId()) || hidden.contains(familyUserId)) return null;
+        // Deliberately NOT block-filtered here. This derivation feeds the family
+        // member's standings, the helper's behind-me list and the elder's
+        // transparency rows: oversight of who stands behind a shared friendship,
+        // never a contact list. A helper who blocks the family member (or the other
+        // way round) is still bridged by the elder's shared trust, so dropping them
+        // here would let one person switch off the other's view and print a false
+        // "you removed this connection" on the standings screen while the journey
+        // screen still shows them. Cutting the two of them off from each other is
+        // right, and it happens where contact actually happens: materializeChat
+        // refuses to open (or reopen) a chat across the block, and chatAllowed
+        // closes the send gate on an already-open one. The view stays; the door shuts.
 
         UUID chatConnectionId = connectionRepository
                 .findBetweenUsers(familyUserId, helper.getId())
@@ -178,6 +179,17 @@ public class FamilyStandingService {
      */
     @Transactional
     public UUID materializeChat(UUID familyUserId, UUID standingConnectionId) {
+        // HARD-106: this is the one family path that CREATES (or reopens) a
+        // connection, so it refuses a block in its own right rather than leaning on
+        // the derivation below returning null. Same words as every other refused
+        // write, so the blocked person is never named and never told.
+        Connection elderConnection = connectionRepository.findById(standingConnectionId).orElse(null);
+        UUID blockElderId = elderConnection == null ? null : elderIdFor(familyUserId, elderConnection);
+        if (blockElderId != null
+                && blockService.isHidden(familyUserId, elderConnection.getOtherUser(blockElderId).getId())) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
+
         Standing standing = standingFor(familyUserId, standingConnectionId);
         if (standing == null) {
             throw new IllegalStateException("This friendship isn't shared for family chat right now");
@@ -204,8 +216,9 @@ public class FamilyStandingService {
         }
         // A previous revoke may have left an ENDED FAMILY row (or a terminal
         // non-FAMILY row) — reopen it instead of violating the one-row-per-pair
-        // shape the rest of the app assumes.
-        boolean reopened = isNotAlreadyLive(existing);
+        // shape the rest of the app assumes. Only a row that never earned a rung
+        // restarts at the bottom; a real friendship that ended keeps its ladder.
+        boolean resetRung = resurrectsANeverActiveRow(existing);
         Connection chat = existing != null ? existing : Connection.builder()
                 .userA(familyUser)
                 .userB(helper)
@@ -214,7 +227,7 @@ public class FamilyStandingService {
                 .build();
         chat.setType(ConnectionType.FAMILY);
         chat.setStatus(ConnectionStatus.ACTIVE);
-        if (reopened || chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        if (resetRung || chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         return connectionRepository.save(chat).getId();
     }
 
@@ -231,6 +244,11 @@ public class FamilyStandingService {
         if (callerId.equals(otherUserId) || !familyLinkExists(callerId, otherUserId)) {
             throw new IllegalStateException("You can only message someone in your family here.");
         }
+        // HARD-106: the family link still stands after a block, so it cannot be the
+        // only consent. Refused here too, or the same hole reopens on this door.
+        if (blockService.isHidden(callerId, otherUserId)) {
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+        }
         User caller = userRepository.findById(callerId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         User other = userRepository.findById(otherUserId)
@@ -243,7 +261,7 @@ public class FamilyStandingService {
                 && existing.getStatus() == ConnectionStatus.ACTIVE) {
             return existing.getId();
         }
-        boolean reopened = isNotAlreadyLive(existing);
+        boolean resetRung = resurrectsANeverActiveRow(existing);
         Connection chat = existing != null ? existing : Connection.builder()
                 .userA(caller)
                 .userB(other)
@@ -251,24 +269,29 @@ public class FamilyStandingService {
                 .build();
         chat.setType(ConnectionType.FAMILY);
         chat.setStatus(ConnectionStatus.ACTIVE);
-        if (reopened || chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        if (resetRung || chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         return connectionRepository.save(chat).getId();
     }
 
     /**
-     * True when this row is being brought back from the dead rather than carried on:
-     * it exists, but it is not already a live FAMILY chat. A rung belongs to the
-     * relationship that earned it, so such a row starts again at the bottom of the
-     * ladder. ConnectionService.sendRequest stands a brand-new request at Phone Ready
-     * for a sender scoring 51 or more, and at Social Media for 71 or more; flipping a
-     * stale PENDING, DECLINED or ENDED row of that kind to ACTIVE while keeping its
-     * rung would hand over the phone number, or the social handles, with no step
-     * climbed and even after the person explicitly declined.
+     * True when reopening this row means resurrecting one that NEVER earned a rung:
+     * it exists but was never a genuine ACTIVE connection, only ever carrying a
+     * granted head start (PENDING) or an outright refusal (DECLINED).
+     * ConnectionService.sendRequest stands a brand-new request at Phone Ready for a
+     * sender scoring 51 or more, and at Social Media for 71 or more, so flipping such
+     * a stale PENDING or DECLINED row to ACTIVE while keeping its rung would hand over
+     * the phone number, or the social handles, with no step climbed and even after an
+     * explicit decline. Those restart at the bottom of the ladder.
+     *
+     * A row that WAS active and later ended keeps the rung the pair actually earned:
+     * resetting a real, since-ended friendship would silently strip it of the ladder
+     * it climbed and drop that helper out of the family's standing. So ENDED (and an
+     * already-live row) are NOT resurrections in this sense — their rung stands.
      */
-    private boolean isNotAlreadyLive(Connection existing) {
+    private boolean resurrectsANeverActiveRow(Connection existing) {
         return existing != null
-                && !(existing.getType() == ConnectionType.FAMILY
-                        && existing.getStatus() == ConnectionStatus.ACTIVE);
+                && (existing.getStatus() == ConnectionStatus.PENDING
+                        || existing.getStatus() == ConnectionStatus.DECLINED);
     }
 
     /** An ACTIVE family link joins the two people, in either seat. */
@@ -322,21 +345,31 @@ public class FamilyStandingService {
      * live standing still bridges the two people, in either orientation. The
      * elder flipping the share switch off, trust dropping, or a family-side
      * pause/revoke closes the chat immediately — nothing is cached.
+     *
+     * This is where the block on a family↔helper chat is now enforced. The
+     * derivation (toStanding) no longer drops a blocked helper, because that
+     * derivation is oversight, not contact. Contact is this gate: the two people
+     * on a family↔helper chat are exactly the pair a block stands between, so a
+     * block between them shuts the send door here while their standing stays
+     * visible above.
      */
     @Transactional(readOnly = true)
     public boolean chatAllowed(Connection familyConnection) {
+        if (blockService.isHidden(familyConnection.getUserA().getId(),
+                familyConnection.getUserB().getId())) {
+            return false;
+        }
         return bridgeExists(familyConnection.getUserA(), familyConnection.getUserB())
                 || bridgeExists(familyConnection.getUserB(), familyConnection.getUserA());
     }
 
     private boolean bridgeExists(User familySide, User helperSide) {
-        Set<UUID> hidden = blockService.hiddenFor(familySide.getId());
         return familyLinkRepository.findByFamilyUserIdAndStatus(familySide.getId(), FamilyLinkStatus.ACTIVE)
                 .stream()
                 .anyMatch(link -> connectionRepository
                         .findByUserAndStatus(link.getElder().getId(), ConnectionStatus.ACTIVE).stream()
                         .filter(c -> c.getOtherUser(link.getElder().getId()).getId().equals(helperSide.getId()))
-                        .anyMatch(c -> toStanding(familySide.getId(), link.getElder(), c, hidden) != null
+                        .anyMatch(c -> toStanding(familySide.getId(), link.getElder(), c) != null
                                 && !isPaused(familySide.getId(), c.getId())));
     }
 
@@ -381,11 +414,11 @@ public class FamilyStandingService {
                         .build());
             }
             for (Connection c : connectionRepository.findByUserAndStatus(elderId, ConnectionStatus.ACTIVE)) {
-                // Deliberately unfiltered (empty set): this page is the elder's own
-                // disclosure of who their family can reach, and the locked rule is that
-                // nothing family-facing is hidden from the elder. No blocked party reads
-                // it, so subtracting blocks here would only take truth from the elder.
-                Standing s = toStanding(familyMember.getId(), link.getElder(), c, Set.of());
+                // This page is the elder's own disclosure of who their family can
+                // reach, and the locked rule is that nothing family-facing is hidden
+                // from the elder. toStanding subtracts no blocks (oversight, not
+                // contact), so nothing is taken from the elder here either.
+                Standing s = toStanding(familyMember.getId(), link.getElder(), c);
                 if (s == null || chattingHelpers.contains(s.getHelperUserId())) continue;
                 rows.add(ElderTransparencyResponse.Row.builder()
                         .familyMemberName(plainName(familyMember))

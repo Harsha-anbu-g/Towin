@@ -39,11 +39,6 @@ public class FamilyService {
     /** Mirrors the connection-request daily cap. */
     static final int MAX_REQUESTS_PER_DAY = 10;
 
-    // Generic on purpose: the same message covers "no such account" and "that
-    // account can't take the elder seat", so identifiers can't be probed for
-    // account existence or role (no enumeration).
-    private static final String NOT_FOUND_MESSAGE = "We couldn't find that person";
-
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
     private final UserRepository userRepository;
@@ -70,18 +65,42 @@ public class FamilyService {
             throw new IllegalArgumentException("Only elders can add family members");
         }
 
-        User target = UserIdentifierResolver.resolve(userRepository, request.getIdentifier().trim())
-                .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND_MESSAGE));
+        // The caller's OWN throttles are evaluated before the target is resolved
+        // (SEC-08). A capped caller is answered the same way for every identifier, so
+        // being over a limit cannot be told apart from probing a stranger, and a
+        // capped account cannot use this endpoint to enumerate members at all. Only
+        // the caller's own state is read here — nothing about the target is touched.
+        requireCallerUnderDailyCap(callerId);
+        if (targetIsFamilySeat) {
+            // The elder seat is the caller here, so their family cap is caller-owned.
+            requireElderUnderFamilyCap(caller.getId());
+        }
+
+        // From here the endpoint never confirms whether an identifier is a member
+        // (SEC-08, the way register was closed). A stranger, a member in the wrong
+        // role, and a member the caller has a block with all return the SAME
+        // acknowledgement a real send returns — never a distinct error, never the
+        // target's name. A real, invitable target still gets the request, so THEY
+        // learn of it, the way SEC-08 settles a duplicate address through the
+        // owner's own inbox rather than through the caller.
+        Optional<User> resolved =
+                UserIdentifierResolver.resolve(userRepository, request.getIdentifier().trim());
+        if (resolved.isEmpty()) {
+            return acknowledgement();
+        }
+        User target = resolved.get();
         if (target.getId().equals(callerId)) {
+            // The caller cannot probe themselves for membership, so this stays plain.
             throw new IllegalArgumentException("You can't add yourself as family");
         }
         if (!targetIsFamilySeat && !hasElderSeat(target)) {
-            throw new IllegalArgumentException(NOT_FOUND_MESSAGE);
+            return acknowledgement();
         }
-        // HARD-106: a block in either direction stops a family request too; the
-        // blocker's Family tab must never carry the blocked person's name.
+        // HARD-106 + SEC-08: a block in either direction stops the request, and it
+        // does so indistinguishably from a stranger — a distinct "not available"
+        // would itself confirm the person exists.
         if (blockService.isHidden(callerId, target.getId())) {
-            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
+            return acknowledgement();
         }
 
         User elder = targetIsFamilySeat ? caller : target;
@@ -89,22 +108,21 @@ public class FamilyService {
 
         Optional<FamilyLink> existing =
                 familyLinkRepository.findByElderIdAndFamilyUserId(elder.getId(), familyUser.getId());
-        existing.ifPresent(link -> {
-            if (link.getStatus() == FamilyLinkStatus.PENDING || link.getStatus() == FamilyLinkStatus.ACTIVE) {
-                throw new IllegalArgumentException("A family request already exists between you two");
-            }
-        });
-
-        long taken = familyLinkRepository.countByElderIdAndStatusIn(
-                elder.getId(), List.of(FamilyLinkStatus.PENDING, FamilyLinkStatus.ACTIVE));
-        if (taken >= MAX_FAMILY_PER_ELDER) {
-            throw new IllegalArgumentException("Family limit reached");
+        if (existing.filter(l -> l.getStatus() == FamilyLinkStatus.PENDING
+                || l.getStatus() == FamilyLinkStatus.ACTIVE).isPresent()) {
+            // A live or pending link already shows in the caller's own family list,
+            // so naming it confirms nothing they cannot already see.
+            throw new IllegalArgumentException("A family request already exists between you two");
         }
 
-        long sentToday = familyLinkRepository.countByInitiatedByIdAndCreatedAtAfter(
-                callerId, LocalDateTime.now().minusDays(1));
-        if (sentToday >= MAX_REQUESTS_PER_DAY) {
-            throw new IllegalArgumentException("Daily family request limit reached");
+        if (!targetIsFamilySeat) {
+            // Here the elder seat is the TARGET, so this cap depends on them — over
+            // it, stay silent rather than reveal that this elder exists and is full.
+            long taken = familyLinkRepository.countByElderIdAndStatusIn(
+                    elder.getId(), List.of(FamilyLinkStatus.PENDING, FamilyLinkStatus.ACTIVE));
+            if (taken >= MAX_FAMILY_PER_ELDER) {
+                return acknowledgement();
+            }
         }
 
         // UNIQUE(elder_id, family_user_id) allows only one row per pair, so a
@@ -119,8 +137,39 @@ public class FamilyService {
         link.setIsPrimary(false);
         link.setRespondedAt(null);
         link.setRevokedAt(null);
+        familyLinkRepository.save(link);
 
-        return toResponse(familyLinkRepository.save(link), callerId);
+        // Never the target's name: the same body a stranger gets (SEC-08).
+        return acknowledgement();
+    }
+
+    private void requireCallerUnderDailyCap(UUID callerId) {
+        long sentToday = familyLinkRepository.countByInitiatedByIdAndCreatedAtAfter(
+                callerId, LocalDateTime.now().minusDays(1));
+        if (sentToday >= MAX_REQUESTS_PER_DAY) {
+            throw new IllegalArgumentException("Daily family request limit reached");
+        }
+    }
+
+    private void requireElderUnderFamilyCap(UUID elderId) {
+        long taken = familyLinkRepository.countByElderIdAndStatusIn(
+                elderId, List.of(FamilyLinkStatus.PENDING, FamilyLinkStatus.ACTIVE));
+        if (taken >= MAX_FAMILY_PER_ELDER) {
+            throw new IllegalArgumentException("Family limit reached");
+        }
+    }
+
+    /**
+     * The one body createRequest ever returns: a request either was placed or was
+     * quietly not, and the caller cannot tell which — so the endpoint never answers
+     * "is this person a member?" (SEC-08). It carries no id and no name; the real
+     * state, when there is any, is read back from GET /api/family/links.
+     */
+    private FamilyLinkResponse acknowledgement() {
+        return FamilyLinkResponse.builder()
+                .status(FamilyLinkStatus.PENDING)
+                .initiatedByMe(true)
+                .build();
     }
 
     @Transactional
@@ -226,9 +275,18 @@ public class FamilyService {
 
     @Transactional(readOnly = true)
     public FamilyAlertsResponse getAlerts(UUID callerId) {
+        // An ACTIVE FamilyLink survives a block, so without this the SOS, inactivity
+        // and Sealed-box alerts of an elder the caller has blocked (in either
+        // direction) still streamed to that caller. Filter the ELDER side of the
+        // link — the pair the block is actually between — exactly as
+        // FamilyJourneyService.getJourney and FamilyStandingService.standingsFor do.
+        // Never filter on anyone NAMED inside an alert body: that would be a third
+        // party's block reaching into this caller's oversight of their own parent.
+        Set<UUID> hidden = blockService.hiddenFor(callerId);
         List<UUID> elderIds = familyLinkRepository
                 .findByFamilyUserIdAndStatus(callerId, FamilyLinkStatus.ACTIVE).stream()
                 .map(link -> link.getElder().getId())
+                .filter(elderId -> !hidden.contains(elderId))
                 .toList();
         if (elderIds.isEmpty()) {
             return FamilyAlertsResponse.builder().alerts(List.of()).build();

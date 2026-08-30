@@ -17,6 +17,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,6 +106,42 @@ class FamilyServiceAlertsTest {
         FamilyAlertsResponse response = familyService.getAlerts(callerId);
 
         assertThat(response.getAlerts().get(0).getElderName()).isEqualTo("marge");
+    }
+
+    // R3-FAM: an ACTIVE FamilyLink outlives a block, so without a filter the blocked
+    // elder's SOS/inactivity/Sealed-box alerts still streamed to the person they cut
+    // contact with. The elder side of the link is filtered, the pair the block is
+    // between, exactly as the journey and standings screens filter the parent.
+    @Test
+    void getAlerts_hidesTheAlertsOfAnElderTheCallerHasBlocked() {
+        User mom = user("marge", "Marge Elder");
+        User dad = user("homer", "Homer Elder");
+        when(familyLinkRepository.findByFamilyUserIdAndStatus(callerId, FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(activeLinkTo(mom), activeLinkTo(dad)));
+        when(blockService.hiddenFor(callerId)).thenReturn(Set.of(mom.getId()));
+        // Only dad's id reaches the query — mom drops out entirely.
+        when(familyAlertRepository.findByElderIdInOrderByCreatedAtDesc(argThat(
+                (Collection<UUID> ids) -> ids != null && ids.size() == 1
+                        && ids.contains(dad.getId()) && !ids.contains(mom.getId()))))
+                .thenReturn(List.of(alert(dad, "SOS", "Pressed the SOS button.", LocalDateTime.now())));
+
+        FamilyAlertsResponse response = familyService.getAlerts(callerId);
+
+        assertThat(response.getAlerts()).hasSize(1);
+        assertThat(response.getAlerts().get(0).getElderId()).isEqualTo(dad.getId());
+    }
+
+    @Test
+    void getAlerts_returnsEmptyWhenTheOnlyLinkedElderIsBlocked_withoutQueryingAlerts() {
+        User mom = user("marge", "Marge Elder");
+        when(familyLinkRepository.findByFamilyUserIdAndStatus(callerId, FamilyLinkStatus.ACTIVE))
+                .thenReturn(List.of(activeLinkTo(mom)));
+        when(blockService.hiddenFor(callerId)).thenReturn(Set.of(mom.getId()));
+
+        FamilyAlertsResponse response = familyService.getAlerts(callerId);
+
+        assertThat(response.getAlerts()).isEmpty();
+        verify(familyAlertRepository, never()).findByElderIdInOrderByCreatedAtDesc(anyCollection());
     }
 
     @Test

@@ -375,36 +375,28 @@ class FamilyUpdatesChannelTest {
     }
 
     @Test
-    void twoFamilyMembersOfTheSameParentWhoBlockedEachOtherBothLoseTheSharedThread() {
-        // The shared thread is a room they both write in, so a block between them
-        // closes it for the pair — and only for the pair.
+    void twoFamilyMembersOfTheSameParentWhoBlockedEachOtherBothKeepTheSharedThread() {
+        // R3-FAM item 2: a block between two of a parent's children is a falling-out
+        // between THEM. It cuts their contact, it does not hand either one a switch on
+        // the other's oversight of the parent, so both keep their window on the thread.
+        // (Whether they may message EACH OTHER is a separate write/contact concern.)
         User tom = User.builder().id(UUID.randomUUID()).role(UserRole.FAMILY)
                 .fullName("Tom").username("tom").build();
-        FamilyLink sarahLink = linkToElder(sarah, FamilyLinkStatus.ACTIVE);
-        FamilyLink tomLink = linkToElder(tom, FamilyLinkStatus.ACTIVE);
-        when(familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE))
-                .thenReturn(List.of(sarahLink, tomLink));
+        linkToElder(sarah, FamilyLinkStatus.ACTIVE);
+        linkToElder(tom, FamilyLinkStatus.ACTIVE);
         when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(tom.getId()));
         when(blockService.hiddenFor(tom.getId())).thenReturn(Set.of(sarah.getId()));
+        stubEmptyHistory();
 
-        assertThatThrownBy(() -> messageService.getHistory(
-                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
-        assertThatThrownBy(() -> messageService.getHistory(
-                connId, tom.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage(com.towinly.block.service.BlockService.CHAT_CLOSED);
-
-        verify(messageRepository, never())
-                .findByConnectionIdAndChannelOrderByCreatedAtDesc(any(), any(), any());
+        assertThat(messageService.getHistory(
+                connId, sarah.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30))).isNotNull();
+        assertThat(messageService.getHistory(
+                connId, tom.getId(), MessageChannel.FAMILY_UPDATES, PageRequest.of(0, 30))).isNotNull();
     }
 
     @Test
     void familyMemberKeepsTheSharedThreadWhenTheirBlockIsWithSomebodyOutsideIt() {
-        FamilyLink sarahLink = linkToElder(sarah, FamilyLinkStatus.ACTIVE);
-        when(familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE))
-                .thenReturn(List.of(sarahLink));
+        linkToElder(sarah, FamilyLinkStatus.ACTIVE);
         when(blockService.hiddenFor(sarah.getId())).thenReturn(Set.of(UUID.randomUUID()));
         stubEmptyHistory();
 
