@@ -112,6 +112,26 @@ public class BlockService {
         return blockRepository.existsBetween(a, b);
     }
 
+    /**
+     * Everyone this user chose to block. Use this, not {@link #hiddenFor}, wherever the answer
+     * should depend on WHO cut contact: a person's own choice may take something off their screen,
+     * but somebody else's choice must never take away a third party's view. Blocking a family
+     * member cannot be allowed to switch off their oversight of the parent they watch over.
+     */
+    public Set<UUID> blockedBy(UUID userId) {
+        return new HashSet<>(blockRepository.findBlockedByUserIds(userId));
+    }
+
+    /** Everyone who blocked this user. The other direction of {@link #blockedBy}. */
+    public Set<UUID> blockersOf(UUID userId) {
+        return new HashSet<>(blockRepository.findBlockersOfUserIds(userId));
+    }
+
+    /** True when {@code actor} chose to block {@code subject}. Directional, unlike {@link #isHidden}. */
+    public boolean hasBlocked(UUID actor, UUID subject) {
+        return blockRepository.findByBlockerIdAndBlockedId(actor, subject).isPresent();
+    }
+
     private BlockResponse toResponse(UserBlock row) {
         User blocked = row.getBlocked();
         return BlockResponse.builder()
