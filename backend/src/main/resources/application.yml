@@ -170,3 +170,8 @@ passon:
 server:
   port: ${PORT:8080}
   forward-headers-strategy: framework
+  # A conversation page or an inbox is 5-20 KB of JSON; gzip cuts that to a
+  # fifth on the phone's mobile link. Tiny answers (the unread count) skip it.
+  compression:
+    enabled: true
+    min-response-size: 1024

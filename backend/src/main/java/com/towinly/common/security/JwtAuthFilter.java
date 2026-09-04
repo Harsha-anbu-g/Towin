@@ -28,6 +28,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
+    /**
+     * How often lastSeenAt is written back. The chat polls every few seconds, and
+     * stamping every request turned each read into a second SELECT, an UPDATE and
+     * a commit before the real work began. The only reader of this column (the
+     * inactivity sweep) thinks in days, so once a minute is exact enough.
+     */
+    static final java.time.Duration LAST_SEEN_WRITE_INTERVAL = java.time.Duration.ofMinutes(1);
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -59,8 +67,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     new UsernamePasswordAuthenticationToken(userId, null, authorities);
                             SecurityContextHolder.getContext().setAuthentication(auth);
                             try {
-                                user.setLastSeenAt(LocalDateTime.now());
-                                userRepository.save(user);
+                                LocalDateTime now = LocalDateTime.now();
+                                if (shouldStampLastSeen(user.getLastSeenAt(), now)) {
+                                    user.setLastSeenAt(now);
+                                    userRepository.save(user);
+                                }
                             } catch (Exception ignored) {
                                 // never block the request for a lastSeenAt update
                             }
@@ -72,5 +83,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    /** True when the stored stamp is missing or older than {@link #LAST_SEEN_WRITE_INTERVAL}. */
+    static boolean shouldStampLastSeen(LocalDateTime lastSeenAt, LocalDateTime now) {
+        return lastSeenAt == null || lastSeenAt.plus(LAST_SEEN_WRITE_INTERVAL).isBefore(now);
     }
 }
