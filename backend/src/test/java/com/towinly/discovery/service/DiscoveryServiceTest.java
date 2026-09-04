@@ -23,6 +23,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -442,12 +444,20 @@ class DiscoveryServiceTest {
         assertThat(filter.getSize()).isEqualTo(1);
     }
 
+    // Both reads hand back the same directory: the bounded read is how discovery
+    // pages now (SEC-07), the unbounded one is the demo fallback — and the service
+    // applies its own radius and coordinate filters either way, so every
+    // exclusion test below still proves what it always proved.
     private void elders(ElderProfile... profiles) {
         when(elderProfileRepository.findAllActiveWithLocation(requesterId)).thenReturn(List.of(profiles));
+        when(elderProfileRepository.findAllActiveWithLocationInBox(
+                eq(requesterId), any(), any(), any(), any())).thenReturn(List.of(profiles));
     }
 
     private void helpers(HelperProfile... profiles) {
         when(helperProfileRepository.findAllActiveWithLocation(requesterId)).thenReturn(List.of(profiles));
+        when(helperProfileRepository.findAllActiveWithLocationInBox(
+                eq(requesterId), any(), any(), any(), any())).thenReturn(List.of(profiles));
     }
 
     private User userAt(UUID id, double lat, double lng) {

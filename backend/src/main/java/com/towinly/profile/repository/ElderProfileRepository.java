@@ -16,6 +16,20 @@ public interface ElderProfileRepository extends JpaRepository<ElderProfile, UUID
     @Query("SELECT p FROM ElderProfile p JOIN FETCH p.user u WHERE u.isActive = true AND u.locationLat IS NOT NULL AND u.id != :excludeUserId")
     List<ElderProfile> findAllActiveWithLocation(@org.springframework.data.repository.query.Param("excludeUserId") UUID excludeUserId);
 
+    // SEC-07 completion: the bounded variant discovery actually pages from. The box
+    // encloses the search radius, so the in-memory distance sort and radius cut see
+    // every row they used to — the database just stops shipping the whole directory.
+    // (A row with only half a coordinate fails the BETWEEN and drops out, exactly as
+    // the service's own hasStoredCell filter dropped it.)
+    @Query("SELECT p FROM ElderProfile p JOIN FETCH p.user u WHERE u.isActive = true AND u.id != :excludeUserId "
+            + "AND u.locationLat BETWEEN :minLat AND :maxLat AND u.locationLng BETWEEN :minLng AND :maxLng")
+    List<ElderProfile> findAllActiveWithLocationInBox(
+            @org.springframework.data.repository.query.Param("excludeUserId") UUID excludeUserId,
+            @org.springframework.data.repository.query.Param("minLat") java.math.BigDecimal minLat,
+            @org.springframework.data.repository.query.Param("maxLat") java.math.BigDecimal maxLat,
+            @org.springframework.data.repository.query.Param("minLng") java.math.BigDecimal minLng,
+            @org.springframework.data.repository.query.Param("maxLng") java.math.BigDecimal maxLng);
+
     /** Display names for a batch of user ids in one query: rows of [userId, name]. */
     @Query("SELECT p.user.id, p.name FROM ElderProfile p WHERE p.user.id IN :userIds")
     List<Object[]> findNamesByUserIds(@org.springframework.data.repository.query.Param("userIds") java.util.Collection<UUID> userIds);

@@ -23,6 +23,17 @@ public interface HelperProfileRepository extends JpaRepository<HelperProfile, UU
             + "AND u.locationLat IS NOT NULL AND u.locationLng IS NOT NULL AND u.id != :excludeUserId")
     List<HelperProfile> findAllActiveWithLocation(@org.springframework.data.repository.query.Param("excludeUserId") UUID excludeUserId);
 
+    // SEC-07 completion: the bounded variant discovery actually pages from — see
+    // ElderProfileRepository.findAllActiveWithLocationInBox for the contract.
+    @Query("SELECT p FROM HelperProfile p JOIN FETCH p.user u WHERE u.isActive = true AND u.id != :excludeUserId "
+            + "AND u.locationLat BETWEEN :minLat AND :maxLat AND u.locationLng BETWEEN :minLng AND :maxLng")
+    List<HelperProfile> findAllActiveWithLocationInBox(
+            @org.springframework.data.repository.query.Param("excludeUserId") UUID excludeUserId,
+            @org.springframework.data.repository.query.Param("minLat") java.math.BigDecimal minLat,
+            @org.springframework.data.repository.query.Param("maxLat") java.math.BigDecimal maxLat,
+            @org.springframework.data.repository.query.Param("minLng") java.math.BigDecimal minLng,
+            @org.springframework.data.repository.query.Param("maxLng") java.math.BigDecimal maxLng);
+
     /** Display names and photos for a batch of user ids in one query: rows of [userId, name, photoUrl]. */
     @Query("SELECT p.user.id, p.name, p.photoUrl FROM HelperProfile p WHERE p.user.id IN :userIds")
     List<Object[]> findNamesAndPhotosByUserIds(@org.springframework.data.repository.query.Param("userIds") java.util.Collection<UUID> userIds);

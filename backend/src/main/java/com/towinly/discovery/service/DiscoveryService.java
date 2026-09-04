@@ -43,7 +43,9 @@ public class DiscoveryService {
     private final S3Service s3Service;
     private final BlockService blockService;
 
-    @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page")
+    // SEC-07 completion: the size is part of the key — two differently-sized
+    // requests are two different responses and must never share one cache entry.
+    @Cacheable(value = "discovery-elders", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.interest + '-' + #filter.page + '-' + #filter.size")
     public List<DiscoveredUserResponse> discoverElders(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         double lat = resolvedLat(filter, requester);
@@ -51,8 +53,31 @@ public class DiscoveryService {
 
         // HARD-106: a block in either direction removes the person here, before ranking.
         Set<UUID> hidden = blockService.hiddenFor(requestingUserId);
-        List<Map.Entry<ElderProfile, Double>> ranked = elderProfileRepository.findAllActiveWithLocation(requestingUserId)
-                .stream()
+        // SEC-07 completion: the database ships only the box around the search radius,
+        // not every active profile. The box encloses the radius circle, so the ranking
+        // and the radius cut below see exactly the rows they always did.
+        List<Map.Entry<ElderProfile, Double>> withinRadius =
+                rankElders(eldersNear(requestingUserId, lat, lng, filter.getRadiusKm()),
+                        hidden, filter, lat, lng).stream()
+                .filter(e -> e.getValue() <= filter.getRadiusKm())
+                .collect(Collectors.toList());
+
+        List<Map.Entry<ElderProfile, Double>> visible = withinRadius;
+        if (withinRadius.isEmpty() && isDemoAccount(requester)) {
+            // The demo fallback ignores the radius, so it ranks the whole directory.
+            visible = rankElders(elderProfileRepository.findAllActiveWithLocation(requestingUserId),
+                    hidden, filter, lat, lng);
+        }
+        return visible.stream()
+                .skip((long) filter.getPage() * filter.getSize())
+                .limit(filter.getSize())
+                .map(e -> toElderResponse(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    private List<Map.Entry<ElderProfile, Double>> rankElders(List<ElderProfile> candidates,
+            Set<UUID> hidden, DiscoveryFilter filter, double lat, double lng) {
+        return candidates.stream()
                 .filter(p -> !hidden.contains(p.getUser().getId()))
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 .filter(p -> matchesInterest(filter, p.getInterests()))
@@ -63,19 +88,18 @@ public class DiscoveryService {
                 .map(p -> Map.entry(p, cellDistanceKm(lat, lng, p.getUser())))
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
                 .collect(Collectors.toList());
-
-        List<Map.Entry<ElderProfile, Double>> withinRadius = ranked.stream()
-                .filter(e -> e.getValue() <= filter.getRadiusKm())
-                .collect(Collectors.toList());
-
-        return visibleFor(withinRadius, ranked, requester).stream()
-                .skip((long) filter.getPage() * filter.getSize())
-                .limit(filter.getSize())
-                .map(e -> toElderResponse(e.getKey(), e.getValue()))
-                .collect(Collectors.toList());
     }
 
-    @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page")
+    private List<ElderProfile> eldersNear(UUID requesterId, double lat, double lng, double radiusKm) {
+        BoundingBox box = BoundingBox.around(lat, lng, radiusKm);
+        if (box == null) {
+            return elderProfileRepository.findAllActiveWithLocation(requesterId);
+        }
+        return elderProfileRepository.findAllActiveWithLocationInBox(requesterId,
+                box.minLat(), box.maxLat(), box.minLng(), box.maxLng());
+    }
+
+    @Cacheable(value = "discovery-helpers", key = "#requestingUserId + '-' + #filter.lat + '-' + #filter.lng + '-' + #filter.radiusKm + '-' + #filter.language + '-' + #filter.page + '-' + #filter.size")
     public List<DiscoveredUserResponse> discoverHelpers(UUID requestingUserId, DiscoveryFilter filter) {
         User requester = getUser(requestingUserId);
         // Deliberate: a caller who has no location of their own still gets helpers,
@@ -85,8 +109,27 @@ public class DiscoveryService {
         boolean hasLocation = lat != null && lng != null;
 
         Set<UUID> hidden = blockService.hiddenFor(requestingUserId);
-        List<Map.Entry<HelperProfile, Double>> ranked = helperProfileRepository.findAllActiveWithLocation(requestingUserId)
-                .stream()
+        List<Map.Entry<HelperProfile, Double>> withinRadius =
+                rankHelpers(helpersNear(requestingUserId, lat, lng, filter.getRadiusKm(), hasLocation),
+                        hidden, filter, lat, lng, hasLocation).stream()
+                .filter(e -> !hasLocation || e.getValue() <= filter.getRadiusKm())
+                .collect(Collectors.toList());
+
+        List<Map.Entry<HelperProfile, Double>> visible = withinRadius;
+        if (withinRadius.isEmpty() && isDemoAccount(requester)) {
+            visible = rankHelpers(helperProfileRepository.findAllActiveWithLocation(requestingUserId),
+                    hidden, filter, lat, lng, hasLocation);
+        }
+        return visible.stream()
+                .skip((long) filter.getPage() * filter.getSize())
+                .limit(filter.getSize())
+                .map(e -> toHelperResponse(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    private List<Map.Entry<HelperProfile, Double>> rankHelpers(List<HelperProfile> candidates,
+            Set<UUID> hidden, DiscoveryFilter filter, Double lat, Double lng, boolean hasLocation) {
+        return candidates.stream()
                 .filter(p -> !hidden.contains(p.getUser().getId()))
                 .filter(p -> matchesLanguage(filter, p.getLanguages()))
                 // R2-DISC: someone we cannot place is left out instead of being handed a
@@ -99,16 +142,44 @@ public class DiscoveryService {
                         : DISTANCE_NOT_MEASURED_KM))
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
                 .collect(Collectors.toList());
+    }
 
-        List<Map.Entry<HelperProfile, Double>> withinRadius = ranked.stream()
-                .filter(e -> !hasLocation || e.getValue() <= filter.getRadiusKm())
-                .collect(Collectors.toList());
+    private List<HelperProfile> helpersNear(UUID requesterId, Double lat, Double lng,
+            double radiusKm, boolean hasLocation) {
+        BoundingBox box = hasLocation ? BoundingBox.around(lat, lng, radiusKm) : null;
+        if (box == null) {
+            // No origin means no radius cut below either — every placed helper shows.
+            return helperProfileRepository.findAllActiveWithLocation(requesterId);
+        }
+        return helperProfileRepository.findAllActiveWithLocationInBox(requesterId,
+                box.minLat(), box.maxLat(), box.minLng(), box.maxLng());
+    }
 
-        return visibleFor(withinRadius, ranked, requester).stream()
-                .skip((long) filter.getPage() * filter.getSize())
-                .limit(filter.getSize())
-                .map(e -> toHelperResponse(e.getKey(), e.getValue()))
-                .collect(Collectors.toList());
+    /**
+     * A latitude/longitude box that encloses the circle of {@code radiusKm} around a
+     * point, under the same spherical model {@link #haversineKm} measures with
+     * (1° of latitude = ~111.195 km). Padded 1% so a float rounding at the rim can
+     * never cut a row the radius filter would have kept. Near the poles or across
+     * the antimeridian a simple BETWEEN box stops being right — {@code around}
+     * returns null there and the caller falls back to the unbounded read.
+     */
+    record BoundingBox(java.math.BigDecimal minLat, java.math.BigDecimal maxLat,
+                       java.math.BigDecimal minLng, java.math.BigDecimal maxLng) {
+        private static final double KM_PER_DEGREE = Math.PI / 180.0 * 6371.0; // ≈ 111.195
+        private static final double PADDING = 1.01;
+
+        static BoundingBox around(double lat, double lng, double radiusKm) {
+            double latDelta = radiusKm / KM_PER_DEGREE * PADDING;
+            double edgeLat = Math.min(Math.abs(lat) + latDelta, 90.0);
+            if (edgeLat >= 89.0) return null; // cos() → 0: the box degenerates
+            double lngDelta = radiusKm / (KM_PER_DEGREE * Math.cos(Math.toRadians(edgeLat))) * PADDING;
+            if (lng - lngDelta < -180.0 || lng + lngDelta > 180.0) return null; // antimeridian
+            return new BoundingBox(
+                    java.math.BigDecimal.valueOf(lat - latDelta),
+                    java.math.BigDecimal.valueOf(lat + latDelta),
+                    java.math.BigDecimal.valueOf(lng - lngDelta),
+                    java.math.BigDecimal.valueOf(lng + lngDelta));
+        }
     }
 
     private DiscoveredUserResponse toElderResponse(ElderProfile p, double distanceKm) {
@@ -167,15 +238,11 @@ public class DiscoveryService {
     }
 
     /**
-     * Sample/demo accounts must never show an empty list — a barren demo looks broken.
-     * When nobody is within the requested radius, fall back to the nearest people
-     * (radius ignored) so there's always something to explore. Real accounts stay strict.
+     * Sample/demo accounts must never show an empty list — a barren demo looks
+     * broken. When nobody is within the requested radius, the discover methods fall
+     * back to ranking the whole directory (radius ignored) for a demo seat, so
+     * there's always something to explore. Real accounts stay strict.
      */
-    private <T> List<Map.Entry<T, Double>> visibleFor(List<Map.Entry<T, Double>> withinRadius,
-                                                      List<Map.Entry<T, Double>> ranked, User requester) {
-        return (withinRadius.isEmpty() && isDemoAccount(requester)) ? ranked : withinRadius;
-    }
-
     private boolean isDemoAccount(User user) {
         return user.getEmail() != null && DemoDataSeeder.DEMO_EMAILS.contains(user.getEmail());
     }
