@@ -49,7 +49,7 @@ class FamilyServiceTrustRecalcTest {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
                 familyDelegationService, elderProfileRepository, helperProfileRepository,
-                keyholderService, blockService);
+                keyholderService, blockService, new FamilyLookupRateLimiter());
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
     }

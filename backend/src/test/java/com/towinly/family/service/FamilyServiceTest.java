@@ -53,7 +53,7 @@ class FamilyServiceTest {
         familyService = new FamilyService(
                 familyLinkRepository, familyAlertRepository, userRepository, trustScoreService,
                 familyDelegationService, elderProfileRepository, helperProfileRepository,
-                keyholderService, blockService);
+                keyholderService, blockService, new FamilyLookupRateLimiter());
         elder = buildUser("margaret_elder", UserRole.ELDER);
         daughter = buildUser("sarah_daughter", UserRole.FAMILY);
     }
@@ -81,20 +81,19 @@ class FamilyServiceTest {
         when(familyLinkRepository.save(any(FamilyLink.class))).thenAnswer(i -> i.getArgument(0));
     }
 
-    // HARD-106 + SEC-08: a blocked person cannot put a family request in front of the
-    // blocker, and the refusal is INDISTINGUISHABLE from a real send — a distinct
-    // "not available" would itself confirm the person exists. Nothing is saved.
+    // HARD-106: a blocked person cannot put a family request in front of the
+    // blocker. The refusal uses the same sentence every other refused write uses
+    // (it names no block), and the probe costs lookup budget. Nothing is saved.
     @Test
-    void createRequest_acrossABlock_answersLikeARealSend_andSavesNothing() {
+    void createRequest_acrossABlock_refusesWithTheStandardSentence_andSavesNothing() {
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
         when(userRepository.findByUsername(daughter.getUsername())).thenReturn(Optional.of(daughter));
         when(blockService.isHidden(elder.getId(), daughter.getId())).thenReturn(true);
 
-        FamilyLinkResponse response =
-                familyService.createRequest(elder.getId(), request("sarah_daughter", "family"));
-
-        assertThat(response.getStatus()).isEqualTo(FamilyLinkStatus.PENDING);
-        assertThat(response.getOtherUserName()).isNull();
+        assertThatThrownBy(() ->
+                familyService.createRequest(elder.getId(), request("sarah_daughter", "family")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
         verify(familyLinkRepository, never()).save(any(FamilyLink.class));
     }
 
@@ -147,61 +146,64 @@ class FamilyServiceTest {
     }
 
     @Test
-    void targetOfSideElderThatIsNotAnElder_answeredLikeARealSend_soRoleCannotBeProbed() {
-        // A HELPER cannot take the elder seat, but the answer is the same
-        // acknowledgement a real send returns — so an identifier cannot be probed
-        // for whether it is a member, nor for its role (SEC-08). Nothing is saved.
+    void targetOfSideElderThatIsNotAnElder_getsTheSameWordsAsNobody_soRoleCannotBeToldApart() {
+        // A HELPER cannot take the elder seat. The refusal uses the exact words an
+        // unknown identifier gets, so role cannot be told apart from absence — and
+        // like any failed lookup, it costs the caller budget. Nothing is saved.
         User helper = buildUser("harry_helper", UserRole.HELPER);
         when(userRepository.findById(daughter.getId())).thenReturn(Optional.of(daughter));
         when(userRepository.findByUsername("harry_helper")).thenReturn(Optional.of(helper));
 
-        FamilyLinkResponse response =
-                familyService.createRequest(daughter.getId(), request("harry_helper", "elder"));
-
-        assertThat(response.getStatus()).isEqualTo(FamilyLinkStatus.PENDING);
-        assertThat(response.getOtherUserName()).isNull();
+        assertThatThrownBy(() ->
+                familyService.createRequest(daughter.getId(), request("harry_helper", "elder")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("We couldn't find that person");
         verify(familyLinkRepository, never()).save(any());
     }
 
     // --- identifier resolution (reuses the login lookup semantics) ---
 
     @Test
-    void unknownIdentifier_answeredLikeARealSend_soAbsenceCannotBeProbed() {
-        // An identifier that belongs to nobody gets the same acknowledgement a real
-        // send returns (SEC-08): the response never confirms a person is NOT a member,
-        // just as it never confirms they are. Nothing is saved.
+    void unknownIdentifier_isRefusedPlainly_andBurnsTheDailyLookupBudget() {
+        // A typo is named — the shipped apps toast success on any 2xx, so the old
+        // silent acknowledgement turned an elder's typo into "Request sent". The
+        // enumeration risk is paid for by the lookup budget instead: once it is
+        // spent, the caller is cut off before any identifier is even looked at.
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
         when(userRepository.findByUsername("nobody")).thenReturn(Optional.empty());
 
-        FamilyLinkResponse response =
-                familyService.createRequest(elder.getId(), request("nobody", "family"));
-
-        assertThat(response.getStatus()).isEqualTo(FamilyLinkStatus.PENDING);
-        assertThat(response.getOtherUserName()).isNull();
+        for (int i = 0; i < FamilyLookupRateLimiter.MAX_FAILED_LOOKUPS; i++) {
+            assertThatThrownBy(() ->
+                    familyService.createRequest(elder.getId(), request("nobody", "family")))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("We couldn't find that person");
+        }
+        assertThatThrownBy(() ->
+                familyService.createRequest(elder.getId(), request("nobody", "family")))
+                .isInstanceOf(com.towinly.common.exception.RateLimitException.class)
+                .hasMessageContaining("Daily family request limit reached");
         verify(familyLinkRepository, never()).save(any());
     }
 
     @Test
-    void createRequest_answersAStrangerExactlyLikeARealMember_soMembershipCannotBeProbed() {
-        // A real, invitable member.
+    void createRequest_returnsTheRealLinkForAMember_andRefusesAStrangerAtACost() {
+        // A real, invitable member gets the real row back — the clients read the
+        // returned link. A stranger gets a plain refusal that burns lookup budget;
+        // a successful send burns none.
         when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
         when(userRepository.findByUsername("sarah_daughter")).thenReturn(Optional.of(daughter));
         when(familyLinkRepository.save(any(FamilyLink.class))).thenAnswer(i -> i.getArgument(0));
         FamilyLinkResponse forMember =
                 familyService.createRequest(elder.getId(), request("sarah_daughter", "family"));
+        assertThat(forMember.getStatus()).isEqualTo(FamilyLinkStatus.PENDING);
+        assertThat(forMember.isInitiatedByMe()).isTrue();
 
-        // An identifier that belongs to nobody.
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
-        FamilyLinkResponse forStranger =
-                familyService.createRequest(elder.getId(), request("ghost", "family"));
+        assertThatThrownBy(() ->
+                familyService.createRequest(elder.getId(), request("ghost", "family")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("We couldn't find that person");
 
-        // Byte-for-byte the same acknowledgement, and never the member's name: there
-        // is no way to tell a member from a stranger off this response.
-        assertThat(forStranger.getStatus()).isEqualTo(forMember.getStatus());
-        assertThat(forMember.getOtherUserName()).isNull();
-        assertThat(forStranger.getOtherUserName()).isNull();
-        assertThat(forMember.getOtherUserId()).isNull();
-        assertThat(forStranger.getOtherUserId()).isNull();
         // The real invite saved once; the stranger saved nothing.
         verify(familyLinkRepository, times(1)).save(any(FamilyLink.class));
     }

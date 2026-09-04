@@ -39,6 +39,14 @@ public class FamilyService {
     /** Mirrors the connection-request daily cap. */
     static final int MAX_REQUESTS_PER_DAY = 10;
 
+    // Generic on purpose: the same message covers "no such account" and "that
+    // account can't take the elder seat", so a caller can't tell a typo from a
+    // wrong-role member. What it CAN'T hide — that some identifier resolved and
+    // some didn't — is throttled instead: every failed lookup burns the caller's
+    // daily budget (FamilyLookupRateLimiter), so this endpoint can't be used to
+    // run a list of emails or phone numbers through the member directory.
+    private static final String NOT_FOUND_MESSAGE = "We couldn't find that person";
+
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
     private final UserRepository userRepository;
@@ -49,6 +57,7 @@ public class FamilyService {
     // Unlinking ends a Keyholder's key too. See the note in revoke().
     private final com.towinly.passon.service.KeyholderService keyholderService;
     private final BlockService blockService;
+    private final FamilyLookupRateLimiter lookupRateLimiter;
 
     @Transactional
     public FamilyLinkResponse createRequest(UUID callerId, FamilyRequest request) {
@@ -66,41 +75,35 @@ public class FamilyService {
         }
 
         // The caller's OWN throttles are evaluated before the target is resolved
-        // (SEC-08). A capped caller is answered the same way for every identifier, so
-        // being over a limit cannot be told apart from probing a stranger, and a
-        // capped account cannot use this endpoint to enumerate members at all. Only
-        // the caller's own state is read here — nothing about the target is touched.
+        // (SEC-08). A capped caller is answered the same way for every identifier,
+        // and the lookup limiter alongside means failed probes are not free either
+        // — so a list of identifiers cannot be run through this endpoint at scale.
         requireCallerUnderDailyCap(callerId);
+        lookupRateLimiter.check(callerId);
         if (targetIsFamilySeat) {
             // The elder seat is the caller here, so their family cap is caller-owned.
             requireElderUnderFamilyCap(caller.getId());
         }
 
-        // From here the endpoint never confirms whether an identifier is a member
-        // (SEC-08, the way register was closed). A stranger, a member in the wrong
-        // role, and a member the caller has a block with all return the SAME
-        // acknowledgement a real send returns — never a distinct error, never the
-        // target's name. A real, invitable target still gets the request, so THEY
-        // learn of it, the way SEC-08 settles a duplicate address through the
-        // owner's own inbox rather than through the caller.
-        Optional<User> resolved =
-                UserIdentifierResolver.resolve(userRepository, request.getIdentifier().trim());
-        if (resolved.isEmpty()) {
-            return acknowledgement();
-        }
-        User target = resolved.get();
+        // A miss is answered plainly — the shipped apps toast success on any 2xx,
+        // so a silent acknowledgement here turned an elder's typo into "Request
+        // sent" followed by a list that never changes. The enumeration risk the
+        // silent answer carried is paid for above instead: every failed lookup
+        // counts against the caller's daily budget.
+        User target = UserIdentifierResolver.resolve(userRepository, request.getIdentifier().trim())
+                .orElseThrow(() -> failedLookup(callerId));
         if (target.getId().equals(callerId)) {
-            // The caller cannot probe themselves for membership, so this stays plain.
             throw new IllegalArgumentException("You can't add yourself as family");
         }
         if (!targetIsFamilySeat && !hasElderSeat(target)) {
-            return acknowledgement();
+            // Same words as "no such account", so role can't be told apart from absence.
+            throw failedLookup(callerId);
         }
-        // HARD-106 + SEC-08: a block in either direction stops the request, and it
-        // does so indistinguishably from a stranger — a distinct "not available"
-        // would itself confirm the person exists.
+        // HARD-106: a block in either direction stops a family request too, with the
+        // same sentence every other refused write uses (it names no block).
         if (blockService.isHidden(callerId, target.getId())) {
-            return acknowledgement();
+            lookupRateLimiter.recordFailure(callerId);
+            throw new IllegalStateException(BlockService.NOT_AVAILABLE);
         }
 
         User elder = targetIsFamilySeat ? caller : target;
@@ -116,12 +119,14 @@ public class FamilyService {
         }
 
         if (!targetIsFamilySeat) {
-            // Here the elder seat is the TARGET, so this cap depends on them — over
-            // it, stay silent rather than reveal that this elder exists and is full.
+            // Here the elder seat is the TARGET. A full elder is named as full — the
+            // sender must know their request cannot land — and the answer, which
+            // does confirm an account exists, burns lookup budget like any probe.
             long taken = familyLinkRepository.countByElderIdAndStatusIn(
                     elder.getId(), List.of(FamilyLinkStatus.PENDING, FamilyLinkStatus.ACTIVE));
             if (taken >= MAX_FAMILY_PER_ELDER) {
-                return acknowledgement();
+                lookupRateLimiter.recordFailure(callerId);
+                throw new IllegalArgumentException("Family limit reached");
             }
         }
 
@@ -137,10 +142,15 @@ public class FamilyService {
         link.setIsPrimary(false);
         link.setRespondedAt(null);
         link.setRevokedAt(null);
-        familyLinkRepository.save(link);
+        // The full response, id and name included: the shipped apps and any client
+        // reading the returned link back depend on the real row.
+        return toResponse(familyLinkRepository.save(link), callerId);
+    }
 
-        // Never the target's name: the same body a stranger gets (SEC-08).
-        return acknowledgement();
+    /** A failed identifier lookup: counted against the caller's daily budget, then refused. */
+    private IllegalArgumentException failedLookup(UUID callerId) {
+        lookupRateLimiter.recordFailure(callerId);
+        return new IllegalArgumentException(NOT_FOUND_MESSAGE);
     }
 
     private void requireCallerUnderDailyCap(UUID callerId) {
@@ -157,19 +167,6 @@ public class FamilyService {
         if (taken >= MAX_FAMILY_PER_ELDER) {
             throw new IllegalArgumentException("Family limit reached");
         }
-    }
-
-    /**
-     * The one body createRequest ever returns: a request either was placed or was
-     * quietly not, and the caller cannot tell which — so the endpoint never answers
-     * "is this person a member?" (SEC-08). It carries no id and no name; the real
-     * state, when there is any, is read back from GET /api/family/links.
-     */
-    private FamilyLinkResponse acknowledgement() {
-        return FamilyLinkResponse.builder()
-                .status(FamilyLinkStatus.PENDING)
-                .initiatedByMe(true)
-                .build();
     }
 
     @Transactional
