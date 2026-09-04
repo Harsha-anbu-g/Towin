@@ -1,6 +1,6 @@
-# Manual-only Snyk security scan. Runs ONLY when a maintainer clicks
-# "Run workflow" in the Actions tab (or via `gh workflow run security-snyk.yml`).
-# Never runs on push or pull_request — this is an on-demand audit, not a gate.
+# Snyk security scan. Runs automatically on every push and pull request to main,
+# and on demand via "Run workflow" in the Actions tab
+# (or `gh workflow run security-snyk.yml`).
 #
 # Report-only: findings are printed in the run logs; the job does NOT fail the
 # run when vulnerabilities are found (continue-on-error on each scan step).
@@ -10,9 +10,13 @@
 #   Value: an API token from https://app.snyk.io/account
 # Until that secret exists the job prints a warning and passes (skips the scan),
 # so the check stays visibly present in the repo even before it is wired up.
-name: Security - Snyk (manual)
+name: Security - Snyk
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
