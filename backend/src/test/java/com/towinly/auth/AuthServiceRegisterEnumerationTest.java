@@ -67,7 +67,6 @@ class AuthServiceRegisterEnumerationTest {
     void register_answersAKnownEmailExactlyAsItAnswersANewOne() {
         when(userRepository.existsByEmail(FRESH)).thenReturn(false);
         when(userRepository.existsByEmail(KNOWN)).thenReturn(true);
-        when(userRepository.findByEmail(KNOWN)).thenReturn(Optional.of(member()));
 
         assertThatCode(() -> authService.register(request(FRESH))).doesNotThrowAnyException();
         assertThatCode(() -> authService.register(request(KNOWN))).doesNotThrowAnyException();
@@ -76,7 +75,6 @@ class AuthServiceRegisterEnumerationTest {
     @Test
     void register_neverTellsTheCallerThatAnAddressBelongsToAMember() {
         when(userRepository.existsByEmail(KNOWN)).thenReturn(true);
-        when(userRepository.findByEmail(KNOWN)).thenReturn(Optional.of(member()));
 
         assertThatCode(() -> authService.register(request(KNOWN))).doesNotThrowAnyException();
 
@@ -90,15 +88,11 @@ class AuthServiceRegisterEnumerationTest {
     void register_tellsTheRealOwnerThroughTheirOwnInbox() {
         // The person who forgot they already have an account must still learn it, and
         // the only safe place to say so is the mailbox that already exists.
-        User owner = member();
         when(userRepository.existsByEmail(KNOWN)).thenReturn(true);
-        when(userRepository.findByEmail(KNOWN)).thenReturn(Optional.of(owner));
 
         authService.register(request(KNOWN));
 
-        verify(emailService).sendPasswordResetEmail(eq(KNOWN), anyString());
-        assertThat(owner.getPasswordResetToken()).isNotBlank();
-        verify(userRepository).save(owner);
+        verify(emailService).sendAlreadyRegisteredEmail(eq(KNOWN), anyString());
     }
 
     @Test
@@ -107,12 +101,11 @@ class AuthServiceRegisterEnumerationTest {
         // stopwatch would answer the question the response refuses to, so it runs
         // on both paths and each path sends exactly one email.
         when(userRepository.existsByEmail(KNOWN)).thenReturn(true);
-        when(userRepository.findByEmail(KNOWN)).thenReturn(Optional.of(member()));
 
         authService.register(request(KNOWN));
 
         verify(passwordEncoder).encode("longenoughpw");
-        verify(emailService, times(1)).sendPasswordResetEmail(anyString(), anyString());
+        verify(emailService, times(1)).sendAlreadyRegisteredEmail(anyString(), anyString());
     }
 
     @Test

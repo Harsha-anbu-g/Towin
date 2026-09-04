@@ -262,7 +262,7 @@ public class ProfileService {
                     .interests(elder.getInterests())
                     .languages(elder.getLanguages())
                     .lookingFor(elder.getLookingFor().name())
-                    .gender(elder.getGender() != null ? elder.getGender().name() : null)
+                    .gender(socialsVisible && elder.getGender() != null ? elder.getGender().name() : null)
                     .facebookUrl(socialsVisible ? elder.getFacebookUrl() : null)
                     .instagramUrl(socialsVisible ? elder.getInstagramUrl() : null)
                     .occupation(elder.getOccupation());
@@ -280,7 +280,7 @@ public class ProfileService {
                     .backgroundCheckStatus(helper.getBackgroundCheckStatus().name())
                     .hobbies(helper.getHobbies())
                     .occupation(helper.getOccupation())
-                    .gender(helper.getGender() != null ? helper.getGender().name() : null)
+                    .gender(socialsVisible && helper.getGender() != null ? helper.getGender().name() : null)
                     .facebookUrl(socialsVisible ? helper.getFacebookUrl() : null)
                     .instagramUrl(socialsVisible ? helper.getInstagramUrl() : null);
         }

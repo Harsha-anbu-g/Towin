@@ -2,7 +2,6 @@ package com.towinly.discovery.service;
 
 import com.towinly.common.entity.User;
 import com.towinly.common.repository.UserRepository;
-import com.towinly.common.service.CoarseLocation;
 import com.towinly.common.service.S3Service;
 import com.towinly.common.service.TrustScoreService;
 import com.towinly.common.seed.DemoDataSeeder;
@@ -157,13 +156,14 @@ public class DiscoveryService {
     }
 
     /**
-     * Distance from the origin to the person's cell. Their stored coordinate is
-     * snapped here as well as on write, so rows saved before SEC-01 leak nothing.
+     * Distance from the origin to the person's stored cell. SEC-01 snaps every
+     * coordinate on write and the migration re-snapped old rows, so the stored
+     * value is already a grid vertex.
      */
     private double cellDistanceKm(double lat, double lng, User person) {
         return haversineKm(lat, lng,
-                CoarseLocation.snap(person.getLocationLat()).doubleValue(),
-                CoarseLocation.snapLng(person.getLocationLng()).doubleValue());
+                person.getLocationLat().doubleValue(),
+                person.getLocationLng().doubleValue());
     }
 
     /**

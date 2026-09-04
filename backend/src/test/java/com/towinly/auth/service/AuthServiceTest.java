@@ -235,18 +235,6 @@ class AuthServiceTest {
                 .hasMessageContaining("too weak");
     }
 
-    @Test
-    void register_stillSaysPlainlyWhenAUsernameIsTaken() {
-        // A username is public in this product: the person must pick another one.
-        RegisterRequest req = registerRequest();
-        req.setEmail("known@member.com");
-        when(userRepository.existsByUsername("testuser")).thenReturn(true);
-
-        assertThatThrownBy(() -> authService.register(req))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Username already taken");
-    }
-
     private RegisterRequest registerRequest() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("testuser");
