@@ -109,17 +109,24 @@ class AuthServiceRegisterEnumerationTest {
     }
 
     @Test
-    void register_neverAsksWhetherAUsernameIsTaken() {
-        // Same probe by another door: a handle names a person too. The check that
-        // matters happens when the emailed link is opened, by which point the answer
-        // goes to whoever is holding that mailbox.
-        when(userRepository.existsByEmail(FRESH)).thenReturn(false);
+    void register_answersATakenUsernameIdenticallyForAKnownAndAFreshEmail() {
+        // A taken handle is named plainly (handles are public in-app, and the
+        // shipped apps can only explain the clash at signup time) — but it must
+        // never become an email oracle: the answer is decided BEFORE the address
+        // is looked at, so it is byte-for-byte the same either way, and no email
+        // of any kind goes out.
+        when(userRepository.existsByUsername(anyString())).thenReturn(true);
 
-        assertThatCode(() -> authService.register(request(FRESH))).doesNotThrowAnyException();
+        for (String email : new String[] {KNOWN, FRESH}) {
+            assertThatThrownBy(() -> authService.register(request(email)))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Username already taken");
+        }
 
-        verify(userRepository, never()).existsByUsername(anyString());
-        verify(pendingRepository).save(any(PendingRegistration.class));
-        verify(emailService).sendVerificationEmail(eq(FRESH), anyString());
+        verify(userRepository, never()).existsByEmail(anyString());
+        verify(pendingRepository, never()).save(any(PendingRegistration.class));
+        verify(emailService, never()).sendVerificationEmail(anyString(), anyString());
+        verify(emailService, never()).sendAlreadyRegisteredEmail(anyString(), anyString());
     }
 
     @Test

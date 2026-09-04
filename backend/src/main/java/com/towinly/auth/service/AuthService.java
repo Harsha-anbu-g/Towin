@@ -56,13 +56,15 @@ public class AuthService {
      * Manual signup. We do NOT create a real account here — we hold the signup in
      * pending_registrations and only create the User when the email link is clicked.
      *
-     * <p>It never says whether the address or the handle already belongs to somebody
-     * (SEC-08). Towinly's members are elderly, and being one implies living alone and
-     * letting strangers in, so "is this person registered?" is a targeting question,
-     * and an email list plus this endpoint used to answer it in bulk. Login and
+     * <p>It never says whether the ADDRESS already belongs to somebody (SEC-08).
+     * Towinly's members are elderly, and being one implies living alone and letting
+     * strangers in, so "is this person registered?" is a targeting question, and an
+     * email list plus this endpoint used to answer it in bulk. Login and
      * forgot-password have always answered everybody the same way; this now matches
      * them. A duplicate is settled through the inbox instead: the address that already
      * exists is written to, and the caller — who may be anybody — is told nothing.
+     * A taken USERNAME, by contrast, is named plainly: handles are public in-app, and
+     * the shipped clients can only explain the clash at signup time (see below).
      */
     @Transactional
     public void register(RegisterRequest request) {
@@ -71,6 +73,17 @@ public class AuthService {
                 && request.getRole() != UserRole.BOTH
                 && request.getRole() != UserRole.FAMILY) {
             throw new IllegalArgumentException("Role must be ELDER, HELPER, BOTH, or FAMILY");
+        }
+        // A username is public in this product (profiles and connection cards fall
+        // back to it), so naming a clash tells an attacker nothing they could not
+        // read off a profile — and it MUST be named here, before the email goes out.
+        // Deferring it to verify-email walked a real person into a loop the shipped
+        // apps cannot explain: signup reads as accepted, the link then fails with a
+        // generic "link didn't work — sign up again", and the same username fails
+        // the same way forever. It sits BEFORE the email check below so the answer
+        // never varies with whether the address is registered (no email oracle).
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already taken");
         }
         // The password is judged BEFORE the address is looked at, on purpose: if the
         // duplicate-email return came first, a deliberately weak password would draw
@@ -98,11 +111,6 @@ public class AuthService {
             emailService.sendAlreadyRegisteredEmail(request.getEmail(), verifyBaseUrl + "/login");
             return;
         }
-        // Deliberately no existsByUsername check here - that was the same probe wearing a
-        // different hat ("Username already taken" answered a stranger's question about a
-        // name they read off a profile). verifyEmail still enforces uniqueness, and by
-        // then the answer is going to whoever opened the link in that mailbox.
-
         // Replace any earlier unverified attempt for this email so re-registering just refreshes the link.
         pendingRepository.deleteByEmail(request.getEmail());
 

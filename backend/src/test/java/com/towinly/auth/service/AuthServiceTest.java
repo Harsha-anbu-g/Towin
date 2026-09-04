@@ -38,18 +38,22 @@ class AuthServiceTest {
     @InjectMocks AuthService authService;
 
     @Test
-    void shouldNotSayWhetherAUsernameIsAlreadyTaken() {
-        // This used to throw "Username already taken" straight back at whoever asked,
-        // which let anyone check a handle against the member list. Signup now answers a
-        // taken handle exactly as it answers a free one; the clash is settled when the
-        // emailed link is opened, by the person holding that mailbox
-        // (AuthServiceVerifyEmailTest).
+    void namesAUsernameClashPlainly_beforeAnyEmailWork() {
+        // Handles are public in-app, so naming a clash tells a caller nothing they
+        // could not read off a profile — and it MUST be named at signup: deferring
+        // it to the emailed link walked real people into a loop the shipped apps
+        // cannot explain (signup reads as accepted, the link fails generically,
+        // forever). The check runs before any email work, so the answer never
+        // varies with whether the address is registered.
+        when(userRepository.existsByUsername(anyString())).thenReturn(true);
         RegisterRequest req = registerRequest();
 
-        assertThatCode(() -> authService.register(req)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Username already taken");
 
-        verify(userRepository, never()).existsByUsername(anyString());
-        verify(pendingRepository).save(any(PendingRegistration.class));
+        verify(userRepository, never()).existsByEmail(anyString());
+        verify(pendingRepository, never()).save(any(PendingRegistration.class));
     }
 
     @Test
