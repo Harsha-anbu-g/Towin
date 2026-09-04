@@ -63,8 +63,8 @@ class PassOnVisibilityServiceTest {
         // Nobody is family and nobody is connected unless a test says so.
         lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(any(), any()))
                 .thenReturn(Optional.empty());
-        lenient().when(connectionRepository.findBetweenUsers(any(), any()))
-                .thenReturn(Optional.empty());
+        lenient().when(connectionRepository.findAllBetweenUsers(any(), any()))
+                .thenReturn(java.util.List.of());
         // And Margaret is alive. Nothing has been released unless a test says so.
         lenient().when(releases.isReleased(any())).thenReturn(false);
         // Nobody has blocked anybody unless a test says so.
@@ -120,8 +120,8 @@ class PassOnVisibilityServiceTest {
     }
 
     private void friendshipBetween(User a, User b, Connection connection) {
-        lenient().when(connectionRepository.findBetweenUsers(a.getId(), b.getId()))
-                .thenReturn(Optional.of(connection));
+        lenient().when(connectionRepository.findAllBetweenUsers(a.getId(), b.getId()))
+                .thenReturn(java.util.List.of(connection));
     }
 
     /** A letter she wrote to be read after she is gone. */
@@ -163,7 +163,7 @@ class PassOnVisibilityServiceTest {
 
         assertThat(service.canRead(story(PassOnAudience.FAMILY), tom.getId())).isFalse();
         // Trust on the helper ladder is not a route into "my family" — never even looked at.
-        verify(connectionRepository, never()).findBetweenUsers(any(), any());
+        verify(connectionRepository, never()).findAllBetweenUsers(any(), any());
     }
 
     @Test
@@ -251,7 +251,7 @@ class PassOnVisibilityServiceTest {
         assertThat(service.canRead(sealed, stranger.getId())).isFalse();
         // Not even the owner, and no lookup that could ever turn into a yes.
         verify(familyLinkRepository, never()).findByElderIdAndFamilyUserId(any(), any());
-        verify(connectionRepository, never()).findBetweenUsers(any(), any());
+        verify(connectionRepository, never()).findAllBetweenUsers(any(), any());
     }
 
     // ── the owner, and the states nothing may leak through ──
@@ -277,7 +277,7 @@ class PassOnVisibilityServiceTest {
         when(blocks.isHidden(margaret.getId(), tom.getId())).thenReturn(true);
 
         assertThat(service.canRead(story(PassOnAudience.HELPERS), tom.getId())).isFalse();
-        verify(connectionRepository, never()).findBetweenUsers(any(), any());
+        verify(connectionRepository, never()).findAllBetweenUsers(any(), any());
     }
 
     @Test

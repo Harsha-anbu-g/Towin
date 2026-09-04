@@ -93,11 +93,15 @@ public class ConnectionService {
         User sender = getUser(senderId);
         User target = getUser(request.getTargetUserId());
 
-        connectionRepository.findBetweenUsers(senderId, target.getId()).ifPresent(c -> {
-            if (c.getStatus() == ConnectionStatus.PENDING || c.getStatus() == ConnectionStatus.ACTIVE) {
-                throw new IllegalArgumentException("A connection already exists between these users");
-            }
-        });
+        // Read as a list, not one row: a pair legitimately ends up with two rows
+        // (see ConnectionRepository.findAllBetweenUsers), and the single-row read
+        // 500'd here — on the very request that would have repaired the relationship.
+        boolean liveRowExists = connectionRepository.findAllBetweenUsers(senderId, target.getId()).stream()
+                .anyMatch(c -> c.getStatus() == ConnectionStatus.PENDING
+                        || c.getStatus() == ConnectionStatus.ACTIVE);
+        if (liveRowExists) {
+            throw new IllegalArgumentException("A connection already exists between these users");
+        }
 
         // HARD-106: a block in either direction ends the conversation before it
         // starts. Checked after the existing-connection rule so a connected pair gets
@@ -386,7 +390,15 @@ public class ConnectionService {
         // the accepted states; every other status hides the phone.
         boolean accepted = connection.getStatus() == ConnectionStatus.ACTIVE
                 || connection.getStatus() == ConnectionStatus.PAUSED;
+        // FAMILY rows never unlock the phone, exactly as ProfileService.socialsUnlocked
+        // and PassOnVisibilityService read the same question. A FAMILY row is a
+        // coordination chat that earns no rungs of its own, but it can still CARRY a
+        // high rung: FamilyStandingService reopens a terminal row by stamping it
+        // FAMILY + ACTIVE and keeps an ENDED row's earned rung. Without this filter,
+        // a family member tapping Message on a standing re-served a helper's phone
+        // number from a friendship that helper had explicitly ended.
         boolean phoneUnlocked = accepted
+                && connection.getType() != com.towinly.common.enums.ConnectionType.FAMILY
                 && connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
         // Rows are [connectionId, content, createdAt].

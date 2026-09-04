@@ -83,13 +83,24 @@ public class ReviewService {
         // near-stranger, fake 1-stars / safety flags to smear one). Finishing a job
         // together is NOT a shortcut past the ladder: the pair must be ACTIVE and
         // TRUSTED whether or not the review hangs off a need.
-        Connection connection = connectionRepository
-                .findBetweenUsers(reviewerId, request.getRevieweeId())
-                .orElseThrow(() -> new IllegalArgumentException("You can only review people you've connected with"));
-        if (connection.getStatus() != ConnectionStatus.ACTIVE
-                || connection.getCurrentTrustLevel() != TrustLevel.TRUSTED) {
-            throw new IllegalArgumentException("You can review each other once you're fully trusted friends");
+        // Read as a list (a pair can legitimately hold two rows — see
+        // ConnectionRepository.findAllBetweenUsers), and FAMILY rows never count:
+        // they are coordination chats that earn no trust, yet a reopened one can
+        // still CARRY a resurrected TRUSTED rung, which must not open the review
+        // door — the same exclusion socialsUnlocked and the Pass-On gate apply.
+        List<Connection> friendships = connectionRepository
+                .findAllBetweenUsers(reviewerId, request.getRevieweeId()).stream()
+                .filter(c -> c.getType() != com.towinly.common.enums.ConnectionType.FAMILY)
+                .collect(Collectors.toList());
+        if (friendships.isEmpty()) {
+            throw new IllegalArgumentException("You can only review people you've connected with");
         }
+        Connection connection = friendships.stream()
+                .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE
+                        && c.getCurrentTrustLevel() == TrustLevel.TRUSTED)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "You can review each other once you're fully trusted friends"));
 
         // The grant was checked above, before we knew which friendship this was.
         // Now that we do: the power only reaches the friendships the parent chose

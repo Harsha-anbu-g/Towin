@@ -94,8 +94,8 @@ class ReviewServiceTest {
     }
 
     private void connectedAt(ConnectionStatus status, TrustLevel level) {
-        when(connectionRepository.findBetweenUsers(reviewerId, revieweeId))
-                .thenReturn(Optional.of(Connection.builder()
+        when(connectionRepository.findAllBetweenUsers(reviewerId, revieweeId))
+                .thenReturn(java.util.List.of(Connection.builder()
                         .userA(reviewer).userB(reviewee)
                         .status(status).currentTrustLevel(level)
                         .build()));
@@ -224,7 +224,7 @@ class ReviewServiceTest {
     @Test
     void reviewWithoutNeedOrConnection_isRejected_soStrangersCannotFeedTrustScores() {
         bothUsersExist();
-        when(connectionRepository.findBetweenUsers(reviewerId, revieweeId)).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(reviewerId, revieweeId)).thenReturn(java.util.List.of());
 
         assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, null, 5)))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -279,7 +279,7 @@ class ReviewServiceTest {
     @Test
     void reviewFromASharedNeedWithNoConnection_isRejected() {
         bothUsersExist();
-        when(connectionRepository.findBetweenUsers(reviewerId, revieweeId)).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(reviewerId, revieweeId)).thenReturn(java.util.List.of());
 
         assertThatThrownBy(() -> reviewService.submitReview(reviewerId, request(revieweeId, needId, 5)))
                 .isInstanceOf(IllegalArgumentException.class)

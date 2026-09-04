@@ -338,7 +338,15 @@ public class NeedService {
         need.setStatus(NeedStatus.ASSIGNED);
 
         User helper = application.getHelper();
-        Connection existing = connectionRepository.findBetweenUsers(elderId, helper.getId()).orElse(null);
+        // List read — a doubled pair (see ConnectionRepository.findAllBetweenUsers)
+        // must not 500 the accept. A live row is preferred; failing that, any row is
+        // reused, and the rung reset below treats it as the dead row it is.
+        List<Connection> pairRows = connectionRepository.findAllBetweenUsers(elderId, helper.getId());
+        Connection existing = pairRows.stream()
+                .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE
+                        || c.getStatus() == ConnectionStatus.PAUSED)
+                .findFirst()
+                .orElseGet(() -> pairRows.isEmpty() ? null : pairRows.get(0));
         // A pause is the one non-live state that keeps its rung, because a pause is
         // reversible by design: TrustService.resumeProgression hands the same rung back
         // on one press, and the app promises nothing is lost while a friendship is

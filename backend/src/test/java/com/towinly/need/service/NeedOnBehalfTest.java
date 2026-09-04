@@ -215,8 +215,8 @@ class NeedOnBehalfTest {
         when(applicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId()))
                 .thenReturn(Optional.of(application));
         when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(application));
-        when(connectionRepository.findBetweenUsers(margaret.getId(), helper.getId()))
-                .thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(margaret.getId(), helper.getId()))
+                .thenReturn(java.util.List.of());
         when(connectionRepository.save(any())).thenAnswer(inv -> {
             // The DB always hands back a row with an id; the accepted-offer ping reads it.
             Connection c = inv.getArgument(0);

@@ -152,11 +152,14 @@ public class FamilyStandingService {
         // refuses to open (or reopen) a chat across the block, and chatAllowed
         // closes the send gate on an already-open one. The view stays; the door shuts.
 
+        // List read: a doubled pair (see ConnectionRepository.findAllBetweenUsers)
+        // must not 500 the whole standings/behind/transparency loop it runs inside.
         UUID chatConnectionId = connectionRepository
-                .findBetweenUsers(familyUserId, helper.getId())
+                .findAllBetweenUsers(familyUserId, helper.getId()).stream()
                 .filter(fc -> fc.getType() == ConnectionType.FAMILY
                         && fc.getStatus() == ConnectionStatus.ACTIVE)
                 .map(Connection::getId)
+                .findFirst()
                 .orElse(null);
 
         return Standing.builder()
@@ -204,16 +207,17 @@ public class FamilyStandingService {
         User helper = userRepository.findById(standing.getHelperUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Connection existing = connectionRepository.findBetweenUsers(familyUserId, helper.getId()).orElse(null);
         // If the two already share a LIVE non-FAMILY connection (they connected on
         // their own), that is a real relationship — never overwrite it into a
         // coordination chat. Just hand back the conversation they already have.
         // A terminal row (declined/ended) falls through and is reopened as the
         // FAMILY chat, so the Message button never dead-ends on a dead connection.
-        if (existing != null && existing.getType() != ConnectionType.FAMILY
-                && existing.getStatus() == ConnectionStatus.ACTIVE) {
-            return existing.getId();
+        List<Connection> pairRows = connectionRepository.findAllBetweenUsers(familyUserId, helper.getId());
+        Connection liveOwn = liveNonFamilyRow(pairRows);
+        if (liveOwn != null) {
+            return liveOwn.getId();
         }
+        Connection existing = reusableRow(pairRows);
         // A previous revoke may have left an ENDED FAMILY row (or a terminal
         // non-FAMILY row) — reopen it instead of violating the one-row-per-pair
         // shape the rest of the app assumes. Only a row that never earned a rung
@@ -254,13 +258,14 @@ public class FamilyStandingService {
         User other = userRepository.findById(otherUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Connection existing = connectionRepository.findBetweenUsers(callerId, otherUserId).orElse(null);
         // A live non-FAMILY connection between the two (unusual for elder↔family, but
         // safe to honour) is handed back rather than duplicated.
-        if (existing != null && existing.getType() != ConnectionType.FAMILY
-                && existing.getStatus() == ConnectionStatus.ACTIVE) {
-            return existing.getId();
+        List<Connection> pairRows = connectionRepository.findAllBetweenUsers(callerId, otherUserId);
+        Connection liveOwn = liveNonFamilyRow(pairRows);
+        if (liveOwn != null) {
+            return liveOwn.getId();
         }
+        Connection existing = reusableRow(pairRows);
         boolean resetRung = resurrectsANeverActiveRow(existing);
         Connection chat = existing != null ? existing : Connection.builder()
                 .userA(caller)
@@ -271,6 +276,27 @@ public class FamilyStandingService {
         chat.setStatus(ConnectionStatus.ACTIVE);
         if (resetRung || chat.getCurrentTrustLevel() == null) chat.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         return connectionRepository.save(chat).getId();
+    }
+
+    /** The pair's own live, non-FAMILY friendship, if they have one. */
+    private Connection liveNonFamilyRow(List<Connection> pairRows) {
+        return pairRows.stream()
+                .filter(c -> c.getType() != ConnectionType.FAMILY
+                        && c.getStatus() == ConnectionStatus.ACTIVE)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * The one row of a (possibly doubled — see ConnectionRepository.findAllBetweenUsers)
+     * pair to reopen as the FAMILY chat: an existing FAMILY row first, so a reopened
+     * chat keeps its own history, else any terminal row, else null (create fresh).
+     */
+    private Connection reusableRow(List<Connection> pairRows) {
+        return pairRows.stream()
+                .filter(c -> c.getType() == ConnectionType.FAMILY)
+                .findFirst()
+                .orElseGet(() -> pairRows.isEmpty() ? null : pairRows.get(0));
     }
 
     /**
@@ -330,9 +356,11 @@ public class FamilyStandingService {
             UUID elderId = elderIdFor(familyUserId, elderConnection);
             if (elderId != null) {
                 User helper = elderConnection.getOtherUser(elderId);
-                connectionRepository.findBetweenUsers(familyUserId, helper.getId())
+                // Every FAMILY row of the pair, so a doubled pair neither 500s the
+                // revoke nor leaves a second chat door open.
+                connectionRepository.findAllBetweenUsers(familyUserId, helper.getId()).stream()
                         .filter(fc -> fc.getType() == ConnectionType.FAMILY)
-                        .ifPresent(fc -> {
+                        .forEach(fc -> {
                             fc.setStatus(ConnectionStatus.ENDED);
                             connectionRepository.save(fc);
                         });

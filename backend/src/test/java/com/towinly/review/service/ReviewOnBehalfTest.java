@@ -83,7 +83,7 @@ class ReviewOnBehalfTest {
 
     /** Margaret and the helper are fully trusted friends — the gate a review needs. */
     private void trustedFriendship(UUID a, UUID b) {
-        when(connectionRepository.findBetweenUsers(a, b)).thenReturn(Optional.of(
+        when(connectionRepository.findAllBetweenUsers(a, b)).thenReturn(java.util.List.of(
                 Connection.builder()
                         .id(UUID.randomUUID())
                         .status(ConnectionStatus.ACTIVE)
@@ -203,8 +203,8 @@ class ReviewOnBehalfTest {
         when(userRepository.findById(sarah.getId())).thenReturn(Optional.of(sarah));
         when(userRepository.findById(margaret.getId())).thenReturn(Optional.of(margaret));
         when(userRepository.findById(stranger.getId())).thenReturn(Optional.of(stranger));
-        when(connectionRepository.findBetweenUsers(margaret.getId(), stranger.getId()))
-                .thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(margaret.getId(), stranger.getId()))
+                .thenReturn(java.util.List.of());
 
         assertThatThrownBy(() -> reviewService.submitReview(
                 sarah.getId(), praising(stranger.getId(), margaret.getId())))

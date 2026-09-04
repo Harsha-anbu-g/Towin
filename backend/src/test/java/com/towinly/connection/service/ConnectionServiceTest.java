@@ -62,7 +62,7 @@ class ConnectionServiceTest {
     void shouldSendConnectionRequest() {
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
-        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
         when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
         when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
             Connection c = i.getArgument(0);
@@ -90,7 +90,7 @@ class ConnectionServiceTest {
         sender.setTrustScore(60.0);
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
-        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
         when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
         when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
             Connection c = i.getArgument(0);
@@ -115,7 +115,7 @@ class ConnectionServiceTest {
     void familyLinkedPair_isAutoTypedFamily_andSkipsCapacityLimits() {
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
-        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
         when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
         com.towinly.family.entity.FamilyLink link = mock(com.towinly.family.entity.FamilyLink.class);
         when(link.getStatus()).thenReturn(com.towinly.common.enums.FamilyLinkStatus.ACTIVE);
@@ -158,7 +158,7 @@ class ConnectionServiceTest {
         }
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
-        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
         // No family link either direction — familyLinkRepository returns empty by default.
         when(connectionRepository.findByUserAndStatus(sender.getId(), ConnectionStatus.ACTIVE)).thenReturn(tenSocial);
 
@@ -187,7 +187,7 @@ class ConnectionServiceTest {
         }
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
-        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
         when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
         when(connectionRepository.findByUserAndStatus(sender.getId(), ConnectionStatus.ACTIVE)).thenReturn(familyOnly);
         when(connectionRepository.findByUserAndStatus(target.getId(), ConnectionStatus.ACTIVE)).thenReturn(List.of());
@@ -222,7 +222,7 @@ class ConnectionServiceTest {
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
         Connection existing = buildConnection(sender, target, ConnectionStatus.ACTIVE);
-        when(connectionRepository.findBetweenUsers(sender.getId(), target.getId())).thenReturn(Optional.of(existing));
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of(existing));
 
         ConnectionRequest request = new ConnectionRequest();
         request.setTargetUserId(target.getId());
@@ -236,7 +236,7 @@ class ConnectionServiceTest {
     void shouldEnforceRateLimit() {
         when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
-        when(connectionRepository.findBetweenUsers(any(), any())).thenReturn(Optional.empty());
+        when(connectionRepository.findAllBetweenUsers(any(), any())).thenReturn(List.of());
         when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(10L);
 
         ConnectionRequest request = new ConnectionRequest();

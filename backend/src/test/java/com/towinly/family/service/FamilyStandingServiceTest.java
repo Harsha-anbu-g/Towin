@@ -74,7 +74,7 @@ class FamilyStandingServiceTest {
         lenient().when(helperProfileRepository.findByUserId(any())).thenReturn(Optional.empty());
         lenient().when(controlRepository.findByFamilyUserIdAndElderConnectionId(any(), any()))
                 .thenReturn(Optional.empty());
-        lenient().when(connectionRepository.findBetweenUsers(any(), any())).thenReturn(Optional.empty());
+        lenient().when(connectionRepository.findAllBetweenUsers(any(), any())).thenReturn(java.util.List.of());
     }
 
     private Connection connection(TrustLevel level, boolean shared) {
@@ -167,8 +167,8 @@ class FamilyStandingServiceTest {
                 .id(UUID.randomUUID()).userA(sarah).userB(harsha)
                 .type(ConnectionType.FAMILY).status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.DISCOVERED).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
-                .thenReturn(Optional.of(chat));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(List.of(chat));
 
         List<FamilyStandingsResponse.Standing> result = standings();
 
@@ -204,15 +204,15 @@ class FamilyStandingServiceTest {
                         .elder(margaret).familyUser(sarah).initiatedBy(sarah)
                         .status(FamilyLinkStatus.ACTIVE).build()));
         lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(harsha.getId(), sarah.getId()))
-                .thenReturn(Optional.empty());
+                .thenReturn(java.util.Optional.empty());
         // Sarah and Harsha already share a real SOCIAL connection — it must be
         // handed back untouched, not overwritten into a coordination chat.
         Connection social = Connection.builder()
                 .id(UUID.randomUUID()).userA(sarah).userB(harsha)
                 .type(ConnectionType.SOCIAL).status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.TRUSTED).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
-                .thenReturn(Optional.of(social));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(List.of(social));
         lenient().when(userRepository.findById(sarah.getId())).thenReturn(Optional.of(sarah));
         lenient().when(userRepository.findById(harsha.getId())).thenReturn(Optional.of(harsha));
 
@@ -232,15 +232,15 @@ class FamilyStandingServiceTest {
                         .elder(margaret).familyUser(sarah).initiatedBy(sarah)
                         .status(FamilyLinkStatus.ACTIVE).build()));
         lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(harsha.getId(), sarah.getId()))
-                .thenReturn(Optional.empty());
+                .thenReturn(java.util.Optional.empty());
         // A stale DECLINED social request between the pair must NOT be handed back
         // (send would reject a non-active connection) — it is reopened as FAMILY.
         Connection declined = Connection.builder()
                 .id(UUID.randomUUID()).userA(sarah).userB(harsha)
                 .type(ConnectionType.SOCIAL).status(ConnectionStatus.DECLINED)
                 .currentTrustLevel(TrustLevel.DISCOVERED).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
-                .thenReturn(Optional.of(declined));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(List.of(declined));
         lenient().when(userRepository.findById(sarah.getId())).thenReturn(Optional.of(sarah));
         lenient().when(userRepository.findById(harsha.getId())).thenReturn(Optional.of(harsha));
         when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> i.getArgument(0));
@@ -279,7 +279,7 @@ class FamilyStandingServiceTest {
                         .elder(margaret).familyUser(sarah).initiatedBy(sarah)
                         .status(FamilyLinkStatus.ACTIVE).build()));
         lenient().when(familyLinkRepository.findByElderIdAndFamilyUserId(harsha.getId(), sarah.getId()))
-                .thenReturn(Optional.empty());
+                .thenReturn(java.util.Optional.empty());
 
         FamilyStandingsResponse.Standing s = service.standingFor(sarah.getId(), sharedConnection.getId());
 
@@ -452,8 +452,8 @@ class FamilyStandingServiceTest {
                 .id(UUID.randomUUID()).userA(sarah).userB(harsha)
                 .type(ConnectionType.SOCIAL).status(ConnectionStatus.DECLINED)
                 .currentTrustLevel(TrustLevel.DISCOVERED).initiatedBy(sarah).build();
-        lenient().when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
-                .thenReturn(Optional.of(declined));
+        lenient().when(connectionRepository.findAllBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(java.util.List.of(declined));
         bothUsersResolve();
         when(blockService.isHidden(sarah.getId(), harsha.getId())).thenReturn(true);
 
@@ -560,8 +560,8 @@ class FamilyStandingServiceTest {
                 .id(UUID.randomUUID()).userA(sarah).userB(harsha)
                 .type(ConnectionType.SOCIAL).status(ConnectionStatus.DECLINED)
                 .currentTrustLevel(TrustLevel.PHONE_CALL).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
-                .thenReturn(Optional.of(declined));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(java.util.List.of(declined));
         bothUsersResolve();
 
         service.materializeChat(sarah.getId(), sharedConnection.getId());
@@ -583,8 +583,8 @@ class FamilyStandingServiceTest {
                 .id(UUID.randomUUID()).userA(sarah).userB(margaret)
                 .type(ConnectionType.SOCIAL).status(ConnectionStatus.ENDED)
                 .currentTrustLevel(TrustLevel.VERIFIED).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), margaret.getId()))
-                .thenReturn(Optional.of(ended));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), margaret.getId()))
+                .thenReturn(java.util.List.of(ended));
         bothUsersResolve();
 
         service.openFamilyMemberChat(sarah.getId(), margaret.getId());
@@ -605,8 +605,8 @@ class FamilyStandingServiceTest {
                 .id(UUID.randomUUID()).userA(sarah).userB(margaret)
                 .type(ConnectionType.SOCIAL).status(ConnectionStatus.DECLINED)
                 .currentTrustLevel(TrustLevel.VERIFIED).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), margaret.getId()))
-                .thenReturn(Optional.of(declined));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), margaret.getId()))
+                .thenReturn(java.util.List.of(declined));
         bothUsersResolve();
 
         service.openFamilyMemberChat(sarah.getId(), margaret.getId());
@@ -627,8 +627,8 @@ class FamilyStandingServiceTest {
                 .id(UUID.randomUUID()).userA(sarah).userB(harsha)
                 .type(ConnectionType.SOCIAL).status(ConnectionStatus.ENDED)
                 .currentTrustLevel(TrustLevel.VERIFIED).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), harsha.getId()))
-                .thenReturn(Optional.of(ended));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), harsha.getId()))
+                .thenReturn(java.util.List.of(ended));
         bothUsersResolve();
 
         service.materializeChat(sarah.getId(), sharedConnection.getId());
@@ -648,8 +648,8 @@ class FamilyStandingServiceTest {
                 .id(UUID.randomUUID()).userA(sarah).userB(margaret)
                 .type(ConnectionType.FAMILY).status(ConnectionStatus.ACTIVE)
                 .currentTrustLevel(TrustLevel.MESSAGING).initiatedBy(sarah).build();
-        when(connectionRepository.findBetweenUsers(sarah.getId(), margaret.getId()))
-                .thenReturn(Optional.of(live));
+        when(connectionRepository.findAllBetweenUsers(sarah.getId(), margaret.getId()))
+                .thenReturn(java.util.List.of(live));
         bothUsersResolve();
 
         service.openFamilyMemberChat(sarah.getId(), margaret.getId());

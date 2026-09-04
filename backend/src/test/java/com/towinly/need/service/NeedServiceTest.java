@@ -468,7 +468,7 @@ class NeedServiceTest {
         when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
         when(applicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(Optional.of(app));
         when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(app));
-        when(connectionRepository.findBetweenUsers(elder.getId(), helper.getId())).thenReturn(Optional.of(existing));
+        when(connectionRepository.findAllBetweenUsers(elder.getId(), helper.getId())).thenReturn(java.util.List.of(existing));
         when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
         when(connectionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 

@@ -119,11 +119,13 @@ public class PassOnVisibilityService {
      * excluded here exactly as they are in {@code FamilyStandingService.toStanding}.
      */
     private boolean hasFullyTrustedFriendship(UUID ownerId, UUID viewerId) {
-        return connectionRepository.findBetweenUsers(ownerId, viewerId)
+        // List read: this runs once per item inside PassOnService.from, so one
+        // doubled pair (see ConnectionRepository.findAllBetweenUsers) used to 500
+        // the visitor's whole page. Any qualifying live row is enough.
+        return connectionRepository.findAllBetweenUsers(ownerId, viewerId).stream()
                 .filter(c -> c.getType() != ConnectionType.FAMILY)
                 .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE)
-                .filter(this::isFullyTrusted)
-                .isPresent();
+                .anyMatch(this::isFullyTrusted);
     }
 
     private boolean isFullyTrusted(Connection connection) {
