@@ -99,6 +99,11 @@ Like a tree growing roots, every friendship on Towinly grows slowly, through **7
 - 🔥 **Keep a streak** — daily elder check-ins.
 - 🚨 **Stay safe** — emergency contacts, SOS, reviews, and reports.
 - 👀 **Try it instantly** — one-click guest mode for beta testers.
+- 👨‍👩‍👧 **Bring family in**: family members join with their own role, see the friendships an elder chooses to share, and can act for a parent when the elder allows it.
+- 💌 **Pass things on**: an elder writes stories and letters and keeps private ones in an encrypted sealed box.
+- 🔔 **Get push notifications**: new messages and help activity reach your phone.
+- 🚫 **Block someone**: a block hides both people from each other in connections, discovery, needs, and messages.
+- 📱 **Use the iOS app**: the [Towinly iOS app](https://github.com/Harsha-anbu-g/ToWin-App) runs on this backend and is in TestFlight.
 
 ---
 
@@ -107,15 +112,29 @@ Like a tree growing roots, every friendship on Towinly grows slowly, through **7
 | Area | Stack |
 |---|---|
 | **Frontend** | React 19 · Vite · React Router 7 · Tailwind CSS 4 · TanStack Query · Axios · Radix UI · Framer Motion |
+| **Mobile (iOS)** | React Native 0.81 · Expo SDK 54 · expo-router · TanStack Query · EAS Build · TestFlight |
 | **Backend** | Java 21 · Spring Boot 3.5 · REST API · Spring MVC · Lombok · Bean Validation |
 | **Security & Auth** | Spring Security · OAuth 2.0 (Google) · JWT · BCrypt · RBAC · rate limiting · CORS / CSP |
 | **Database & ORM** | PostgreSQL · Spring Data JPA / Hibernate · Flyway · connection pooling |
 | **Real-time** | Spring WebSocket · STOMP · SockJS |
 | **Cloud & Storage** | AWS S3 |
 | **Async & Caching** | Apache Kafka · Redis · Caffeine |
-| **Integrations** | Brevo (email) · Twilio (SMS) |
+| **Integrations** | Brevo (email) · Twilio (SMS) · Expo push notifications |
 | **DevOps & CI/CD** | Docker · Docker Compose · Maven · Vercel · Railway · GitHub |
-| **Testing & Quality** | JUnit 5 · Mockito · SonarQube · Snyk |
+| **Testing & Quality** | JUnit 5 · Mockito · SonarQube and Snyk on every push to `main` |
+
+### By the numbers
+
+| Measure | Count |
+|---|---|
+| Commits on `main` | 876 |
+| REST endpoints | 130 |
+| JPA entities | 26 |
+| Flyway migrations | 59 |
+| Backend tests (JUnit 5 and Mockito) | 990, in 98 test classes |
+| Frontend test files | 42 |
+
+*Source: the `main` branch on 11 September 2026.*
 
 > **Architecture note for reviewers:** AWS S3, Twilio, Redis, and Kafka are all fully integrated in code. Redis and Kafka are gated behind `app.redis.enabled` / `app.kafka.enabled` so the app runs the complete stack locally (via Docker Compose) but uses an in-memory cache and in-process events in production — keeping the live demo free to host without removing the integrations.
 
@@ -197,7 +216,7 @@ As your total grows, you move up tiers:
 | 1+ | Getting Started |
 | 0 | New Member |
 
-**Roles:** `ELDER` · `HELPER` · `ADMIN` *(a `BOTH` role is reserved for a future feature)*
+**Roles:** `ELDER` · `HELPER` · `FAMILY` · `ADMIN` *(a `BOTH` role is reserved for a future feature)*
 
 ---
 
@@ -209,6 +228,9 @@ Towinly was reviewed against the **OWASP Top 10 (2021)** and scanned with **Sona
 - **Auth & abuse limits** — OAuth 2.0 social login (Google), BCrypt password hashing, brute-force lockouts on login and OTP, IP rate limits on registration, and a per-user limiter on paid SMS sends to stop cost abuse.
 - **Injection & XSS** — 100% parameterized JPA queries, React auto-escaping, and a strict Content-Security-Policy; no `dangerouslySetInnerHTML` or `eval` anywhere.
 - **Hardening** — stateless sessions, an env-driven CORS allowlist (no `*`, applied to HTTP **and** WebSocket origins), security headers (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, CSP), generic error responses that never leak internals, and server-validated uploads with a server-set content-type.
+- **Blocks and privacy**: the server enforces blocks in both directions, stores every location snapped to a 2 km grid, shares a phone number only on an accepted connection, and never tells a stranger at sign-up whether an email already has an account.
+- **Sealed letters**: the sealed box encrypts its contents with AES-GCM.
+- **Scans on every push**: Snyk and SonarQube run in GitHub Actions on every push and pull request to `main`.
 - **Dependencies (OWASP A06)** — Snyk's dependency scanner surfaced **90 vulnerable paths** in the backend (6 critical, 46 high) that SonarQube and `npm audit` had missed — mostly transitive CVEs in Spring's bundled Tomcat/Netty, the AWS SDK, and Twilio. Remediated by upgrading **Spring Boot 3.4 → 3.5.15**, **AWS SDK S3 → 2.39.6**, and **Twilio → 10.9.2** (all backward-compatible release lines), plus a `form-data` CRLF-injection override that `npm audit` had missed → **0 vulnerable paths**, all 54 backend tests still passing.
 
 ---
