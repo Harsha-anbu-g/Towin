@@ -277,7 +277,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "https://towin-uploads.s3.us-east-1.amazonaws.com/demo/margaret.jpg",
                 "https://facebook.com/margaret.tw");
         ensureElderProfile(david, "David Chen", 76,
-                "Former engineer, enjoys cooking and music.",
+                "Former engineer. I enjoy cooking and music, and I use a wheelchair.",
                 new String[]{"Cooking", "Music", "Technology"}, "Retired engineer", Gender.MALE, null,
                 "https://facebook.com/davidchen.tw");
         ensureElderProfile(grace, "Grace Liu", 70,
@@ -615,8 +615,9 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureNeed(grace, "Light apartment cleaning",
                 "A hand with vacuuming and dusting once a week.",
                 NeedCategory.CLEANING, NeedUrgency.NORMAL, NeedStatus.OPEN);
-        // A big, door-to-door job with no offers yet, so Harsha can offer on it live.
-        ensureNeed(david, "Help with my 3-day trip to Toronto",
+        // A big, door-to-door job still OPEN, so Harsha can offer on it live while
+        // Nina's pending offer (below) gives David an accept button.
+        Need torontoTrip = ensureNeed(david, "Help with my 3-day trip to Toronto",
                 "I'd like to go from Montreal to Toronto for 3 days. I use a wheelchair, so I need "
                         + "someone to plan the trip and come with me the whole time, at a slow pace.\n\n"
                         + "Please book a hotel with wheelchair access, the travel there and back, and cabs "
@@ -648,6 +649,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureApplication(ride, nina, "Hi Margaret, I drive and would gladly take you on Tuesday.");
         ensureApplication(shopping, priya, "Happy to carry your groceries every Saturday!", ApplicationStatus.ACCEPTED);
         ensureApplication(chess, priya, "I'd love to learn chess while keeping you company!");
+        ensureApplication(torontoTrip, nina, "Hi David! I'd be glad to plan the trip and come with you. We'll go at your pace.");
         // Harsha's offers, filling his Applied (pending + accepted) and Completed tabs
         ensureApplication(chess, james, "I'd love a weekly chess game — fair warning, I play to win!");
         ensureApplication(rosePhone, james, "Happy to help, Rose! Phones are my thing — we'll have it set up in no time.", ApplicationStatus.ACCEPTED);
