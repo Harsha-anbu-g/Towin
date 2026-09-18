@@ -615,6 +615,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         ensureNeed(grace, "Light apartment cleaning",
                 "A hand with vacuuming and dusting once a week.",
                 NeedCategory.CLEANING, NeedUrgency.NORMAL, NeedStatus.OPEN);
+        // A big, door-to-door job with no offers yet, so Harsha can offer on it live.
+        ensureNeed(david, "Help with my 3-day trip to Toronto",
+                "I'd like to go from Montreal to Toronto for 3 days. I use a wheelchair, so I need "
+                        + "someone to plan the trip and come with me the whole time, at a slow pace.\n\n"
+                        + "Please book a hotel with wheelchair access, the travel there and back, and cabs "
+                        + "in Toronto. Pack my bag at home, pick me up at my door, and bring me home at "
+                        + "the end. Then help me unpack.\n\n"
+                        + "I pay for everything, including your travel, hotel room and meals.",
+                NeedCategory.COMPANIONSHIP, NeedUrgency.NORMAL, NeedStatus.OPEN);
         // Tamil Nadu cluster: one open request per elder city, so a helper
         // browsing near Chennai or Coimbatore finds something right away.
         ensureNeed(lakshmi, "Help with video calls to my son",
