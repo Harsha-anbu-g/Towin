@@ -94,6 +94,11 @@ class DemoDataSeederPassOnTest {
     /** The elder David Chen — not Margaret's keyholder David, who is a FAMILY account. */
     private static final String DAVID_ELDER = "demo.david@towin.app";
     private static final String NINA = "demo.nina@towin.app";
+    /**
+     * Margaret alone carries a fourth story, two lines long: every other story runs to a
+     * paragraph, which reads as the size a story has to be.
+     */
+    private static final int MARGARETS_EXTRA_SHORT_STORY = 1;
     /** Every demo elder. Each owns a "My boxes" page, and none of it may open empty. */
     private static final List<String> ELDERS = List.of(MARGARET, DAVID_ELDER,
             "demo.grace@towin.app", "demo.rose@towin.app", "demo.helen@towin.app",
@@ -196,20 +201,30 @@ class DemoDataSeederPassOnTest {
     // ── the Story box ───────────────────────────────────────────────────
 
     @Test
-    void seedsThreeStoriesOneForEachAudience() {
+    void seedsAStoryForEachAudienceAndOneShortEnoughToCopy() {
         seeder.run(null);
 
         verify(transactionManager, never()).rollback(any());
         List<PassOnItem> stories = savedOfKindFor(MARGARET, PassOnKind.STORY);
-        assertThat(stories).as("three stories, so no audience filter opens on an empty list").hasSize(3);
+        assertThat(stories).as("every audience is covered, so no filter opens on an empty list")
+                .hasSize(4);
         assertThat(stories).extracting(PassOnItem::getAudience)
-                .as("Anyone, My family and My helpers are all exercised")
-                .containsExactlyInAnyOrder(
-                        PassOnAudience.EVERYONE, PassOnAudience.FAMILY, PassOnAudience.HELPERS);
+                .as("Anyone, My family and My helpers are all exercised, Anyone twice")
+                .containsExactlyInAnyOrder(PassOnAudience.EVERYONE, PassOnAudience.EVERYONE,
+                        PassOnAudience.FAMILY, PassOnAudience.HELPERS);
         assertThat(stories).extracting(PassOnItem::getTitle)
                 .contains("The winter we lost the roof",
                         "What I wish I had told your father",
                         "How to get the boiler going");
+
+        // Every other story runs to a paragraph, which reads as the size a story has to be.
+        // This one is two lines, so her page shows that a short story is a story.
+        PassOnItem shortOne = stories.stream()
+                .filter(s -> "What I learned too late".equals(s.getTitle()))
+                .findFirst().orElseThrow();
+        assertThat(shortOne.getAudience()).isEqualTo(PassOnAudience.EVERYONE);
+        assertThat(shortOne.getBody())
+                .isEqualTo("At the end, all I wanted was the people I love. Call yours today.");
     }
 
     @Test
@@ -304,17 +319,22 @@ class DemoDataSeederPassOnTest {
     // ── every elder's boxes ─────────────────────────────────────────────
 
     @Test
-    void everyDemoElderSeedsThreeStoriesOneForEachAudience() {
+    void everyDemoElderSeedsAStoryForEveryAudience() {
         seeder.run(null);
 
         for (String elder : ELDERS) {
             List<PassOnItem> stories = savedOfKindFor(elder, PassOnKind.STORY);
             assertThat(stories)
-                    .as("%s: three stories, so no audience filter opens on an empty list", elder)
-                    .hasSize(3);
+                    .as("%s: at least one story per audience, so no filter opens on an empty list",
+                            elder)
+                    .hasSizeGreaterThanOrEqualTo(3);
             assertThat(stories).extracting(PassOnItem::getAudience)
-                    .containsExactlyInAnyOrder(
-                            PassOnAudience.EVERYONE, PassOnAudience.FAMILY, PassOnAudience.HELPERS);
+                    .contains(PassOnAudience.EVERYONE, PassOnAudience.FAMILY,
+                            PassOnAudience.HELPERS);
+            // The count is free to grow; a re-seed writing the same story twice is not.
+            assertThat(stories).extracting(PassOnItem::getTitle)
+                    .as("%s: the ensure* guards must not double-seed a story", elder)
+                    .doesNotHaveDuplicates();
         }
     }
 
@@ -409,7 +429,7 @@ class DemoDataSeederPassOnTest {
         verify(sealedBoxService, never()).arm(any(), any());
         assertThat(savedOfKind(PassOnKind.STORY))
                 .as("the writing still seeds — only the encrypted half is skipped")
-                .hasSize(3 * ELDERS.size());
+                .hasSize(3 * ELDERS.size() + MARGARETS_EXTRA_SHORT_STORY);
     }
 
     // ── Keyholders and the settled state ────────────────────────────────

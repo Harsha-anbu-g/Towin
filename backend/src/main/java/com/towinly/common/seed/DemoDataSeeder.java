@@ -906,6 +906,10 @@ public class DemoDataSeeder implements ApplicationRunner {
      */
     private void seedWhatMargaretPassesOn(User margaret, User sarah, User davidSon, User ruth) {
         // Three stories, one per audience, so no filter on her page opens on an empty list.
+        // The fourth is two lines long and shares the widest audience with the first: every
+        // other story here runs to a paragraph, which reads as the size a story has to be.
+        ensureStory(margaret, "What I learned too late", PassOnAudience.EVERYONE,
+                "At the end, all I wanted was the people I love. Call yours today.");
         ensureStory(margaret, "The winter we lost the roof", PassOnAudience.EVERYONE,
                 "The gale came through on a Tuesday night in 1978 and took half the roof with "
                         + "it. We slept four to a bed in the front room and your grandfather went up "
@@ -942,7 +946,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         // a woman who picks it lives in for years — is never on screen.
         ensureHeldLetter(margaret, ruth, "For Ruth, for when I am gone",
                 "You have been my sister all my life and my best friend for most of it. When "
-                        + "you read this, put the kettle on first — you always did think better "
+                        + "you read this, put the kettle on first. You always did think better "
                         + "with a cup in your hand. Tell the others gently, and then sit in the "
                         + "garden a while and think of the summer we cycled to the coast. There "
                         + "is nothing left unsaid between us, and that is the finest thing I have.");
