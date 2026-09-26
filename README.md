@@ -8,6 +8,8 @@ Youngers who help, elders who get help — and both win.
 
 **[🚀 Try the live demo →](https://www.towinly.com)** · **[🎥 Watch the video →](https://lnkd.in/p/gWXjNXcX)**
 
+[Instagram @towinly.trust](https://www.instagram.com/towinly.trust/) · [LinkedIn](https://www.linkedin.com/company/towinly/) · [Investor deck](https://github.com/Harsha-anbu-g/ToWin-App/blob/main/docs/pitch/Towinly-Investor-Deck.pdf)
+
 *No signup needed — open the sign-in page and click **Try as an Elder** or **Try as a Helper**.*
 
 </div>
