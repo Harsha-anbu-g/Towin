@@ -34,6 +34,8 @@ public class ProfileService {
     private final com.towinly.connection.repository.ConnectionRepository connectionRepository;
     // A block refuses the whole profile read, in both directions (see requireNoBlock).
     private final BlockService blockService;
+    // A refused change reveals the number is a member's, so changes are capped per user.
+    private final com.towinly.profile.security.PhoneChangeRateLimiter phoneChangeRateLimiter;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -138,6 +140,7 @@ public class ProfileService {
         if (phone.equals(user.getPhone())) {
             return buildProfileResponse(user, null, null);
         }
+        phoneChangeRateLimiter.check(userId);
         user.setPhone(phone);
         user.setPhoneVerified(false);
         user.setPhoneOtp(null);
