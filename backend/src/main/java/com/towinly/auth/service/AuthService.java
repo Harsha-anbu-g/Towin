@@ -35,6 +35,10 @@ public class AuthService {
     private static final int  MAX_OTP_ATTEMPTS = 5;
     private static final long LOCKOUT_MINUTES  = 15;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    /** A real bcrypt hash of a random string, compared against when no account matches. */
+    private static final String TIMING_DUMMY_HASH =
+            new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder()
+                    .encode(UUID.randomUUID().toString());
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -132,53 +136,44 @@ public class AuthService {
                 Map.of("role", request.getRole().name()));
     }
 
-    @Transactional
-    public AuthResponse guestLogin(UserRole role) {
-        if (role != UserRole.ELDER && role != UserRole.HELPER) {
-            throw new IllegalArgumentException("Guest role must be ELDER or HELPER");
-        }
-        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
-        String email = "guest-" + suffix + "@towinly.beta";
-        String phone = "+10000" + suffix.substring(0, 7);
-        String password = UUID.randomUUID().toString();
-
-        User user = User.builder()
-                .username("guest_" + suffix)
-                .email(email)
-                .phone(phone)
-                .passwordHash(passwordEncoder.encode(password))
-                .role(role)
-                .emailVerified(true)
-                .build();
-
-        User saved = userRepository.save(user);
-        String id = saved.getId().toString();
-        String token = jwtUtil.generateToken(id, saved.getEmail(), saved.getRole().name());
-        return new AuthResponse(token, saved.getRole().name(), id);
-    }
-
     public AuthResponse login(LoginRequest request) {
         String id = request.getIdentifier().trim();
-
         User user = resolveUser(id);
-        boolean credentialsOk = user != null && user.getPasswordHash() != null
-                && passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
+        // The lockout counts per ACCOUNT, not per string typed. Keyed by the raw
+        // identifier, "+15145550101", "+1 514 555 0101" and the username were three
+        // separate counters for one person, so a guesser rotated spellings forever.
+        // An identifier that matches nobody is counted under its normalized form, so
+        // a locked answer never tells a stranger whether the account exists.
+        String key = user != null ? "u:" + user.getId() : "i:" + normalizeIdentifier(id);
 
-        // The correct password always works, even during a lockout window. This is
-        // what prevents a lockout denial-of-service: an attacker spraying wrong
-        // guesses at a known email can throttle further *guesses* but can never lock
-        // the real owner out of their own account.
+        // Checked BEFORE the password. Honouring a correct password during a lock
+        // made the lock meaningless: a guesser was only ever slowed on wrong guesses,
+        // and the right one still walked in. The owner's way past a lock is the
+        // password reset, which clears it (see resetPassword).
+        loginRateLimiter.checkLocked(key);
+
+        // A miss still pays for one bcrypt, so the response time does not say
+        // whether the identifier belongs to somebody.
+        String hash = user != null && user.getPasswordHash() != null
+                ? user.getPasswordHash() : TIMING_DUMMY_HASH;
+        boolean credentialsOk = passwordEncoder.matches(request.getPassword(), hash)
+                && user != null && user.getPasswordHash() != null;
+
         if (credentialsOk) {
-            loginRateLimiter.reset(id);
+            loginRateLimiter.reset(key);
             String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(),
                     user.getRole().name(), user.getTokenVersion());
             return new AuthResponse(token, user.getRole().name(), user.getId().toString());
         }
 
-        // Wrong credentials: enforce the throttle so a wrong-guess flood is capped.
-        loginRateLimiter.checkNotLocked(id);
-        loginRateLimiter.recordFailure(id);
+        loginRateLimiter.checkNotLocked(key);
+        loginRateLimiter.recordFailure(key);
         throw new IllegalArgumentException("Invalid credentials");
+    }
+
+    /** The login limiter key for an identifier that matches no account. */
+    private static String normalizeIdentifier(String identifier) {
+        return identifier.toLowerCase().replaceAll("[\\s()-]", "");
     }
 
     /** Clicking the email link is what actually creates the account. */
@@ -266,6 +261,8 @@ public class AuthService {
         user.setPasswordResetToken(null);
         user.setPasswordResetExpiresAt(null);
         userRepository.save(user);
+        // Proving the inbox is the way out of a login lockout.
+        loginRateLimiter.reset("u:" + user.getId());
     }
 
     @Transactional

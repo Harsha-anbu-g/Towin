@@ -39,6 +39,7 @@ class ProfileServiceTest {
     @Mock com.towinly.common.service.S3Service s3Service;
     @Mock com.towinly.connection.repository.ConnectionRepository connectionRepository;
     @Mock BlockService blockService;
+    @Mock com.towinly.profile.security.PhoneChangeRateLimiter phoneChangeRateLimiter;
     @InjectMocks ProfileService profileService;
 
     @Test

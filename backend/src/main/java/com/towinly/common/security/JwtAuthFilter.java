@@ -52,8 +52,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             return;
                         }
                         if (Boolean.TRUE.equals(user.getIsActive())) {
-                            List<SimpleGrantedAuthority> authorities = role != null
-                                    ? List.of(new SimpleGrantedAuthority(role))
+                            // The role comes from the row, not the token: a demotion (or a
+                            // role picked at onboarding) applies on the next request instead
+                            // of riding a 24 h token. The claim stays only as a fallback.
+                            String effectiveRole = user.getRole() != null ? user.getRole().name() : role;
+                            List<SimpleGrantedAuthority> authorities = effectiveRole != null
+                                    ? List.of(new SimpleGrantedAuthority(effectiveRole))
                                     : List.of();
                             UsernamePasswordAuthenticationToken auth =
                                     new UsernamePasswordAuthenticationToken(userId, null, authorities);
