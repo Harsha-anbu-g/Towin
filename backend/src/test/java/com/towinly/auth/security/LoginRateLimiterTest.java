@@ -135,4 +135,23 @@ class LoginRateLimiterTest {
         assertThatCode(() -> limiter.checkNotLocked("newcomer@example.com"))
                 .doesNotThrowAnyException();
     }
+
+    @Test
+    void checkLocked_aSaturatedStoreDoesNotDenyAnUnlockedKey() {
+        // checkLocked gates a correct password, so a junk flood must never trip it.
+        for (int i = 0; i < MAX_TRACKED_KEYS * 5; i++) {
+            limiter.recordFailure("junk-" + i + "@example.com");
+        }
+        assertThatCode(() -> limiter.checkLocked("victim@example.com"))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void checkLocked_throwsInsideAnActiveLock() {
+        for (int i = 0; i < 5; i++) {
+            limiter.recordFailure(EMAIL);
+        }
+        assertThatThrownBy(() -> limiter.checkLocked(EMAIL))
+                .isInstanceOf(RateLimitException.class);
+    }
 }

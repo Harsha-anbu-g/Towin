@@ -22,7 +22,8 @@ import java.time.Instant;
  * <p>Unlike the throughput limiters, this one fails <em>closed</em>: if the backing
  * store is saturated and cannot track a key, the login is denied rather than let
  * through, so a flood of junk identifiers can't quietly switch the guard off. That
- * never blocks a real sign-in — a correct password is honoured before this check runs.
+ * capacity check only runs on a wrong password, so it never blocks a real sign-in.
+ * An active lock does hold against a correct password; a password reset clears it.
  */
 @Component
 public class LoginRateLimiter implements SweepableRateLimiter {
@@ -51,7 +52,19 @@ public class LoginRateLimiter implements SweepableRateLimiter {
                 a -> a.lastFailureAt.plusSeconds(LOCKOUT_MINUTES * 60), clock, maxEntries);
     }
 
-    /** Throws if the key is currently locked out. Call before checking credentials. */
+    /**
+     * Throws only if the key sits inside an active lock. Unlike {@link #checkNotLocked},
+     * a saturated store does not deny here, so a flood of junk identifiers can never
+     * stop a correct password that is not under a lock.
+     */
+    public void checkLocked(String key) {
+        Attempt a = attempts.get(key(key));
+        if (a != null && a.lockedUntil != null && a.lockedUntil.isAfter(clock.instant())) {
+            throw new RateLimitException("Too many attempts. Try again in 15 minutes, or reset your password.");
+        }
+    }
+
+    /** Throws if the key is currently locked out, or if the store is too full to track it. */
     public void checkNotLocked(String email) {
         // An elapsed lock has expired, so the store reads it as absent — the key starts fresh.
         Attempt a = attempts.get(key(email));
@@ -62,8 +75,8 @@ public class LoginRateLimiter implements SweepableRateLimiter {
         // filling it with live windows) it can no longer track this key — and a lockout
         // guard that waves an untracked key through is silently disabled, letting the
         // flood double as cover for guessing a real account. Denying instead cannot lock
-        // a genuine user out: a correct password short-circuits in AuthService before this
-        // check runs, so only wrong-credential attempts ever reach here.
+        // a genuine user out: AuthService calls this only after a wrong password, and a
+        // correct one is gated by checkLocked alone.
         if (a == null && attempts.isFull()) {
             throw new RateLimitException("Too many attempts right now. Try again in a minute.");
         }

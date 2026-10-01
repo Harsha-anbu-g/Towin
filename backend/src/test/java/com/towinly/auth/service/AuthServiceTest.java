@@ -101,6 +101,53 @@ class AuthServiceTest {
     }
 
     @Test
+    void login_countsFailuresPerAccount_soRespellingThePhoneDoesNotResetTheLock() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().phone("+14165550123").passwordHash("hashed").role(UserRole.ELDER).build();
+        user.setId(userId);
+        when(userRepository.findByPhone("+14165550123")).thenReturn(Optional.of(user));
+
+        for (String spelling : new String[] {"+14165550123", "+1 416 555 0123", "+1-416-555-0123"}) {
+            LoginRequest req = new LoginRequest();
+            req.setIdentifier(spelling);
+            req.setPassword("guess");
+            assertThatThrownBy(() -> authService.login(req)).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        verify(loginRateLimiter, times(3)).recordFailure("u:" + userId);
+    }
+
+    @Test
+    void login_aLockedAccountRefusesEvenTheCorrectPassword() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().email("a@b.com").passwordHash("hashed").role(UserRole.ELDER).build();
+        user.setId(userId);
+        when(userRepository.findByEmail("a@b.com")).thenReturn(Optional.of(user));
+        doThrow(new com.towinly.common.exception.RateLimitException("locked"))
+                .when(loginRateLimiter).checkLocked("u:" + userId);
+
+        LoginRequest req = new LoginRequest();
+        req.setIdentifier("a@b.com");
+        req.setPassword("right");
+
+        assertThatThrownBy(() -> authService.login(req))
+                .isInstanceOf(com.towinly.common.exception.RateLimitException.class);
+        verify(jwtUtil, never()).generateToken(any(), any(), any(), anyInt());
+    }
+
+    @Test
+    void login_anUnknownIdentifierStillPaysForABcrypt() {
+        when(userRepository.findByEmail("nobody@x.com")).thenReturn(Optional.empty());
+        LoginRequest req = new LoginRequest();
+        req.setIdentifier("nobody@x.com");
+        req.setPassword("guess");
+
+        assertThatThrownBy(() -> authService.login(req)).isInstanceOf(IllegalArgumentException.class);
+        verify(passwordEncoder).matches(eq("guess"), anyString());
+        verify(loginRateLimiter).recordFailure("i:nobody@x.com");
+    }
+
+    @Test
     void shouldLoginByPhoneEvenWhenNotVerified() {
         // A brand-new account hasn't done the SMS OTP yet (phoneVerified = false).
         // The password proves identity, so phone login must still work.
