@@ -36,13 +36,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    @PostMapping("/guest")
-    public ResponseEntity<AuthResponse> guest(@Valid @RequestBody GuestLoginRequest request,
-                                              HttpServletRequest http) {
-        ipRateLimiter.check(http);
-        return ResponseEntity.ok(authService.guestLogin(request.getRole()));
-    }
-
     @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(
             Authentication auth,
