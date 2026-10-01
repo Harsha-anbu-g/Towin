@@ -69,7 +69,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/change-password", "/api/auth/set-password").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                .requestMatchers("/ws/**").permitAll()
+                // No client opens the STOMP socket and nothing publishes on it, and a STOMP
+                // CONNECT never carried a JWT, so the handshake stays shut until a feature
+                // needs it and authenticates it.
+                .requestMatchers("/ws/**").denyAll()
                 // OpenAPI docs + Swagger UI (API explorer) — public so the spec is browsable.
                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml",
                     "/swagger-ui/**", "/swagger-ui.html").permitAll()
