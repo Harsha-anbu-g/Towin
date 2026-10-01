@@ -5,6 +5,7 @@ import com.towinly.block.entity.UserBlock;
 import com.towinly.block.repository.UserBlockRepository;
 import com.towinly.common.entity.User;
 import com.towinly.common.repository.UserRepository;
+import com.towinly.common.seed.DemoDataSeeder;
 import com.towinly.common.service.DisplayNameResolver;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
@@ -28,6 +29,13 @@ import java.util.UUID;
  *
  * The blocked person is never told. Nothing here produces a notification, and the
  * refusals the write paths raise use words that say nothing about a block.
+ *
+ * <p>The demo wall rides the same two methods. The demo passwords are printed on the
+ * login page, so whoever holds a demo seat is an anonymous visitor wearing a seeded
+ * Trust Score. Demo accounts and real accounts are therefore hidden from each other
+ * exactly as if each had blocked the other: a visitor can try every feature with the
+ * demo cast, and can never find, ask, message or read a real member, nor a real
+ * member them.
  */
 @Service
 @RequiredArgsConstructor
@@ -102,14 +110,34 @@ public class BlockService {
         return listBlocked(blockerId);
     }
 
-    /** Everyone hidden from this user, in both directions. Empty when nobody is. */
+    /**
+     * Everyone hidden from this user, in both directions, plus the far side of the demo
+     * wall: a real member never sees the demo cast, and a demo seat never sees a real
+     * member. Empty when nobody is.
+     */
     public Set<UUID> hiddenFor(UUID userId) {
-        return new HashSet<>(blockRepository.findHiddenUserIds(userId));
+        Set<UUID> hidden = new HashSet<>(blockRepository.findHiddenUserIds(userId));
+        Set<UUID> demoIds = demoIds();
+        if (demoIds.contains(userId)) {
+            hidden.addAll(userRepository.findIdsByEmailNotIn(DemoDataSeeder.DEMO_EMAILS));
+        } else {
+            hidden.addAll(demoIds);
+        }
+        return hidden;
     }
 
-    /** True when either of the two has blocked the other. */
+    /** True when either of the two has blocked the other, or the demo wall stands between them. */
     public boolean isHidden(UUID a, UUID b) {
+        Set<UUID> demoIds = demoIds();
+        if (demoIds.contains(a) != demoIds.contains(b)) {
+            return true;
+        }
         return blockRepository.existsBetween(a, b);
+    }
+
+    /** The demo cast's ids. About twenty rows by an indexed email, so it is read fresh each time. */
+    private Set<UUID> demoIds() {
+        return new HashSet<>(userRepository.findIdsByEmailIn(DemoDataSeeder.DEMO_EMAILS));
     }
 
     /**

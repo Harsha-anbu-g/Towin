@@ -23,6 +23,14 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByPhone(String phone);
     boolean existsByUsername(String username);
 
+    /** Ids of the accounts with these emails. The demo wall uses it with the demo list. */
+    @Query("SELECT u.id FROM User u WHERE u.email IN :emails")
+    List<UUID> findIdsByEmailIn(@Param("emails") java.util.Collection<String> emails);
+
+    /** Ids of every account whose email is NOT one of these: everyone real, for a demo seat. */
+    @Query("SELECT u.id FROM User u WHERE u.email NOT IN :emails")
+    List<UUID> findIdsByEmailNotIn(@Param("emails") java.util.Collection<String> emails);
+
     List<User> findByVerificationStatus(VerificationStatus status);
 
     // Paged variant for the admin panel — the queue must not grow without a bound.
