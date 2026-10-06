@@ -175,6 +175,22 @@ export default function NavBar() {
     );
   };
 
+  const DrawerGap = () => <div aria-hidden="true" style={{ height: '16px' }} />;
+
+  // One row of the desktop account menu.
+  const AccountLink = ({ to, label, icon: Icon }) => (
+    <Link to={to} role="menuitem" onClick={() => setAccountOpen(false)} style={{
+      display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px',
+      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
+      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
+    }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+    >
+      <Icon size={18} strokeWidth={2} aria-hidden="true" />{label}
+    </Link>
+  );
+
   const trustActive = pathname === '/trust';
 
   return (
@@ -253,9 +269,7 @@ export default function NavBar() {
 
         {/* Desktop right actions */}
         {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <NavLink to="/game" label="Peekaboo" icon={Gamepad2} />
-            <NavLink to="/how-it-works" label="Guide" icon={HelpCircle} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
             {isElder && (
               <button onClick={pressSos} disabled={sending}
                 title={sosCountdown != null
@@ -304,64 +318,17 @@ export default function NavBar() {
                       <p style={{ fontSize: '14px', color: 'var(--ink-4)', margin: '2px 0 0' }}>@{user.username}</p>
                     )}
                   </div>
-                  <Link to="/profile" role="menuitem" onClick={() => setAccountOpen(false)} style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                    color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    <User size={18} strokeWidth={2} aria-hidden="true" />Profile
-                  </Link>
-                  {isElder && (
-                    <Link to="/family" role="menuitem" onClick={() => setAccountOpen(false)} style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
-                    }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <Users size={18} strokeWidth={2} aria-hidden="true" />My Family
-                    </Link>
-                  )}
-                  {isElder && (
-                    <Link to="/what-i-pass-on" role="menuitem" onClick={() => setAccountOpen(false)} style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
-                    }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <ScrollText size={18} strokeWidth={2} aria-hidden="true" />My boxes
-                    </Link>
-                  )}
-                  {showFamilyHome && (
-                    <Link to="/family-home" role="menuitem" onClick={() => setAccountOpen(false)} style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
-                    }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <HeartHandshake size={18} strokeWidth={2} aria-hidden="true" />Family Home
-                    </Link>
-                  )}
-                  {isElder && (
-                    <Link to="/emergency-contacts" role="menuitem" onClick={() => setAccountOpen(false)} style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 12px', borderRadius: '10px', textDecoration: 'none',
-                      color: 'var(--ink)', fontSize: '16px', fontWeight: 500, fontFamily: SF,
-                    }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                    >
-                      <Siren size={18} strokeWidth={2} aria-hidden="true" />Emergency Contacts
-                    </Link>
-                  )}
+                  <AccountLink to="/profile" label="Profile" icon={User} />
+                  {isElder && <AccountLink to="/family" label="My Family" icon={Users} />}
+                  {showFamilyHome && <AccountLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
+                  {isElder && <AccountLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
+                  {/* Peekaboo and Guide live here, not in the top bar: they are
+                      occasional, and in the bar they sat in one cluster with SOS
+                      (Hick: fewer top-level choices; proximity: a game does not
+                      belong beside the emergency button). */}
+                  <div aria-hidden="true" style={{ height: '1px', background: 'var(--hairline)', margin: '6px 0' }} />
+                  <AccountLink to="/game" label="Peekaboo" icon={Gamepad2} />
+                  <AccountLink to="/how-it-works" label="Guide" icon={HelpCircle} />
                   <button role="switch" aria-checked={nightOn} onClick={toggleTheme} style={{
                     display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
                     minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
@@ -395,7 +362,7 @@ export default function NavBar() {
 
         {/* Mobile right — unread badge + SOS + hamburger */}
         {isMobile && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '18px' }}>
             {/* Messages — always a one-tap icon on mobile (not just when there's
                 an unread badge); the count rides on top when there is one. */}
             <Link
@@ -469,14 +436,18 @@ export default function NavBar() {
             borderBottom: '1px solid var(--border)',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
           }}>
+            {/* Three groups with space between them, so ten rows read as three
+                short lists: everyday, your people and safety, then extras. */}
             <MenuLink to="/dashboard" label="Dashboard" icon={Home} />
             <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
+            {!isFamilyRole && <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />}
             <MenuLink to="/profile" label="Profile" icon={User} />
+            {(isElder || showFamilyHome) && <DrawerGap />}
             {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
             {isElder && <MenuLink to="/what-i-pass-on" label="My boxes" icon={ScrollText} />}
             {showFamilyHome && <MenuLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
             {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
-            {!isFamilyRole && <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />}
+            <DrawerGap />
             <MenuLink to="/game" label="Peekaboo" icon={Gamepad2} />
             <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
             <button role="switch" aria-checked={nightOn} onClick={toggleTheme} style={{

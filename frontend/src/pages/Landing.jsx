@@ -212,6 +212,26 @@ function StartButton({ onStart }) {
   );
 }
 
+// The way in from the very first slide. Before this, the only action on the
+// deck was the Start button on slide 7, so a visitor who did not scroll the
+// whole story never found the demo (Fitts: a target that is not on screen
+// cannot be hit; Jakob: a site's header is where people look for "get
+// started"). Outlined, not filled: the filled sky Start on the last slide
+// stays the one primary.
+function DemoLink() {
+  return (
+    <Link to="/login" style={{
+      fontFamily: SF, fontSize: '15px', fontWeight: 600, color: 'var(--blue-deep)',
+      textDecoration: 'none', padding: '0 18px', minHeight: '44px',
+      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+      border: '1.5px solid var(--blue-soft)', borderRadius: '9999px',
+      background: 'var(--canvas)',
+    }}>
+      Try the demo
+    </Link>
+  );
+}
+
 export default function Landing() {
   const navigate = useNavigate();
   const total = SLIDES.length;
@@ -670,12 +690,16 @@ export default function Landing() {
                   />
                   Towinly
                 </span>
-                <Link to="/login" style={{
-                  fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
-                  textDecoration: 'none', padding: '12px 4px',
-                }}>
-                  Log in
-                </Link>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                  <Link to="/login" style={{
+                    fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
+                    textDecoration: 'none', padding: '0 4px',
+                    display: 'inline-flex', alignItems: 'center', minHeight: '44px',
+                  }}>
+                    Log in
+                  </Link>
+                  <DemoLink />
+                </span>
               </header>
             )}
             <div style={{
@@ -776,12 +800,16 @@ export default function Landing() {
               />
               Towinly
             </span>
-            <Link to="/login" style={{
-              fontFamily: SF, fontSize: '16px', fontWeight: 600, color: SKY,
-              textDecoration: 'none', padding: '14px 6px',
-            }}>
-              Already a member? Log in
-            </Link>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '20px' }}>
+              <Link to="/login" style={{
+                fontFamily: SF, fontSize: '16px', fontWeight: 600, color: SKY,
+                textDecoration: 'none', padding: '0 6px',
+                display: 'inline-flex', alignItems: 'center', minHeight: '44px',
+              }}>
+                Already a member? Log in
+              </Link>
+              <DemoLink />
+            </span>
           </header>
 
           {/* Slide content — all pages sit side by side; scroll progress is

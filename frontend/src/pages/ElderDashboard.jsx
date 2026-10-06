@@ -105,7 +105,7 @@ const NEED_STATUS = {
 
 // Tab icons match the design's leading glyphs.
 function TabIcon({ id, active }) {
-  // stroke set via style so var(--action-ink) resolves (attributes don't take var()).
+  // stroke set via style so var(--blue-deep) resolves (attributes don't take var()).
   const svgProps = {
     width: 16, height: 16,
     viewBox: '0 0 24 24',
@@ -114,7 +114,7 @@ function TabIcon({ id, active }) {
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
     'aria-hidden': true,
-    style: { flexShrink: 0, stroke: active ? 'var(--action-ink)' : 'var(--ink-slate)' },
+    style: { flexShrink: 0, stroke: active || id === 'post' ? 'var(--blue-deep)' : 'var(--ink-slate)' },
   };
   if (id === 'connections') return (
     <svg {...svgProps}>
@@ -699,9 +699,14 @@ export default function ElderDashboard() {
                   height: '44px', padding: '0 16px',
                   fontSize: '16px', letterSpacing: '-0.1px',
                   fontWeight: active ? 700 : 600,
-                  color: active ? 'var(--action-ink)' : 'var(--ink-slate)',
-                  background: active ? 'var(--action-fill)' : 'transparent',
-                  border: active ? '1px solid var(--action-fill)' : '1px solid transparent',
+                  // Von Restorff: the active tab is a soft wash, not the filled
+                  // sky blue. That fill belongs to the screen's one primary
+                  // action, and a filled tab competed with it on every visit.
+                  // "Post Help" is the elder's main job, so it is the one tab
+                  // that stays outlined in blue whether or not it is open.
+                  color: active || id === 'post' ? 'var(--blue-deep)' : 'var(--ink-slate)',
+                  background: active ? 'var(--blue-wash)' : 'transparent',
+                  border: id === 'post' ? '1.5px solid var(--blue-deep)' : active ? '1px solid var(--blue-soft)' : '1px solid transparent',
                   borderRadius: '10px',
                   cursor: 'pointer',
                   transition: 'background 0.15s, color 0.15s',
@@ -831,7 +836,7 @@ export default function ElderDashboard() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
                         {['Punctual','Kind','Trustworthy','Patient','Helpful'].map(tag => (
                           <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
-                            fontSize: 'var(--text-xs)', padding: '4px 12px', borderRadius: '9999px', cursor: 'pointer',
+                            fontSize: 'var(--text-xs)', padding: '4px 14px', minHeight: '44px', borderRadius: '9999px', cursor: 'pointer',
                             border: '1px solid', transition: 'all 0.15s',
                             borderColor: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--border)',
                             background: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--canvas)',
@@ -1196,15 +1201,15 @@ export default function ElderDashboard() {
                   {need.status === 'OPEN' && (!need.applications || need.applications.length === 0) && (
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '12px', paddingTop: '12px' }}>
                       {cancelConfirm === need.id ? (
-                        <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid var(--red-line-soft)', paddingTop: '10px', marginTop: '0', background: 'var(--red-tint)', borderRadius: '10px', padding: '10px 12px' }}>
+                        <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid var(--red-line-soft)', paddingTop: '10px', marginTop: '0', background: 'var(--red-tint)', borderRadius: '10px', padding: '10px 12px' }}>
                           <span style={{ fontSize: '14px', color: 'var(--ink-slate)', flex: 1 }}>Cancel this request?</span>
-                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--canvas)', background: 'var(--ink-slate)', border: 'none', borderRadius: '9999px', padding: '5px 14px', cursor: 'pointer' }}>Yes, cancel</button>
-                          <button onClick={() => setCancelConfirm(null)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid var(--border)', borderRadius: '9999px', padding: '5px 12px', cursor: 'pointer' }}>Keep</button>
+                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--canvas)', background: 'var(--ink-slate)', border: 'none', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>Yes, cancel</button>
+                          <button onClick={() => setCancelConfirm(null)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid var(--border)', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>Keep</button>
                         </div>
                       ) : (
                         <div className="card-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <p style={{ fontSize: '14px', color: 'var(--ink-4)', margin: 0 }}>No applicants yet</p>
-                          <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid var(--red-line)', borderRadius: '9999px', padding: '4px 14px', cursor: 'pointer' }}>
+                          <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid var(--red-line)', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>
                             Cancel
                           </button>
                         </div>
@@ -1251,7 +1256,7 @@ export default function ElderDashboard() {
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             {REVIEW_TAGS.map(tag => (
                               <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
-                                fontSize: '14px', padding: '5px 14px', borderRadius: '9999px',
+                                fontSize: '14px', padding: '5px 14px', minHeight: '44px', borderRadius: '9999px',
                                 border: '1px solid', transition: 'all 0.15s',
                                 borderColor: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--border)',
                                 background: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--canvas)',

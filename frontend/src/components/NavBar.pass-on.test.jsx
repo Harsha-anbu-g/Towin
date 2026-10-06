@@ -1,8 +1,9 @@
 // "What I pass on" is an elder-only page reached from the navigation, not a
 // sixth dashboard tab: below 640px the dashboard tab strip becomes a two-column
 // grid and its TabIcon has no default branch, so a new tab there renders with no
-// icon at all. It has to be reachable from both the desktop account menu and the
-// mobile drawer, or half the people who own the page cannot find it.
+// icon at all. It has to be reachable from both the desktop top bar and the
+// mobile drawer, or half the people who own the page cannot find it. It is not
+// repeated in the account menu: one door per screen, not two (Hick's law).
 //
 // In the navigation it is called "My boxes" — what she has, in her words — while
 // the page itself keeps its title. These tests assert the nav label, not the page
@@ -44,13 +45,13 @@ describe('NavBar — the way in to What I pass on', () => {
 
   afterEach(() => setWidth(1024))
 
-  it('offers it in the desktop account menu', async () => {
+  it('offers it in the desktop top bar, and only there', async () => {
     const user = userEvent.setup()
     setWidth(1280)
     renderNav()
+    expect(await screen.findByRole('link', { name: /my boxes/i })).toHaveAttribute('href', '/what-i-pass-on')
     await user.click(screen.getByRole('button', { name: /account/i }))
-    const link = await screen.findByRole('menuitem', { name: /my boxes/i })
-    expect(link).toHaveAttribute('href', '/what-i-pass-on')
+    expect(screen.queryByRole('menuitem', { name: /my boxes/i })).not.toBeInTheDocument()
   })
 
   it('offers it in the mobile drawer', async () => {
