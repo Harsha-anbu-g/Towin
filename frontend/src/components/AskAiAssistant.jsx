@@ -254,6 +254,7 @@ export default function AskAiAssistant() {
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
                   borderRadius: '50%', color: 'var(--ink-slate)', display: 'flex',
+                  minWidth: '44px', minHeight: '44px', alignItems: 'center', justifyContent: 'center',
                 }}
               >
                 <X size={20} />
@@ -379,7 +380,7 @@ function Bubble({ role, content, speaking, onSpeak }) {
           aria-label={speaking ? 'Stop reading aloud' : 'Read this answer aloud'}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
-            marginTop: '8px', padding: '5px 12px', cursor: 'pointer',
+            marginTop: '8px', padding: '5px 12px', minHeight: '44px', cursor: 'pointer',
             background: speaking ? 'var(--blue)' : 'var(--canvas)',
             color: speaking ? '#fff' : 'var(--blue-deep)',
             border: '1px solid var(--blue-soft)', borderRadius: '9999px',

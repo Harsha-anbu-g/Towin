@@ -255,7 +255,7 @@ export default function Messages() {
         <button
           className="chat-report"
           onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
-          style={{ fontSize: '14px', color: 'var(--ink-3)', background: 'transparent', border: '1px solid var(--border)', borderRadius: '9999px', padding: '6px 14px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
+          style={{ fontSize: '14px', color: 'var(--ink-3)', background: 'transparent', border: '1px solid var(--border)', borderRadius: '9999px', padding: '6px 14px', minHeight: '44px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
         >
           Report
         </button>

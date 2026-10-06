@@ -30,13 +30,13 @@ function ConfirmButton({ label, style, onConfirm }) {
   const [confirming, setConfirming] = useState(false);
   if (confirming) {
     return (
-      <span style={{ display: 'flex', gap: '4px' }}>
+      <span style={{ display: 'flex', gap: '12px' }}>
         <button onClick={() => { onConfirm(); setConfirming(false); }}
-          style={{ fontSize: 'var(--text-xs)', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: 'var(--text-xs)', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 12px', minHeight: '44px', cursor: 'pointer', fontFamily: SFText }}>
           Sure?
         </button>
         <button onClick={() => setConfirming(false)}
-          style={{ fontSize: 'var(--text-xs)', background: 'var(--border)', color: 'var(--ink)', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontFamily: SFText }}>
+          style={{ fontSize: 'var(--text-xs)', background: 'var(--border)', color: 'var(--ink)', border: 'none', borderRadius: '6px', padding: '4px 12px', minHeight: '44px', cursor: 'pointer', fontFamily: SFText }}>
           No
         </button>
       </span>

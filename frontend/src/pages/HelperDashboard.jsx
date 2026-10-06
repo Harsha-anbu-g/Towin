@@ -178,7 +178,7 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
 }
 
 function TabIcon({ id, active }) {
-  // stroke set via style so var(--action-ink) resolves (attributes don't take var()).
+  // stroke set via style so var(--blue-deep) resolves (attributes don't take var()).
   const svgProps = {
     width: 16, height: 16,
     viewBox: '0 0 24 24',
@@ -187,7 +187,7 @@ function TabIcon({ id, active }) {
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
     'aria-hidden': true,
-    style: { flexShrink: 0, stroke: active ? 'var(--action-ink)' : 'var(--ink-slate)' },
+    style: { flexShrink: 0, stroke: active ? 'var(--blue-deep)' : 'var(--ink-slate)' },
   };
   if (id === 'connections') return (
     <svg {...svgProps}>
@@ -680,9 +680,12 @@ export default function HelperDashboard() {
                   height: '44px', padding: '0 16px',
                   fontSize: '16px', letterSpacing: '-0.1px',
                   fontWeight: active ? 700 : 600,
-                  color: active ? 'var(--action-ink)' : 'var(--ink-slate)',
-                  background: active ? 'var(--action-fill)' : 'transparent',
-                  border: active ? '1px solid var(--action-fill)' : '1px solid transparent',
+                  // Von Restorff: the active tab is a soft wash, not the filled
+                  // sky blue. That fill belongs to the screen's one primary
+                  // action, and a filled tab competed with it on every visit.
+                  color: active ? 'var(--blue-deep)' : 'var(--ink-slate)',
+                  background: active ? 'var(--blue-wash)' : 'transparent',
+                  border: active ? '1px solid var(--blue-soft)' : '1px solid transparent',
                   borderRadius: '10px',
                   cursor: 'pointer',
                   transition: 'background 0.15s, color 0.15s',
@@ -804,7 +807,7 @@ export default function HelperDashboard() {
                           <button key={t} onClick={() => setReviewForm(f => ({
                             ...f, tags: f.tags.includes(t) ? f.tags.filter(x => x !== t) : [...f.tags, t]
                           }))} aria-pressed={reviewForm.tags.includes(t)} style={{
-                            fontSize: '14px', padding: '5px 14px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+                            fontSize: '14px', padding: '5px 14px', minHeight: '44px', borderRadius: '9999px', border: '1px solid', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
                             borderColor: reviewForm.tags.includes(t) ? 'var(--action-fill)' : 'var(--border)',
                             background: reviewForm.tags.includes(t) ? 'var(--action-fill)' : 'var(--canvas)',
                             color: reviewForm.tags.includes(t) ? 'var(--action-ink)' : 'var(--ink-slate)',
