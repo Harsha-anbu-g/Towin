@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ConnectionRepository extends JpaRepository<Connection, UUID> {
+public interface ConnectionRepository extends JpaRepository<Connection, UUID>,
+        com.towinly.common.persistence.AdvisoryLocking {
 
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :userId OR c.userB.id = :userId) AND c.status = :status")
     List<Connection> findByUserAndStatus(@Param("userId") UUID userId, @Param("status") ConnectionStatus status);
@@ -50,6 +51,12 @@ public interface ConnectionRepository extends JpaRepository<Connection, UUID> {
     // IncorrectResultSizeDataAccessException, which is a 500 for that pair until somebody
     // deletes a row by hand. A caller that must not fail on an ordinary user flow reads the
     // list and decides for itself which rows count.
+    /** Every connection with this status that touches any of the given people, in one read. */
+    @Query("SELECT c FROM Connection c JOIN FETCH c.userA JOIN FETCH c.userB "
+            + "WHERE c.status = :status AND (c.userA.id IN :ids OR c.userB.id IN :ids)")
+    List<Connection> findByStatusTouchingAny(@Param("ids") java.util.Collection<UUID> ids,
+                                             @Param("status") ConnectionStatus status);
+
     @Query("SELECT c FROM Connection c WHERE (c.userA.id = :a AND c.userB.id = :b) OR (c.userA.id = :b AND c.userB.id = :a)")
     List<Connection> findAllBetweenUsers(@Param("a") UUID userAId, @Param("b") UUID userBId);
 

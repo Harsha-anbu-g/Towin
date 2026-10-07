@@ -24,4 +24,9 @@ public class DiscoveredUserResponse {
     private String trustTier;
     private List<String> skillsOffered;
     private double distanceKm;
+    /** Up to three people from the viewer's circle who link them to this person:
+     *  family first, then shared friends, then friends of friends. */
+    private List<MutualFriendResponse> mutualFriends;
+    /** How many family members and friends the viewer and this person share. */
+    private int mutualCount;
 }

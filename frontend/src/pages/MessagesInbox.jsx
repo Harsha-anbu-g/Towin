@@ -74,18 +74,21 @@ const rowStyle = (isLast) => ({
 // Family (user calls 2026-08-02). Only a bucket the role can never fill
 // (e.g. a helper chatting with another helper) is left out.
 const ROLE_TAB_ORDER = {
-  ELDER: ['Helpers', 'Groups', 'Family'],
-  HELPER: ['Elders', 'Groups', 'Family'],
+  // Friends: elder ↔ elder or helper ↔ helper, friends who just chat (PEER).
+  ELDER: ['Helpers', 'Friends', 'Groups', 'Family'],
+  HELPER: ['Elders', 'Friends', 'Groups', 'Family'],
   FAMILY: ['Helpers', 'Groups', 'Family'],
 };
-const DEFAULT_TAB_ORDER = ['Elders', 'Helpers', 'Groups', 'Family'];
+const DEFAULT_TAB_ORDER = ['Elders', 'Helpers', 'Friends', 'Groups', 'Family'];
 const EMPTY_TAB_COPY = {
   groups: 'No group chats yet. When a friendship is shared with family, its updates will show here.',
   elders: 'No chats with elders yet. Offer to help on your dashboard to start one.',
   helpers: 'No chats with helpers yet. Connect with someone on your dashboard to start one.',
   family: 'No family chats yet. When a family member joins you here, your chat with them will show up.',
+  friends: 'No friends to chat with yet. Find people like you under Add Friends on your dashboard.',
 };
 function sectionOf(c) {
+  if (c.type === 'PEER') return 'Friends';
   if (c.otherUserRole === 'HELPER') return 'Helpers';
   if (c.otherUserRole === 'FAMILY') return 'Family';
   if (c.type === 'FAMILY') return 'Family';   // a parent↔family chat, the family member's side
@@ -147,7 +150,7 @@ export default function MessagesInbox() {
         (c.lastMessagePreview || '').toLowerCase().includes(q))
     : active;
 
-  const buckets = { Elders: [], Helpers: [], Family: [] };
+  const buckets = { Elders: [], Helpers: [], Friends: [], Family: [] };
   for (const c of filtered) buckets[sectionOf(c)].push(c);
   const hasAnyConversation = active.length > 0 || groupThreads.length > 0;
 
@@ -180,7 +183,8 @@ export default function MessagesInbox() {
   const convRow = (c, i, arr) => {
     // Family chats have no trust ladder — a parent↔child link never shows a
     // trust stage like "Just Connected" (user call 2026-07-26).
-    const trustLabel = sectionOf(c) === 'Family' ? null : TRUST_LABELS[c.currentTrustLevel];
+    // Friends who just chat (PEER) have no ladder either.
+    const trustLabel = ['Family', 'Friends'].includes(sectionOf(c)) ? null : TRUST_LABELS[c.currentTrustLevel];
     return (
       <button
         key={c.id}

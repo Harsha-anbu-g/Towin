@@ -425,6 +425,24 @@ public class DemoDataSeeder implements ApplicationRunner {
                 "Hi Sofia! Your profile looked wonderful — I'd love a hand getting the hang of my new tablet.",
                 true, false);
 
+        // Friends who just chat (PEER): Margaret ↔ Grace (two elders) and Harsha ↔
+        // Priya (two helpers). Besides filling Messages → Friends on both public
+        // logins, Grace is the mutual friend that makes the Find Friends card say
+        // "You both know Grace" when Margaret looks at Harsha (Grace ↔ Harsha is
+        // TRUSTED above) and when Harsha looks at Margaret. Margaret and Harsha
+        // themselves stay unconnected, as the 2026-08-02 rule above requires.
+        Connection cMargaretGrace = ensurePeerFriends(margaret, grace, grace,
+                "Hello Margaret, it's Grace from the library book club. Shall we keep in touch here?");
+        Connection cJamesPriya = ensurePeerFriends(james, priya, priya,
+                "Hi Harsha, Priya here. Nice to have another helper nearby to swap tips with!");
+        seedMessagesIfEmpty(cMargaretGrace, 300, List.of(
+                msg(grace, "Margaret, did you finish the mystery we started? I couldn't put it down."),
+                msg(margaret, "Finished it last night! I never guessed the gardener. Tea on Thursday to talk it over?"),
+                msg(grace, "Thursday is perfect. I'll bring the lemon biscuits.")));
+        seedMessagesIfEmpty(cJamesPriya, 900, List.of(
+                msg(priya, "Harsha, any tips for helping someone set up video calls? Grace said you're the expert."),
+                msg(james, "Start with one contact on the home screen and practise a few calls together. It sticks fast.")));
+
         // One-time repair for DBs seeded before Harsha was unlinked from Margaret
         // (2026-08-02, matters in additive mode only — reset-enabled DBs purge
         // and rebuild): drop the old Margaret ↔ Harsha friendship with its chat
@@ -1554,6 +1572,28 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .requestMessage(requestMessage)
                 .confirmedByA(confirmedByA)
                 .confirmedByB(confirmedByB)
+                .build());
+    }
+
+    /** An ACTIVE chat-only friendship between two elders or two helpers. A row
+     *  seeded before PEER existed is retyped, never duplicated. */
+    private Connection ensurePeerFriends(User a, User b, User initiator, String requestMessage) {
+        Optional<Connection> existing = connectionRepository.findBetweenUsers(a.getId(), b.getId());
+        if (existing.isPresent()) {
+            Connection c = existing.get();
+            if (c.getType() != ConnectionType.PEER) {
+                c.setType(ConnectionType.PEER);
+                return connectionRepository.save(c);
+            }
+            return c;
+        }
+        return connectionRepository.save(Connection.builder()
+                .userA(a).userB(b)
+                .type(ConnectionType.PEER)
+                .status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(TrustLevel.DISCOVERED)
+                .initiatedBy(initiator)
+                .requestMessage(requestMessage)
                 .build());
     }
 

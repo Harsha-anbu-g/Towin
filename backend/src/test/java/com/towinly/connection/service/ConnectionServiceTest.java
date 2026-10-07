@@ -56,6 +56,10 @@ class ConnectionServiceTest {
                 familyLinkRepository, blockService);
         sender = buildUser(UUID.randomUUID(), "sender@test.com");
         target = buildUser(UUID.randomUUID(), "target@test.com");
+        // Elder and helper by default: the trust-ladder friendship these tests are
+        // about. Two people of the same role make a chat-only PEER friendship,
+        // covered by the peer tests below.
+        target.setRole(UserRole.HELPER);
     }
 
     @Test
@@ -412,6 +416,91 @@ class ConnectionServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(com.towinly.block.service.BlockService.NOT_AVAILABLE);
         verify(connectionRepository, never()).save(any(Connection.class));
+    }
+
+    @Test
+    void twoEldersBecomeChatOnlyFriends_withNoHeadStartAndNoSlotUsed() {
+        target.setRole(UserRole.ELDER);
+        sender.setTrustScore(80.0); // would earn a VERIFIED head start on a helper friendship
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
+        when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
+            Connection c = i.getArgument(0);
+            c.setCreatedAt(LocalDateTime.now());
+            c.setUpdatedAt(LocalDateTime.now());
+            return c;
+        });
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.SOCIAL);
+
+        ConnectionResponse response = connectionService.sendRequest(sender.getId(), request);
+
+        assertThat(response.getType()).isEqualTo(ConnectionType.PEER);
+        assertThat(response.getCurrentTrustLevel()).isEqualTo(com.towinly.common.enums.TrustLevel.DISCOVERED);
+        // The slot count is never read for a PEER request.
+        verify(connectionRepository, never()).findByUserAndStatus(any(), eq(ConnectionStatus.ACTIVE));
+    }
+
+    @Test
+    void twoHelpersBecomeChatOnlyFriendsToo() {
+        sender.setRole(UserRole.HELPER);
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
+        when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
+            Connection c = i.getArgument(0);
+            c.setCreatedAt(LocalDateTime.now());
+            c.setUpdatedAt(LocalDateTime.now());
+            return c;
+        });
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+
+        assertThat(connectionService.sendRequest(sender.getId(), request).getType()).isEqualTo(ConnectionType.PEER);
+    }
+
+    @Test
+    void aClientCannotAskForPeerBetweenAnElderAndAHelper() {
+        when(userRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(connectionRepository.findAllBetweenUsers(sender.getId(), target.getId())).thenReturn(List.of());
+        when(connectionRepository.countRequestsSince(eq(sender.getId()), any(LocalDateTime.class))).thenReturn(0L);
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(i -> {
+            Connection c = i.getArgument(0);
+            c.setCreatedAt(LocalDateTime.now());
+            c.setUpdatedAt(LocalDateTime.now());
+            return c;
+        });
+
+        ConnectionRequest request = new ConnectionRequest();
+        request.setTargetUserId(target.getId());
+        request.setType(ConnectionType.PEER);
+
+        // A PEER row would skip the slot limit and the trust ladder, so it is never
+        // taken from the client: an elder and a helper always get a ladder friendship.
+        assertThat(connectionService.sendRequest(sender.getId(), request).getType()).isEqualTo(ConnectionType.SOCIAL);
+    }
+
+    @Test
+    void anAcceptedPeerFriendshipNeverSharesAPhoneNumber() {
+        target.setRole(UserRole.ELDER);
+        Connection peer = buildConnection(sender, target, ConnectionStatus.ACTIVE);
+        peer.setType(ConnectionType.PEER);
+        peer.setCurrentTrustLevel(com.towinly.common.enums.TrustLevel.TRUSTED);
+        when(blockService.hiddenFor(sender.getId())).thenReturn(java.util.Set.of());
+        when(connectionRepository.findAllByUser(eq(sender.getId()), any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(List.of(peer));
+
+        ConnectionResponse response = connectionService.getMyConnections(sender.getId(), null).get(0);
+
+        assertThat(response.getType()).isEqualTo(ConnectionType.PEER);
+        assertThat(response.getOtherUserPhone()).isNull();
     }
 
     private User buildUser(UUID id, String email) {

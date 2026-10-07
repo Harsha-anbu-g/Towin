@@ -294,6 +294,8 @@ public class NeedService {
 
     @Transactional
     public NeedResponse acceptHelper(UUID callerId, UUID needId, UUID helperId) {
+        // Two accepts at once must not both see the need OPEN and assign two helpers.
+        needRepository.lockUntilCommit(com.towinly.common.persistence.AdvisoryLocking.key("need", needId));
         Need need = getNeed(needId);
         User actingFor = authorizeRequestOwner(need, callerId,
                 "Only the elder who posted this need can accept a helper");
@@ -442,6 +444,7 @@ public class NeedService {
 
     @Transactional
     public NeedResponse complete(UUID callerId, UUID needId) {
+        needRepository.lockUntilCommit(com.towinly.common.persistence.AdvisoryLocking.key("need", needId));
         Need need = getNeed(needId);
         authorizeRequestOwner(need, callerId, "Only the posting elder can mark a need as complete");
         if (need.getStatus() != NeedStatus.ASSIGNED) {

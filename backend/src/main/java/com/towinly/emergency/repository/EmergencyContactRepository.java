@@ -8,7 +8,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.UUID;
 
-public interface EmergencyContactRepository extends JpaRepository<EmergencyContact, UUID> {
+public interface EmergencyContactRepository extends JpaRepository<EmergencyContact, UUID>,
+        com.towinly.common.persistence.AdvisoryLocking {
     List<EmergencyContact> findByElderId(UUID elderId);
     long countByElderId(UUID elderId);
 

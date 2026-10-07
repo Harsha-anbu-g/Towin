@@ -64,6 +64,9 @@ public class ReviewService {
             throw new IllegalArgumentException("You cannot review yourself");
         }
 
+        // Two taps on Submit must not both pass "already reviewed" and save twice.
+        reviewRepository.lockUntilCommit(com.towinly.common.persistence.AdvisoryLocking.key(
+                "review", reviewerId, request.getRevieweeId()));
         if (request.getNeedId() != null &&
                 reviewRepository.existsByNeedIdAndReviewerId(request.getNeedId(), reviewerId)) {
             throw new IllegalArgumentException("You have already reviewed this service");
@@ -90,7 +93,7 @@ public class ReviewService {
         // door — the same exclusion socialsUnlocked and the Pass-On gate apply.
         List<Connection> friendships = connectionRepository
                 .findAllBetweenUsers(reviewerId, request.getRevieweeId()).stream()
-                .filter(c -> c.getType() != com.towinly.common.enums.ConnectionType.FAMILY)
+                .filter(c -> com.towinly.common.enums.ConnectionType.earnsTrust(c.getType()))
                 .collect(Collectors.toList());
         if (friendships.isEmpty()) {
             throw new IllegalArgumentException("You can only review people you've connected with");

@@ -320,6 +320,19 @@ class TrustServiceTest {
                 .build();
     }
 
+    @Test
+    void chatOnlyFriendsHaveNoTrustStepsToConfirm() {
+        Connection peer = buildConnection(userA, userB, ConnectionStatus.ACTIVE, TrustLevel.DISCOVERED);
+        peer.setType(com.towinly.common.enums.ConnectionType.PEER);
+        when(connectionRepository.findById(peer.getId())).thenReturn(Optional.of(peer));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> trustService.confirmTrustLevel(userA.getId(), peer.getId(), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("just chat");
+        verify(connectionRepository, never()).save(any());
+    }
+
     private Connection buildConnection(User userA, User userB, ConnectionStatus status, TrustLevel level) {
         return Connection.builder()
                 .id(UUID.randomUUID())

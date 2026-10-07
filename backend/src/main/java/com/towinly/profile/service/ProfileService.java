@@ -223,7 +223,7 @@ public class ProfileService {
     private boolean socialsUnlocked(UUID viewerId, UUID targetId) {
         if (viewerId == null) return false;
         return connectionRepository.findAllBetweenUsers(viewerId, targetId).stream()
-                .filter(c -> c.getType() != ConnectionType.FAMILY)
+                .filter(c -> ConnectionType.earnsTrust(c.getType()))
                 .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE
                         || c.getStatus() == ConnectionStatus.PAUSED)
                 .anyMatch(c -> c.getCurrentTrustLevel() != null

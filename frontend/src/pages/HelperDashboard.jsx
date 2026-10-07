@@ -13,6 +13,7 @@ import { useToast } from '../context/useToast';
 import { useAuth } from '../context/useAuth';
 import { useSeenIds } from '../lib/useSeenIds';
 import Avatar from '../components/ui/Avatar';
+import DiscoverCard from '../components/DiscoverCard';
 import { parseServerDate } from '../lib/utils';
 
 function TabBadge({ count }) {
@@ -229,6 +230,9 @@ export default function HelperDashboard() {
   const [needs, setNeeds] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [elders, setElders] = useState([]);
+  // Other helpers nearby, to be friends who just chat (PEER connections).
+  const [helperPeers, setHelperPeers] = useState([]);
+  const [helperPeersState, setHelperPeersState] = useState('idle'); // idle | loading | error | ready
   const [discovering, setDiscovering] = useState(false);
   const [discoverError, setDiscoverError] = useState(false);
   // Which tab/section is open lives in the URL (?tab=…&eseg=…) so a full page
@@ -307,6 +311,22 @@ export default function HelperDashboard() {
       setDiscoverError(true);
     } finally {
       setDiscovering(false);
+    }
+    loadHelperPeers(loc ?? location);
+  }
+
+  // The second list on Add Friends: other helpers, friends who just chat.
+  async function loadHelperPeers(coords) {
+    setHelperPeersState('loading');
+    try {
+      let url = '/discover/helpers';
+      if (coords) url += `?lat=${coords.lat}&lng=${coords.lng}&radiusKm=${radiusKm}`;
+      const r = await api.get(url);
+      setHelperPeers(r.data || []);
+      setHelperPeersState('ready');
+    } catch {
+      setHelperPeers([]);
+      setHelperPeersState('error');
     }
   }
 
@@ -462,15 +482,19 @@ export default function HelperDashboard() {
   // Elders this helper has already sent a friend request to — show "Requested"
   // (grey) on their Find New Elders card even after a page reload.
   const requestedElderIds = new Set(sentRequests.map(c => c.otherUserId));
+  const statusFor = id => connectedElderIds.has(id) ? 'connected'
+    : (requestedElderIds.has(id) || connectMsg[id] === 'Requested') ? 'requested'
+    : (connectMsg[id] || null);
   const friendsSegments = [
-    { id: 'find',      label: 'Find New Elders' },
+    { id: 'find',      label: 'Find Friends' },
     { id: 'invites',   label: 'New Invites',      count: incomingRequests.length, notify: true },
     { id: 'requested', label: 'Requested',        count: sentRequests.length },
   ];
 
   // My Elders badge now tracks only established (ACTIVE) connections — pending
   // requests carry their own badge on the Requests tab.
-  const connTokens = connections.filter(c => c.status === 'ACTIVE').map(c => `${c.id}:${c.status}`);
+  // Only elder friendships badge My Elders: helper friends (PEER) just chat.
+  const connTokens = connections.filter(c => c.status === 'ACTIVE' && c.type !== 'PEER').map(c => `${c.id}:${c.status}`);
   const needTokens = needs.map(n => n.id);
   const connBadge = seenConn.unseenCount(connTokens);
   const browseBadge = seenNeeds.unseenCount(needTokens);
@@ -520,7 +544,9 @@ export default function HelperDashboard() {
   // ── My Elders — classify connections by trust state (mirrors the elder view) ──
   // Family coordination connections never show as their own card — they render
   // as a row under the elder they belong to (matched via /family/behind-me).
-  const elderConnections = connections.filter(c => c.type !== 'FAMILY');
+  // PEER rows are other helpers, friends who just chat: they live under
+  // Messages > Friends, never among elders.
+  const elderConnections = connections.filter(c => c.type !== 'FAMILY' && c.type !== 'PEER');
   const elderCounts = {
     active:   elderConnections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED').length,
     building: elderConnections.filter(c => c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED').length,
@@ -933,7 +959,7 @@ export default function HelperDashboard() {
                 </div>
               ) : sentRequests.length === 0 ? (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>}>
-                  You haven't sent any friend requests yet. Add someone from "Find New Elders".
+                  You haven't sent any friend requests yet. Add someone from "Find Friends".
                 </SegmentEmpty>
               ) : (
                 [...sentRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))
@@ -1004,7 +1030,7 @@ export default function HelperDashboard() {
             </div>
           )}
 
-          {/* Add Friends → Find New Elders segment */}
+          {/* Add Friends → Find Friends segment: elders first, then other helpers */}
           {tab === 'requests' && friendsSeg === 'find' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
@@ -1060,68 +1086,50 @@ export default function HelperDashboard() {
               {[...elders].sort((a, b) => {
                 const rank = u => connectedElderIds.has(u.userId) ? 2 : (requestedElderIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
                 return rank(a) - rank(b);
-              }).map((elder, i) => {
-                const alreadyConnected = connectedElderIds.has(elder.userId);
-                const sent = connectMsg[elder.userId];
-                const requested = requestedElderIds.has(elder.userId) || sent === 'Requested';
-                const errorMsg = sent && sent !== 'Requested' ? sent : null;
-                return (
-                  <div key={elder.userId} style={{
-                    background: 'var(--canvas)', borderRadius: '18px', padding: '20px',
-                    border: '1px solid var(--border)',
-                    animation: `fadeSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s both`,
-                  }}>
-                    <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                      <Avatar name={elder.name} photoUrl={elder.photoUrl} size={50} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{elder.name || 'Elder'}</p>
-                          {elder.age != null && (
-                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>Age {elder.age}</span>
-                          )}
-                          {(elder.trustScore != null || elder.trustTier) && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
-                              {elder.trustTier || 'New'}{elder.trustScore != null ? ` · ${elder.trustScore} points` : ''}
-                            </span>
-                          )}
-                        </div>
-                        {(elder.city || elder.distanceKm != null) && (
-                          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>
-                            {elder.city}{elder.city && elder.distanceKm != null ? ' · ' : ''}{elder.distanceKm != null ? `${Math.round(elder.distanceKm * 10) / 10} km away` : ''}
-                          </p>
-                        )}
-                        {elder.bio && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)', margin: '8px 0 0', lineHeight: 1.5 }}>{elder.bio}</p>}
-                        {elder.interests?.length > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
-                            {elder.interests.map(interest => (
-                              <span key={interest} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: 'var(--surface-2)', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{interest}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
-                        {alreadyConnected ? (
-                          <span style={{ fontSize: 'var(--text-xs)', background: 'var(--surface-2)', color: 'var(--green-deep)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 700, textAlign: 'center' }}>Friends</span>
-                        ) : requested ? (
-                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: 'var(--ink-slate)' }}>Requested</span>
-                        ) : errorMsg ? (
-                          <span style={{ fontSize: 'var(--text-xs)', padding: '9px 18px', borderRadius: '9999px', fontWeight: 600, textAlign: 'center', background: 'var(--surface-2)', color: 'var(--ink-slate)' }}>{errorMsg}</span>
-                        ) : (
-                          <button onClick={() => connectToElder(elder.userId)} disabled={connectingTo === elder.userId}
-                            style={{ height: '40px', padding: '0 22px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-                            {connectingTo === elder.userId ? 'Sending…' : 'Add Friend'}
-                          </button>
-                        )}
-                        <button onClick={() => navigate(`/user/${elder.userId}`)}
-                          style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-                          View Profile
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              }).map((elder, i) => (
+                <DiscoverCard key={elder.userId} person={elder} index={i} fallbackName="Elder"
+                  tags={elder.interests || []}
+                  status={statusFor(elder.userId)}
+                  adding={connectingTo === elder.userId}
+                  onAdd={() => connectToElder(elder.userId)}
+                  onView={() => navigate(`/user/${elder.userId}`)} />
+              ))}
               </div>
+
+              {/* Second section: other helpers, friends who just chat. No trust
+                  steps, no reviews, no phone numbers (PEER). */}
+              {locationStatus !== 'primer' && (
+                <section aria-labelledby="helpers-near-you" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                  <div>
+                    <h2 id="helpers-near-you" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-md, 20px)', fontWeight: 400, color: 'var(--ink)', margin: 0 }}>
+                      Helpers near you
+                    </h2>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                      Other helpers to chat with. Friends here just chat: there are no trust steps.
+                    </p>
+                  </div>
+                  {helperPeersState === 'loading' && helperPeers.length === 0 && (
+                    <div style={{ background: 'var(--surface)', borderRadius: '18px', height: '96px', animation: 'skeleton-pulse 1.5s ease-in-out infinite' }} />
+                  )}
+                  {helperPeersState === 'error' && (
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>Couldn't load helpers right now. Please try again soon.</p>
+                  )}
+                  {helperPeersState === 'ready' && helperPeers.length === 0 && (
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>No other helpers nearby yet. Please check back soon.</p>
+                  )}
+                  {[...helperPeers].sort((a, b) => {
+                    const rank = u => connectedElderIds.has(u.userId) ? 2 : (requestedElderIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
+                    return rank(a) - rank(b);
+                  }).map((peer, i) => (
+                    <DiscoverCard key={peer.userId} person={peer} index={i} fallbackName="Helper"
+                      tags={peer.skillsOffered || []}
+                      status={statusFor(peer.userId)}
+                      adding={connectingTo === peer.userId}
+                      onAdd={() => connectToElder(peer.userId)}
+                      onView={() => navigate(`/user/${peer.userId}`)} />
+                  ))}
+                </section>
+              )}
             </div>
           )}
 

@@ -100,6 +100,38 @@ class MessageServiceTest {
         assertThat(response.getSenderId()).isEqualTo(userA.getId());
     }
 
+    @Test
+    void chatOnlyFriendsCanMessageWithoutClimbingTheLadder() {
+        connection.setType(com.towinly.common.enums.ConnectionType.PEER);
+        connection.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+        when(messageRepository.save(any())).thenAnswer(i -> {
+            Message m = i.getArgument(0);
+            m.setId(UUID.randomUUID());
+            return m;
+        });
+
+        MessageRequest req = new MessageRequest();
+        req.setContent("Lovely to meet you at the library");
+
+        MessageResponse response = messageService.send(connId, userA.getId(), MessageChannel.MAIN, req);
+
+        assertThat(response.getContent()).isEqualTo("Lovely to meet you at the library");
+    }
+
+    @Test
+    void aHelperFriendshipStillNeedsTheMessagingStep() {
+        connection.setCurrentTrustLevel(TrustLevel.DISCOVERED);
+        when(connectionRepository.findById(connId)).thenReturn(Optional.of(connection));
+
+        MessageRequest req = new MessageRequest();
+        req.setContent("Hello");
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> messageService.send(connId, userA.getId(), MessageChannel.MAIN, req))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
     // HARD-106: a block between the two people closes the chat. The words say
     // nothing about a block; the blocked person is never told.
     @Test

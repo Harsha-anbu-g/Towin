@@ -108,7 +108,9 @@ export default function MyFamily({ embedded = false }) {
       // FAMILY-type connections are the family chats themselves (e.g. with a
       // daughter), not friendships to share, so they get no switch here.
       api.get('/connections')
-        .then(r => setConnections((r.data || []).filter(c => c.status === 'ACTIVE' && c.type !== 'FAMILY')))
+        // Helper friendships only: friends who just chat (PEER) have no trust
+        // journey for family to follow, so there is nothing to share.
+        .then(r => setConnections((r.data || []).filter(c => c.status === 'ACTIVE' && c.type !== 'FAMILY' && c.type !== 'PEER')))
         .catch(() => {}),
     ]).finally(() => setLoaded(true));
   }, []);

@@ -11,7 +11,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.UUID;
 
-public interface NeedRepository extends JpaRepository<Need, UUID> {
+public interface NeedRepository extends JpaRepository<Need, UUID>,
+        com.towinly.common.persistence.AdvisoryLocking {
 
     Page<Need> findByElderIdOrderByCreatedAtDesc(UUID elderId, Pageable pageable);
 

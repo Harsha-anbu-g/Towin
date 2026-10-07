@@ -123,7 +123,7 @@ public class PassOnVisibilityService {
         // doubled pair (see ConnectionRepository.findAllBetweenUsers) used to 500
         // the visitor's whole page. Any qualifying live row is enough.
         return connectionRepository.findAllBetweenUsers(ownerId, viewerId).stream()
-                .filter(c -> c.getType() != ConnectionType.FAMILY)
+                .filter(c -> ConnectionType.earnsTrust(c.getType()))
                 .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE)
                 .anyMatch(this::isFullyTrusted);
     }

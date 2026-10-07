@@ -77,7 +77,7 @@ public class MessageService {
         // link) carry no trust gate of their own — getAuthorizedConnection already
         // closed a severed bridge above.
         if (channel == MessageChannel.MAIN
-                && conn.getType() != com.towinly.common.enums.ConnectionType.FAMILY
+                && com.towinly.common.enums.ConnectionType.earnsTrust(conn.getType())
                 && conn.getCurrentTrustLevel().getValue() < TrustLevel.MESSAGING.getValue()) {
             throw new IllegalStateException("Trust level too low to message");
         }

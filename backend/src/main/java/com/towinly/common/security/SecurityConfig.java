@@ -27,6 +27,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final com.towinly.common.idempotency.IdempotencyFilter idempotencyFilter;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthRequestRepo;
     private final OAuth2SuccessHandler oauthSuccessHandler;
     private final OAuth2FailureHandler oauthFailureHandler;
@@ -116,7 +117,9 @@ public class SecurityConfig {
                     response.sendError(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
                 })
             )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            // After the JWT filter, so it knows whose key it is: keys are scoped per user.
+            .addFilterAfter(idempotencyFilter, JwtAuthFilter.class);
 
         http.addFilterAfter(permissionsPolicyFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -129,7 +132,11 @@ public class SecurityConfig {
         // still use explicit hosts via CORS_ALLOWED_ORIGINS.
         config.setAllowedOriginPatterns(List.of(allowedOrigins.split(",")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With"));
+        // Idempotency-Key: the website sends it on writes so a retry after a lost
+        // reply is answered from the first attempt instead of running twice.
+        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With",
+                com.towinly.common.idempotency.IdempotencyFilter.HEADER));
+        config.setExposedHeaders(List.of(com.towinly.common.idempotency.IdempotencyFilter.REPLAYED_HEADER));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

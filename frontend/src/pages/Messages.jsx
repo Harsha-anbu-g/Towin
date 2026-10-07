@@ -69,7 +69,9 @@ export default function Messages() {
         // Family links have no trust ladder — a chat with your parent or child
         // never shows a trust stage like "Just Connected" (user call 2026-07-26).
         const isFamilyLink = conn.type === 'FAMILY' || conn.otherUserRole === 'FAMILY';
-        if (!isFamilyLink) setTrustLevel(conn.currentTrustLevel);
+        // Friends who just chat (an elder with an elder, a helper with a helper)
+        // have no trust ladder at all, so no stage pill or banner either.
+        if (!isFamilyLink && conn.type !== 'PEER') setTrustLevel(conn.currentTrustLevel);
         if (conn.otherUserId) {
           api.get(`/profile/${conn.otherUserId}`).then(p => {
             setOtherPhotoUrl(p.data.photoUrl || null);

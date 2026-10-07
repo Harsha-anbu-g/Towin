@@ -64,7 +64,7 @@ public class ConnectionService {
         // FAMILY-type connections (Step 4) are coordination-only and never eat
         // into anyone's elder/helper capacity.
         int active = (int) connectionRepository.findByUserAndStatus(user.getId(), ConnectionStatus.ACTIVE).stream()
-                .filter(c -> c.getType() != com.towinly.common.enums.ConnectionType.FAMILY)
+                .filter(c -> com.towinly.common.enums.ConnectionType.earnsTrust(c.getType()))
                 .count();
         int limit  = activeLimit(user);
         if (active >= limit) {
@@ -90,6 +90,11 @@ public class ConnectionService {
             throw new IllegalArgumentException("Cannot send a connection request to yourself");
         }
 
+        // Two people asking each other at the same moment would both find no live
+        // row and insert (A,B) and (B,A). One lock per pair, either way round.
+        connectionRepository.lockUntilCommit(
+                com.towinly.common.persistence.AdvisoryLocking.key("connection-pair", senderId, request.getTargetUserId()));
+
         User sender = getUser(senderId);
         User target = getUser(request.getTargetUserId());
 
@@ -114,9 +119,11 @@ public class ConnectionService {
         // FAMILY (a daughter helping her own mother earns no points), and FAMILY
         // connections skip capacity limits and the score-based head start.
         com.towinly.common.enums.ConnectionType type = resolveType(sender, target, request.getType());
-        boolean isFamilyType = type == com.towinly.common.enums.ConnectionType.FAMILY;
+        // FAMILY and PEER (elder↔elder, helper↔helper) friendships earn no trust, so
+        // they skip the capacity limit and the head start alike.
+        boolean earnsTrust = com.towinly.common.enums.ConnectionType.earnsTrust(type);
 
-        if (!isFamilyType) {
+        if (earnsTrust) {
             enforceActiveLimit(sender);
             enforceActiveLimit(target);
         }
@@ -128,7 +135,7 @@ public class ConnectionService {
 
         int senderScore = sender.getTrustScore() != null ? (int) Math.round(sender.getTrustScore()) : 0;
         TrustLevel startLevel = TrustLevel.DISCOVERED;
-        if (!isFamilyType) {
+        if (earnsTrust) {
             if (senderScore >= 71) startLevel = TrustLevel.VERIFIED;
             else if (senderScore >= 51) startLevel = TrustLevel.PHONE_CALL;
         }
@@ -166,9 +173,18 @@ public class ConnectionService {
         boolean familyLinked = hasActiveFamilyLink(sender.getId(), target.getId())
                 || hasActiveFamilyLink(target.getId(), sender.getId());
         if (familyLinked) return com.towinly.common.enums.ConnectionType.FAMILY;
+        // Elder ↔ elder and helper ↔ helper are friends who just chat. Decided here
+        // from the two roles, never from what the client asked for.
+        if (sameRolePeers(sender, target)) return com.towinly.common.enums.ConnectionType.PEER;
         return requested == com.towinly.common.enums.ConnectionType.FAMILY
+                || requested == com.towinly.common.enums.ConnectionType.PEER
                 ? com.towinly.common.enums.ConnectionType.SOCIAL
                 : requested;
+    }
+
+    private static boolean sameRolePeers(User a, User b) {
+        return a.getRole() != null && a.getRole() == b.getRole()
+                && (a.getRole() == UserRole.ELDER || a.getRole() == UserRole.HELPER);
     }
 
     private boolean hasActiveFamilyLink(UUID elderId, UUID familyUserId) {
@@ -179,6 +195,8 @@ public class ConnectionService {
 
     @Transactional
     public ConnectionResponse respond(UUID responderId, UUID connectionId, RespondToConnectionRequest request) {
+        // An accept and a decline racing on one request must not both pass "is it pending".
+        connectionRepository.lockUntilCommit(com.towinly.common.persistence.AdvisoryLocking.key("connection", connectionId));
         Connection connection = getConnection(connectionId);
 
         if (!connection.isParticipant(responderId)) {
@@ -200,7 +218,7 @@ public class ConnectionService {
         if (Boolean.TRUE.equals(request.getAccept())) {
             // FAMILY-type connections never consume capacity: sendRequest already
             // skips the cap for them, and accepting must not re-impose it.
-            if (connection.getType() != com.towinly.common.enums.ConnectionType.FAMILY) {
+            if (com.towinly.common.enums.ConnectionType.earnsTrust(connection.getType())) {
                 enforceActiveLimit(connection.getUserA());
                 enforceActiveLimit(connection.getUserB());
             }
@@ -398,7 +416,7 @@ public class ConnectionService {
         // a family member tapping Message on a standing re-served a helper's phone
         // number from a friendship that helper had explicitly ended.
         boolean phoneUnlocked = accepted
-                && connection.getType() != com.towinly.common.enums.ConnectionType.FAMILY
+                && com.towinly.common.enums.ConnectionType.earnsTrust(connection.getType())
                 && connection.getCurrentTrustLevel().getValue() >= TrustLevel.PHONE_CALL.getValue();
 
         // Rows are [connectionId, content, createdAt].

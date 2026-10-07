@@ -62,6 +62,10 @@ public class GlobalExceptionHandler {
         SAFE_MESSAGES.put("Initiator cannot respond",                     "You can't respond to your own request.");
         SAFE_MESSAGES.put("Connection is not pending",                    "This request is no longer pending.");
         SAFE_MESSAGES.put("Only active connections can be ended",         "Only active connections can be ended.");
+        SAFE_MESSAGES.put("Friends don't have trust steps",               "Friends don't have trust steps. You can just chat.");
+        // Emergency contacts
+        SAFE_MESSAGES.put("That number is already one of your emergency contacts",
+                "That number is already one of your emergency contacts.");
         // Family flow
         SAFE_MESSAGES.put("We couldn't find that person",
                 "We couldn't find that person. Check the exact username, email, or phone number and try again.");
@@ -253,11 +257,32 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
-        String msg = ex.getMessage() != null && ex.getMessage().contains("phone")
-                ? "That phone number is already in use by another account."
-                : "A duplicate value already exists.";
+        String msg = duplicateMessage(ex.getMessage());
         return ResponseEntity.badRequest()
                 .body(new ErrorResponse(msg, 400, LocalDateTime.now()));
+    }
+
+    /**
+     * A second identical tap that slipped past the service checks lands on a unique
+     * constraint. Say what already happened in plain words, by constraint name,
+     * instead of the database's "duplicate value".
+     */
+    private static final java.util.Map<String, String> DUPLICATE_MESSAGES = java.util.Map.of(
+            "unique_application", "You have already offered to help with this request.",
+            "unique_family_link", "That family request has already been sent.",
+            "uq_family_power_request_pending", "That request is already waiting for an answer.",
+            "uq_keyholder", "You have already asked this person.",
+            "uq_user_blocks_pair", "You have already blocked this person.",
+            "user_streaks_user_id_key", "You're already checked in for today.");
+
+    static String duplicateMessage(String detail) {
+        if (detail != null) {
+            for (java.util.Map.Entry<String, String> e : DUPLICATE_MESSAGES.entrySet()) {
+                if (detail.contains(e.getKey())) return e.getValue();
+            }
+            if (detail.contains("phone")) return "That phone number is already in use by another account.";
+        }
+        return "A duplicate value already exists.";
     }
 
     @ExceptionHandler(RuntimeException.class)

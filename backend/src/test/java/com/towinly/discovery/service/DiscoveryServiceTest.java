@@ -36,6 +36,7 @@ class DiscoveryServiceTest {
     @Mock TrustScoreService trustScoreService;
     @Mock S3Service s3Service;
     @Mock com.towinly.block.service.BlockService blockService;
+    @Mock MutualFriendsService mutualFriendsService;
 
     @InjectMocks DiscoveryService discoveryService;
 
