@@ -21,6 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,9 +52,43 @@ public class AssistantService {
     /** Personal facts are short labels; anything longer is not a name or a city. */
     private static final int MAX_PERSONAL_FIELD_CHARS = 120;
 
-    private static final String FALLBACK =
-            "Sorry, I can't answer just now. Please try again in a moment. "
-            + "If it keeps happening, use the Feedback button and the Towinly team will help.";
+    /**
+     * The replies this class writes itself, in each language the site speaks. The
+     * model's own answers follow {@link #LANGUAGE_RULE}; these never reach the model,
+     * so they are translated here rather than left in English for a French or Tamil reader.
+     */
+    private static final Map<String, Map<String, String>> CANNED = Map.of(
+            "fallback", Map.of(
+                    "en", "Sorry, I can't answer just now. Please try again in a moment. "
+                            + "If it keeps happening, use the Feedback button and the Towinly team will help.",
+                    "fr", "Désolée, je ne peux pas répondre tout de suite. Réessayez dans un instant. "
+                            + "Si cela continue, utilisez le bouton Avis et l'équipe Towinly vous aidera.",
+                    "ta", "மன்னிக்கவும், இப்போது பதில் சொல்ல முடியவில்லை. சிறிது நேரத்தில் மீண்டும் முயலுங்கள். "
+                            + "தொடர்ந்து இப்படி நடந்தால், கருத்து பொத்தானைப் பயன்படுத்துங்கள்; Towinly குழு உதவும்."),
+            "off", Map.of(
+                    "en", "The help assistant isn't switched on yet. In the meantime, the "
+                            + "\"How it works\" guide covers the basics, and the Feedback button "
+                            + "reaches the Towinly team.",
+                    "fr", "L'assistant n'est pas encore activé. En attendant, le guide « Comment ça marche » "
+                            + "explique l'essentiel, et le bouton Avis joint l'équipe Towinly.",
+                    "ta", "உதவியாளர் இன்னும் இயக்கப்படவில்லை. அதுவரை, \"இது எப்படி வேலை செய்கிறது\" "
+                            + "வழிகாட்டி அடிப்படைகளை விளக்கும்; கருத்து பொத்தான் Towinly குழுவை அடையும்."),
+            "unreadable", Map.of(
+                    "en", "Sorry, I couldn't read that question. Could you type it again in plain words?",
+                    "fr", "Désolée, je n'ai pas pu lire cette question. Pouvez-vous la retaper avec des mots simples?",
+                    "ta", "மன்னிக்கவும், அந்தக் கேள்வியைப் படிக்க முடியவில்லை. எளிய சொற்களில் மீண்டும் தட்டச்சு செய்ய முடியுமா?"));
+
+    /** How the reply language is put to the model; the site's own words for its buttons and pages. */
+    private static final Map<String, String> LANGUAGE_RULE = Map.of(
+            "en", "Reply in simple English.",
+            "fr", "The person is using Towinly in French. Reply in simple, warm French as spoken in "
+                    + "Quebec, using the formal \"vous\". Call the roles Aîné (Elder), Aidant (Helper) and "
+                    + "Famille (Family), the SOS button \"SOS\", the Feedback button \"Avis\", and the "
+                    + "guide \"Comment ça marche\". If they write in another language, answer in theirs.",
+            "ta", "The person is using Towinly in Tamil. Reply in simple, warm, formal Tamil (use "
+                    + "நீங்கள்). Call the roles மூத்தவர் (Elder), உதவியாளர் (Helper) and குடும்பம் (Family), "
+                    + "keep \"SOS\" as it is, call the Feedback button \"கருத்து\", and the guide "
+                    + "\"இது எப்படி வேலை செய்கிறது\". If they write in another language, answer in theirs.");
 
     private final GroqClient groqClient;
     private final ProfileService profileService;
@@ -86,13 +122,20 @@ public class AssistantService {
      * get general help only); when present, a personal-context block is added.
      */
     public String answer(ChatRequest request, UUID userId) {
+        return answer(request, userId, "en");
+    }
+
+    /**
+     * Answers one question in {@code language} ("en", "fr" or "ta"; anything else
+     * reads as English), the language the person chose on the site.
+     */
+    public String answer(ChatRequest request, UUID userId, String language) {
+        String lang = LANGUAGE_RULE.containsKey(language) ? language : "en";
         if (!groqClient.isConfigured()) {
-            return "The help assistant isn't switched on yet. In the meantime, the "
-                    + "\"How it works\" guide covers the basics, and the Feedback button "
-                    + "reaches the Towinly team.";
+            return CANNED.get("off").get(lang);
         }
 
-        String systemPrompt = basePrompt;
+        String systemPrompt = basePrompt + "\n\n=== LANGUAGE ===\n" + LANGUAGE_RULE.get(lang);
         if (userId != null) {
             String personal = buildPersonalContext(userId);
             if (personal != null) {
@@ -109,7 +152,7 @@ public class AssistantService {
             // Everything they sent was strippable — i.e. the "question" was nothing but
             // hidden characters. There is no genuine question here to answer.
             log.warn("Ask AI: rejected a question that was entirely hidden characters (userId={})", userId);
-            return "Sorry, I couldn't read that question. Could you type it again in plain words?";
+            return CANNED.get("unreadable").get(lang);
         }
         if (PromptSanitizer.hasHiddenCharacters(request.getMessage())) {
             log.warn("Ask AI: stripped hidden characters from a question (userId={})", userId);
@@ -118,7 +161,7 @@ public class AssistantService {
         List<ChatMessage> conversation = buildConversation(request, question);
 
         Optional<String> reply = groqClient.complete(systemPrompt, conversation);
-        return reply.orElse(FALLBACK);
+        return reply.orElse(CANNED.get("fallback").get(lang));
     }
 
     /**
@@ -248,6 +291,19 @@ public class AssistantService {
         } catch (Exception e) {
             log.warn("Ask AI: could not build profile gaps for {}: {}", userId, e.getMessage());
         }
+    }
+
+    /**
+     * The site's language from an Accept-Language header: "fr" or "ta" when the
+     * first choice is one of those, English otherwise. The browser and the app
+     * send the language the person picked, not just the device's.
+     */
+    public static String languageOf(String acceptLanguage) {
+        if (acceptLanguage == null) return "en";
+        String first = acceptLanguage.split(",")[0].trim().toLowerCase(Locale.ROOT);
+        if (first.startsWith("fr")) return "fr";
+        if (first.startsWith("ta")) return "ta";
+        return "en";
     }
 
     private String loadResource(String path) {

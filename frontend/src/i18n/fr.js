@@ -2431,6 +2431,8 @@ export default {
     "Votre lien : {toLowerCase}",
   "You're {elderName}'s {toLowerCase}":
     "Votre lien avec {elderName} : {toLowerCase}",
+  "You've asked a lot in a short time. Please wait a minute, then ask again.":
+    "Vous avez posé beaucoup de questions en peu de temps. Attendez une minute, puis demandez de nouveau.",
   "You've reached the limit of {FAMILY_MAX} family members, counting open requests. Remove someone or cancel a request to add another person.":
     "Vous avez atteint la limite de {FAMILY_MAX} membres de la famille, en comptant les demandes ouvertes. Retirez quelqu'un ou annulez une demande pour ajouter une autre personne.",
   "You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.":

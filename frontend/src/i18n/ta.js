@@ -2431,6 +2431,8 @@ export default {
     "நீங்கள் அவர்களின் {toLowerCase}",
   "You're {elderName}'s {toLowerCase}":
     "நீங்கள் {elderName}-இன் {toLowerCase}",
+  "You've asked a lot in a short time. Please wait a minute, then ask again.":
+    "குறுகிய நேரத்தில் நிறையக் கேட்டுவிட்டீர்கள். ஒரு நிமிடம் காத்திருந்து, பிறகு மீண்டும் கேளுங்கள்.",
   "You've reached the limit of {FAMILY_MAX} family members, counting open requests. Remove someone or cancel a request to add another person.":
     "திறந்த கோரிக்கைகளையும் சேர்த்து {FAMILY_MAX} குடும்ப உறுப்பினர்கள் என்ற வரம்பை அடைந்துவிட்டீர்கள். மற்றொருவரைச் சேர்க்க, ஒருவரை நீக்குங்கள் அல்லது ஒரு கோரிக்கையை ரத்துசெய்யுங்கள்.",
   "You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.":
