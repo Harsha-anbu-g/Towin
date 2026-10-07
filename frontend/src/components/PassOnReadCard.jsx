@@ -1,5 +1,6 @@
 import { NO_CAPTURE } from '../lib/analytics';
 import { FROM_PAGE, REPORT_STORY } from './passOnLocks';
+import { tr } from '../i18n';
 
 /**
  * One story or letter as a visitor reads it.
@@ -104,7 +105,7 @@ function ReportForm({ itemId, sending, error, onCancel, onSend }) {
         <label htmlFor={reasonId} style={labelStyle}>{REPORT_STORY.reasonPrompt}</label>
         <select id={reasonId} name={reasonId} className="field" defaultValue={REPORT_STORY.reasons[0]}>
           {REPORT_STORY.reasons.map(reason => (
-            <option key={reason} value={reason}>{reason}</option>
+            <option key={reason} value={reason}>{tr(reason)}</option>
           ))}
         </select>
       </div>

@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 const TRUST = 'var(--ink-slate)';
 
 const TIER_COLORS = {
@@ -28,7 +29,7 @@ export default function TrustBadge({ tier, score }) {
         gap: '4px',
       }}
     >
-      {tier ?? 'New Member'}
+      {tier ? tr(tier) : tr('New Member')}
       {score != null && <span style={{ opacity: 0.55, fontWeight: 400 }}>· {score}</span>}
     </span>
   );

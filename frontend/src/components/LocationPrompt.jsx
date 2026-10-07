@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import SmoothInput from './SmoothInput';
+import { tr } from '../i18n';
 
 /**
  * Shown when GPS is denied/unavailable. Lets the user type a town or postcode;
@@ -36,35 +37,35 @@ export default function LocationPrompt({ onResolved }) {
   return (
     <div style={{ background: 'var(--canvas)', borderRadius: '14px', padding: '16px', border: '1px solid var(--hairline-2)' }}>
       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink-slate-dark)', margin: '0 0 10px' }}>
-        Enter your town or postcode to see people near you
+        {tr('Enter your town or postcode to see people near you')}
       </p>
       <form onSubmit={submit} style={{ display: 'flex', gap: '8px' }}>
         <SmoothInput
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          aria-label="Town or postcode"
-          placeholder="e.g. Scarborough or M1B 1A1"
+          aria-label={tr('Town or postcode')}
+          placeholder={tr('e.g. Scarborough or M1B 1A1')}
           wrapperStyle={{ flex: 1 }}
           style={{ width: '100%', boxSizing: 'border-box', height: '40px', padding: '0 14px', fontSize: '15px', color: 'var(--ink-slate)', border: '1px solid var(--line-idle-2)', borderRadius: '9999px', outline: 'none', fontFamily: 'inherit' }}
         />
         <button type="submit" disabled={status === 'loading'} className="btn-primary" style={{ padding: '0 22px', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
-          {status === 'loading' ? 'Finding…' : 'Find'}
+          {status === 'loading' ? tr('Finding…') : tr('Find')}
         </button>
       </form>
       {status === 'notfound' && (
         <p role="alert" style={{ fontSize: 'var(--text-sm)', color: 'var(--red-error)', margin: '10px 0 0' }}>
-          We couldn't find that place — try a postcode.
+          {tr("We couldn't find that place — try a postcode.")}
         </p>
       )}
       {status === 'error' && (
         <p role="alert" style={{ fontSize: 'var(--text-sm)', color: 'var(--red-error)', margin: '10px 0 0' }}>
-          Something went wrong. Please try again.
+          {tr('Something went wrong. Please try again.')}
         </p>
       )}
       {city && status === 'idle' && (
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--blue-deep)', margin: '10px 0 0' }}>
-          Showing people near {city}.
+          {tr('Showing people near {city}.', { city })}
         </p>
       )}
     </div>

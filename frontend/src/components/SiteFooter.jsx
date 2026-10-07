@@ -1,9 +1,10 @@
+import { tr } from '../i18n';
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 // Owner details — kept in sync with the contact block on the Feedback page.
 const OWNER = 'Harshavardhan Anbuchezhian Gowri';
 const YEAR = 2026;
-const COPYRIGHT = `© ${YEAR} ${OWNER}. All rights reserved.`;
+const copyright = () => `© ${YEAR} ${OWNER}. ${tr('All rights reserved.')}`;
 
 // lucide-react ships no brand icons, so the two glyphs are drawn here in the
 // same 24px, 2px-stroke line style the rest of the site's icons use.
@@ -39,8 +40,8 @@ const LinkedInIcon = () => (
 );
 
 const SOCIAL_LINKS = [
-  { label: 'Instagram', href: 'https://www.instagram.com/towinly.trust/', Icon: InstagramIcon },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/towinly/', Icon: LinkedInIcon },
+  { get label() { return tr('Instagram'); }, href: 'https://www.instagram.com/towinly.trust/', Icon: InstagramIcon },
+  { get label() { return tr('LinkedIn'); }, href: 'https://www.linkedin.com/company/towinly/', Icon: LinkedInIcon },
 ];
 
 const TEXT_STYLE = {
@@ -66,7 +67,7 @@ export default function SiteFooter({ style }) {
       textAlign: 'right',
       ...style,
     }}>
-      <nav aria-label="Towinly on social media" style={{
+      <nav aria-label={tr('Towinly on social media')} style={{
         display: 'flex',
         justifyContent: 'flex-end',
         gap: '20px',
@@ -87,7 +88,7 @@ export default function SiteFooter({ style }) {
         ))}
       </nav>
       <span style={TEXT_STYLE}>
-        {COPYRIGHT}
+        {copyright()}
       </span>
     </footer>
   );

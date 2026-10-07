@@ -7,6 +7,8 @@ import { useTheme } from '../context/useTheme';
 import ConfirmDialog from './ConfirmDialog';
 import api from '../api/axios';
 import { useSosCountdown } from '../lib/useSosCountdown';
+import { tr } from '../i18n';
+import LanguagePicker from './LanguagePicker';
 
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -121,7 +123,7 @@ export default function NavBar() {
       setSosSent(false);
       toast.error(
         err?.response?.data?.message ||
-        'Could not send SOS. Please call your emergency contact directly.'
+        tr('Could not send SOS. Please call your emergency contact directly.')
       );
     }
     finally { setSending(false); }
@@ -216,16 +218,16 @@ export default function NavBar() {
           minHeight: '44px', minWidth: '44px', // elderly-first tap-target floor
           marginRight: isMobile ? 0 : '32px',
         }}>
-          <img src="/logo.png" alt="Towinly logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
-          {!isMobile && 'Towinly'}
+          <img src="/logo.png" alt={tr('Towinly logo')} style={{ width: 38, height: 38, objectFit: 'contain' }} />
+          {!isMobile && tr('Towinly')}
         </Link>
 
         {/* Desktop nav */}
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
-            <NavLink to="/dashboard" label="Dashboard" icon={Home} />
+            <NavLink to="/dashboard" label={tr('Dashboard')} icon={Home} />
             <div style={{ position: 'relative', display: 'inline-flex' }}>
-              <NavLink to="/messages" label="Messages" icon={MessageCircle} />
+              <NavLink to="/messages" label={tr('Messages')} icon={MessageCircle} />
               {unread > 0 && (
                 <span style={{
                   /* hangs off the pill's corner — at the 13px floor the badge
@@ -242,7 +244,7 @@ export default function NavBar() {
                 the card at the foot of the dashboard was several screens down for
                 an elder with a few helpers, and a door nobody finds is not a door
                 (user call 2026-07-31). */}
-            {isElder && <NavLink to="/what-i-pass-on" label="My boxes" icon={ScrollText} />}
+            {isElder && <NavLink to="/what-i-pass-on" label={tr('My boxes')} icon={ScrollText} />}
             {/* Family members are watchers, not earners — no Trust Score for them (user call 2026-07-19). */}
             {!isFamilyRole && (<>
             <div style={{ width: '1px', height: '22px', background: 'var(--border)', margin: '0 8px' }} />
@@ -261,7 +263,7 @@ export default function NavBar() {
               textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
             }}>
               <ShieldCheck size={17} strokeWidth={2.2} aria-hidden="true" />
-              Trust Score
+              {tr('Trust Score')}
             </Link>
             </>)}
           </div>
@@ -273,25 +275,25 @@ export default function NavBar() {
             {isElder && (
               <button onClick={pressSos} disabled={sending}
                 title={sosCountdown != null
-                  ? 'Tap again to cancel before it sends'
-                  : 'Send an urgent alert to all your emergency contacts'}
+                  ? tr('Tap again to cancel before it sends')
+                  : tr('Send an urgent alert to all your emergency contacts')}
                 aria-label={sosCountdown != null
-                  ? `Cancel SOS — it sends in ${sosCountdown} seconds`
-                  : 'Send SOS alert to your emergency contacts'}
+                  ? tr('Cancel SOS — it sends in {sosCountdown} seconds', { sosCountdown })
+                  : tr('Send SOS alert to your emergency contacts')}
                 style={{
                 fontSize: '16px', fontWeight: 700, fontFamily: SF,
                 padding: '10px 22px', minHeight: '44px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? 'var(--blue)' : sending ? '#7a2a2a' : '#9b3535',
                 color: '#fff', opacity: sending ? 0.7 : 1,
-              }}>{sosCountdown != null ? `Sending in ${sosCountdown} — tap to cancel`
-                  : sosSent ? 'Help sent' : sending ? 'Sending…' : 'SOS'}</button>
+              }}>{sosCountdown != null ? tr('Sending in {sosCountdown} — tap to cancel', { sosCountdown })
+                  : sosSent ? tr('Help sent') : sending ? tr('Sending…') : tr('SOS')}</button>
             )}
 
             {/* Account circle — Profile & Log out live here */}
             <div ref={accountRef} style={{ position: 'relative' }}>
               <button onClick={() => setAccountOpen(o => !o)}
-                aria-label="Account menu" aria-haspopup="true" aria-expanded={accountOpen}
+                aria-label={tr('Account menu')} aria-haspopup="true" aria-expanded={accountOpen}
                 style={{
                   width: '44px', height: '44px', borderRadius: '50%', border: 'none',
                   cursor: 'pointer', background: 'var(--action-fill)', color: 'var(--action-ink)',
@@ -312,23 +314,23 @@ export default function NavBar() {
                 }}>
                   <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid var(--hairline)', marginBottom: '6px' }}>
                     <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: 0, fontFamily: SF }}>
-                      {user?.name || 'Your account'}
+                      {user?.name || tr('Your account')}
                     </p>
                     {user?.username && (
                       <p style={{ fontSize: '14px', color: 'var(--ink-4)', margin: '2px 0 0' }}>@{user.username}</p>
                     )}
                   </div>
-                  <AccountLink to="/profile" label="Profile" icon={User} />
-                  {isElder && <AccountLink to="/family" label="My Family" icon={Users} />}
-                  {showFamilyHome && <AccountLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
-                  {isElder && <AccountLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
+                  <AccountLink to="/profile" label={tr('Profile')} icon={User} />
+                  {isElder && <AccountLink to="/family" label={tr('My Family')} icon={Users} />}
+                  {showFamilyHome && <AccountLink to="/family-home" label={tr('Family Home')} icon={HeartHandshake} />}
+                  {isElder && <AccountLink to="/emergency-contacts" label={tr('Emergency Contacts')} icon={Siren} />}
                   {/* Peekaboo and Guide live here, not in the top bar: they are
                       occasional, and in the bar they sat in one cluster with SOS
                       (Hick: fewer top-level choices; proximity: a game does not
                       belong beside the emergency button). */}
                   <div aria-hidden="true" style={{ height: '1px', background: 'var(--hairline)', margin: '6px 0' }} />
-                  <AccountLink to="/game" label="Peekaboo" icon={Gamepad2} />
-                  <AccountLink to="/how-it-works" label="Guide" icon={HelpCircle} />
+                  <AccountLink to="/game" label={tr('Peekaboo')} icon={Gamepad2} />
+                  <AccountLink to="/how-it-works" label={tr('Guide')} icon={HelpCircle} />
                   <button role="switch" aria-checked={nightOn} onClick={toggleTheme} style={{
                     display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
                     minHeight: '44px', padding: '10px 12px', borderRadius: '10px',
@@ -339,10 +341,11 @@ export default function NavBar() {
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                   >
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                      <Moon size={18} strokeWidth={2} aria-hidden="true" />Night mode
+                      <Moon size={18} strokeWidth={2} aria-hidden="true" />{tr('Night mode')}
                     </span>
                     <SwitchTrack on={nightOn} />
                   </button>
+                  <LanguagePicker align="start" style={{ padding: '2px 4px' }} />
                   <button role="menuitem" onClick={() => { setAccountOpen(false); setConfirmSignOut(true); }} style={{
                     display: 'flex', width: '100%', alignItems: 'center', gap: '10px',
                     padding: '10px 12px', borderRadius: '10px', background: 'none', border: 'none',
@@ -352,7 +355,7 @@ export default function NavBar() {
                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                   >
-                    <LogOut size={18} strokeWidth={2} aria-hidden="true" />Log out
+                    <LogOut size={18} strokeWidth={2} aria-hidden="true" />{tr('Log out')}
                   </button>
                 </div>
               )}
@@ -367,7 +370,7 @@ export default function NavBar() {
                 an unread badge); the count rides on top when there is one. */}
             <Link
               to="/messages"
-              aria-label={unread > 0 ? `Messages, ${unread} unread` : 'Messages'}
+              aria-label={unread > 0 ? tr('Messages, {unread} unread', { unread }) : tr('Messages')}
               style={{
                 position: 'relative', textDecoration: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -389,22 +392,22 @@ export default function NavBar() {
             {isElder && (
               <button onClick={pressSos} disabled={sending}
                 title={sosCountdown != null
-                  ? 'Tap again to cancel before it sends'
-                  : 'Send an urgent alert to all your emergency contacts'}
+                  ? tr('Tap again to cancel before it sends')
+                  : tr('Send an urgent alert to all your emergency contacts')}
                 aria-label={sosCountdown != null
-                  ? `Cancel SOS — it sends in ${sosCountdown} seconds`
-                  : 'Send SOS alert to your emergency contacts'}
+                  ? tr('Cancel SOS — it sends in {sosCountdown} seconds', { sosCountdown })
+                  : tr('Send SOS alert to your emergency contacts')}
                 style={{
                 fontSize: '14px', fontWeight: 700, fontFamily: SF,
                 padding: '7px 16px', minHeight: '44px', borderRadius: '9999px', border: 'none',
                 cursor: sending ? 'not-allowed' : 'pointer',
                 background: sosSent ? 'var(--blue)' : '#9b3535',
                 color: '#fff',
-              }}>{sosCountdown != null ? `Cancel · ${sosCountdown}` : sosSent ? 'Sent' : 'SOS'}</button>
+              }}>{sosCountdown != null ? tr('Cancel · {sosCountdown}', { sosCountdown }) : sosSent ? tr('Sent') : tr('SOS')}</button>
             )}
             <button
               onClick={() => setMenuOpen(o => !o)}
-              aria-label="Menu"
+              aria-label={tr('Menu')}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 minWidth: '44px', minHeight: '44px', padding: '8px',
@@ -438,18 +441,18 @@ export default function NavBar() {
           }}>
             {/* Three groups with space between them, so ten rows read as three
                 short lists: everyday, your people and safety, then extras. */}
-            <MenuLink to="/dashboard" label="Dashboard" icon={Home} />
-            <MenuLink to="/messages" label={`Messages${unread > 0 ? ` (${unread})` : ''}`} icon={MessageCircle} />
-            {!isFamilyRole && <MenuLink to="/trust" label="Trust Score" icon={ShieldCheck} />}
-            <MenuLink to="/profile" label="Profile" icon={User} />
+            <MenuLink to="/dashboard" label={tr('Dashboard')} icon={Home} />
+            <MenuLink to="/messages" label={tr('Messages') + (unread > 0 ? ` (${unread})` : '')} icon={MessageCircle} />
+            {!isFamilyRole && <MenuLink to="/trust" label={tr('Trust Score')} icon={ShieldCheck} />}
+            <MenuLink to="/profile" label={tr('Profile')} icon={User} />
             {(isElder || showFamilyHome) && <DrawerGap />}
-            {isElder && <MenuLink to="/family" label="My Family" icon={Users} />}
-            {isElder && <MenuLink to="/what-i-pass-on" label="My boxes" icon={ScrollText} />}
-            {showFamilyHome && <MenuLink to="/family-home" label="Family Home" icon={HeartHandshake} />}
-            {isElder && <MenuLink to="/emergency-contacts" label="Emergency Contacts" icon={Siren} />}
+            {isElder && <MenuLink to="/family" label={tr('My Family')} icon={Users} />}
+            {isElder && <MenuLink to="/what-i-pass-on" label={tr('My boxes')} icon={ScrollText} />}
+            {showFamilyHome && <MenuLink to="/family-home" label={tr('Family Home')} icon={HeartHandshake} />}
+            {isElder && <MenuLink to="/emergency-contacts" label={tr('Emergency Contacts')} icon={Siren} />}
             <DrawerGap />
-            <MenuLink to="/game" label="Peekaboo" icon={Gamepad2} />
-            <MenuLink to="/how-it-works" label="Guide" icon={HelpCircle} />
+            <MenuLink to="/game" label={tr('Peekaboo')} icon={Gamepad2} />
+            <MenuLink to="/how-it-works" label={tr('Guide')} icon={HelpCircle} />
             <button role="switch" aria-checked={nightOn} onClick={toggleTheme} style={{
               display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between',
               padding: '16px 0', border: 'none',
@@ -459,27 +462,28 @@ export default function NavBar() {
               cursor: 'pointer', textAlign: 'left',
             }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
-                <Moon size={22} strokeWidth={2} aria-hidden="true" />Night mode
+                <Moon size={22} strokeWidth={2} aria-hidden="true" />{tr('Night mode')}
               </span>
               <SwitchTrack on={nightOn} />
             </button>
+            <LanguagePicker align="start" style={{ padding: '8px 0', borderBottom: '1px solid var(--hairline)' }} />
             <button onClick={() => { setMenuOpen(false); setConfirmSignOut(true); }} style={{
               display: 'block', width: '100%', textAlign: 'left',
               padding: '16px 0', marginTop: '4px',
               fontSize: '17px', fontFamily: SF, fontWeight: 500,
               color: 'var(--ink-3)', background: 'none', border: 'none',
               cursor: 'pointer',
-            }}>Log out</button>
+            }}>{tr('Log out')}</button>
           </div>
         </>
       )}
 
       <ConfirmDialog
         open={confirmSignOut}
-        title="Log out of Towinly?"
-        message="You can log back in any time with your email and password."
-        confirmLabel="Log Out"
-        cancelLabel="Stay Logged In"
+        title={tr('Log out of Towinly?')}
+        message={tr('You can log back in any time with your email and password.')}
+        confirmLabel={tr('Log Out')}
+        cancelLabel={tr('Stay Logged In')}
         onConfirm={() => { setConfirmSignOut(false); logout(); }}
         onCancel={() => setConfirmSignOut(false)}
       />

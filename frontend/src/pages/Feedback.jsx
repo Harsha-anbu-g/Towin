@@ -3,27 +3,29 @@ import api from '../api/axios';
 import { Mail, Phone, MapPin, Briefcase, Code2, Camera, Globe, Star } from 'lucide-react';
 import SiteFooter from '../components/SiteFooter';
 import SmoothInput from '../components/SmoothInput';
+import { tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 const RATINGS = [
-  { key: 'ratingIdea', label: 'Idea' },
-  { key: 'ratingUi', label: 'UI Design' },
-  { key: 'ratingTheme', label: 'Theme' },
-  { key: 'ratingSecurity', label: 'Security' },
-  { key: 'ratingEaseOfUse', label: 'Ease of Use' },
-  { key: 'ratingPerformance', label: 'Performance' },
-  { key: 'ratingOverall', label: 'Overall' },
+  { key: 'ratingIdea', get label() { return tr('Idea'); } },
+  { key: 'ratingUi', get label() { return tr('UI Design'); } },
+  { key: 'ratingTheme', get label() { return tr('Theme'); } },
+  { key: 'ratingSecurity', get label() { return tr('Security'); } },
+  { key: 'ratingEaseOfUse', get label() { return tr('Ease of Use'); } },
+  { key: 'ratingPerformance', get label() { return tr('Performance'); } },
+  { key: 'ratingOverall', get label() { return tr('Overall'); } },
 ];
 
 const CONTACTS = [
   { icon: Mail, label: 'agharsha.anbu@gmail.com', href: 'mailto:agharsha.anbu@gmail.com' },
   { icon: Phone, label: '+1 438-535-5782 (WhatsApp)', href: 'https://wa.me/14385355782' },
-  { icon: MapPin, label: 'Montreal, Quebec, Canada', href: null },
-  { icon: Briefcase, label: 'LinkedIn: harsha-anbu-gowri', href: 'https://www.linkedin.com/in/harsha-anbu-gowri/' },
-  { icon: Code2, label: 'GitHub: Harsha-anbu-g', href: 'https://github.com/Harsha-anbu-g' },
-  { icon: Camera, label: 'Instagram: harsha._.ag', href: 'https://www.instagram.com/harsha._.ag' },
+  { icon: MapPin, get label() { return tr('Montreal, Quebec, Canada'); }, href: null },
+  { icon: Briefcase, get label() { return tr('LinkedIn: harsha-anbu-gowri'); }, href: 'https://www.linkedin.com/in/harsha-anbu-gowri/' },
+  { icon: Code2, get label() { return tr('GitHub: Harsha-anbu-g'); }, href: 'https://github.com/Harsha-anbu-g' },
+  { icon: Camera, get label() { return tr('Instagram: harsha._.ag'); }, href: 'https://www.instagram.com/harsha._.ag' },
 ];
 
 function StarRating({ value, onChange }) {
@@ -60,7 +62,7 @@ export default function Feedback() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.message.trim()) { setError('Please write a message before submitting.'); return; }
+    if (!form.message.trim()) { setError(tr('Please write a message before submitting.')); return; }
     setError('');
     setLoading(true);
     try {
@@ -73,7 +75,7 @@ export default function Feedback() {
       });
       setSubmitted(true);
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError(tr('Something went wrong. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -116,11 +118,11 @@ export default function Feedback() {
 
       {/* ── Brand header ── */}
       <div className="fb-brand">
-        <img src="/logo.png" alt="Towinly logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <img src="/logo.png" alt={tr('Towinly logo')} style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <span style={{
           fontFamily: SF, fontSize: '24px', fontWeight: 600,
           letterSpacing: '-0.374px', color: 'var(--green-deep)',
-        }}>Towinly</span>
+        }}>{tr('Towinly')}</span>
       </div>
 
       <div className="fb-shell">
@@ -130,19 +132,19 @@ export default function Feedback() {
           {submitted ? (
             <div className="fb-card" style={{ textAlign: 'center', padding: '64px 36px' }}>
               <h2 style={{ fontFamily: SF, fontSize: 'var(--text-xl)', fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>
-                Thank you
+                {tr('Thank you')}
               </h2>
               <p style={{ fontFamily: SFText, fontSize: '16px', color: 'var(--ink-3)', margin: 0 }}>
-                Your feedback means a lot. It genuinely helps make Towinly better.
+                {tr('Your feedback means a lot. It genuinely helps make Towinly better.')}
               </p>
             </div>
           ) : (
             <div className="fb-card">
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: 400, color: 'var(--ink)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-                Share Your Feedback
+                {tr('Share Your Feedback')}
               </h2>
               <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '0 0 24px' }}>
-                All fields are optional except your message.
+                {tr('All fields are optional except your message.')}
               </p>
               {error && (
                 <div style={{
@@ -156,37 +158,37 @@ export default function Feedback() {
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="fb-3col">
                   <div>
-                    <label style={labelStyle}>Name <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
+                    <label style={labelStyle}>{emphasize(tr('Name *(optional)*'), (part) => <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>{part}</span>)}</label>
                     <SmoothInput style={inputStyle} value={form.name}
-                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name" />
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={tr('Your name')} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Email <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
+                    <label style={labelStyle}>{emphasize(tr('Email *(optional)*'), (part) => <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>{part}</span>)}</label>
                     <SmoothInput type="email" style={inputStyle} value={form.email}
                       onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="you@example.com" />
                   </div>
                   <div>
-                    <label style={labelStyle}>Phone <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span></label>
+                    <label style={labelStyle}>{emphasize(tr('Phone *(optional)*'), (part) => <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>{part}</span>)}</label>
                     <SmoothInput type="tel" style={inputStyle} value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+1 000-000-0000" />
                   </div>
                 </div>
                 <div style={{ height: '1px', background: 'var(--border)' }} />
                 <div>
-                  <label style={labelStyle}>Message <span style={{ color: 'var(--red-error)' }}>*</span></label>
+                  <label style={labelStyle}>{tr('Message')}{' '}<span style={{ color: 'var(--red-error)' }}>*</span></label>
                   <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
-                    Be honest! Include <strong style={{ color: 'var(--ink)' }}>at least one thing you didn't like</strong>. That's where the real value is.
+                    {emphasize(tr("Be honest! Include *at least one thing you didn't like*. That's where the real value is."), (part) => <strong style={{ color: 'var(--ink)' }}>{part}</strong>)}
                   </p>
                   <textarea required rows={7} style={{ ...inputStyle, resize: 'vertical' }}
                     value={form.message}
                     onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                    placeholder={"What did you think? What worked, what didn't?\nBe honest. One thing you didn't like is more valuable than ten compliments."}
+                    placeholder={tr("What did you think? What worked, what didn't?\nBe honest. One thing you didn't like is more valuable than ten compliments.")}
                   />
                 </div>
                 <div style={{ height: '1px', background: 'var(--border)' }} />
                 <div>
                   <p style={{ ...labelStyle, marginBottom: '14px' }}>
-                    Rate the app <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>(optional)</span>
+                    {emphasize(tr('Rate the app *(optional)*'), (part) => <span style={{ color: 'var(--ink-4)', fontWeight: 400 }}>{part}</span>)}
                   </p>
                   <div className="fb-ratings">
                     {RATINGS.map(({ key, label }) => (
@@ -205,7 +207,7 @@ export default function Feedback() {
                   cursor: loading ? 'not-allowed' : 'pointer',
                   fontFamily: SFText, transition: 'background 0.15s',
                 }}>
-                  {loading ? 'Submitting…' : 'Submit Feedback'}
+                  {loading ? tr('Submitting…') : tr('Submit Feedback')}
                 </button>
               </form>
             </div>
@@ -219,7 +221,7 @@ export default function Feedback() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
               <img
                 src="/founder.jpg"
-                alt="Portrait of Harshavardhan"
+                alt={tr('Portrait of Harshavardhan')}
                 width="52"
                 height="52"
                 loading="lazy"
@@ -231,26 +233,26 @@ export default function Feedback() {
               />
               <div>
                 <h2 style={{ fontFamily: SF, fontSize: '17px', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
-                  Harshavardhan Anbuchezhian Gowri
+                  {tr('Harshavardhan Anbuchezhian Gowri')}
                 </h2>
-                <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)', margin: 0 }}>Harsha</p>
+                <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)', margin: 0 }}>{tr('Harsha')}</p>
               </div>
             </div>
 
             <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--blue-deep)', fontWeight: 600, margin: '0 0 2px' }}>
-              Full-Stack Engineer · Aspiring Entrepreneur · AI-Driven Developer
+              {tr('Full-Stack Engineer · Aspiring Entrepreneur · AI-Driven Developer')}
             </p>
             <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 16px' }}>
-              Master's in Applied Computer Science · Concordia University, Montreal
+              {tr("Master's in Applied Computer Science · Concordia University, Montreal")}
             </p>
 
             <div style={{ height: '1px', background: 'var(--border)', margin: '0 0 16px' }} />
 
             <p style={{ fontFamily: SFText, fontSize: 'var(--text-sm)', color: 'var(--ink)', fontWeight: 600, margin: '0 0 6px', lineHeight: 1.5 }}>
-              This isn't a university project. Towinly is my future startup.
+              {tr("This isn't a university project. Towinly is my future startup.")}
             </p>
             <p style={{ fontFamily: SFText, fontSize: '14px', color: 'var(--ink-3)', margin: '0 0 20px', lineHeight: 1.6 }}>
-              I'm building something real, and your feedback is what shapes it. Love the idea? Want to connect? Let's talk!
+              {tr("I'm building something real, and your feedback is what shapes it. Love the idea? Want to connect? Let's talk!")}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -281,8 +283,8 @@ export default function Feedback() {
             }}
           >
             <div>
-              <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 2px' }}>Want to know more?</p>
-              <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--trust-gold)', margin: 0, textDecoration: 'underline', textUnderlineOffset: '3px' }}>Visit my portfolio</p>
+              <p style={{ fontFamily: SFText, fontSize: 'var(--text-xs)', color: 'var(--ink-3)', margin: '0 0 2px' }}>{tr('Want to know more?')}</p>
+              <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--trust-gold)', margin: 0, textDecoration: 'underline', textUnderlineOffset: '3px' }}>{tr('Visit my portfolio')}</p>
             </div>
             <span
               style={{
@@ -293,7 +295,7 @@ export default function Feedback() {
               }}
             >
               <Globe size={13} />
-              My Portfolio
+              {tr('My Portfolio')}
             </span>
           </a>
         </div>

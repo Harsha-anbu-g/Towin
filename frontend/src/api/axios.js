@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { attachIdempotencyKey, settleIdempotencyKey } from '../lib/idempotency';
+import { currentLanguage } from '../i18n';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
@@ -8,6 +9,9 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  // The reader's chosen language, same as the app sends. A CORS-safelisted
+  // header, so it adds no preflight.
+  config.headers['Accept-Language'] = currentLanguage();
   // Writes carry an Idempotency-Key so a retry after a lost reply is answered
   // from the first attempt instead of saving the same thing twice.
   return attachIdempotencyKey(config);

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import NavBar from '../components/NavBar';
 import { STEPS } from '../data/guideContent';
+import { tr } from '../i18n';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -21,18 +22,18 @@ function PublicHeader() {
         fontFamily: SFD, fontSize: '24px', fontWeight: 600, color: 'var(--green-deep)',
         letterSpacing: '-0.4px', textDecoration: 'none',
       }}>
-        <img src="/logo.png" alt="Towinly logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
-        Towinly
+        <img src="/logo.png" alt={tr('Towinly logo')} style={{ width: 44, height: 44, objectFit: 'contain' }} />
+        {tr('Towinly')}
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
         <Link to="/login" style={{ fontFamily: SF, fontSize: '16px', color: 'var(--ink-slate)', textDecoration: 'none' }}>
-          Log in
+          {tr('Log in')}
         </Link>
         <Link to="/register" style={{
           fontFamily: SF, fontSize: '16px', fontWeight: 600, color: '#fff', background: SKY,
           padding: '9px 20px', borderRadius: '9999px', textDecoration: 'none',
         }}>
-          Get started
+          {tr('Get started')}
         </Link>
       </div>
     </header>
@@ -63,9 +64,9 @@ function RoleTabButton({ value, label, role, setRole }) {
 function RoleTab({ role, setRole }) {
   return (
     <div style={{ display: 'flex', gap: '10px', marginBottom: '22px' }}>
-      <RoleTabButton value="ELDER" label="I'm an Elder" role={role} setRole={setRole} />
-      <RoleTabButton value="HELPER" label="I'm a Helper" role={role} setRole={setRole} />
-      <RoleTabButton value="FAMILY" label="I'm Family" role={role} setRole={setRole} />
+      <RoleTabButton value="ELDER" label={tr("I'm an Elder")} role={role} setRole={setRole} />
+      <RoleTabButton value="HELPER" label={tr("I'm a Helper")} role={role} setRole={setRole} />
+      <RoleTabButton value="FAMILY" label={tr("I'm Family")} role={role} setRole={setRole} />
     </div>
   );
 }
@@ -80,7 +81,7 @@ function ProgressDots({ count, current, onJump }) {
           <button
             key={i}
             onClick={() => onJump(i)}
-            aria-label={`Go to step ${i + 1}`}
+            aria-label={tr('Go to step {n}', { n: i + 1 })}
             style={{
               // 36x36 hit area (elders); the visual dot stays small inside.
               minWidth: '36px', minHeight: '36px',
@@ -131,10 +132,10 @@ export default function Guide() {
             fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)',
             letterSpacing: '-0.02em', margin: '0 0 6px',
           }}>
-            How It Works
+            {tr('How It Works')}
           </h1>
           <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-            A short, step-by-step tour of the platform. Use Back and Next, or tap a dot to jump.
+            {tr('A short, step-by-step tour of the platform. Use Back and Next, or tap a dot to jump.')}
           </p>
         </div>
 
@@ -147,7 +148,7 @@ export default function Guide() {
           fontFamily: SF, fontSize: '14px', color: 'var(--ink-4)', textAlign: 'center',
           margin: '0 0 20px',
         }}>
-          Step {step + 1} of {total} · {current.navLabel}
+          {tr('Step {n} of {total}', { n: step + 1, total }) + ' · ' + current.navLabel}
         </p>
 
         {/* Step card */}
@@ -170,7 +171,7 @@ export default function Guide() {
               border: '1px solid var(--border)',
             }}
           >
-            Back
+            {tr('Back')}
           </button>
           {!isLast && (
             <button
@@ -181,7 +182,7 @@ export default function Guide() {
                 border: 'none', boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
               }}
             >
-              Next
+              {tr('Next')}
             </button>
           )}
         </div>

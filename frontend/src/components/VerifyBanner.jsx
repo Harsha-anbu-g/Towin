@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 import api from '../api/axios';
+import { tr } from '../i18n';
 
 // Shown app-wide only for a logged-in user whose email is not yet verified.
 // Guests, Google, demo and grandfathered accounts are already verified, so the
@@ -17,9 +18,9 @@ export default function VerifyBanner() {
     setSending(true);
     try {
       await api.post('/auth/resend-verification');
-      toast.success('Verification email sent. Check your inbox.');
+      toast.success(tr('Verification email sent. Check your inbox.'));
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not send the email. Try again shortly.');
+      toast.error(err?.response?.data?.message || tr('Could not send the email. Try again shortly.'));
     } finally {
       setSending(false);
     }
@@ -41,7 +42,7 @@ export default function VerifyBanner() {
       boxSizing: 'border-box',
       zIndex: 'var(--z-banner)',
     }}>
-      <span>Please verify your email to unlock posting, messaging, and connections.</span>
+      <span>{tr('Please verify your email to unlock posting, messaging, and connections.')}</span>
       <button
         onClick={resend}
         disabled={sending}
@@ -51,7 +52,7 @@ export default function VerifyBanner() {
           textDecoration: 'underline', opacity: sending ? 0.6 : 1,
         }}
       >
-        {sending ? 'Sending…' : 'Resend email'}
+        {sending ? tr('Sending…') : tr('Resend email')}
       </button>
     </div>
   );

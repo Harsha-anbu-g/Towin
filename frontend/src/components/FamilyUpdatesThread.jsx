@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
+import { dateLocale, tr } from '../i18n';
 
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const POLL_MS = 5000; // same cadence as the MAIN chat
@@ -13,15 +14,15 @@ const initials = (name) =>
   name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
 
 const fmtWhen = (iso) =>
-  new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' }) +
+  new Date(iso).toLocaleDateString(dateLocale(), { month: 'short', day: 'numeric' }) +
   ' · ' +
-  new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
 
 export default function FamilyUpdatesThread({
   connectionId,
   placeholder,
   emptyText,
-  sendLabel = 'Share note',
+  sendLabel = tr('Share note'),
 }) {
   const { user } = useAuth();
   const myUserId = user?.userId;
@@ -70,7 +71,7 @@ export default function FamilyUpdatesThread({
       setNotes(prev => [...prev, res.data]);
       setText('');
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Note not sent. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Note not sent. Please try again.'));
     } finally {
       setSending(false);
     }
@@ -101,7 +102,7 @@ export default function FamilyUpdatesThread({
                 )}
                 <div style={{ flex: 1, minWidth: 0, background: isMe ? 'var(--blue-wash)' : 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '10px 14px' }}>
                   <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-slate)', margin: '0 0 2px' }}>
-                    {isMe ? 'You' : (n.senderLabel || n.senderName || 'Someone')}
+                    {isMe ? tr('You') : (n.senderLabel || n.senderName || tr('Someone'))}
                     <span style={{ fontWeight: 400, color: 'var(--ink-4)', marginLeft: '8px' }}>{fmtWhen(n.createdAt)}</span>
                   </p>
                   <p style={{ fontSize: '16px', lineHeight: 1.45, color: 'var(--ink)', fontFamily: SFText, margin: 0 }}>
@@ -134,7 +135,7 @@ export default function FamilyUpdatesThread({
             transition: 'background 0.15s',
           }}
         >
-          {sending ? 'Sending…' : sendLabel}
+          {sending ? tr('Sending…') : sendLabel}
         </button>
       </form>
     </div>

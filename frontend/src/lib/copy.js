@@ -1,9 +1,9 @@
 // Small copy helpers shared across pages.
+import { tr } from '../i18n';
 
 // "1 helper wants to help" / "3 helpers want to help"
 export function applicantsLabel(count) {
-  const one = count === 1;
-  return `${count} helper${one ? '' : 's'} want${one ? 's' : ''} to help`;
+  return count === 1 ? tr('1 helper wants to help') : tr('{count} helpers want to help', { count });
 }
 
 // The family who will see today's check-in, written the way a person would say
@@ -12,9 +12,11 @@ export function applicantsLabel(count) {
 export function familyNamesLabel(names) {
   if (!names || names.length === 0) return '';
   if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  if (names.length === 2) return tr('{first} and {second}', { first: names[0], second: names[1] });
   const rest = names.length - 2;
-  return `${names[0]}, ${names[1]} and ${rest === 1 ? 'one other' : `${rest} others`}`;
+  return rest === 1
+    ? tr('{first}, {second} and one other', { first: names[0], second: names[1] })
+    : tr('{first}, {second} and {rest} others', { first: names[0], second: names[1], rest });
 }
 
 // Full years between a YYYY-MM-DD birthdate and now (birthday counts).

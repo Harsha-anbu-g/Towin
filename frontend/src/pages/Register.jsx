@@ -9,6 +9,9 @@ import LegalDraftNotice from '../components/LegalDraftNotice';
 import LegalSections from '../components/LegalSections';
 import { termsSections, privacySections } from '../lib/legalCopy';
 import { legalContactEmail } from '../lib/legalContact';
+import { tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
+import LanguagePicker from '../components/LanguagePicker';
 
 function LegalModal({ title, sections, onClose }) {
   useEffect(() => {
@@ -49,7 +52,7 @@ function LegalModal({ title, sections, onClose }) {
           }}>{title}</h3>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={tr('Close')}
             style={{
               width: '32px', height: '32px', borderRadius: '50%',
               border: '1px solid var(--border)', background: 'var(--canvas)',
@@ -76,7 +79,7 @@ function LegalModal({ title, sections, onClose }) {
               fontFamily: 'inherit',
             }}
           >
-            Close
+            {tr('Close')}
           </button>
         </div>
       </div>
@@ -103,7 +106,7 @@ function HeroPanel() {
           Login's photo and scrolls with the page. Source: walking-sky.jpg */}
       <img
         src="/walking-sky-tall.jpg"
-        alt="An elder and a younger man walking together hand in hand under a blue sky"
+        alt={tr('An elder and a younger man walking together hand in hand under a blue sky')}
         draggable="false"
         onDragStart={e => e.preventDefault()}
         style={{
@@ -136,13 +139,13 @@ function HeroPanel() {
           boxShadow: '0 2px 10px rgba(20,55,80,0.22)',
           flexShrink: 0,
         }}>
-          <img src="/tortoise-logo-alpha.png" alt="Towinly logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+          <img src="/tortoise-logo-alpha.png" alt={tr('Towinly logo')} style={{ width: 26, height: 26, objectFit: 'contain' }} />
         </span>
         <p style={{
           fontSize: '21px', fontWeight: 600, color: '#ffffff', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
           margin: 0,
-        }}>Towinly</p>
+        }}>{tr('Towinly')}</p>
       </Link>
 
       {/* Content — pushed below logo, matches the Login hero treatment */}
@@ -156,7 +159,7 @@ function HeroPanel() {
           letterSpacing: '0.4px', color: '#fff',
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
         }}>
-          It takes two To Win.
+          {tr('It takes two To Win.')}
         </span>
         <h1 style={{
           fontFamily: 'var(--font-display)',
@@ -164,7 +167,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Your community<br />is waiting for you.
+          {tr('Your community')}<br />{tr('is waiting for you.')}
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -172,12 +175,12 @@ function HeroPanel() {
           lineHeight: 1.55, margin: '0 0 26px',
           textShadow: '0 1px 12px rgba(20,55,80,0.5)',
         }}>
-          Join elders and helpers building real, trusted connections every day.
+          {tr('Join elders and helpers building real, trusted connections every day.')}
         </p>
 
         {/* Feature bullets — restyled light to read on the wash */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {['Free to join, no credit card', 'Verified and safe community', 'Your data stays private'].map((text) => (
+          {[tr('Free to join, no credit card'), tr('Verified and safe community'), tr('Your data stays private')].map((text) => (
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
@@ -227,7 +230,7 @@ function GoogleButton() {
         <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.7-3.3-11.3-8H6.5C9.9 35.7 16.4 44 24 44z"/>
         <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C41 36.2 44 30.5 44 24c0-1.3-.1-2.7-.4-3.9z"/>
       </svg>
-      Sign up with Google
+      {tr('Sign up with Google')}
     </a>
   );
 }
@@ -274,10 +277,10 @@ export default function Register() {
     setLoading(true);
     setError('');
     const errs = {};
-    if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = 'Username must be 3-20 characters: lowercase letters, numbers, underscores only';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address';
-    if (form.password.length < 8) errs.password = 'Password must be at least 8 characters';
-    if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match';
+    if (!/^[a-z0-9_]{3,20}$/.test(form.username)) errs.username = tr('Username must be 3-20 characters: lowercase letters, numbers, underscores only');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = tr('Enter a valid email address');
+    if (form.password.length < 8) errs.password = tr('Password must be at least 8 characters');
+    if (form.confirmPassword !== form.password) errs.confirmPassword = tr('Passwords do not match');
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
@@ -287,16 +290,16 @@ export default function Register() {
       await api.post('/auth/register', { username, email, password, role });
       navigate('/check-email', { replace: true, state: { email } });
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || tr('Registration failed. Please try again.'));
     } finally {
       setLoading(false);
     }
   };
 
   const ROLES = [
-    { value: 'ELDER', label: 'Elder', desc: 'Looking for friends or help' },
-    { value: 'HELPER', label: 'Helper', desc: 'Want to help others' },
-    { value: 'FAMILY', label: "I'm here for a family member", desc: "You'll link to your parent inside the app after you sign up.", fullWidth: true },
+    { value: 'ELDER', label: tr('Elder'), desc: tr('Looking for friends or help') },
+    { value: 'HELPER', label: tr('Helper'), desc: tr('Want to help others') },
+    { value: 'FAMILY', label: tr("I'm here for a family member"), desc: tr("You'll link to your parent inside the app after you sign up."), fullWidth: true },
   ];
 
   return (
@@ -307,6 +310,7 @@ export default function Register() {
       <div className="auth-form" style={{ flexDirection: 'column', paddingBottom: 0 }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 0, padding: '32px 0' }}>
         <div style={{ width: '100%', maxWidth: '420px' }}>
+          <LanguagePicker style={{ marginBottom: '16px' }} />
           {/* Demo accounts — one shared block, same quick way in as the login page.
               (The old inline duplicate was removed 2026-07-19.) */}
           <DemoAccounts />
@@ -324,12 +328,12 @@ export default function Register() {
                 flex: 1, height: '44px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 background: 'transparent', color: 'var(--ink-3)',
-              }}>Log in</button>
+              }}>{tr('Log in')}</button>
               <button type="button" style={{
                 flex: 1, height: '44px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
                 background: 'var(--seg-active)', color: 'var(--blue-deep)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-              }}>Create account</button>
+              }}>{tr('Create account')}</button>
             </div>
 
             {/* Headline */}
@@ -338,25 +342,25 @@ export default function Register() {
               fontSize: '28px', fontWeight: 400, color: 'var(--ink)',
               marginBottom: '6px', letterSpacing: '-0.02em',
             }}>
-              Join Towinly.
+              {tr('Join Towinly.')}
             </h2>
             <p style={{
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px',
             }}>
-              Create your free account in minutes.
+              {tr('Create your free account in minutes.')}
             </p>
 
             {/* Google sign-up — the easiest path, especially for new users */}
             <GoogleButton />
             <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--ink-4)', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
-              Fastest way in, no password to remember.
+              {tr('Fastest way in, no password to remember.')}
             </p>
 
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
               <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-              <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or sign up with username</span>
+              <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>{tr('or sign up with username')}</span>
               <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
             </div>
 
@@ -371,7 +375,7 @@ export default function Register() {
                 color: 'var(--ink)', marginBottom: '3px', letterSpacing: '-0.2px',
                 fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               }}>
-                First, who are you joining as?
+                {tr('First, who are you joining as?')}
               </label>
               <div className="role-grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: '12px' }}>
                 {ROLES.map(({ value, label, desc, fullWidth }) => {
@@ -427,7 +431,7 @@ export default function Register() {
                   color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Username
+                  {tr('Username')}
                 </label>
                 <SmoothInput
                   type="text" autoComplete="username" required
@@ -438,7 +442,7 @@ export default function Register() {
                 />
                 {fieldErrors.username && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.username}</p>}
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
-                  3-20 characters. Letters, numbers, underscores. Visible to others.
+                  {tr('3-20 characters. Letters, numbers, underscores. Visible to others.')}
                 </p>
               </div>
 
@@ -449,7 +453,7 @@ export default function Register() {
                   color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Email
+                  {tr('Email')}
                 </label>
                 <SmoothInput
                   type="email" autoComplete="email" required
@@ -460,7 +464,7 @@ export default function Register() {
                 />
                 {fieldErrors.email && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.email}</p>}
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
-                  We'll send a link to confirm it's really you.
+                  {tr("We'll send a link to confirm it's really you.")}
                 </p>
               </div>
 
@@ -471,7 +475,7 @@ export default function Register() {
                   color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Password
+                  {tr('Password')}
                 </label>
                 <div style={{ position: 'relative' }}>
                   <SmoothInput
@@ -482,7 +486,7 @@ export default function Register() {
                     style={{ borderColor: fieldErrors.password ? 'var(--red-soft)' : undefined, paddingRight: '44px' }}
                   />
                   <button type="button" onClick={() => setShowPwd(v => !v)}
-                    aria-label={showPwd ? 'Hide password' : 'Show password'} style={eyeBtn}>
+                    aria-label={showPwd ? tr('Hide password') : tr('Show password')} style={eyeBtn}>
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
@@ -499,7 +503,7 @@ export default function Register() {
                       }} />
                     ))}
                     <span style={{ fontSize: '13px', color: 'var(--ink-3)', marginLeft: '6px', fontFamily: 'inherit' }}>
-                      {['','Weak','Fair','Good','Strong'][pwdStrength(form.password)]}
+                      {['', tr('Weak'), tr('Fair'), tr('Good'), tr('Strong')][pwdStrength(form.password)]}
                     </span>
                   </div>
                 )}
@@ -512,7 +516,7 @@ export default function Register() {
                   color: 'var(--ink)', marginBottom: '6px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Re-enter password
+                  {tr('Re-enter password')}
                 </label>
                 <div style={{ position: 'relative' }}>
                   <SmoothInput
@@ -523,13 +527,13 @@ export default function Register() {
                     style={{ borderColor: fieldErrors.confirmPassword ? 'var(--red-soft)' : undefined, paddingRight: '44px' }}
                   />
                   <button type="button" onClick={() => setShowConfirm(v => !v)}
-                    aria-label={showConfirm ? 'Hide password' : 'Show password'} style={eyeBtn}>
+                    aria-label={showConfirm ? tr('Hide password') : tr('Show password')} style={eyeBtn}>
                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
                 {fieldErrors.confirmPassword && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px', fontFamily: 'inherit' }}>{fieldErrors.confirmPassword}</p>}
                 {form.confirmPassword && form.password && form.confirmPassword === form.password && (
-                  <p style={{ fontSize: 'var(--text-xs)', color: '#5FA670', marginTop: '4px', fontFamily: 'inherit' }}>Passwords match</p>
+                  <p style={{ fontSize: 'var(--text-xs)', color: '#5FA670', marginTop: '4px', fontFamily: 'inherit' }}>{tr('Passwords match')}</p>
                 )}
               </div>
 
@@ -548,10 +552,9 @@ export default function Register() {
                   fontSize: '14px', color: 'var(--ink-3)', lineHeight: 1.5,
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  I agree to the{' '}
-                  <button type="button" onClick={() => setLegalOpen('terms')} style={linkBtn}>Terms of Service</button>
-                  {' '}and{' '}
-                  <button type="button" onClick={() => setLegalOpen('privacy')} style={linkBtn}>Privacy Policy</button>
+                  {emphasize(tr('I agree to the *Terms of Service* and the *Privacy Policy*'), (part, i) => (
+                    <button type="button" onClick={() => setLegalOpen(i === 0 ? 'terms' : 'privacy')} style={linkBtn}>{part}</button>
+                  ))}
                 </span>
               </label>
 
@@ -571,7 +574,7 @@ export default function Register() {
                   transition: 'background 0.15s',
                 }}
               >
-                {loading ? 'Creating account…' : 'Create Account'}
+                {loading ? tr('Creating account…') : tr('Create Account')}
               </button>
             </form>
           </div>
@@ -582,9 +585,9 @@ export default function Register() {
             marginTop: '20px',
             fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
           }}>
-            Already have an account?{' '}
+            {tr('Already have an account?')}{' '}
             <Link to="/login" style={{ color: 'var(--blue-deep)', fontWeight: 600, textDecoration: 'none' }}>
-              Log in
+              {tr('Log in')}
             </Link>
           </p>
 
@@ -597,7 +600,7 @@ export default function Register() {
               border: '1px solid var(--border)',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
             }}>
-              How It Works
+              {tr('How It Works')}
             </Link>
           </div>
         </div>
@@ -608,10 +611,10 @@ export default function Register() {
       {/* The same words as /terms and /privacy, from lib/legalCopy.js — what somebody agrees
           to here and what they can look up later must never be two different documents. */}
       {legalOpen === 'terms' && (
-        <LegalModal title="Terms of Service" sections={termsSections(legalContactEmail())} onClose={() => setLegalOpen(null)} />
+        <LegalModal title={tr('Terms of Service')} sections={termsSections(legalContactEmail())} onClose={() => setLegalOpen(null)} />
       )}
       {legalOpen === 'privacy' && (
-        <LegalModal title="Privacy Policy" sections={privacySections(legalContactEmail())} onClose={() => setLegalOpen(null)} />
+        <LegalModal title={tr('Privacy Policy')} sections={privacySections(legalContactEmail())} onClose={() => setLegalOpen(null)} />
       )}
     </div>
   );

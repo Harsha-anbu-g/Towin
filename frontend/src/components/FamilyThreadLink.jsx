@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { tr } from '../i18n';
 
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 /* Doorway to the family updates group thread — the notes themselves live in
    Messages now (user call 2026-07-19), read the same way by all three people. */
-export default function FamilyThreadLink({ connectionId, label = 'Open family updates' }) {
+export default function FamilyThreadLink({ connectionId, label = tr('Open family updates') }) {
   const navigate = useNavigate();
   return (
     <button

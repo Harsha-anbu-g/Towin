@@ -1,17 +1,18 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { tr } from '../i18n';
 
 const SF    = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT   = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 /* H2: Real-world language — no technical enum names visible to user */
 const LEVELS = [
-  { key: 'DISCOVERED', label: 'Just Connected', short: 'Connected', nextAction: 'Tap "Advance" to invite your friend to start messaging', helperNextAction: 'start messaging together' },
-  { key: 'MESSAGING',  label: 'Messaging',      short: 'Messaging', nextAction: 'Tap "Advance" when you\'re ready to share phone numbers', helperNextAction: 'share phone numbers' },
-  { key: 'PHONE_CALL', label: 'Phone Ready',    short: 'Phone',     nextAction: 'Tap "Advance" when you\'re ready for a video call', helperNextAction: 'try a video call' },
-  { key: 'VIDEO_CALL', label: 'Video Ready',    short: 'Video',     nextAction: 'Tap "Advance" when you\'re ready to exchange social media', helperNextAction: 'exchange social media' },
-  { key: 'VERIFIED',   label: 'Social Media',   short: 'Socials',   nextAction: 'Tap "Advance" when you\'re ready to plan a first meeting', helperNextAction: 'plan a first meeting' },
-  { key: 'FIRST_MEET', label: 'Ready to Meet',  short: 'Met',       nextAction: 'Tap "Advance" to confirm a fully trusted friendship', helperNextAction: 'confirm full trust' },
-  { key: 'TRUSTED',    label: 'Fully Trusted',  short: 'Trusted',   nextAction: null, helperNextAction: null },
+  { key: 'DISCOVERED', get label() { return tr('Just Connected'); }, get short() { return tr('Connected'); }, get nextAction() { return tr('Tap "Advance" to invite your friend to start messaging'); }, get helperNextAction() { return tr('start messaging together'); } },
+  { key: 'MESSAGING',  get label() { return tr('Messaging'); },      get short() { return tr('Messaging'); }, get nextAction() { return tr('Tap "Advance" when you\'re ready to share phone numbers'); }, get helperNextAction() { return tr('share phone numbers'); } },
+  { key: 'PHONE_CALL', get label() { return tr('Phone Ready'); },    get short() { return tr('Phone'); },     get nextAction() { return tr('Tap "Advance" when you\'re ready for a video call'); }, get helperNextAction() { return tr('try a video call'); } },
+  { key: 'VIDEO_CALL', get label() { return tr('Video Ready'); },    get short() { return tr('Video'); },     get nextAction() { return tr('Tap "Advance" when you\'re ready to exchange social media'); }, get helperNextAction() { return tr('exchange social media'); } },
+  { key: 'VERIFIED',   get label() { return tr('Social Media'); },   get short() { return tr('Socials'); },   get nextAction() { return tr('Tap "Advance" when you\'re ready to plan a first meeting'); }, get helperNextAction() { return tr('plan a first meeting'); } },
+  { key: 'FIRST_MEET', get label() { return tr('Ready to Meet'); },  get short() { return tr('Met'); },       get nextAction() { return tr('Tap "Advance" to confirm a fully trusted friendship'); }, get helperNextAction() { return tr('confirm full trust'); } },
+  { key: 'TRUSTED',    get label() { return tr('Fully Trusted'); },  get short() { return tr('Trusted'); },   nextAction: null, helperNextAction: null },
 ];
 
 const LEVEL_IDX = Object.fromEntries(LEVELS.map((l, i) => [l.key, i]));
@@ -66,12 +67,12 @@ export default function TrustJourney({
   const midFrac  = isTrusted ? baseFrac : (idx + 0.5) / denom;  // this step's midpoint
   const pct = Math.round(fillFrac * 100);
 
-  const nextLabel = LEVELS[idx + 1]?.label || 'the next step';
+  const nextLabel = LEVELS[idx + 1]?.label || tr('the next step');
   const barAria = isTrusted
-    ? 'Trust ladder: fully trusted — the top of the ladder'
+    ? tr('Trust ladder: fully trusted — the top of the ladder')
     : pendingHalf
-      ? `Trust ladder: stage ${idx + 1} of ${LEVELS.length}, ${current.label}; move to ${nextLabel} started, waiting for the other person to accept`
-      : `Trust ladder: stage ${idx + 1} of ${LEVELS.length}, ${current.label}`;
+      ? tr('Trust ladder: stage {n} of {total}, {stage}; move to {next} started, waiting for the other person to accept', { n: idx + 1, total: LEVELS.length, stage: current.label, next: nextLabel })
+      : tr('Trust ladder: stage {n} of {total}, {stage}', { n: idx + 1, total: LEVELS.length, stage: current.label });
 
   const accent       = 'var(--blue-deep)';
   const accentBg     = 'var(--blue-tint)';
@@ -82,7 +83,8 @@ export default function TrustJourney({
   // gold, to hold 4.5:1.
   const trustGold     = 'var(--trust-gold)';
   const trustGoldText = 'var(--gold-deep)';
-  const isTrustWord   = (s) => s.toLowerCase().includes('trust');
+  // By the level's key, not its label: the label may be French or Tamil.
+  const isTrustWord   = (key) => key.toLowerCase().includes('trust');
 
   // The contextual prompt + action under the ladder (non-trusted only).
   const advanceBtn = (label) => (
@@ -92,7 +94,7 @@ export default function TrustJourney({
       color: 'var(--action-ink)', border: 'none', borderRadius: '9999px',
       fontSize: '14px', fontWeight: 700, fontFamily: SFT,
       cursor: confirming ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
-    }}>{confirming ? 'Confirming…' : label}</button>
+    }}>{confirming ? tr('Confirming…') : label}</button>
   );
 
   let footer;
@@ -102,16 +104,16 @@ export default function TrustJourney({
   } else if (isTrusted) {
     footer = (
       <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '10px 0 0', fontFamily: SFT, lineHeight: 1.5 }}>
-        You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.
+        {tr("You've reached the top of the trust ladder with {otherUserName}. Enjoy your friendship.", { otherUserName })}
       </p>
     );
   } else {
     let message, button = null;
-    if (isElder && !confirmedByMe)            { message = current.nextAction;                                                  button = advanceBtn('Advance →'); }
-    else if (isElder && confirmedByMe)        { const next = LEVELS[idx + 1]; message = `You asked to move to ${next?.label || 'the next step'}, waiting for ${otherUserName} to confirm. They'll get a tap on their side.`; }
-    else if (!isElder && !confirmedByOther)   { const next = LEVELS[idx + 1]; message = `Waiting for the elder to move to ${next?.label || 'the next step'}.`; }
-    else if (!isElder && confirmedByOther && !confirmedByMe) { message = `${otherUserName} is ready to ${current.helperNextAction || 'advance'}. Confirm to move forward together.`; button = advanceBtn('Accept →'); }
-    else                                      { const next = LEVELS[idx + 1]; message = `You accepted, trust is advancing to ${next?.label || 'the next step'}.`; }
+    if (isElder && !confirmedByMe)            { message = current.nextAction;                                                  button = advanceBtn(tr('Advance →')); }
+    else if (isElder && confirmedByMe)        { const next = LEVELS[idx + 1]; message = tr("You asked to move to {stage}, waiting for {otherUserName} to confirm. They'll get a tap on their side.", { stage: next?.label || tr('the next step'), otherUserName }); }
+    else if (!isElder && !confirmedByOther)   { const next = LEVELS[idx + 1]; message = tr('Waiting for the elder to move to {stage}.', { stage: next?.label || tr('the next step') }); }
+    else if (!isElder && confirmedByOther && !confirmedByMe) { message = tr('{otherUserName} is ready to {step}. Confirm to move forward together.', { otherUserName, step: current.helperNextAction || tr('advance') }); button = advanceBtn(tr('Accept →')); }
+    else                                      { const next = LEVELS[idx + 1]; message = tr('You accepted, trust is advancing to {stage}.', { stage: next?.label || tr('the next step') }); }
     footer = (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--sky-line-2)' }}>
         <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: 0, lineHeight: 1.4, flex: 1, minWidth: '170px', fontFamily: SFT }}>{message}</p>
@@ -125,11 +127,11 @@ export default function TrustJourney({
       {/* Header: current level + stage pill */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span aria-hidden="true" style={{ width: '9px', height: '9px', borderRadius: '50%', background: isTrustWord(current.label) ? trustGold : accent }} />
-          <span style={{ fontSize: '19px', fontWeight: 700, color: isTrustWord(current.label) ? trustGold : 'var(--ink)', fontFamily: SF }}>{current.label}</span>
+          <span aria-hidden="true" style={{ width: '9px', height: '9px', borderRadius: '50%', background: isTrustWord(current.key) ? trustGold : accent }} />
+          <span style={{ fontSize: '19px', fontWeight: 700, color: isTrustWord(current.key) ? trustGold : 'var(--ink)', fontFamily: SF }}>{current.label}</span>
         </div>
         <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-slate)', background: 'var(--canvas)', border: '1px solid var(--sky-line-2)', padding: '3px 10px', borderRadius: '9999px' }}>
-          Stage {idx + 1} of {LEVELS.length}{pct < 100 ? ` · ${pct}%` : ''}
+          {tr('Stage {n} of {total}', { n: idx + 1, total: LEVELS.length })}{pct < 100 ? ` · ${pct}%` : ''}
         </span>
       </div>
 
@@ -173,7 +175,7 @@ export default function TrustJourney({
               left: `calc((100% - 34px) * ${stagePct} + 17px)`,
               transform: 'translateX(-50%)',
               fontWeight: i === idx ? 700 : 400,
-              color: isTrustWord(level.short) ? trustGoldText : (i === idx ? 'var(--ink)' : 'var(--ink-slate)'),
+              color: isTrustWord(level.key) ? trustGoldText : (i === idx ? 'var(--ink)' : 'var(--ink-slate)'),
               whiteSpace: 'nowrap', fontFamily: SFT,
             }}>
               {level.short}

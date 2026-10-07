@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Volume2, Square, Mic, MicOff } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import api from '../api/axios';
+import { dateLocale, tr } from '../i18n';
 
 // The tortoise mascot image (served from /public). The 256px variant — the
 // launcher/avatar renders at 24-34px, so the ~950KB original is never needed here.
@@ -20,9 +21,7 @@ const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const GREETING = {
   role: 'assistant',
   intro: true,
-  content:
-    "Hello! I'm the Towinly tortoise. Ask me anything about how Towinly works, or " +
-    "if you're logged in, about your own account like your trust score or streak.",
+  get content() { return tr("Hello! I'm the Towinly tortoise. Ask me anything about how Towinly works, or if you're logged in, about your own account like your trust score or streak."); },
 };
 
 const SUGGESTIONS = [
@@ -83,7 +82,7 @@ export default function AskAiAssistant() {
     if (!SpeechRec) return;
     if (listening) { recognitionRef.current?.stop(); return; }
     const rec = new SpeechRec();
-    rec.lang = navigator.language || 'en-US';
+    rec.lang = dateLocale(navigator.language || 'en-US');
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     rec.onresult = (e) => {
@@ -150,8 +149,7 @@ export default function AskAiAssistant() {
         {
           role: 'assistant',
           content:
-            "Sorry, I couldn't answer just now. Please try again in a moment, or use " +
-            'the Feedback button and the Towinly team will help.',
+            tr("Sorry, I couldn't answer just now. Please try again in a moment, or use the Feedback button and the Towinly team will help."),
         },
       ]);
     } finally {
@@ -172,7 +170,7 @@ export default function AskAiAssistant() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          aria-label="Ask AI, the Towinly helper"
+          aria-label={tr('Ask AI, the Towinly helper')}
           className="ask-ai-fab"
           style={{
             
@@ -203,7 +201,7 @@ export default function AskAiAssistant() {
           }}>
             <img src={TORTOISE_IMG} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
           </span>
-          <span className="ask-ai-fab-label">Ask AI</span>
+          <span className="ask-ai-fab-label">{tr('Ask AI')}</span>
         </button>
       )}
 
@@ -212,7 +210,7 @@ export default function AskAiAssistant() {
         {open && (
           <MotionDiv
             role="dialog"
-            aria-label="Ask AI chat"
+            aria-label={tr('Ask AI chat')}
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
@@ -242,15 +240,15 @@ export default function AskAiAssistant() {
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: 0, fontFamily: SFD, fontWeight: 700, fontSize: '16px', color: 'var(--ink)' }}>
-                  Ask AI
+                  {tr('Ask AI')}
                 </p>
                 <p style={{ margin: 0, fontFamily: SF, fontSize: 'var(--text-xs, 13px)', color: 'var(--ink-slate)' }}>
-                  Your Towinly helper
+                  {tr('Your Towinly helper')}
                 </p>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                aria-label="Close chat"
+                aria-label={tr('Close chat')}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
                   borderRadius: '50%', color: 'var(--ink-slate)', display: 'flex',
@@ -283,7 +281,7 @@ export default function AskAiAssistant() {
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
-                      onClick={() => send(s)}
+                      onClick={() => send(tr(s))}
                       style={{
                         textAlign: 'left', background: 'var(--canvas)', cursor: 'pointer',
                         border: '1px solid var(--blue-soft)', borderRadius: '12px',
@@ -291,7 +289,7 @@ export default function AskAiAssistant() {
                         color: 'var(--blue-deep)', lineHeight: 1.4,
                       }}
                     >
-                      {s}
+                      {tr(s)}
                     </button>
                   ))}
                 </div>
@@ -310,8 +308,8 @@ export default function AskAiAssistant() {
                 <button
                   type="button"
                   onClick={toggleMic}
-                  aria-label={listening ? 'Stop listening' : 'Speak your question'}
-                  title={listening ? 'Stop listening' : 'Speak your question'}
+                  aria-label={listening ? tr('Stop listening') : tr('Speak your question')}
+                  title={listening ? tr('Stop listening') : tr('Speak your question')}
                   style={{
                     flexShrink: 0, width: '44px', height: '44px', borderRadius: '50%',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -328,8 +326,8 @@ export default function AskAiAssistant() {
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={listening ? 'Listening…' : 'Type your question…'}
-                aria-label="Type your question"
+                placeholder={listening ? tr('Listening…') : tr('Type your question…')}
+                aria-label={tr('Type your question')}
                 maxLength={1000}
                 style={{
                   flex: 1, minWidth: 0, border: '1px solid var(--blue-soft)',
@@ -339,7 +337,7 @@ export default function AskAiAssistant() {
               />
               <button
                 type="submit"
-                aria-label="Send"
+                aria-label={tr('Send')}
                 disabled={!input.trim() || loading}
                 style={{
                   flexShrink: 0, width: '44px', height: '44px', borderRadius: '50%',
@@ -377,7 +375,7 @@ function Bubble({ role, content, speaking, onSpeak }) {
       {onSpeak && (
         <button
           onClick={onSpeak}
-          aria-label={speaking ? 'Stop reading aloud' : 'Read this answer aloud'}
+          aria-label={speaking ? tr('Stop reading aloud') : tr('Read this answer aloud')}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             marginTop: '8px', padding: '5px 12px', minHeight: '44px', cursor: 'pointer',
@@ -389,7 +387,7 @@ function Bubble({ role, content, speaking, onSpeak }) {
           }}
         >
           {speaking ? <Square size={13} /> : <Volume2 size={14} />}
-          {speaking ? 'Stop' : 'Read aloud'}
+          {speaking ? tr('Stop') : tr('Read aloud')}
         </button>
       )}
     </div>
@@ -431,7 +429,7 @@ function TypingDots() {
     <div style={{
       alignSelf: 'flex-start', background: 'var(--blue-wash)', border: '1px solid var(--blue-soft)',
       borderRadius: '16px 16px 16px 4px', padding: '12px 16px', display: 'flex', gap: '5px',
-    }} aria-label="Typing">
+    }} aria-label={tr('Typing')}>
       {[0, 1, 2].map((i) => (
         <MotionSpan
           key={i}

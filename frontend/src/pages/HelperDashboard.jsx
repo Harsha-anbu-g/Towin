@@ -15,6 +15,7 @@ import { useSeenIds } from '../lib/useSeenIds';
 import Avatar from '../components/ui/Avatar';
 import DiscoverCard from '../components/DiscoverCard';
 import { parseServerDate } from '../lib/utils';
+import { tr } from '../i18n';
 
 function TabBadge({ count }) {
   if (!count) return null;
@@ -38,7 +39,7 @@ function StarPicker({ value, onChange }) {
           key={n}
           type="button"
           onClick={() => onChange(n)}
-          aria-label={`${n} star${n === 1 ? '' : 's'}`}
+          aria-label={n === 1 ? tr('1 star') : tr('{n} stars', { n })}
           aria-pressed={n <= value}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
@@ -81,13 +82,16 @@ const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(
 
 // Plain, everyday words for the help categories.
 const CATEGORY = {
-  COMPANIONSHIP:  'Company',
-  TRANSPORTATION: 'Rides',
-  ERRANDS:        'Shopping',
-  CLEANING:       'Cleaning',
-  OTHER:          'Other',
+  get COMPANIONSHIP() { return tr('Company'); },
+  get TRANSPORTATION() { return tr('Rides'); },
+  get ERRANDS() { return tr('Shopping'); },
+  get CLEANING() { return tr('Cleaning'); },
+  get OTHER() { return tr('Other'); },
 };
 const catLabel = (c) => CATEGORY[c] || c;
+
+// Review tags are saved in English; tr() shows them in the reader's language.
+const REVIEW_TAGS = ['Friendly', 'Punctual', 'Respectful', 'Helpful', 'Patient'];
 
 // Plain, everyday relative time — "just now", "2 days ago", "3 weeks ago" —
 // so a helper can see how fresh (or stale) a request is at a glance.
@@ -95,17 +99,17 @@ function postedAgo(iso) {
   const date = parseServerDate(iso);
   if (!date) return '';
   const secs = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (secs < 60) return 'just now';
+  if (secs < 60) return tr('just now');
   const m = Math.floor(secs / 60);
-  if (m < 60) return `${m} minute${m === 1 ? '' : 's'} ago`;
+  if (m < 60) return m === 1 ? tr('1 minute ago') : tr('{mins} minutes ago', { mins: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} hour${h === 1 ? '' : 's'} ago`;
+  if (h < 24) return h === 1 ? tr('1 hour ago') : tr('{hours} hours ago', { hours: h });
   const d = Math.floor(h / 24);
-  if (d < 7) return `${d} day${d === 1 ? '' : 's'} ago`;
+  if (d < 7) return d === 1 ? tr('1 day ago') : tr('{days} days ago', { days: d });
   const w = Math.floor(d / 7);
-  if (w < 5) return `${w} week${w === 1 ? '' : 's'} ago`;
+  if (w < 5) return w === 1 ? tr('1 week ago') : tr('{weeks} weeks ago', { weeks: w });
   const mo = Math.floor(d / 30);
-  return `${mo} month${mo === 1 ? '' : 's'} ago`;
+  return mo === 1 ? tr('1 month ago') : tr('{months} months ago', { months: mo });
 }
 
 // One request card, shared by all three Browse Needs sub-tabs. The action area
@@ -130,11 +134,11 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
             <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: 'var(--surface-2)', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
             {need.urgency === 'URGENT' && (
               <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: 'var(--surface-2)', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />Urgent
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />{tr('Urgent')}
               </span>
             )}
             <span style={{ fontSize: '14px', color: 'var(--ink-slate)' }}>
-              {need.distanceKm != null ? `${Math.round(need.distanceKm * 10) / 10} km · ` : ''}Posted by{' '}
+              {need.distanceKm != null ? tr('{km} km', { km: Math.round(need.distanceKm * 10) / 10 }) + ' · ' : ''}{tr('Posted by')}{' '}
               {need.elderId ? (
                 <button onClick={() => onOpenProfile(need.elderId)}
                   style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--blue-deep)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
@@ -149,27 +153,27 @@ function NeedCard({ need, index, applying, onApply, onWithdraw, onOpenProfile })
               are before they reply — the job is still the elder's. */}
           {need.actedByName && (
             <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', margin: '8px 0 0', lineHeight: 1.4 }}>
-              Asked by {need.actedByName}, for {need.elderName}
+              {tr('Asked by {actedByName}, for {elderName}', { actedByName: need.actedByName, elderName: need.elderName })}
             </p>
           )}
         </div>
         <div className="card-actions" style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
           {isCompleted ? (
-            <span style={greenPill}>{check}Completed</span>
+            <span style={greenPill}>{check}{tr('Completed')}</span>
           ) : mine === 'ACCEPTED' ? (
-            <span style={greenPill}>{check}You're helping</span>
+            <span style={greenPill}>{check}{tr("You're helping")}</span>
           ) : mine === 'PENDING' ? (
             <>
-              <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', padding: '0 18px', background: 'var(--surface-2)', color: 'var(--ink-slate)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>Waiting to hear back</span>
-              <span style={{ fontSize: '13px', color: 'var(--ink-slate)', textAlign: 'right', maxWidth: '230px', lineHeight: 1.4 }}>The elder reviews all helpers and picks one.</span>
+              <span style={{ height: '40px', display: 'inline-flex', alignItems: 'center', padding: '0 18px', background: 'var(--surface-2)', color: 'var(--ink-slate)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700 }}>{tr('Waiting to hear back')}</span>
+              <span style={{ fontSize: '13px', color: 'var(--ink-slate)', textAlign: 'right', maxWidth: '230px', lineHeight: 1.4 }}>{tr('The elder reviews all helpers and picks one.')}</span>
               <button onClick={() => onWithdraw(need.id)}
-                style={{ fontSize: '14px', color: 'var(--ink-slate)', background: 'none', border: 'none', cursor: 'pointer', padding: '13px 10px', minHeight: '44px' }}>                Withdraw
+                style={{ fontSize: '14px', color: 'var(--ink-slate)', background: 'none', border: 'none', cursor: 'pointer', padding: '13px 10px', minHeight: '44px' }}>{' '}{tr('Withdraw')}
               </button>
             </>
           ) : (
             <button onClick={() => onApply(need.id)} disabled={applying === need.id}
               style={{ height: '40px', padding: '0 24px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: applying === need.id ? 'default' : 'pointer' }}>
-              {applying === need.id ? 'Sending…' : 'Offer to Help'}
+              {applying === need.id ? tr('Sending…') : tr('Offer to Help')}
             </button>
           )}
         </div>
@@ -399,18 +403,18 @@ export default function HelperDashboard() {
     try {
       await api.delete(`/needs/${needId}/apply`);
       await Promise.all([loadNeeds(), loadMyApplications()]);
-      toast.info('Application withdrawn.');
-    } catch { toast.error('Could not withdraw. Try again.'); }
+      toast.info(tr('Application withdrawn.'));
+    } catch { toast.error(tr('Could not withdraw. Try again.')); }
   }
 
   async function apply(needId) {
     setApplying(needId);
     try {
       await api.post(`/needs/${needId}/apply`);
-      toast.success('Application sent!');
+      toast.success(tr('Application sent!'));
       await Promise.all([loadNeeds(), loadMyApplications()]);
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not apply.');
+      toast.error(err?.response?.data?.message || tr('Could not apply.'));
     } finally { setApplying(null); }
   }
 
@@ -421,7 +425,7 @@ export default function HelperDashboard() {
       setConnectMsg(prev => ({...prev, [elderId]: 'Requested'}));
       await loadConnections();
     } catch (err) {
-      setConnectMsg(prev => ({...prev, [elderId]: err?.response?.data?.message || 'Could not connect.'}));
+      setConnectMsg(prev => ({...prev, [elderId]: err?.response?.data?.message || tr('Could not connect.')}));
     } finally { setConnectingTo(null); }
   }
 
@@ -429,33 +433,32 @@ export default function HelperDashboard() {
     setRespondingConn(connId);
     try {
       await api.post(`/connections/${connId}/respond`, { accept });
-      if (accept) toast.success('Connection accepted!');
+      if (accept) toast.success(tr('Connection accepted!'));
       await loadConnections();
     }
-    catch (err) { toast.error(err?.response?.data?.message || 'Could not respond to request.'); }
+    catch (err) { toast.error(err?.response?.data?.message || tr('Could not respond to request.')); }
     finally { setRespondingConn(null); }
   }
 
   async function endConnection(connId) {
     try {
       await api.delete(`/connections/${connId}`);
-      toast.info('Connection ended.');
+      toast.info(tr('Connection ended.'));
       await loadConnections();
-    } catch (err) { toast.error(err?.response?.data?.message || 'Could not end connection.'); }
+    } catch (err) { toast.error(err?.response?.data?.message || tr('Could not end connection.')); }
   }
 
   async function confirmTrust(connId) {
     setConfirmingTrust(connId);
     try {
       await api.post(`/trust/${connId}/confirm`);
-      toast.success('Trust level confirmed!');
+      toast.success(tr('Trust level confirmed!'));
       await loadConnections();
     }
-    catch { toast.error('Could not advance trust level. Try again.'); }
+    catch { toast.error(tr('Could not advance trust level. Try again.')); }
     finally { setConfirmingTrust(null); }
   }
 
-  const REVIEW_TAGS = ['Friendly', 'Punctual', 'Respectful', 'Helpful', 'Patient'];
 
   async function submitElderReview(conn) {
     setSubmittingReview(true);
@@ -464,8 +467,8 @@ export default function HelperDashboard() {
       setReviewedConns(prev => new Set([...prev, conn.id]));
       setReviewingConn(null);
       setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
-      toast.success('Review submitted!');
-    } catch (err) { toast.error(err?.response?.data?.message || 'Could not submit review.'); }
+      toast.success(tr('Review submitted!'));
+    } catch (err) { toast.error(err?.response?.data?.message || tr('Could not submit review.')); }
     finally { setSubmittingReview(false); }
   }
 
@@ -486,9 +489,9 @@ export default function HelperDashboard() {
     : (requestedElderIds.has(id) || connectMsg[id] === 'Requested') ? 'requested'
     : (connectMsg[id] || null);
   const friendsSegments = [
-    { id: 'find',      label: 'Find Friends' },
-    { id: 'invites',   label: 'New Invites',      count: incomingRequests.length, notify: true },
-    { id: 'requested', label: 'Requested',        count: sentRequests.length },
+    { id: 'find',      label: tr('Find Friends') },
+    { id: 'invites',   label: tr('New Invites'),      count: incomingRequests.length, notify: true },
+    { id: 'requested', label: tr('Requested'),        count: sentRequests.length },
   ];
 
   // My Elders badge now tracks only established (ACTIVE) connections — pending
@@ -506,26 +509,28 @@ export default function HelperDashboard() {
   }, [tab, connections, needs]);
 
   const tabs = [
-    ['connections', 'My Elders', connBadge],
-    ['browse', 'Offer Help', browseBadge],
-    ['requests', 'Add Friends', requestsBadge],
+    ['connections', tr('My Elders'), connBadge],
+    ['browse', tr('Offer Help'), browseBadge],
+    ['requests', tr('Add Friends'), requestsBadge],
   ];
 
-  const RadiusBar = ({ noun = 'people' }) => (
+  const RadiusBar = ({ forHelp = false }) => (
     <div style={{ background: 'var(--canvas)', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
       <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}>
         <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        {locationStatus === 'asking' && 'Getting your location...'}
-        {locationStatus === 'granted' && `Showing ${noun} within ${radiusKm} km of you`}
-        {locationStatus === 'denied' && `Location unavailable, showing all ${noun}`}
-        {locationStatus === 'blocked' && 'Location is turned off for this site'}
-        {locationStatus === 'idle' && 'Detecting location...'}
+        {locationStatus === 'asking' && tr('Getting your location...')}
+        {locationStatus === 'granted' && (forHelp
+          ? tr('Showing help within {radiusKm} km of you', { radiusKm })
+          : tr('Showing elders within {radiusKm} km of you', { radiusKm }))}
+        {locationStatus === 'denied' && (forHelp ? tr('Location unavailable, showing all help') : tr('Location unavailable, showing all elders'))}
+        {locationStatus === 'blocked' && tr('Location is turned off for this site')}
+        {locationStatus === 'idle' && tr('Detecting location...')}
       </span>
       {locationStatus === 'granted' && (
         <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
-          aria-label="Search distance in kilometres"
+          aria-label={tr('Search distance in kilometres')}
           style={{ fontSize: '14px', fontWeight: 600, color: 'var(--blue-deep)', background: 'var(--canvas)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
-          {[5,10,25,50,100].map(v => <option key={v} value={v}>{v} km</option>)}
+          {[5,10,25,50,100].map(v => <option key={v} value={v}>{tr('{v} km', { v })}</option>)}
         </select>
       )}
     </div>
@@ -556,16 +561,16 @@ export default function HelperDashboard() {
   const eldersDefault = 'active';
   const activeEldersSeg = eldersSeg ?? eldersDefault;
   const elderSegments = [
-    { id: 'active',   label: 'Trusted Elders', count: elderCounts.active },
-    { id: 'building', label: 'Building Trust', count: elderCounts.building },
+    { id: 'active',   label: tr('Trusted Elders'), count: elderCounts.active },
+    { id: 'building', label: tr('Building Trust'), count: elderCounts.building },
   ];
   const visibleConnections = [...elderConnections].filter(c => {
     if (activeEldersSeg === 'building') return c.status === 'ACTIVE' && c.currentTrustLevel !== 'TRUSTED';
     return c.status === 'ACTIVE' && c.currentTrustLevel === 'TRUSTED';
   }).sort(sortConnections);
   const eldersEmptyText = {
-    active:   <>No fully trusted elders yet. As your trust grows with an elder, they'll appear here.</>,
-    building: <>No connections in progress. Reach out to an elder to start building trust together.</>,
+    active:   tr('No fully trusted elders yet. As your trust grows with an elder, they\'ll appear here.'),
+    building: tr('No connections in progress. Reach out to an elder to start building trust together.'),
   }[activeEldersSeg];
 
   // ── Browse Needs — split into Available / Applied / Completed ──
@@ -579,9 +584,9 @@ export default function HelperDashboard() {
   const completedNeeds = myApplications.filter(n =>
     n.status === 'COMPLETED' && n.myApplicationStatus === 'ACCEPTED');
   const browseSegments = [
-    { id: 'available', label: 'Available', count: availableNeeds.length },
-    { id: 'applied',   label: 'Applied',   count: appliedNeeds.length },
-    { id: 'completed', label: 'Completed', count: completedNeeds.length },
+    { id: 'available', label: tr('Available'), count: availableNeeds.length },
+    { id: 'applied',   label: tr('Applied'),   count: appliedNeeds.length },
+    { id: 'completed', label: tr('Completed'), count: completedNeeds.length },
   ];
   const browseList = { available: availableNeeds, applied: appliedNeeds, completed: completedNeeds }[browseSeg];
 
@@ -589,7 +594,7 @@ export default function HelperDashboard() {
   // Accept / Decline; requests this helper sent show a quiet "Requested" pill.
   function renderPendingCard(conn, i) {
     const isIncoming = !conn.initiatedByMe;
-    const name = conn.otherUserName || 'Elder';
+    const name = conn.otherUserName || tr('Elder');
 
     if (isIncoming) {
       return (
@@ -609,8 +614,8 @@ export default function HelperDashboard() {
                 {initials(name)}
               </div>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
-                <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '3px 0 0' }}>sent you a friend request</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>{tr('Age {otherUserAge}', { otherUserAge: conn.otherUserAge })}</span> : null}</p>
+                <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '3px 0 0' }}>{tr('sent you a friend request')}</p>
                 {conn.requestMessage && (
                   <p style={{ fontSize: '13px', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '4px 0 0' }}>"{conn.requestMessage}"</p>
                 )}
@@ -620,16 +625,16 @@ export default function HelperDashboard() {
               fontSize: 'var(--text-xs)', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
               color: 'var(--blue-deep)', background: 'var(--blue-tint)', border: '1px solid var(--blue-soft)',
               padding: '3px 10px', borderRadius: '9999px', flexShrink: 0,
-            }}>New</span>
+            }}>{tr('New')}</span>
           </div>
           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
             <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
               style={{ flex: 1, height: '44px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
-              {respondingConn === conn.id ? 'Accepting…' : 'Accept'}
+              {respondingConn === conn.id ? tr('Accepting…') : tr('Accept')}
             </button>
             <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
               style={{ flex: 1, height: '44px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-              Decline
+              {tr('Decline')}
             </button>
           </div>
         </div>
@@ -654,17 +659,17 @@ export default function HelperDashboard() {
           {initials(name)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>{tr('Age {otherUserAge}', { otherUserAge: conn.otherUserAge })}</span> : null}</p>
           <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Waiting for {name} to accept — they'll see your request in their Add Friends tab.
+            {tr("Waiting for {name} to accept — they'll see your request in their Add Friends tab.", { name })}
           </p>
         </div>
         <span style={{
           fontSize: '13px', fontWeight: 600, color: 'var(--ink-slate)',
           background: 'var(--surface-2)', border: '1px solid var(--border)',
           padding: '6px 14px', borderRadius: '9999px', flexShrink: 0,
-        }}>Requested</span>
+        }}>{tr('Requested')}</span>
       </div>
     );
   }
@@ -680,7 +685,7 @@ export default function HelperDashboard() {
         borderBottom: '1px solid var(--border)',
       }}>
         <div className="dash-tab-wrap">
-          <div className="dash-tab-scroll" role="tablist" aria-label="Dashboard sections">
+          <div className="dash-tab-scroll" role="tablist" aria-label={tr('Dashboard sections')}>
             {tabs.map(([id, label, badge]) => {
               const active = tab === id;
               return (
@@ -689,7 +694,7 @@ export default function HelperDashboard() {
                   id={`dash-tab-${id}`}
                   aria-selected={active}
                   tabIndex={active ? 0 : -1}
-                  aria-label={badge ? `${label}, ${badge} new` : undefined}
+                  aria-label={badge ? tr('{label}, {badge} new', { label, badge }) : undefined}
                   onKeyDown={(e) => {
                     const ids = tabs.map(([tid]) => tid);
                     const i = ids.indexOf(tab);
@@ -738,7 +743,7 @@ export default function HelperDashboard() {
           {tab === 'connections' && (
             <div role="tabpanel" aria-labelledby="dash-tab-connections" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
-                My Elders
+                {tr('My Elders')}
               </h1>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -752,15 +757,15 @@ export default function HelperDashboard() {
                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid var(--blue-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
-                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No connections yet</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>Find elders near you and send a friend request to get started.</p>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('No connections yet')}</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '20px', maxWidth: '280px', margin: '0 auto 20px' }}>{tr('Find elders near you and send a friend request to get started.')}</p>
                   <button onClick={() => { setTab('requests'); setFriendsSeg('find'); }} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
-                    Add Friends
+                    {tr('Add Friends')}
                   </button>
                 </div>
               )}
               {!loading && connections.length > 0 && (
-                <SegmentedTabs segments={elderSegments} value={activeEldersSeg} onChange={setEldersSeg} label="My Elders sections" />
+                <SegmentedTabs segments={elderSegments} value={activeEldersSeg} onChange={setEldersSeg} label={tr('My Elders sections')} />
               )}
               {!loading && connections.length > 0 && visibleConnections.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
@@ -780,9 +785,9 @@ export default function HelperDashboard() {
                         {avatar}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-lg)', letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'Elder'}</p>
+                            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-lg)', letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || tr('Elder')}</p>
                             {conn.otherUserAge != null && (
-                              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>Age {conn.otherUserAge}</span>
+                              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>{tr('Age {otherUserAge}', { otherUserAge: conn.otherUserAge })}</span>
                             )}
                           </div>
                           {conn.otherUserPhone && (
@@ -797,36 +802,36 @@ export default function HelperDashboard() {
                       {/* Action bar */}
                       {endingConn === conn.id ? (
                           <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this elder'}?</span>
-                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '44px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
-                            <button onClick={() => setEndingConn(null)} style={{ height: '44px', padding: '0 16px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
+                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>{conn.otherUserName ? tr('End your connection with {name}?', { name: conn.otherUserName }) : tr('End your connection with this elder?')}</span>
+                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '44px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>{tr('Yes, end')}</button>
+                            <button onClick={() => setEndingConn(null)} style={{ height: '44px', padding: '0 16px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>{tr('Keep')}</button>
                           </div>
                         ) : (
                           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '44px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                              Message
+                              {tr('Message')}
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>{tr('View Profile')}</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
                               <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" style={{ fill: 'var(--star-gold)' }} stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                Review
+                                {tr('Review')}
                               </button>
                             )}
                             {reviewedConns.has(conn.id) && (
                               <span style={{ height: '44px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--green-deep)', fontWeight: 600 }}>
                                 <svg width="13" height="10" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="var(--green-deep)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                Reviewed
+                                {tr('Reviewed')}
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '44px', padding: '0 14px', background: 'none', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '44px', padding: '0 14px', background: 'none', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>{tr('End')}</button>
                           </div>
                         )}
 
                   {reviewingConn === conn.id && (
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>Rate {conn.otherUserName || 'this elder'}</p>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>{conn.otherUserName ? tr('Rate {name}', { name: conn.otherUserName }) : tr('Rate this elder')}</p>
                       <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {REVIEW_TAGS.map(t => (
@@ -837,21 +842,21 @@ export default function HelperDashboard() {
                             borderColor: reviewForm.tags.includes(t) ? 'var(--action-fill)' : 'var(--border)',
                             background: reviewForm.tags.includes(t) ? 'var(--action-fill)' : 'var(--canvas)',
                             color: reviewForm.tags.includes(t) ? 'var(--action-ink)' : 'var(--ink-slate)',
-                          }}>{t}</button>
+                          }}>{tr(t)}</button>
                         ))}
                       </div>
                       <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
-                        placeholder="Any comments? (optional)" rows={2}
+                        placeholder={tr('Any comments? (optional)')} rows={2}
                         style={{ width: '100%', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', fontSize: 'var(--text-sm)', outline: 'none', fontFamily: 'inherit' }} />
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--ink-slate)', cursor: 'pointer' }}>
                         <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
-                        Report a safety concern
+                        {tr('Report a safety concern')}
                       </label>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button onClick={() => submitElderReview(conn)} disabled={submittingReview} className="btn-confirm" style={{ flex: 1, padding: '10px' }}>
-                          {submittingReview ? 'Submitting...' : 'Submit Review'}
+                          {submittingReview ? tr('Submitting...') : tr('Submit Review')}
                         </button>
-                        <button onClick={() => setReviewingConn(null)} className="btn-ghost">Cancel</button>
+                        <button onClick={() => setReviewingConn(null)} className="btn-ghost">{tr('Cancel')}</button>
                       </div>
                     </div>
                   )}
@@ -879,7 +884,7 @@ export default function HelperDashboard() {
                     && familyBehind.some(f => f.connectionId === conn.id) && (
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '12px' }}>
                       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: '0 0 8px' }}>
-                        {conn.otherUserName ? `${conn.otherUserName}'s family` : 'Their family'}
+                        {conn.otherUserName ? tr("{otherUserName}'s family", { otherUserName: conn.otherUserName }) : tr('Their family')}
                       </p>
                       {familyBehind.filter(f => f.connectionId === conn.id).map(f => {
                         // The family coordination connection (auto-materialized while
@@ -900,20 +905,22 @@ export default function HelperDashboard() {
                               {f.familyName}
                               {f.relationship ? (
                                 <span style={{ fontWeight: 400, color: 'var(--ink-slate)' }}>
-                                  {' '}— {conn.otherUserName ? `${conn.otherUserName}'s` : 'their'} {f.relationship.toLowerCase()}
+                                  {' '}— {conn.otherUserName
+                                    ? tr("{name}'s {relationship}", { name: conn.otherUserName, relationship: f.relationship.toLowerCase() })
+                                    : tr('their {relationship}', { relationship: f.relationship.toLowerCase() })}
                                 </span>
                               ) : null}
                             </p>
                             <p style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '2px 0 0', lineHeight: 1.4 }}>
                               {famConn
-                                ? <>You can message each other while this friendship stays shared.</>
-                                : <>Can see how this friendship is going and may message you.</>}
+                                ? tr('You can message each other while this friendship stays shared.')
+                                : tr('Can see how this friendship is going and may message you.')}
                             </p>
                           </div>
                           {famConn && (
                             <button onClick={() => navigate(`/messages/${famConn.id}`)} style={{ height: '44px', padding: '0 16px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0 }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                              Message
+                              {tr('Message')}
                             </button>
                           )}
                         </div>
@@ -931,9 +938,9 @@ export default function HelperDashboard() {
           {tab === 'requests' && (
             <div role="tabpanel" aria-labelledby="dash-tab-requests" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
-                Add Friends
+                {tr('Add Friends')}
               </h1>
-              <SegmentedTabs segments={friendsSegments} value={friendsSeg} onChange={setFriendsSeg} label="Add Friends sections" />
+              <SegmentedTabs segments={friendsSegments} value={friendsSeg} onChange={setFriendsSeg} label={tr('Add Friends sections')} />
 
               {/* New Invites — friend requests waiting for you to answer */}
               {friendsSeg === 'invites' && (loading ? (
@@ -944,7 +951,7 @@ export default function HelperDashboard() {
                 </div>
               ) : incomingRequests.length === 0 ? (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
-                  No new invites right now. When someone wants to be friends, you'll see it here.
+                  {tr("No new invites right now. When someone wants to be friends, you'll see it here.")}
                 </SegmentEmpty>
               ) : (
                 [...incomingRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))
@@ -959,7 +966,7 @@ export default function HelperDashboard() {
                 </div>
               ) : sentRequests.length === 0 ? (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>}>
-                  You haven't sent any friend requests yet. Add someone from "Find Friends".
+                  {tr('You haven\'t sent any friend requests yet. Add someone from "Find Friends".')}
                 </SegmentEmpty>
               ) : (
                 [...sentRequests].sort(sortConnections).map((conn, i) => renderPendingCard(conn, i))
@@ -972,17 +979,17 @@ export default function HelperDashboard() {
             <div role="tabpanel" aria-labelledby="dash-tab-browse" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div>
                 <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '0 0 6px' }}>
-                  Offer Help
+                  {tr('Offer Help')}
                 </h1>
                 <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
-                  Elders nearby who could use a hand. Offer to help with one tap.
+                  {tr('Elders nearby who could use a hand. Offer to help with one tap.')}
                 </p>
               </div>
 
-              <SegmentedTabs segments={browseSegments} value={browseSeg} onChange={setBrowseSeg} label="Offer Help sections" />
+              <SegmentedTabs segments={browseSegments} value={browseSeg} onChange={setBrowseSeg} label={tr('Offer Help sections')} />
 
               {/* Distance + location controls only matter for the Available list */}
-              {browseSeg === 'available' && <RadiusBar noun="help" />}
+              {browseSeg === 'available' && <RadiusBar forHelp />}
               {browseSeg === 'available' && locationStatus === 'primer' && (
                 <LocationPrimer onEnable={requestLocation} onManual={() => { setLocationStatus('denied'); loadNeeds(); loadElders(); }} />
               )}
@@ -999,11 +1006,11 @@ export default function HelperDashboard() {
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                   </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No help nearby</p>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('No help nearby')}</p>
                   <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>
                     {locationStatus === 'granted'
-                      ? `Nothing within ${radiusKm} km right now. Use the radius selector above to expand your search area.`
-                      : 'No open help right now. Check back soon or enable location to filter by distance.'}
+                      ? tr('Nothing within {radiusKm} km right now. Use the radius selector above to expand your search area.', { radiusKm })
+                      : tr('No open help right now. Check back soon or enable location to filter by distance.')}
                   </p>
                 </div>
               )}
@@ -1011,12 +1018,12 @@ export default function HelperDashboard() {
               {/* Applied / Completed — friendly segment empty states */}
               {browseSeg === 'applied' && appliedNeeds.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}>
-                  You haven't offered to help with anything yet. Find one under Available and tap "Offer to Help."
+                  {tr('You haven\'t offered to help with anything yet. Find one under Available and tap "Offer to Help."')}
                 </SegmentEmpty>
               )}
               {browseSeg === 'completed' && completedNeeds.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>}>
-                  No completed help yet. Help you gave shows up here once the elder marks it done.
+                  {tr('No completed help yet. Help you gave shows up here once the elder marks it done.')}
                 </SegmentEmpty>
               )}
 
@@ -1034,9 +1041,9 @@ export default function HelperDashboard() {
           {tab === 'requests' && friendsSeg === 'find' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: 0 }}>
-                Find elders near you and send a friend request.
+                {tr('Find elders near you and send a friend request.')}
               </p>
-              <RadiusBar noun="elders" />
+              <RadiusBar />
               {locationStatus === 'primer' && (
                 <LocationPrimer onEnable={requestLocation} onManual={() => { setLocationStatus('denied'); loadNeeds(); loadElders(); }} />
               )}
@@ -1050,17 +1057,17 @@ export default function HelperDashboard() {
                   {[1,2].map(i => (
                     <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '110px', animation: 'skeleton-pulse 1.5s ease-in-out infinite' }} />
                   ))}
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', textAlign: 'center', margin: 0 }}>Looking for elders near you…</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', textAlign: 'center', margin: 0 }}>{tr('Looking for elders near you…')}</p>
                 </div>
               )}
 
               {/* Fetch failed — be honest and give a retry (H9) */}
               {!discovering && discoverError && (
                 <div style={{ background: 'var(--canvas)', borderRadius: '18px', textAlign: 'center', padding: '40px 24px', border: '1px solid var(--red-line)' }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Couldn't load elders</p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr("Couldn't load elders")}</p>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '18px' }}>{tr('Something went wrong on our side. Please try again.')}</p>
                   <button onClick={() => loadElders()} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
-                    Try Again
+                    {tr('Try Again')}
                   </button>
                 </div>
               )}
@@ -1073,12 +1080,12 @@ export default function HelperDashboard() {
                     </svg>
                   </div>
                   <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                    {locationStatus === 'granted' ? 'No elders found nearby' : 'No elders available right now'}
+                    {locationStatus === 'granted' ? tr('No elders found nearby') : tr('No elders available right now')}
                   </p>
                   <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>
                     {locationStatus === 'granted'
-                      ? 'Try a larger radius above, or check back later.'
-                      : 'New members join often. Please check back soon.'}
+                      ? tr('Try a larger radius above, or check back later.')
+                      : tr('New members join often. Please check back soon.')}
                   </p>
                 </div>
               )}
@@ -1087,7 +1094,7 @@ export default function HelperDashboard() {
                 const rank = u => connectedElderIds.has(u.userId) ? 2 : (requestedElderIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
                 return rank(a) - rank(b);
               }).map((elder, i) => (
-                <DiscoverCard key={elder.userId} person={elder} index={i} fallbackName="Elder"
+                <DiscoverCard key={elder.userId} person={elder} index={i} fallbackName={tr('Elder')}
                   tags={elder.interests || []}
                   status={statusFor(elder.userId)}
                   adding={connectingTo === elder.userId}
@@ -1102,26 +1109,26 @@ export default function HelperDashboard() {
                 <section aria-labelledby="helpers-near-you" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
                   <div>
                     <h2 id="helpers-near-you" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-md, 20px)', fontWeight: 400, color: 'var(--ink)', margin: 0 }}>
-                      Helpers near you
+                      {tr('Helpers near you')}
                     </h2>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0', lineHeight: 1.5 }}>
-                      Other helpers to chat with. Friends here just chat: there are no trust steps.
+                      {tr('Other helpers to chat with. Friends here just chat: there are no trust steps.')}
                     </p>
                   </div>
                   {helperPeersState === 'loading' && helperPeers.length === 0 && (
                     <div style={{ background: 'var(--surface)', borderRadius: '18px', height: '96px', animation: 'skeleton-pulse 1.5s ease-in-out infinite' }} />
                   )}
                   {helperPeersState === 'error' && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>Couldn't load helpers right now. Please try again soon.</p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>{tr("Couldn't load helpers right now. Please try again soon.")}</p>
                   )}
                   {helperPeersState === 'ready' && helperPeers.length === 0 && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>No other helpers nearby yet. Please check back soon.</p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>{tr('No other helpers nearby yet. Please check back soon.')}</p>
                   )}
                   {[...helperPeers].sort((a, b) => {
                     const rank = u => connectedElderIds.has(u.userId) ? 2 : (requestedElderIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
                     return rank(a) - rank(b);
                   }).map((peer, i) => (
-                    <DiscoverCard key={peer.userId} person={peer} index={i} fallbackName="Helper"
+                    <DiscoverCard key={peer.userId} person={peer} index={i} fallbackName={tr('Helper')}
                       tags={peer.skillsOffered || []}
                       status={statusFor(peer.userId)}
                       adding={connectingTo === peer.userId}

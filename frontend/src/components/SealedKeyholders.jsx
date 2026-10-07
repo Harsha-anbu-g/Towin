@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { SETUP, SHEET, keyholderLine, listOfNames } from './passOnLocks';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -34,7 +35,7 @@ export default function SealedKeyholders({ setup, keyholders, undoing, onUndo, o
   return (
     <div>
       {setup.canStillUndo && (
-        <section style={settlingCard} aria-label="Your box is set up">
+        <section style={settlingCard} aria-label={tr('Your box is set up')}>
           <h2 style={{ ...displayHead, fontSize: 'var(--text-lg)' }}>{SETUP.settling.title}</h2>
           <p style={{ fontSize: '17px', color: 'var(--ink-slate)', lineHeight: 1.6, margin: '10px 0 0' }}>
             {SETUP.settling.body(listOfNames(standing.map(k => k.personName)))}

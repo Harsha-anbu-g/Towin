@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { ToastContext } from './useToast';
+import { tr } from '../i18n';
 
 const ICONS = {
   success: (
@@ -107,7 +108,7 @@ function ToastItem({ toast: t, dismiss }) {
           background: 'none', border: 'none', cursor: 'pointer',
           fontFamily: `-apple-system, 'SF Pro Text', system-ui, sans-serif`,
           padding: '0 4px', flexShrink: 0,
-        }}>Undo</button>
+        }}>{tr('Undo')}</button>
       )}
       <button onClick={() => dismiss(t.id)} style={{
         width: '18px', height: '18px', borderRadius: '50%',

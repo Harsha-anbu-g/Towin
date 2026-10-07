@@ -19,6 +19,7 @@ import DiscoverCard from '../components/DiscoverCard';
 import { useSeenIds } from '../lib/useSeenIds';
 import { MY_BOXES } from '../components/passOnLocks';
 import MyFamily from './MyFamily';
+import { tr } from '../i18n';
 
 function TabBadge({ count }) {
   if (!count) return null;
@@ -42,7 +43,7 @@ function StarPicker({ value, onChange }) {
           key={n}
           type="button"
           onClick={() => onChange(n)}
-          aria-label={`${n} star${n === 1 ? '' : 's'}`}
+          aria-label={n === 1 ? tr('1 star') : tr('{n} stars', { n })}
           aria-pressed={n <= value}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
@@ -88,20 +89,24 @@ const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(
 
 // Plain, everyday words for the help categories.
 const CATEGORY = {
-  COMPANIONSHIP:  'Company',
-  TRANSPORTATION: 'Rides',
-  ERRANDS:        'Shopping',
-  CLEANING:       'Cleaning',
-  OTHER:          'Other',
+  get COMPANIONSHIP() { return tr('Company'); },
+  get TRANSPORTATION() { return tr('Rides'); },
+  get ERRANDS() { return tr('Shopping'); },
+  get CLEANING() { return tr('Cleaning'); },
+  get OTHER() { return tr('Other'); },
 };
 const catLabel = (c) => CATEGORY[c] || c;
 
+// Review tags are saved in English; tr() shows them in the reader's language.
+const REVIEW_TAGS = ['Friendly', 'Punctual', 'Respectful', 'Helpful', 'Patient'];
+const RATE_HELPER_TAGS = ['Punctual', 'Kind', 'Trustworthy', 'Patient', 'Helpful'];
+
 // Status pill colors for My Requests, per the design.
 const NEED_STATUS = {
-  OPEN:      { label: 'Looking for Help', color: 'var(--ink-slate)', bg: 'var(--chip-neutral)' },
-  ASSIGNED:  { label: 'Helper Found',     color: 'var(--blue-deep)', bg: 'var(--blue-tint)' },
-  COMPLETED: { label: 'Completed',        color: 'var(--green-deep)', bg: 'var(--surface-2)' },
-  CANCELLED: { label: 'Cancelled',        color: 'var(--ink-slate)', bg: 'var(--surface-2)' },
+  OPEN:      { get label() { return tr('Looking for Help'); }, color: 'var(--ink-slate)', bg: 'var(--chip-neutral)' },
+  ASSIGNED:  { get label() { return tr('Helper Found'); },     color: 'var(--blue-deep)', bg: 'var(--blue-tint)' },
+  COMPLETED: { get label() { return tr('Completed'); },        color: 'var(--green-deep)', bg: 'var(--surface-2)' },
+  CANCELLED: { get label() { return tr('Cancelled'); },        color: 'var(--ink-slate)', bg: 'var(--surface-2)' },
 };
 
 // Tab icons match the design's leading glyphs.
@@ -345,16 +350,16 @@ export default function ElderDashboard() {
       setConnectMsg(prev => ({ ...prev, [helperId]: 'Requested' }));
       await loadConnections();
     } catch (err) {
-      setConnectMsg(prev => ({ ...prev, [helperId]: err?.response?.data?.message || 'Could not connect.' }));
+      setConnectMsg(prev => ({ ...prev, [helperId]: err?.response?.data?.message || tr('Could not connect.') }));
     } finally { setConnectingTo(null); }
   }
 
   async function endConnection(connId) {
     try {
       await api.delete(`/connections/${connId}`);
-      toast.info('Connection ended.');
+      toast.info(tr('Connection ended.'));
       await loadConnections();
-    } catch (err) { toast.error(err?.response?.data?.message || 'Could not end connection.'); }
+    } catch (err) { toast.error(err?.response?.data?.message || tr('Could not end connection.')); }
   }
 
   // Bumble-style: don't fire the OS popup cold. If permission was already
@@ -400,9 +405,9 @@ export default function ElderDashboard() {
     try {
       await api.post(`/connections/${connId}/respond`, { accept });
       await loadConnections();
-      if (accept) toast.success('Connection accepted!');
+      if (accept) toast.success(tr('Connection accepted!'));
     }
-    catch (err) { toast.error(err?.response?.data?.message || 'Could not respond to request.'); }
+    catch (err) { toast.error(err?.response?.data?.message || tr('Could not respond to request.')); }
     finally { setRespondingConn(null); }
   }
 
@@ -411,9 +416,9 @@ export default function ElderDashboard() {
     try {
       await api.post(`/trust/${connId}/confirm`);
       await loadConnections();
-      toast.success('Trust level confirmed!');
+      toast.success(tr('Trust level confirmed!'));
     }
-    catch { toast.error('Could not advance trust level. Try again.'); }
+    catch { toast.error(tr('Could not advance trust level. Try again.')); }
     finally { setConfirmingTrust(null); }
   }
 
@@ -427,12 +432,12 @@ export default function ElderDashboard() {
       if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus({ preventScroll: true }); }
     };
     if (!needForm.title.trim()) {
-      setPostMsg('Please write what you need help with.');
+      setPostMsg(tr('Please write what you need help with.'));
       focusField('need-title');
       return;
     }
     if (needForm.category === 'OTHER' && !needForm.categoryOther.trim()) {
-      setPostMsg('Please tell us what kind of help you need.');
+      setPostMsg(tr('Please tell us what kind of help you need.'));
       focusField('need-category-other');
       return;
     }
@@ -442,13 +447,13 @@ export default function ElderDashboard() {
       const body = { ...rest };
       if (needForm.category === 'OTHER') {
         const detail = categoryOther.trim();
-        body.description = body.description ? `Kind of help: ${detail}\n\n${body.description}` : `Kind of help: ${detail}`;
+        body.description = body.description ? tr('Kind of help: {detail}\n\n{description}', { detail, description: body.description }) : tr('Kind of help: {detail}', { detail });
       }
       if (location) { body.locationLat = location.lat; body.locationLng = location.lng; }
       await api.post('/needs', body);
       setNeedForm({ title: '', description: '', category: 'COMPANIONSHIP', urgency: 'NORMAL', categoryOther: '' });
-      setPostMsg('Help posted!'); await loadNeeds(); setTab('needs');
-    } catch (err) { setPostMsg(err?.response?.data?.message || 'Failed to post.'); }
+      setPostMsg(tr('Help posted!')); await loadNeeds(); setTab('needs');
+    } catch (err) { setPostMsg(err?.response?.data?.message || tr('Failed to post.')); }
     finally { setPosting(false); }
   }
 
@@ -456,18 +461,18 @@ export default function ElderDashboard() {
     try {
       await api.post(`/needs/${needId}/complete`);
       await loadNeeds();
-      toast.success('Marked as complete!');
+      toast.success(tr('Marked as complete!'));
     }
-    catch { toast.error('Could not mark as complete. Try again.'); }
+    catch { toast.error(tr('Could not mark as complete. Try again.')); }
   }
 
   async function cancelNeed(needId) {
     try {
       await api.delete(`/needs/${needId}`);
       await loadNeeds();
-      toast.success('Request cancelled.');
+      toast.success(tr('Request cancelled.'));
     }
-    catch { toast.error('Could not cancel. Try again.'); }
+    catch { toast.error(tr('Could not cancel. Try again.')); }
   }
 
   async function acceptHelper(needId, helperId) {
@@ -475,13 +480,12 @@ export default function ElderDashboard() {
     try {
       await api.post(`/needs/${needId}/accept/${helperId}`);
       await Promise.all([loadNeeds(), loadConnections()]);
-      toast.success('Helper accepted!');
+      toast.success(tr('Helper accepted!'));
     }
-    catch { toast.error('Could not accept helper. Try again.'); }
+    catch { toast.error(tr('Could not accept helper. Try again.')); }
     finally { setAccepting(null); }
   }
 
-  const REVIEW_TAGS = ['Friendly', 'Punctual', 'Respectful', 'Helpful', 'Patient'];
 
   function toggleTag(tag) {
     setReviewForm(f => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag] }));
@@ -494,8 +498,8 @@ export default function ElderDashboard() {
       setReviewedConns(prev => new Set([...prev, conn.id]));
       setReviewingConn(null);
       setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
-      toast.success('Review submitted! Thank you.');
-    } catch (err) { toast.error(err?.response?.data?.message || 'Could not submit review.'); }
+      toast.success(tr('Review submitted! Thank you.'));
+    } catch (err) { toast.error(err?.response?.data?.message || tr('Could not submit review.')); }
     finally { setSubmittingReview(false); }
   }
 
@@ -508,8 +512,8 @@ export default function ElderDashboard() {
       setReviewedNeeds(prev => new Set([...prev, need.id]));
       setReviewingNeed(null);
       setReviewForm({ rating: 5, tags: [], comment: '', safetyConcern: false });
-      toast.success('Review submitted! Thank you.');
-    } catch (err) { toast.error(err?.response?.data?.message || 'Could not submit review.'); }
+      toast.success(tr('Review submitted! Thank you.'));
+    } catch (err) { toast.error(err?.response?.data?.message || tr('Could not submit review.')); }
     finally { setSubmittingReview(false); }
   }
 
@@ -552,11 +556,11 @@ export default function ElderDashboard() {
   }, [tab, connections, myNeeds]);
 
   const tabs = [
-    ['connections', 'My Helpers', connBadge],
-    ['family', 'My Family', 0],
-    ['post', 'Post Help', 0],
-    ['needs', 'Posted Help', requestsBadge],
-    ['friends', 'Add Friends', friendsBadge],
+    ['connections', tr('My Helpers'), connBadge],
+    ['family', tr('My Family'), 0],
+    ['post', tr('Post Help'), 0],
+    ['needs', tr('Posted Help'), requestsBadge],
+    ['friends', tr('Add Friends'), friendsBadge],
   ];
 
   // ── My Helpers — classify connections by trust state ──
@@ -567,8 +571,8 @@ export default function ElderDashboard() {
   const helpersDefault = 'active';
   const activeHelpersSeg = helpersSeg ?? helpersDefault;
   const helperSegments = [
-    { id: 'active',   label: 'Trusted Helpers', count: helperCounts.active },
-    { id: 'building', label: 'Building Trust',  count: helperCounts.building },
+    { id: 'active',   label: tr('Trusted Helpers'), count: helperCounts.active },
+    { id: 'building', label: tr('Building Trust'),  count: helperCounts.building },
   ];
   const activeConnections = helperConns.filter(c => c.status === 'ACTIVE');
   const visibleConnections = [...activeConnections].filter(c => {
@@ -576,22 +580,22 @@ export default function ElderDashboard() {
     return c.currentTrustLevel !== 'TRUSTED';
   }).sort(sortConnections);
   const helpersEmptyText = {
-    active:   <>No fully trusted helpers yet. As your trust grows with a helper, they'll appear here.</>,
-    building: <>No connections in progress. Connect with a helper to start building trust together.</>,
+    active:   tr('No fully trusted helpers yet. As your trust grows with a helper, they\'ll appear here.'),
+    building: tr('No connections in progress. Connect with a helper to start building trust together.'),
   }[activeHelpersSeg];
 
   // ── Add Friends hub ──
   const friendsDefault = 'find';
   const activeFriendsSeg = friendsSeg ?? friendsDefault;
   const friendsSegments = [
-    { id: 'find',      label: 'Find Friends' },
-    { id: 'invites',   label: 'New Invites',       count: incomingRequests.length, notify: true },
-    { id: 'requested', label: 'Requested',          count: sentRequests.length },
+    { id: 'find',      label: tr('Find Friends') },
+    { id: 'invites',   label: tr('New Invites'),       count: incomingRequests.length, notify: true },
+    { id: 'requested', label: tr('Requested'),          count: sentRequests.length },
   ];
 
   function renderPendingCard(conn, i) {
     const isIncoming = !conn.initiatedByMe;
-    const name = conn.otherUserName || 'User';
+    const name = conn.otherUserName || tr('User');
 
     if (isIncoming) {
       return (
@@ -611,8 +615,8 @@ export default function ElderDashboard() {
                 {initials(name)}
               </div>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
-                <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '3px 0 0' }}>sent you a friend request</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>{tr('Age {otherUserAge}', { otherUserAge: conn.otherUserAge })}</span> : null}</p>
+                <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '3px 0 0' }}>{tr('sent you a friend request')}</p>
                 {conn.requestMessage && (
                   <p style={{ fontSize: '13px', color: 'var(--ink-slate)', fontStyle: 'italic', margin: '4px 0 0' }}>"{conn.requestMessage}"</p>
                 )}
@@ -622,16 +626,16 @@ export default function ElderDashboard() {
               fontSize: 'var(--text-xs)', fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase',
               color: 'var(--blue-deep)', background: 'var(--blue-tint)', border: '1px solid var(--blue-soft)',
               padding: '3px 10px', borderRadius: '9999px', flexShrink: 0,
-            }}>New</span>
+            }}>{tr('New')}</span>
           </div>
           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
             <button onClick={() => respondToConnection(conn.id, true)} disabled={respondingConn === conn.id}
               style={{ flex: 1, height: '44px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
-              {respondingConn === conn.id ? 'Accepting…' : 'Accept'}
+              {respondingConn === conn.id ? tr('Accepting…') : tr('Accept')}
             </button>
             <button onClick={() => respondToConnection(conn.id, false)} disabled={respondingConn === conn.id}
               style={{ flex: 1, height: '44px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-              Decline
+              {tr('Decline')}
             </button>
           </div>
         </div>
@@ -656,17 +660,17 @@ export default function ElderDashboard() {
           {initials(name)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>Age {conn.otherUserAge}</span> : null}</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-base)', letterSpacing: '-0.01em', color: 'var(--ink)', margin: 0 }}>{name}{conn.otherUserAge != null ? <span style={{ fontSize: '13px', color: 'var(--ink-slate)', fontWeight: 500, marginLeft: '6px' }}>{tr('Age {otherUserAge}', { otherUserAge: conn.otherUserAge })}</span> : null}</p>
           <p style={{ fontSize: '13px', color: 'var(--ink-slate)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Waiting for {name} to accept — they'll see your request in their Add Friends tab.
+            {tr("Waiting for {name} to accept — they'll see your request in their Add Friends tab.", { name })}
           </p>
         </div>
         <span style={{
           fontSize: '13px', fontWeight: 600, color: 'var(--ink-slate)',
           background: 'var(--surface-2)', border: '1px solid var(--border)',
           padding: '6px 14px', borderRadius: '9999px', flexShrink: 0,
-        }}>Requested</span>
+        }}>{tr('Requested')}</span>
       </div>
     );
   }
@@ -680,15 +684,15 @@ export default function ElderDashboard() {
   const needsDefault = needCounts.OPEN > 0 ? 'OPEN' : needCounts.ASSIGNED > 0 ? 'ASSIGNED' : 'COMPLETED';
   const activeNeedsSeg = needsSeg ?? needsDefault;
   const needsSegments = [
-    { id: 'OPEN',      label: 'Looking for Help', count: needCounts.OPEN, notify: true },
-    { id: 'ASSIGNED',  label: 'In Progress',      count: needCounts.ASSIGNED },
-    { id: 'COMPLETED', label: 'Completed',        count: needCounts.COMPLETED },
+    { id: 'OPEN',      label: tr('Looking for Help'), count: needCounts.OPEN, notify: true },
+    { id: 'ASSIGNED',  label: tr('In Progress'),      count: needCounts.ASSIGNED },
+    { id: 'COMPLETED', label: tr('Completed'),        count: needCounts.COMPLETED },
   ];
   const visibleNeeds = [...myNeeds].filter(n => n.status === activeNeedsSeg).sort(sortNeeds);
   const needsEmptyText = {
-    OPEN:      'No open help right now. Post help and helpers nearby will offer to assist.',
-    ASSIGNED:  'Nothing in progress yet. Once you choose a helper, the help shows here to mark complete.',
-    COMPLETED: 'No finished help yet. Completed help shows here so you can leave a review.',
+    OPEN:      tr('No open help right now. Post help and helpers nearby will offer to assist.'),
+    ASSIGNED:  tr('Nothing in progress yet. Once you choose a helper, the help shows here to mark complete.'),
+    COMPLETED: tr('No finished help yet. Completed help shows here so you can leave a review.'),
   }[activeNeedsSeg];
 
   return (
@@ -702,7 +706,7 @@ export default function ElderDashboard() {
         borderBottom: '1px solid var(--border)',
       }}>
         <div className="dash-tab-wrap">
-          <div className="dash-tab-scroll" role="tablist" aria-label="Dashboard sections">
+          <div className="dash-tab-scroll" role="tablist" aria-label={tr('Dashboard sections')}>
             {tabs.map(([id, label, badge]) => {
               const active = tab === id;
               return (
@@ -711,7 +715,7 @@ export default function ElderDashboard() {
                   id={`dash-tab-${id}`}
                   aria-selected={active}
                   tabIndex={active ? 0 : -1}
-                  aria-label={badge ? `${label}, ${badge} new` : undefined}
+                  aria-label={badge ? tr('{label}, {badge} new', { label, badge }) : undefined}
                   onKeyDown={(e) => {
                     const ids = tabs.map(([tid]) => tid);
                     const i = ids.indexOf(tab);
@@ -763,7 +767,7 @@ export default function ElderDashboard() {
           {tab === 'connections' && (
             <div role="tabpanel" aria-labelledby="dash-tab-connections" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
-                My Helpers
+                {tr('My Helpers')}
               </h1>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -777,15 +781,15 @@ export default function ElderDashboard() {
                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid var(--blue-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
-                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No helpers yet</p>
-                  <p style={{ fontSize: '16px', color: 'var(--ink-slate)', marginBottom: '20px' }}>Helpers in your area will send you connection requests. You'll see them here.</p>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('No helpers yet')}</p>
+                  <p style={{ fontSize: '16px', color: 'var(--ink-slate)', marginBottom: '20px' }}>{tr("Helpers in your area will send you connection requests. You'll see them here.")}</p>
                   <button onClick={() => setTab('friends')} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
-                    Add Friends
+                    {tr('Add Friends')}
                   </button>
                 </div>
               )}
               {!loading && activeConnections.length > 0 && (
-                <SegmentedTabs segments={helperSegments} value={activeHelpersSeg} onChange={setHelpersSeg} label="My Helpers sections" />
+                <SegmentedTabs segments={helperSegments} value={activeHelpersSeg} onChange={setHelpersSeg} label={tr('My Helpers sections')} />
               )}
               {!loading && activeConnections.length > 0 && visibleConnections.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
@@ -806,9 +810,9 @@ export default function ElderDashboard() {
                       {avatar}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-lg)', letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || 'User'}</p>
+                          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 'var(--text-lg)', letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>{conn.otherUserName || tr('User')}</p>
                           {conn.otherUserAge != null && (
-                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>Age {conn.otherUserAge}</span>
+                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>{tr('Age {otherUserAge}', { otherUserAge: conn.otherUserAge })}</span>
                           )}
                         </div>
                         {conn.otherUserPhone && (
@@ -824,30 +828,30 @@ export default function ElderDashboard() {
                     {(
                         endingConn === conn.id ? (
                           <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>End your connection with {conn.otherUserName || 'this helper'}?</span>
-                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '44px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Yes, end</button>
-                            <button onClick={() => setEndingConn(null)} style={{ height: '44px', padding: '0 16px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>Keep</button>
+                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', flex: 1, minWidth: '160px' }}>{conn.otherUserName ? tr('End your connection with {name}?', { name: conn.otherUserName }) : tr('End your connection with this helper?')}</span>
+                            <button onClick={() => { setEndingConn(null); endConnection(conn.id); }} style={{ height: '44px', padding: '0 16px', background: 'var(--red-deep)', color: '#fff', border: 'none', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>{tr('Yes, end')}</button>
+                            <button onClick={() => setEndingConn(null)} style={{ height: '44px', padding: '0 16px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}>{tr('Keep')}</button>
                           </div>
                         ) : (
                           <div className="card-actions" style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <button onClick={() => navigate(`/messages/${conn.id}`)} style={{ height: '44px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                              Message
+                              {tr('Message')}
                             </button>
-                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Profile</button>
+                            <button onClick={() => navigate(`/user/${conn.otherUserId}`)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap' }}>{tr('View Profile')}</button>
                             {conn.currentTrustLevel === 'TRUSTED' && !reviewedConns.has(conn.id) && (
                               <button onClick={() => setReviewingConn(reviewingConn === conn.id ? null : conn.id)} style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" style={{ fill: 'var(--star-gold)' }} stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                Review
+                                {tr('Review')}
                               </button>
                             )}
                             {reviewedConns.has(conn.id) && (
                               <span style={{ height: '44px', padding: '0 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'var(--green-deep)', fontWeight: 600 }}>
                                 <svg width="13" height="10" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L3.8 7.5L10 1" stroke="var(--green-deep)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                Reviewed
+                                {tr('Reviewed')}
                               </span>
                             )}
-                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '44px', padding: '0 14px', background: 'none', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>End</button>
+                            <button onClick={() => setEndingConn(conn.id)} style={{ marginLeft: 'auto', height: '44px', padding: '0 14px', background: 'none', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer' }}>{tr('End')}</button>
                           </div>
                         )
                       )}
@@ -858,29 +862,29 @@ export default function ElderDashboard() {
                       as the helper's page). */}
                   {reviewingConn === conn.id && (
                     <div style={{ marginTop: '14px', padding: '16px', background: 'var(--surface-pearl)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: '12px' }}>Rate {conn.otherUserName || 'this helper'}</p>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: '12px' }}>{conn.otherUserName ? tr('Rate {name}', { name: conn.otherUserName }) : tr('Rate this helper')}</p>
                       <div style={{ marginBottom: '12px' }}>
                         <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-                        {['Punctual','Kind','Trustworthy','Patient','Helpful'].map(tag => (
+                        {RATE_HELPER_TAGS.map(tag => (
                           <button key={tag} type="button" onClick={() => toggleTag(tag)} style={{
                             fontSize: 'var(--text-xs)', padding: '4px 14px', minHeight: '44px', borderRadius: '9999px', cursor: 'pointer',
                             border: '1px solid', transition: 'all 0.15s',
                             borderColor: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--border)',
                             background: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--canvas)',
                             color: reviewForm.tags.includes(tag) ? 'var(--action-ink)' : 'var(--ink-slate)',
-                          }}>{tag}</button>
+                          }}>{tr(tag)}</button>
                         ))}
                       </div>
                       <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
-                        placeholder="Share your experience (optional)" rows={2}
+                        placeholder={tr('Share your experience (optional)')} rows={2}
                         style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border)', fontSize: 'var(--text-sm)', resize: 'none', boxSizing: 'border-box', marginBottom: '10px' }} />
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button onClick={() => submitHelperReview(conn)} disabled={submittingReview} className="btn-confirm" style={{ flex: 1, padding: '10px' }}>
-                          {submittingReview ? 'Submitting…' : 'Submit Review'}
+                          {submittingReview ? tr('Submitting…') : tr('Submit Review')}
                         </button>
-                        <button onClick={() => setReviewingConn(null)} className="btn-ghost" style={{ padding: '10px 16px' }}>Cancel</button>
+                        <button onClick={() => setReviewingConn(null)} className="btn-ghost" style={{ padding: '10px 16px' }}>{tr('Cancel')}</button>
                       </div>
                     </div>
                   )}
@@ -909,8 +913,8 @@ export default function ElderDashboard() {
                     .map((t, i) => (
                       <p key={i} style={{ fontSize: '14px', color: 'var(--ink-slate)', margin: '10px 0 0', lineHeight: 1.5 }}>
                         {t.inherited
-                          ? <>Your {(t.relationship || 'family member').toLowerCase()} {t.familyMemberName} can message {t.helperName} through your shared trust.</>
-                          : <>Your {(t.relationship || 'family member').toLowerCase()} {t.familyMemberName} and {t.helperName} are talking.</>}
+                          ? tr('Your {relationship} {familyName} can message {helperName} through your shared trust.', { relationship: (t.relationship || tr('family member')).toLowerCase(), familyName: t.familyMemberName, helperName: t.helperName })
+                          : tr('Your {relationship} {familyName} and {helperName} are talking.', { relationship: (t.relationship || tr('family member')).toLowerCase(), familyName: t.familyMemberName, helperName: t.helperName })}
                       </p>
                     ))}
 
@@ -973,16 +977,16 @@ export default function ElderDashboard() {
           {tab === 'friends' && (
             <div role="tabpanel" aria-labelledby="dash-tab-friends" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }}>
-                Add Friends
+                {tr('Add Friends')}
               </h1>
-              <SegmentedTabs segments={friendsSegments} value={activeFriendsSeg} onChange={setFriendsSeg} label="Add Friends sections" />
+              <SegmentedTabs segments={friendsSegments} value={activeFriendsSeg} onChange={setFriendsSeg} label={tr('Add Friends sections')} />
 
               {/* New Invites */}
               {activeFriendsSeg === 'invites' && (
                 <>
                   {incomingRequests.length === 0 && (
                     <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
-                      No new invites right now. When someone sends you a friend request, it'll show up here.
+                      {tr("No new invites right now. When someone sends you a friend request, it'll show up here.")}
                     </SegmentEmpty>
                   )}
                   {incomingRequests.map((conn, i) => renderPendingCard(conn, i))}
@@ -994,7 +998,7 @@ export default function ElderDashboard() {
                 <>
                   {sentRequests.length === 0 && (
                     <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
-                      No pending requests. Go to Find Friends to send friend requests.
+                      {tr('No pending requests. Go to Find Friends to send friend requests.')}
                     </SegmentEmpty>
                   )}
                   {sentRequests.map((conn, i) => renderPendingCard(conn, i))}
@@ -1008,17 +1012,17 @@ export default function ElderDashboard() {
                   <div style={{ background: 'var(--canvas)', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {locationStatus === 'asking' && 'Getting your location…'}
-                      {locationStatus === 'granted' && `Showing helpers within ${radiusKm} km of you`}
-                      {locationStatus === 'denied' && 'Location unavailable, showing all helpers'}
-                      {locationStatus === 'blocked' && 'Location is turned off for this site'}
-                      {locationStatus === 'idle' && 'Detecting location…'}
+                      {locationStatus === 'asking' && tr('Getting your location…')}
+                      {locationStatus === 'granted' && tr('Showing helpers within {radiusKm} km of you', { radiusKm })}
+                      {locationStatus === 'denied' && tr('Location unavailable, showing all helpers')}
+                      {locationStatus === 'blocked' && tr('Location is turned off for this site')}
+                      {locationStatus === 'idle' && tr('Detecting location…')}
                     </span>
                     {locationStatus === 'granted' && (
                       <select value={radiusKm} onChange={e => setRadiusKm(Number(e.target.value))}
-                        aria-label="Search distance in kilometres"
+                        aria-label={tr('Search distance in kilometres')}
                         style={{ fontSize: '14px', fontWeight: 600, color: 'var(--blue-deep)', background: 'var(--canvas)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', padding: '6px 12px', outline: 'none', cursor: 'pointer' }}>
-                        {[5, 10, 25, 50, 100].map(v => <option key={v} value={v}>{v} km</option>)}
+                        {[5, 10, 25, 50, 100].map(v => <option key={v} value={v}>{tr('{v} km', { v })}</option>)}
                       </select>
                     )}
                   </div>
@@ -1046,23 +1050,23 @@ export default function ElderDashboard() {
                       {[1,2].map(i => (
                         <div key={i} style={{ background: 'var(--surface)', borderRadius: '18px', height: '110px', animation: 'skeleton-pulse 1.5s ease-in-out infinite' }} />
                       ))}
-                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', textAlign: 'center', margin: 0 }}>Looking for helpers near you…</p>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', textAlign: 'center', margin: 0 }}>{tr('Looking for helpers near you…')}</p>
                     </div>
                   )}
                   {!discovering && discoverError && (
                     <div style={{ background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--red-line)', padding: '40px 24px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Couldn't load helpers</p>
-                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '18px' }}>Something went wrong on our side. Please try again.</p>
-                      <button onClick={() => loadHelpers()} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>Try Again</button>
+                      <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr("Couldn't load helpers")}</p>
+                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', marginBottom: '18px' }}>{tr('Something went wrong on our side. Please try again.')}</p>
+                      <button onClick={() => loadHelpers()} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>{tr('Try Again')}</button>
                     </div>
                   )}
                   {!discovering && !discoverError && helpers.length === 0 && locationStatus !== 'primer' && (
                     <div style={{ background: 'var(--canvas)', borderRadius: '18px', border: '1px solid var(--border)', padding: '48px 24px', textAlign: 'center' }}>
                       <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                        {locationStatus === 'granted' ? 'No helpers found nearby' : 'No helpers available right now'}
+                        {locationStatus === 'granted' ? tr('No helpers found nearby') : tr('No helpers available right now')}
                       </p>
                       <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>
-                        {locationStatus === 'granted' ? 'Try a larger radius above, or check back later.' : 'New helpers join often. Please check back soon.'}
+                        {locationStatus === 'granted' ? tr('Try a larger radius above, or check back later.') : tr('New helpers join often. Please check back soon.')}
                       </p>
                     </div>
                   )}
@@ -1071,7 +1075,7 @@ export default function ElderDashboard() {
                     const rank = u => connectedHelperIds.has(u.userId) ? 2 : (requestedHelperIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
                     return rank(a) - rank(b);
                   }).map((helper, i) => (
-                    <DiscoverCard key={helper.userId} person={helper} index={i} fallbackName="Helper"
+                    <DiscoverCard key={helper.userId} person={helper} index={i} fallbackName={tr('Helper')}
                       tags={helper.skillsOffered || []}
                       status={statusFor(helper.userId)}
                       adding={connectingTo === helper.userId}
@@ -1085,10 +1089,10 @@ export default function ElderDashboard() {
                     <section aria-labelledby="elders-near-you" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
                       <div>
                         <h2 id="elders-near-you" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-md, 20px)', fontWeight: 400, color: 'var(--ink)', margin: 0 }}>
-                          Elders near you
+                          {tr('Elders near you')}
                         </h2>
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0', lineHeight: 1.5 }}>
-                          Other elders to chat with. Friends here just chat: there are no trust steps.
+                          {tr('Other elders to chat with. Friends here just chat: there are no trust steps.')}
                         </p>
                       </div>
                       {eldersState === 'loading' && elders.length === 0 && (
@@ -1096,19 +1100,19 @@ export default function ElderDashboard() {
                       )}
                       {eldersState === 'error' && (
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>
-                          Share your location above to see elders near you.
+                          {tr('Share your location above to see elders near you.')}
                         </p>
                       )}
                       {eldersState === 'ready' && elders.length === 0 && (
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0 }}>
-                          No other elders nearby yet. Please check back soon.
+                          {tr('No other elders nearby yet. Please check back soon.')}
                         </p>
                       )}
                       {[...elders].sort((a, b) => {
                         const rank = u => connectedHelperIds.has(u.userId) ? 2 : (requestedHelperIds.has(u.userId) || connectMsg[u.userId] === 'Requested') ? 1 : 0;
                         return rank(a) - rank(b);
                       }).map((elder, i) => (
-                        <DiscoverCard key={elder.userId} person={elder} index={i} fallbackName="Elder"
+                        <DiscoverCard key={elder.userId} person={elder} index={i} fallbackName={tr('Elder')}
                           tags={elder.interests || []}
                           status={statusFor(elder.userId)}
                           adding={connectingTo === elder.userId}
@@ -1127,7 +1131,7 @@ export default function ElderDashboard() {
             <div role="tabpanel" aria-labelledby="dash-tab-needs" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                 <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>
-                  Posted Help
+                  {tr('Posted Help')}
                 </h1>
               </div>
               {loading && (
@@ -1142,15 +1146,15 @@ export default function ElderDashboard() {
                   <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid var(--blue-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
                   </div>
-                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No help posted yet</p>
-                  <p style={{ fontSize: '16px', color: 'var(--ink-slate)', marginBottom: '20px' }}>Post help and helpers near you will offer to assist. It only takes a minute.</p>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('No help posted yet')}</p>
+                  <p style={{ fontSize: '16px', color: 'var(--ink-slate)', marginBottom: '20px' }}>{tr('Post help and helpers near you will offer to assist. It only takes a minute.')}</p>
                   <button onClick={() => setTab('post')} className="btn-primary" style={{ padding: '10px 24px', fontSize: 'var(--text-sm)' }}>
-                    Post Help
+                    {tr('Post Help')}
                   </button>
                 </div>
               )}
               {!loading && myNeeds.length > 0 && (
-                <SegmentedTabs segments={needsSegments} value={activeNeedsSeg} onChange={setNeedsSeg} label="Posted Help sections" />
+                <SegmentedTabs segments={needsSegments} value={activeNeedsSeg} onChange={setNeedsSeg} label={tr('Posted Help sections')} />
               )}
               {!loading && myNeeds.length > 0 && visibleNeeds.length === 0 && (
                 <SegmentEmpty icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}>
@@ -1174,7 +1178,7 @@ export default function ElderDashboard() {
                         <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, background: 'var(--surface-2)', color: 'var(--ink-slate)', padding: '4px 11px', borderRadius: '9999px' }}>{catLabel(need.category)}</span>
                         {need.urgency === 'URGENT' && (
                           <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, background: 'var(--surface-2)', color: 'var(--ink-slate-dark)', padding: '4px 11px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />Urgent
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--red)' }} />{tr('Urgent')}
                           </span>
                         )}
                       </div>
@@ -1183,7 +1187,7 @@ export default function ElderDashboard() {
                           never looks like it appeared out of nowhere. */}
                       {need.actedByName && (
                         <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', margin: '10px 0 0', lineHeight: 1.4 }}>
-                          Asked by {need.actedByName}, for you
+                          {tr('Asked by {actedByName}, for you', { actedByName: need.actedByName })}
                         </p>
                       )}
                     </div>
@@ -1198,7 +1202,7 @@ export default function ElderDashboard() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {need.applications.map(app => (
                           <div key={app.helperId} className="card-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', background: 'var(--surface-pearl)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px' }}>
-                            <button type="button" onClick={() => navigate(`/user/${app.helperId}`)} aria-label={`View ${app.helperName}'s profile`}
+                            <button type="button" onClick={() => navigate(`/user/${app.helperId}`)} aria-label={tr("View {helperName}'s profile", { helperName: app.helperName })}
                               style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1, minHeight: '44px', background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
                               <Avatar name={app.helperName} photoUrl={app.helperPhotoUrl} size={36} />
                               <div style={{ minWidth: 0 }}>
@@ -1211,7 +1215,7 @@ export default function ElderDashboard() {
                             </button>
                             <button onClick={() => acceptHelper(need.id, app.helperId)} disabled={accepting === `${need.id}-${app.helperId}`}
                               style={{ height: '38px', padding: '0 18px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', flexShrink: 0 }}>
-                              {accepting === `${need.id}-${app.helperId}` ? 'Accepting…' : 'Accept'}
+                              {accepting === `${need.id}-${app.helperId}` ? tr('Accepting…') : tr('Accept')}
                             </button>
                           </div>
                         ))}
@@ -1222,15 +1226,15 @@ export default function ElderDashboard() {
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '12px', paddingTop: '12px' }}>
                       {cancelConfirm === need.id ? (
                         <div className="card-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid var(--red-line-soft)', paddingTop: '10px', marginTop: '0', background: 'var(--red-tint)', borderRadius: '10px', padding: '10px 12px' }}>
-                          <span style={{ fontSize: '14px', color: 'var(--ink-slate)', flex: 1 }}>Cancel this request?</span>
-                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--canvas)', background: 'var(--ink-slate)', border: 'none', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>Yes, cancel</button>
-                          <button onClick={() => setCancelConfirm(null)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid var(--border)', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>Keep</button>
+                          <span style={{ fontSize: '14px', color: 'var(--ink-slate)', flex: 1 }}>{tr('Cancel this request?')}</span>
+                          <button onClick={() => { cancelNeed(need.id); setCancelConfirm(null); }} style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--canvas)', background: 'var(--ink-slate)', border: 'none', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>{tr('Yes, cancel')}</button>
+                          <button onClick={() => setCancelConfirm(null)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid var(--border)', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>{tr('Keep')}</button>
                         </div>
                       ) : (
                         <div className="card-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <p style={{ fontSize: '14px', color: 'var(--ink-4)', margin: 0 }}>No applicants yet</p>
+                          <p style={{ fontSize: '14px', color: 'var(--ink-4)', margin: 0 }}>{tr('No applicants yet')}</p>
                           <button onClick={() => setCancelConfirm(need.id)} style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', background: 'none', border: '1px solid var(--red-line)', borderRadius: '9999px', padding: '0 18px', minHeight: '44px', cursor: 'pointer' }}>
-                            Cancel
+                            {tr('Cancel')}
                           </button>
                         </div>
                       )}
@@ -1239,15 +1243,15 @@ export default function ElderDashboard() {
                   {need.status === 'ASSIGNED' && (
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                       {acceptedApp && (
-                        <button type="button" onClick={() => navigate(`/user/${acceptedApp.helperId}`)} aria-label={`View ${acceptedApp.helperName}'s profile`}
+                        <button type="button" onClick={() => navigate(`/user/${acceptedApp.helperId}`)} aria-label={tr("View {helperName}'s profile", { helperName: acceptedApp.helperName })}
                           style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '180px', minHeight: '44px', background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
                           <Avatar name={acceptedApp.helperName} photoUrl={acceptedApp.helperPhotoUrl} size={34} />
-                          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}><strong style={{ color: 'var(--blue-deep)' }}>{acceptedApp.helperName}</strong> is helping you</span>
+                          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate-dark)' }}><strong style={{ color: 'var(--blue-deep)' }}>{acceptedApp.helperName}</strong>{' '}{tr('is helping you')}</span>
                         </button>
                       )}
                       <button onClick={() => completeNeed(need.id)}
                         style={{ height: '42px', padding: '0 22px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: '16px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
-                        Mark as Complete
+                        {tr('Mark as Complete')}
                       </button>
                     </div>
                   )}
@@ -1258,11 +1262,11 @@ export default function ElderDashboard() {
                     && !fullyTrustedHelperIds.has(acceptedApp.helperId) && (
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                       <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: 0, maxWidth: '44ch' }}>
-                        Helped by <strong style={{ color: 'var(--ink)' }}>{acceptedApp.helperName}</strong>. You can leave a review once you two are fully trusted friends.
+                        {tr('Helped by {name}. You can leave a review once you two are fully trusted friends.').split('{name}').map((part, i) => (i === 0 ? part : <span key={i}><strong style={{ color: 'var(--ink)' }}>{acceptedApp.helperName}</strong>{part}</span>))}
                       </p>
                       <button onClick={() => setTab('connections')}
                         style={{ height: '42px', padding: '0 20px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '10px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
-                        Build trust together
+                        {tr('Build trust together')}
                       </button>
                     </div>
                   )}
@@ -1271,7 +1275,7 @@ export default function ElderDashboard() {
                     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px' }}>
                       {reviewingNeed === need.id ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>Rate your helper</p>
+                          <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>{tr('Rate your helper')}</p>
                           <StarPicker value={reviewForm.rating} onChange={r => setReviewForm(f => ({...f, rating: r}))} />
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             {REVIEW_TAGS.map(tag => (
@@ -1281,35 +1285,35 @@ export default function ElderDashboard() {
                                 borderColor: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--border)',
                                 background: reviewForm.tags.includes(tag) ? 'var(--action-fill)' : 'var(--canvas)',
                                 color: reviewForm.tags.includes(tag) ? 'var(--action-ink)' : 'var(--ink-slate)', cursor: 'pointer',
-                              }}>{tag}</button>
+                              }}>{tr(tag)}</button>
                             ))}
                           </div>
                           <textarea value={reviewForm.comment} onChange={e => setReviewForm(f => ({...f, comment: e.target.value}))}
-                            placeholder="Add a comment (optional)" rows={2}
+                            placeholder={tr('Add a comment (optional)')} rows={2}
                             style={{ width: '100%', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', fontSize: 'var(--text-sm)', outline: 'none', fontFamily: 'inherit', resize: 'vertical' }} />
                           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--ink-slate)', cursor: 'pointer' }}>
                             <input type="checkbox" checked={reviewForm.safetyConcern} onChange={e => setReviewForm(f => ({...f, safetyConcern: e.target.checked}))} />
-                            Flag a safety concern
+                            {tr('Flag a safety concern')}
                           </label>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button onClick={() => submitReview(need)} disabled={submittingReview} className="btn-confirm" style={{ flex: 1, padding: '10px' }}>
-                              {submittingReview ? 'Submitting...' : 'Submit Review'}
+                              {submittingReview ? tr('Submitting...') : tr('Submit Review')}
                             </button>
-                            <button onClick={() => setReviewingNeed(null)} className="btn-ghost">Cancel</button>
+                            <button onClick={() => setReviewingNeed(null)} className="btn-ghost">{tr('Cancel')}</button>
                           </div>
                         </div>
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                          {acceptedApp && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>Helped by <strong style={{ color: 'var(--ink)' }}>{acceptedApp.helperName}</strong></span>}
+                          {acceptedApp && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)' }}>{tr('Helped by')}{' '}<strong style={{ color: 'var(--ink)' }}>{acceptedApp.helperName}</strong></span>}
                           <button onClick={() => setReviewingNeed(need.id)} style={{ height: '42px', padding: '0 20px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '10px', fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', marginLeft: acceptedApp ? 0 : 'auto' }}>
-                            ★ Leave a Review
+                            {tr('★ Leave a Review')}
                           </button>
                         </div>
                       )}
                     </div>
                   )}
                   {need.status === 'COMPLETED' && reviewedNeeds.has(need.id) && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--green-deep)', fontWeight: 500, borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px' }}>Review submitted</p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--green-deep)', fontWeight: 500, borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px' }}>{tr('Review submitted')}</p>
                   )}
                 </div>
                 );
@@ -1322,32 +1326,32 @@ export default function ElderDashboard() {
             <div role="tabpanel" aria-labelledby="dash-tab-post" style={{ background: 'var(--canvas)', borderRadius: '18px', padding: '28px', border: '1px solid var(--border)' }}>
               <button type="button" onClick={() => setTab('needs')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--blue-deep)', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                Back
+                {tr('Back')}
               </button>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.02em', margin: '0 0 6px' }}>
-                Ask for Help
+                {tr('Ask for Help')}
               </h1>
               <p style={{ fontSize: '16px', color: 'var(--ink-slate)', margin: '0 0 24px' }}>
-                Tell us what you need. Helpers near you will offer to assist — it only takes a minute.
+                {tr('Tell us what you need. Helpers near you will offer to assist — it only takes a minute.')}
               </p>
               <form onSubmit={postNeed} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label htmlFor="need-title" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What do you need help with?</label>
+                  <label htmlFor="need-title" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>{tr('What do you need help with?')}</label>
                   <SmoothInput id="need-title" value={needForm.title} onChange={e => setNeedForm(f => ({...f, title: e.target.value}))}
-                    placeholder="e.g. Help with grocery shopping" required
+                    placeholder={tr('e.g. Help with grocery shopping')} required
                     style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid var(--border)', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none' }}
                     onFocus={focusIn} onBlur={focusOut} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>Add a few details</label>
+                  <label style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>{tr('Add a few details')}</label>
                   <textarea value={needForm.description} onChange={e => setNeedForm(f => ({...f, description: e.target.value}))}
-                    placeholder="When do you need it, and anything that would help the helper..." rows={4}
+                    placeholder={tr('When do you need it, and anything that would help the helper...')} rows={4}
                     style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid var(--border)', borderRadius: '12px', padding: '12px 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none', resize: 'vertical', lineHeight: 1.5 }}
                     onFocus={focusIn} onBlur={focusOut} />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label id="need-category-label" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>What kind of help?</label>
+                  <label id="need-category-label" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>{tr('What kind of help?')}</label>
                   {/* Real buttons with radio semantics — plain divs are invisible
                       to keyboards and screen readers. */}
                   <div role="radiogroup" aria-labelledby="need-category-label" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
@@ -1364,16 +1368,16 @@ export default function ElderDashboard() {
                   </div>
                   {needForm.category === 'OTHER' && (
                     <SmoothInput id="need-category-other" value={needForm.categoryOther} onChange={e => setNeedForm(f => ({ ...f, categoryOther: e.target.value }))}
-                      placeholder="Please tell us what kind of help" required autoFocus
+                      placeholder={tr('Please tell us what kind of help')} required autoFocus
                       style={{ width: '100%', boxSizing: 'border-box', height: '48px', border: '1.5px solid var(--border)', borderRadius: '12px', padding: '0 16px', fontSize: '16px', fontFamily: 'inherit', color: 'var(--ink)', outline: 'none', marginTop: '4px' }}
                       onFocus={focusIn} onBlur={focusOut} />
                   )}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label id="need-urgency-label" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>How urgent is it?</label>
+                  <label id="need-urgency-label" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--ink)' }}>{tr('How urgent is it?')}</label>
                   <div role="radiogroup" aria-labelledby="need-urgency-label" style={{ display: 'flex', gap: '10px' }}>
-                    {[['NORMAL', 'Normal'], ['URGENT', 'Urgent']].map(([key, label]) => {
+                    {[['NORMAL', tr('Normal')], ['URGENT', tr('Urgent')]].map(([key, label]) => {
                       const selected = needForm.urgency === key;
                       return (
                         <button type="button" key={key} role="radio" aria-checked={selected}
@@ -1389,18 +1393,18 @@ export default function ElderDashboard() {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '9px', fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', padding: '2px 0' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0, background: locationStatus === 'granted' ? 'var(--blue-deep)' : locationStatus === 'denied' ? 'var(--idle-grey)' : 'var(--border)' }} />
-                  {locationStatus === 'asking' && 'Getting your location…'}
-                  {locationStatus === 'granted' && 'Location on. Nearby helpers will be matched first.'}
-                  {locationStatus === 'denied' && 'Location off. Your request will still reach all helpers.'}
+                  {locationStatus === 'asking' && tr('Getting your location…')}
+                  {locationStatus === 'granted' && tr('Location on. Nearby helpers will be matched first.')}
+                  {locationStatus === 'denied' && tr('Location off. Your request will still reach all helpers.')}
                   {locationStatus === 'idle' && (
                     <button type="button" onClick={requestLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--blue-deep)', padding: 0, fontWeight: 600 }}>
-                      Share location to reach nearby helpers first
+                      {tr('Share location to reach nearby helpers first')}
                     </button>
                   )}
                 </div>
-                {postMsg && <p role="alert" style={{ fontSize: 'var(--text-sm)', color: postMsg.includes('!') ? 'var(--blue-deep)' : 'var(--ink-slate)', fontWeight: 500 }}>{postMsg}</p>}
+                {postMsg && <p role="alert" style={{ fontSize: 'var(--text-sm)', color: postMsg === tr('Help posted!') ? 'var(--blue-deep)' : 'var(--ink-slate)', fontWeight: 500 }}>{postMsg}</p>}
                 <button type="submit" disabled={posting} style={{ height: '50px', background: 'var(--action-fill)', color: 'var(--action-ink)', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', boxShadow: '0 2px 10px rgba(79,163,206,0.22)' }}>
-                  {posting ? 'Posting...' : 'Post Help'}
+                  {posting ? tr('Posting...') : tr('Post Help')}
                 </button>
               </form>
             </div>

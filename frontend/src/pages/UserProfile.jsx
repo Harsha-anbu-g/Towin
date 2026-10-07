@@ -5,6 +5,7 @@ import Avatar from '../components/ui/Avatar';
 import TrustBadge from '../components/TrustBadge';
 import api from '../api/axios';
 import { FROM_PAGE } from '../components/passOnLocks';
+import { tr } from '../i18n';
 
 const CARD = {
   background: 'var(--canvas)', borderRadius: '18px',
@@ -45,7 +46,7 @@ function VerifiedChip({ label }) {
 
 function Stars({ rating }) {
   return (
-    <span aria-label={`${rating} out of 5 stars`} className="star-lit" style={{ letterSpacing: '-1px', fontSize: '16px' }}>
+    <span aria-label={tr('{rating} out of 5 stars', { rating })} className="star-lit" style={{ letterSpacing: '-1px', fontSize: '16px' }}>
       {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
     </span>
   );
@@ -105,13 +106,13 @@ function PassOnLink({ id, name }) {
 
 function timeAgo(isoString) {
   const secs = Math.floor((Date.now() - new Date(isoString)) / 1000);
-  if (secs < 60)   return 'just now';
-  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
-  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  if (secs < 60)   return tr('just now');
+  if (secs < 3600) return tr('{n}m ago', { n: Math.floor(secs / 60) });
+  if (secs < 86400) return tr('{n}h ago', { n: Math.floor(secs / 3600) });
   const d = Math.floor(secs / 86400);
-  if (d < 30)  return `${d}d ago`;
-  if (d < 365) return `${Math.floor(d / 30)}mo ago`;
-  return `${Math.floor(d / 365)}y ago`;
+  if (d < 30)  return tr('{n}d ago', { n: d });
+  if (d < 365) return tr('{n}mo ago', { n: Math.floor(d / 30) });
+  return tr('{n}y ago', { n: Math.floor(d / 365) });
 }
 
 function SkeletonCard({ tall }) {
@@ -146,25 +147,25 @@ export default function UserProfile() {
       api.get(`/reviews/user/${id}`),
     ])
       .then(([p, r]) => { setProfile(p.data); setReviews(r.data || []); })
-      .catch(() => setError('Could not load this profile.'))
+      .catch(() => setError(tr('Could not load this profile.')))
       .finally(() => setLoading(false));
   }, [id]);
 
   const roleLabel = profile?.role
-    ? profile.role.charAt(0) + profile.role.slice(1).toLowerCase()
+    ? ({ ELDER: tr('Elder'), HELPER: tr('Helper'), BOTH: tr('Both') }[profile.role] || profile.role.charAt(0) + profile.role.slice(1).toLowerCase())
     : null;
   const metaLine = profile
-    ? [roleLabel, profile.occupation, profile.age ? `Age ${profile.age}` : null, profile.city]
+    ? [roleLabel, profile.occupation, profile.age ? tr('Age {age}', { age: profile.age }) : null, profile.city]
         .filter(Boolean).join(' · ')
     : '';
   const hasTrust = profile && (profile.trustScore != null || profile.trustTier);
   const isVerified = profile?.verificationStatus === 'VERIFIED';
 
   const tagGroups = profile ? [
-    { label: 'Can help with', items: profile.skillsOffered },
-    { label: 'Interests',     items: profile.interests },
-    { label: 'Hobbies',       items: profile.hobbies },
-    { label: 'Languages',     items: profile.languages },
+    { label: tr('Can help with'), items: profile.skillsOffered },
+    { label: tr('Interests'),     items: profile.interests },
+    { label: tr('Hobbies'),       items: profile.hobbies },
+    { label: tr('Languages'),     items: profile.languages },
   ].filter(g => g.items?.length > 0) : [];
 
   return (
@@ -185,7 +186,7 @@ export default function UserProfile() {
           <svg aria-hidden width="10" height="16" viewBox="0 0 10 16" fill="none">
             <path d="M8.5 1L1.5 8L8.5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Back
+          {tr('Back')}
         </button>
 
         {loading && (
@@ -214,7 +215,7 @@ export default function UserProfile() {
                 <Avatar name={profile.name} photoUrl={profile.photoUrl} size={84} />
                 <div style={{ minWidth: 0 }}>
                   <h1 style={{ fontSize: 'var(--text-xl)', lineHeight: 1.2, margin: 0, overflowWrap: 'anywhere' }}>
-                    {profile.name || 'User'}
+                    {profile.name || tr('User')}
                   </h1>
                   {profile.username && (
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', margin: '4px 0 0' }}>
@@ -238,13 +239,13 @@ export default function UserProfile() {
                     <>
                       <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                         <span aria-hidden className="star-lit">★</span>
-                        {profile.trustScore ?? 0} points
+                        {profile.trustScore ?? 0}{' '}{tr('points')}
                       </span>
                       <TrustBadge tier={profile.trustTier} />
                     </>
                   )}
-                  {isVerified && <VerifiedChip label="ID verified" />}
-                  {profile.phoneVerified && <VerifiedChip label="Phone verified" />}
+                  {isVerified && <VerifiedChip label={tr('ID verified')} />}
+                  {profile.phoneVerified && <VerifiedChip label={tr('Phone verified')} />}
                 </div>
               )}
             </section>
@@ -254,12 +255,12 @@ export default function UserProfile() {
                 open something permanently empty. What any one visitor actually finds
                 there is the server's decision, not this link's. */}
             {(profile.role === 'ELDER' || profile.role === 'BOTH') && (
-              <PassOnLink id={id} name={profile.name || 'this person'} />
+              <PassOnLink id={id} name={profile.name || tr('this person')} />
             )}
 
             {/* Bio */}
             {profile.bio && (
-              <Section title="About" delay={0.05}>
+              <Section title={tr('About')} delay={0.05}>
                 <p style={{ fontSize: 'var(--text-base)', color: 'var(--ink-soft)', lineHeight: 1.6, margin: 0, maxWidth: '65ch' }}>
                   {profile.bio}
                 </p>
@@ -268,7 +269,7 @@ export default function UserProfile() {
 
             {/* Skills / Interests / Hobbies / Languages */}
             {tagGroups.length > 0 && (() => {
-              const sectionTitle = profile.role === 'HELPER' ? 'Skills & Interests' : 'Interests';
+              const sectionTitle = profile.role === 'HELPER' ? tr('Skills & Interests') : tr('Interests');
               return (
                 <Section title={sectionTitle} delay={0.1}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -290,10 +291,10 @@ export default function UserProfile() {
             })()}
 
             {/* Reviews */}
-            <Section title={`Reviews${reviews.length > 0 ? ` (${reviews.length})` : ''}`} delay={0.15}>
+            <Section title={tr('Reviews') + (reviews.length > 0 ? ` (${reviews.length})` : '')} delay={0.15}>
               {reviews.length === 0 ? (
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', margin: 0 }}>
-                  No reviews yet.
+                  {tr('No reviews yet.')}
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -305,14 +306,14 @@ export default function UserProfile() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', overflowWrap: 'anywhere' }}>
-                            {rv.safetyConcern ? 'Anonymous' : (rv.reviewerName || 'Elder')}
+                            {rv.safetyConcern ? tr('Anonymous') : (rv.reviewerName || tr('Elder'))}
                           </span>
                           {/* Written by a family member for them. Safety reports stay
                               anonymous — the server sends no name for those, so there
                               is simply nothing here to show. */}
                           {rv.actedByName && (
                             <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', overflowWrap: 'anywhere' }}>
-                              written by {rv.actedByName}
+                              {tr('written by {actedByName}', { actedByName: rv.actedByName })}
                             </span>
                           )}
                           <Stars rating={rv.rating} />

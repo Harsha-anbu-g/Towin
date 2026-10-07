@@ -2,6 +2,7 @@ import { useState } from 'react';
 import SealedItemCard from './SealedItemCard';
 import SealedItemForm from './SealedItemForm';
 import { SEALED_ITEMS } from './passOnLocks';
+import { tr } from '../i18n';
 
 /**
  * What is actually in her Sealed box — the half of the tab that has anything in it.
@@ -49,7 +50,7 @@ export default function SealedItems({
   }
 
   return (
-    <section aria-label="What is in your sealed box" style={{ marginBottom: '16px' }}>
+    <section aria-label={tr('What is in your sealed box')} style={{ marginBottom: '16px' }}>
       <p style={countLine}>
         {inside.length === 0 ? SEALED_ITEMS.nothingInside : SEALED_ITEMS.shut(inside.length)}
       </p>

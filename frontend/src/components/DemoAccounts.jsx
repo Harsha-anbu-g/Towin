@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/useAuth';
 import { yearsOld } from '../lib/copy';
 import { landingPathForRole } from '../lib/landingPath';
+import { tr } from '../i18n';
 
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
@@ -29,7 +30,7 @@ export default function DemoAccounts() {
       login(data.token);
       navigate(landingPathForRole(data.role), { replace: true });
     } catch {
-      setError('Could not start demo session. Please try again.');
+      setError(tr('Could not start demo session. Please try again.'));
     } finally {
       setGuestLoading('');
     }
@@ -47,19 +48,19 @@ export default function DemoAccounts() {
         fontSize: '13px', fontWeight: 700, letterSpacing: '0.8px',
         padding: '3px 12px', borderRadius: '9999px', textTransform: 'uppercase',
       }}>
-        DEMO
+        {tr('DEMO')}
       </span>
       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center', margin: '0 0 4px' }}>
-        Just want to see how it works?
+        {tr('Just want to see how it works?')}
       </p>
       <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', textAlign: 'center', margin: '0 0 14px', lineHeight: 1.5 }}>
-        Look around with a sample account, no account needed.
+        {tr('Look around with a sample account, no account needed.')}
       </p>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {[
-          { role: 'ELDER', label: 'Try as an Elder', sub: `Margaret, ${yearsOld('1953-05-14')}` },
-          { role: 'HELPER', label: 'Try as a Helper', sub: `Harsha, ${yearsOld('2003-03-14')}` },
-          { role: 'FAMILY', label: 'Try as Family', sub: "Sarah, Margaret's daughter" },
+          { role: 'ELDER', label: tr('Try as an Elder'), sub: tr('Margaret, {yearsOld}', { yearsOld: yearsOld('1953-05-14') }) },
+          { role: 'HELPER', label: tr('Try as a Helper'), sub: tr('Harsha, {yearsOld}', { yearsOld: yearsOld('2003-03-14') }) },
+          { role: 'FAMILY', label: tr('Try as Family'), sub: tr("Sarah, Margaret's daughter") },
         ].map(({ role, label, sub }) => (
           <button
             key={role}
@@ -80,7 +81,7 @@ export default function DemoAccounts() {
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--blue-soft)'; }}
           >
             <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)' }}>
-              {guestLoading === role ? 'Opening…' : label}
+              {guestLoading === role ? tr('Opening…') : label}
             </span>
             <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>
               {sub}

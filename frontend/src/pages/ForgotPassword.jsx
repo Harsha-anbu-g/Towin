@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
+import { tr } from '../i18n';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -40,25 +41,24 @@ export default function ForgotPassword() {
     return (
       <div style={{ ...wrap, textAlign: 'center' }}>
         <div style={{ fontSize: 44, marginBottom: 16 }}>✉️</div>
-        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>Check your email</h1>
+        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>{tr('Check your email')}</h1>
         <p style={{ color: 'var(--slate)', marginBottom: 24 }}>
-          If an account exists for that email, we've sent a link to reset your password.
-          Be sure to check your Spam folder.
+          {tr("If an account exists for that email, we've sent a link to reset your password. Be sure to check your Spam folder.")}
         </p>
-        <Link to="/login" style={linkStyle}>Back to log in</Link>
+        <Link to="/login" style={linkStyle}>{tr('Back to log in')}</Link>
       </div>
     );
   }
 
   return (
     <div style={wrap}>
-      <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 8 }}>Reset your password</h1>
+      <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 8 }}>{tr('Reset your password')}</h1>
       <p style={{ color: 'var(--slate)', marginBottom: 24, fontSize: 16 }}>
-        Enter your email and we'll send you a link to set a new password.
+        {tr("Enter your email and we'll send you a link to set a new password.")}
       </p>
       <form onSubmit={submit}>
         <label htmlFor="fp-email" style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
-          Email
+          {tr('Email')}
         </label>
         <SmoothInput
           id="fp-email"
@@ -67,11 +67,11 @@ export default function ForgotPassword() {
           style={input}
         />
         <button type="submit" disabled={loading} style={btn}>
-          {loading ? 'Sending…' : 'Send reset link'}
+          {loading ? tr('Sending…') : tr('Send reset link')}
         </button>
       </form>
       <p style={{ marginTop: 18, fontSize: 'var(--text-sm)' }}>
-        <Link to="/login" style={linkStyle}>Back to log in</Link>
+        <Link to="/login" style={linkStyle}>{tr('Back to log in')}</Link>
       </p>
     </div>
   );

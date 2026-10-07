@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Pencil } from 'lucide-react';
+import { tr } from '../i18n';
 
 export default function FeedbackWidget() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function FeedbackWidget() {
   return (
     <button
       onClick={() => navigate('/feedback')}
-      aria-label="Give feedback"
+      aria-label={tr('Give feedback')}
       className="feedback-fab"
       style={{
         display: 'flex',
@@ -50,7 +51,7 @@ export default function FeedbackWidget() {
       }}
     >
       <Pencil size={15} />
-      <span className="feedback-fab-label">Give Feedback</span>
+      <span className="feedback-fab-label">{tr('Give Feedback')}</span>
     </button>
   );
 }

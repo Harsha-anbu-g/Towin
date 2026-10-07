@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
+import { tr } from '../i18n';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -15,14 +16,14 @@ export default function ResetPassword() {
   const submit = async (e) => {
     e.preventDefault();
     setError('');
-    if (pw.length < 8) { setError('Password must be at least 8 characters'); return; }
-    if (pw !== confirm) { setError('Passwords do not match'); return; }
+    if (pw.length < 8) { setError(tr('Password must be at least 8 characters')); return; }
+    if (pw !== confirm) { setError(tr('Passwords do not match')); return; }
     setLoading(true);
     try {
       await api.post('/auth/reset-password', { token, newPassword: pw });
       setDone(true);
     } catch (err) {
-      setError(err?.response?.data?.message || 'This reset link is invalid or has expired.');
+      setError(err?.response?.data?.message || tr('This reset link is invalid or has expired.'));
     } finally {
       setLoading(false);
     }
@@ -47,9 +48,9 @@ export default function ResetPassword() {
   if (!token) {
     return (
       <div style={{ ...wrap, textAlign: 'center' }}>
-        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>Invalid link</h1>
-        <p style={{ color: 'var(--slate)', marginBottom: 24 }}>This reset link is missing its token.</p>
-        <Link to="/forgot-password" style={linkStyle}>Request a new link</Link>
+        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>{tr('Invalid link')}</h1>
+        <p style={{ color: 'var(--slate)', marginBottom: 24 }}>{tr('This reset link is missing its token.')}</p>
+        <Link to="/forgot-password" style={linkStyle}>{tr('Request a new link')}</Link>
       </div>
     );
   }
@@ -58,25 +59,25 @@ export default function ResetPassword() {
     return (
       <div style={{ ...wrap, textAlign: 'center' }}>
         <div style={{ fontSize: 44, marginBottom: 16 }}>✅</div>
-        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>Password updated</h1>
-        <p style={{ color: 'var(--slate)', marginBottom: 24 }}>You can now log in with your new password.</p>
-        <Link to="/login" style={linkStyle}>Go to log in →</Link>
+        <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 12 }}>{tr('Password updated')}</h1>
+        <p style={{ color: 'var(--slate)', marginBottom: 24 }}>{tr('You can now log in with your new password.')}</p>
+        <Link to="/login" style={linkStyle}>{tr('Go to log in →')}</Link>
       </div>
     );
   }
 
   return (
     <div style={wrap}>
-      <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 8 }}>Choose a new password</h1>
+      <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 8 }}>{tr('Choose a new password')}</h1>
       <form onSubmit={submit} style={{ marginTop: 16 }}>
-        <label htmlFor="rp-pw" style={labelStyle}>New password (at least 8 characters)</label>
+        <label htmlFor="rp-pw" style={labelStyle}>{tr('New password (at least 8 characters)')}</label>
         <SmoothInput
           id="rp-pw"
           type="password" required value={pw}
           onChange={e => { setPw(e.target.value); setError(''); }}
           style={input}
         />
-        <label htmlFor="rp-confirm" style={labelStyle}>Re-enter new password</label>
+        <label htmlFor="rp-confirm" style={labelStyle}>{tr('Re-enter new password')}</label>
         <SmoothInput
           id="rp-confirm"
           type="password" required value={confirm}
@@ -85,11 +86,11 @@ export default function ResetPassword() {
         />
         {error && <p style={{ color: 'var(--red-error)', fontSize: 14, marginBottom: 12 }}>{error}</p>}
         <button type="submit" disabled={loading} style={btn}>
-          {loading ? 'Saving…' : 'Update password'}
+          {loading ? tr('Saving…') : tr('Update password')}
         </button>
       </form>
       <p style={{ marginTop: 18, fontSize: 'var(--text-sm)' }}>
-        <Link to="/login" style={linkStyle}>Back to log in</Link>
+        <Link to="/login" style={linkStyle}>{tr('Back to log in')}</Link>
       </p>
     </div>
   );

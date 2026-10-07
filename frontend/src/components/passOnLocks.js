@@ -1,3 +1,4 @@
+import { dateLocale, tr } from '../i18n';
 /**
  * The words "What I pass on" uses, in one place.
  *
@@ -25,16 +26,16 @@
  * own page read back to her, so she knows what she is opening before she taps.
  */
 export const MY_BOXES = {
-  title: 'My boxes',
-  /** Shared with PAGE_LEAD below, so the card and the page it opens cannot drift apart. */
-  lead: 'Your stories, your letters, and the things only you know.',
-  open: 'Open my boxes',
+  get title() { return tr('My boxes'); },
+  /** Shared with pageLead() below, so the card and the page it opens cannot drift apart. */
+  get lead() { return tr('Your stories, your letters, and the things only you know.'); },
+  get open() { return tr('Open my boxes'); },
   /**
    * Said in words rather than as "0 stories · 0 letters". This is a card on the
    * first screen she sees every day, and a row of zeros on it reads as a
    * standing reproach for not having written her life down yet.
    */
-  empty: 'Nothing in your boxes yet. Start whenever you like.',
+  get empty() { return tr('Nothing in your boxes yet. Start whenever you like.'); },
   /**
    * What is in them, said out loud.
    *
@@ -46,9 +47,9 @@ export const MY_BOXES = {
    */
   summary: ({ stories = 0, letters = 0, shut = false } = {}) => {
     const said = [];
-    if (stories) said.push(`${stories} ${stories === 1 ? 'story' : 'stories'}`);
-    if (letters) said.push(`${letters} ${letters === 1 ? 'letter' : 'letters'}`);
-    if (shut) said.push('your box is shut');
+    if (stories) said.push(stories === 1 ? tr('1 story') : tr('{stories} stories', { stories }));
+    if (letters) said.push(letters === 1 ? tr('1 letter') : tr('{letters} letters', { letters }));
+    if (shut) said.push(tr('your box is shut'));
     return said.length ? said.join(' · ') : MY_BOXES.empty;
   },
 };
@@ -60,7 +61,7 @@ export const MY_BOXES = {
  * the whole of what the dashboard card promises. The words are unchanged from the
  * reviewed design copy.
  */
-export const PAGE_LEAD = `${MY_BOXES.lead} You choose who sees each one.`;
+export const pageLead = () => `${MY_BOXES.lead} ${tr('You choose who sees each one.')}`;
 
 /**
  * The not-a-will primer. Short line always visible; the explanation folded away
@@ -71,35 +72,32 @@ export const PAGE_LEAD = `${MY_BOXES.lead} You choose who sees each one.`;
  * in another — this points her at whoever helps her with her will instead.
  */
 export const NOT_A_WILL = {
-  short: 'This is not a will, and it does not replace one.',
-  ask: "What's the difference?",
-  long:
-    'A will decides who gets your money, your home and your things. Nothing you write on this '
-    + 'page changes who gets what. If you have a will, please tell whoever helped you make it '
-    + 'that this page exists.',
+  get short() { return tr('This is not a will, and it does not replace one.'); },
+  get ask() { return tr("What's the difference?"); },
+  get long() { return tr('A will decides who gets your money, your home and your things. Nothing you write on this page changes who gets what. If you have a will, please tell whoever helped you make it that this page exists.'); },
 };
 
 /** Who a story is for. `key` is the server's PassOnAudience value. */
 export const AUDIENCES = [
   {
     key: 'EVERYONE',
-    title: 'Anyone',
-    blurb: 'Anyone who opens your page, including people you have never met.',
+    get title() { return tr('Anyone'); },
+    get blurb() { return tr('Anyone who opens your page, including people you have never met.'); },
   },
   {
     key: 'FAMILY',
-    title: 'My family',
-    blurb: 'Only the family members on your family list.',
+    get title() { return tr('My family'); },
+    get blurb() { return tr('Only the family members on your family list.'); },
   },
   {
     key: 'HELPERS',
-    title: 'My helpers',
-    blurb: 'Only the helpers you have built up trust with.',
+    get title() { return tr('My helpers'); },
+    get blurb() { return tr('Only the helpers you have built up trust with.'); },
   },
   {
     key: 'PERSON',
-    title: 'One person',
-    blurb: 'One person you choose. Nobody else.',
+    get title() { return tr('One person'); },
+    get blurb() { return tr('One person you choose. Nobody else.'); },
   },
 ];
 
@@ -108,12 +106,10 @@ export const AUDIENCES = [
  * already knows the size of; this one is the open street.
  */
 export const ANYONE_CHECK = {
-  title: 'Show this to anyone?',
-  message:
-    'Anyone who opens your page can read this, including people you have never met. '
-    + 'You can change your mind later.',
-  confirm: 'Yes, show it to anyone',
-  cancel: 'Go back',
+  get title() { return tr('Show this to anyone?'); },
+  get message() { return tr('Anyone who opens your page can read this, including people you have never met. You can change your mind later.'); },
+  get confirm() { return tr('Yes, show it to anyone'); },
+  get cancel() { return tr('Go back'); },
 };
 
 /**
@@ -125,19 +121,17 @@ export const NOT_HERE =
   + 'your mother’s family name — out of here. Those belong in the Sealed box.';
 
 export const STORY_BOX = {
-  empty:
-    'Nothing here yet. A story can be a small one — how you met, what you learned the hard way, '
-    + 'the recipe nobody else has.',
-  start: 'Tell a story',
-  save: 'Save this story',
-  namePrompt: 'Give it a name',
-  namePlaceholder: 'The winter we lost the roof',
-  bodyPrompt: 'Tell it',
-  audiencePrompt: 'Who should see this?',
+  get empty() { return tr('Nothing here yet. A story can be a small one — how you met, what you learned the hard way, the recipe nobody else has.'); },
+  get start() { return tr('Tell a story'); },
+  get save() { return tr('Save this story'); },
+  get namePrompt() { return tr('Give it a name'); },
+  get namePlaceholder() { return tr('The winter we lost the roof'); },
+  get bodyPrompt() { return tr('Tell it'); },
+  get audiencePrompt() { return tr('Who should see this?'); },
 };
 
 export const LETTERS = {
-  empty: 'No letters yet. A letter goes to one person, and only that person.',
+  get empty() { return tr('No letters yet. A letter goes to one person, and only that person.'); },
   /**
    * What the Letter box is, now that both halves of it exist.
    *
@@ -148,15 +142,12 @@ export const LETTERS = {
    * believes otherwise is an elder who has quietly decided this app will tell her
    * daughter she has died.
    */
-  howItWorks:
-    'Every letter can be read today, or held until after you are gone. Nothing opens on its own. '
-    + 'Before a held letter is passed on, a person here at Towinly checks a death certificate, '
-    + 'asks the people you chose, and tries to reach you for thirty days.',
-  start: 'Write a letter',
-  save: 'Save this letter',
-  bodyPrompt: 'Write it',
-  personPrompt: 'Who is this for?',
-  readableNow: 'They can read this now',
+  get howItWorks() { return tr('Every letter can be read today, or held until after you are gone. Nothing opens on its own. Before a held letter is passed on, a person here at Towinly checks a death certificate, asks the people you chose, and tries to reach you for thirty days.'); },
+  get start() { return tr('Write a letter'); },
+  get save() { return tr('Save this letter'); },
+  get bodyPrompt() { return tr('Write it'); },
+  get personPrompt() { return tr('Who is this for?'); },
+  get readableNow() { return tr('They can read this now'); },
   /**
    * The counterpart chip, on a letter she has asked to be held.
    *
@@ -164,14 +155,12 @@ export const LETTERS = {
    * list of her own writing, and the one word describing the letter she wrote to her
    * daughter for after her death should be a word she can read without flinching.
    */
-  heldUntilGone: 'Held until after you are gone',
-  noneToWriteTo:
-    'There is nobody to write to yet. Add someone to your family list, or build up trust with a '
-    + 'helper, and they will appear here.',
+  get heldUntilGone() { return tr('Held until after you are gone'); },
+  get noneToWriteTo() { return tr('There is nobody to write to yet. Add someone to your family list, or build up trust with a helper, and they will appear here.'); },
 
   // ── when the person she named can read it ──
 
-  whenPrompt: 'When can they read it?',
+  get whenPrompt() { return tr('When can they read it?'); },
   /**
    * The two choices, shaped like AUDIENCES so both render through the same cards.
    * `key` is the server's PassOnRelease value.
@@ -184,15 +173,13 @@ export const LETTERS = {
   WHEN: [
     {
       key: 'NOW',
-      title: 'They can read it now',
-      blurb: 'It goes on your page as soon as you save it, for the one person you chose.',
+      get title() { return tr('They can read it now'); },
+      get blurb() { return tr('It goes on your page as soon as you save it, for the one person you chose.'); },
     },
     {
       key: 'AFTER',
-      title: "Only after I'm gone",
-      blurb:
-        'Nobody sees this until someone at Towinly has checked a death certificate, asked the '
-        + 'people you chose, and tried to reach you for thirty days.',
+      get title() { return tr("Only after I'm gone"); },
+      get blurb() { return tr('Nobody sees this until someone at Towinly has checked a death certificate, asked the people you chose, and tried to reach you for thirty days.'); },
     },
   ],
   /**
@@ -203,10 +190,8 @@ export const LETTERS = {
    * held today could never be delivered by anybody. The choice is shown and disabled
    * rather than hidden: an option she cannot see is an option she cannot go and earn.
    */
-  needsKeyholders:
-    'First choose the people who can open things for you, in your Sealed box. Then you can hold '
-    + 'a letter until after you are gone.',
-  needsKeyholdersLink: 'Go to my Sealed box',
+  get needsKeyholders() { return tr('First choose the people who can open things for you, in your Sealed box. Then you can hold a letter until after you are gone.'); },
+  get needsKeyholdersLink() { return tr('Go to my Sealed box'); },
 };
 
 /**
@@ -215,28 +200,27 @@ export const LETTERS = {
  * somebody who broke into the company could read it.
  */
 export const SEALED_BOX = {
-  title: 'The things only you know.',
-  body: 'Where the money is. Which bank. Where the papers are kept. Write them down once, here.',
-  safetyHeading: 'How this is kept safe',
-  safety: [
-    'It is scrambled before we save it, and the key that unscrambles it is not kept anywhere near '
-    + 'it. If someone stole our records, they could not read a word of what you wrote. If someone '
-    + 'broke into the company itself, they could. We are not going to tell you otherwise.',
-    'Only you can open your box. Every single time it is opened we write down when, and you can '
-    + 'see that list.',
-    'You can never be shut out of your own box. If you forget your password you reset it the way '
-    + 'you always do, and your box is still there.',
-  ],
-  afterHeading: 'After you are gone',
+  get title() { return tr('The things only you know.'); },
+  get body() { return tr('Where the money is. Which bank. Where the papers are kept. Write them down once, here.'); },
+  get safetyHeading() { return tr('How this is kept safe'); },
+  get safety() {
+    return [
+      tr('It is scrambled before we save it, and the key that unscrambles it is not kept anywhere near '
+        + 'it. If someone stole our records, they could not read a word of what you wrote. If someone '
+        + 'broke into the company itself, they could. We are not going to tell you otherwise.'),
+      tr('Only you can open your box. Every single time it is opened we write down when, and you can '
+        + 'see that list.'),
+      tr('You can never be shut out of your own box. If you forget your password you reset it the way '
+        + 'you always do, and your box is still there.'),
+    ];
+  },
+  get afterHeading() { return tr('After you are gone'); },
   /**
    * The design copy said "print the one-page sheet" here. There is no print step
    * anywhere in this feature — the owner ruled the sheet digital-only on
    * 2026-07-30 — so it says save. Nothing else is changed.
    */
-  after:
-    'We are building the part where your Keyholders can ask to open this. It is not ready, and we '
-    + 'will not switch it on until it is. So today you do two things: name the people you trust, '
-    + 'so they know this exists — and save the one-page sheet and keep it with your will.',
+  get after() { return tr('We are building the part where your Keyholders can ask to open this. It is not ready, and we will not switch it on until it is. So today you do two things: name the people you trust, so they know this exists — and save the one-page sheet and keep it with your will.'); },
 };
 
 /**
@@ -250,7 +234,7 @@ export const SEALED_BOX = {
 export const listOfNames = (names) => {
   const said = (names || []).filter(Boolean);
   if (said.length <= 1) return said[0] || '';
-  return `${said.slice(0, -1).join(', ')} and ${said[said.length - 1]}`;
+  return tr('{first} and {last}', { first: said.slice(0, -1).join(', '), last: said[said.length - 1] });
 };
 
 /**
@@ -263,52 +247,44 @@ export const listOfNames = (names) => {
  * would go on being written, of a sentence nobody could look up any more.
  */
 export const SETUP = {
-  start: 'Set this up',
-  step: (n, of) => `Step ${n} of ${of}`,
-  back: 'Go back',
-  next: 'Next',
-  finish: 'Finish setting this up',
-  cancel: 'Not now',
+  get start() { return tr('Set this up'); },
+  step: (n, of) => tr('Step {n} of {of}', { n, of }),
+  get back() { return tr('Go back'); },
+  get next() { return tr('Next'); },
+  get finish() { return tr('Finish setting this up'); },
+  get cancel() { return tr('Not now'); },
 
   who: {
-    title: 'Who can open it one day?',
-    blurb:
-      'Pick at least three people you trust. They must already be on your family list, '
-      + 'and each one has to say yes before they count.',
+    get title() { return tr('Who can open it one day?'); },
+    get blurb() { return tr('Pick at least three people you trust. They must already be on your family list, and each one has to say yes before they count.'); },
     /** Fewer than three people on her family list: a dead end, said plainly. */
-    tooFew: 'You need at least three people on your family list first.',
-    tooFewLink: 'Go to my family list',
+    get tooFew() { return tr('You need at least three people on your family list first.'); },
+    get tooFewLink() { return tr('Go to my family list'); },
     /** Under the list, so she knows nothing has left yet. */
-    nothingSentYet: 'Nobody is asked anything until you finish.',
+    get nothingSentYet() { return tr('Nobody is asked anything until you finish.'); },
   },
 
   howMany: {
-    title: 'How many must agree?',
-    blurb:
-      'One day, when your Keyholders ask to open this, this many of them must agree. It is '
-      + 'never all of them, so that one person who is far away — or who has passed on '
-      + 'themselves — can never keep it shut forever.',
+    get title() { return tr('How many must agree?'); },
+    get blurb() { return tr('One day, when your Keyholders ask to open this, this many of them must agree. It is never all of them, so that one person who is far away — or who has passed on themselves — can never keep it shut forever.'); },
     /**
      * Rebuilt live from the real names and never softened. `names` is already
      * written out as "Sarah, David and Ruth".
      */
     inRealTerms: (agree, names, of) =>
-      `So: any ${agree} of ${names}. That means ${agree} of them can open it even if the `
-      + `${of - agree === 1 ? 'other one says' : 'others say'} no.`,
+      of - agree === 1
+        ? tr('So: any {agree} of {names}. That means {agree} of them can open it even if the other one says no.', { agree, names })
+        : tr('So: any {agree} of {names}. That means {agree} of them can open it even if the others say no.', { agree, names }),
   },
 
   before: {
-    title: 'Before you finish.',
+    get title() { return tr('Before you finish.'); },
     /** The hard gate. Nothing can be armed until her email is confirmed. */
-    confirmEmail:
-      'Please confirm your email address first. One day it is how we would reach you about '
-      + 'your box, and we need to know it works.',
-    confirmEmailLink: 'Go to my account settings',
+    get confirmEmail() { return tr('Please confirm your email address first. One day it is how we would reach you about your box, and we need to know it works.'); },
+    get confirmEmailLink() { return tr('Go to my account settings'); },
     /** A Google-only account has no password, and the box is kept shut by nothing else. */
-    needsPassword:
-      'Your Sealed box is kept shut by your password, and this account signs in with Google. '
-      + 'Please set a password first, then come back.',
-    saveHeading: 'Keep a copy somewhere else',
+    get needsPassword() { return tr('Your Sealed box is kept shut by your password, and this account signs in with Google. Please set a password first, then come back.'); },
+    get saveHeading() { return tr('Keep a copy somewhere else'); },
     /**
      * The download, and only the download.
      *
@@ -319,10 +295,8 @@ export const SETUP = {
      * holds the only copy of where somebody's money is has not solved the problem it set out
      * to solve.
      */
-    save:
-      'Save your one-page copy to your computer, and keep it wherever your family would think '
-      + 'to look. Do not let this app be your only copy.',
-    failed: 'We could not finish that. Please try again.',
+    get save() { return tr('Save your one-page copy to your computer, and keep it wherever your family would think to look. Do not let this app be your only copy.'); },
+    get failed() { return tr('We could not finish that. Please try again.'); },
   },
 
   /**
@@ -331,31 +305,28 @@ export const SETUP = {
    * and never buried behind a menu.
    */
   settling: {
-    title: 'Your box is set up.',
+    get title() { return tr('Your box is set up.'); },
     body: (names) =>
-      'Nothing can be opened by anyone but you. We will check with you once more in seven days '
-      + `before this is settled, and we have written to ${names} to ask if they will hold a key.`,
-    undo: 'If this was not your idea, undo it',
+      tr('Nothing can be opened by anyone but you. We will check with you once more in seven days before this is settled, and we have written to {names} to ask if they will hold a key.', { names }),
+    get undo() { return tr('If this was not your idea, undo it'); },
     /** Asked once, in her words, because the undo takes every key back with it. */
-    confirmTitle: 'Undo the whole setup?',
-    confirmMessage:
-      'Your box stays exactly as it is, and everything you wrote stays where it is. The people '
-      + 'you asked will stop being asked, and nobody is told you did this.',
-    confirmYes: 'Yes, undo it',
-    confirmNo: 'Leave it as it is',
-    undone: 'That is undone. Nobody is holding a key.',
-    undoFailed: 'We could not undo that. Please try again.',
+    get confirmTitle() { return tr('Undo the whole setup?'); },
+    get confirmMessage() { return tr('Your box stays exactly as it is, and everything you wrote stays where it is. The people you asked will stop being asked, and nobody is told you did this.'); },
+    get confirmYes() { return tr('Yes, undo it'); },
+    get confirmNo() { return tr('Leave it as it is'); },
+    get undone() { return tr('That is undone. Nobody is holding a key.'); },
+    get undoFailed() { return tr('We could not undo that. Please try again.'); },
   },
 
   /** Once the week has passed. Who holds a key, said with real names and real dates. */
   settled: {
-    heading: 'Who can open it one day',
-    threshold: (agree, of) => `${agree} of the ${of} must agree.`,
-    saidYes: (name, when) => `${name} said yes on ${when}`,
-    waiting: (name) => `${name} has not answered yet`,
-    saidNo: (name) => `${name} said no`,
-    steppedBack: (name) => `${name} is no longer holding a key`,
-    change: 'Change',
+    get heading() { return tr('Who can open it one day'); },
+    threshold: (agree, of) => tr('{agree} of the {of} must agree.', { agree, of }),
+    saidYes: (name, when) => tr('{name} said yes on {when}', { name, when }),
+    waiting: (name) => tr('{name} has not answered yet', { name }),
+    saidNo: (name) => tr('{name} said no', { name }),
+    steppedBack: (name) => tr('{name} is no longer holding a key', { name }),
+    get change() { return tr('Change'); },
   },
 };
 
@@ -364,10 +335,10 @@ export const SETUP = {
  * amount. Keyed by the server's SealedKind.
  */
 export const SEALED_KINDS = {
-  MONEY: 'Money',
-  PASSWORDS: 'Passwords',
-  PAPERS: 'Papers',
-  OTHER: 'Something else',
+  get MONEY() { return tr('Money'); },
+  get PASSWORDS() { return tr('Passwords'); },
+  get PAPERS() { return tr('Papers'); },
+  get OTHER() { return tr('Something else'); },
 };
 
 /**
@@ -389,54 +360,52 @@ export const SEALED_ITEMS = {
    * eighties that says "1 things" is a screen that looks like nobody checked it.
    */
   shut: (count) =>
-    `Your box is shut. ${count === 1 ? '1 thing is' : `${count} things are`} inside. `
-    + 'Nobody can see them but you.',
+    count === 1
+      ? tr('Your box is shut. 1 thing is inside. Nobody can see them but you.')
+      : tr('Your box is shut. {count} things are inside. Nobody can see them but you.', { count }),
   /** A box that is set up with nothing in it yet. Said plainly, never as an empty list. */
-  nothingInside:
-    'Your box is shut. There is nothing in it yet. Nobody can see what you put in but you.',
+  get nothingInside() { return tr('Your box is shut. There is nothing in it yet. Nobody can see what you put in but you.'); },
 
-  locked: 'Locked',
+  get locked() { return tr('Locked'); },
   /**
    * What the same word says while she is looking at the thing. A card still reading "Locked"
    * over its own open contents is the app telling her something she can see is not true.
    */
-  unlocked: 'Open',
-  see: 'See this',
-  remove: 'Delete',
+  get unlocked() { return tr('Open'); },
+  get see() { return tr('See this'); },
+  get remove() { return tr('Delete'); },
 
   /** The inline row. Not a dialog: she is looking at the card she asked about. */
-  askPassword: 'Type your password to see this.',
-  passwordLabel: 'Your password',
-  show: 'Show it to me',
+  get askPassword() { return tr('Type your password to see this.'); },
+  get passwordLabel() { return tr('Your password'); },
+  get show() { return tr('Show it to me'); },
   showing: 'Opening…',
-  neverMind: 'Never mind',
+  get neverMind() { return tr('Never mind'); },
   /** On a shared family laptop, being able to put it away again matters as much as opening it. */
-  hide: 'Hide this again',
-  needsPassword: 'Please type your password.',
-  failedToOpen: 'We could not open that. Please try again.',
+  get hide() { return tr('Hide this again'); },
+  get needsPassword() { return tr('Please type your password.'); },
+  get failedToOpen() { return tr('We could not open that. Please try again.'); },
 
-  add: 'Put something in',
-  namePrompt: 'What is it?',
+  get add() { return tr('Put something in'); },
+  get namePrompt() { return tr('What is it?'); },
   /**
    * The whole reason the name is encrypted too, said to her rather than kept in a design
    * document. It is a promise the database keeps: there is no readable label column.
    */
-  nameHelp:
-    'Give it a name you would recognise. Nobody else ever sees this name, not even your '
-    + 'Keyholders.',
-  namePlaceholder: 'Where the money is',
-  bodyPrompt: 'Write it down',
-  kindPrompt: 'What kind of thing is it?',
-  save: 'Lock this away',
-  saving: 'Locking it away…',
-  cancel: 'Cancel',
-  saved: 'That is locked away.',
-  needsName: 'Please give it a name.',
-  needsBody: 'Please write something before you save it.',
-  needsKind: 'Please choose what kind of thing this is.',
-  failedToSave: 'We could not save that. Please try again.',
-  removed: 'That is out of your box.',
-  failedToRemove: 'We could not take that out. Please try again.',
+  get nameHelp() { return tr('Give it a name you would recognise. Nobody else ever sees this name, not even your Keyholders.'); },
+  get namePlaceholder() { return tr('Where the money is'); },
+  get bodyPrompt() { return tr('Write it down'); },
+  get kindPrompt() { return tr('What kind of thing is it?'); },
+  get save() { return tr('Lock this away'); },
+  get saving() { return tr('Locking it away…'); },
+  get cancel() { return tr('Cancel'); },
+  get saved() { return tr('That is locked away.'); },
+  get needsName() { return tr('Please give it a name.'); },
+  get needsBody() { return tr('Please write something before you save it.'); },
+  get needsKind() { return tr('Please choose what kind of thing this is.'); },
+  get failedToSave() { return tr('We could not save that. Please try again.'); },
+  get removed() { return tr('That is out of your box.'); },
+  get failedToRemove() { return tr('We could not take that out. Please try again.'); },
 };
 
 /**
@@ -454,7 +423,7 @@ export const SEALED_ITEMS = {
  * show the contact line — the words on screen are always the server's own.
  */
 export const FROZEN = {
-  prefix: 'You changed your password recently.',
+  get prefix() { return tr('You changed your password recently.'); },
   /**
    * @param email the configured release address, from the server. When there is none she is
    *   told that plainly — see `RELEASE_CONTACT` for why an invented address is worse than
@@ -466,10 +435,10 @@ export const FROZEN = {
 
 /** Taking something out of the box cannot be undone by anybody, so it is asked for plainly. */
 export const TAKE_OUT_OF_BOX = {
-  title: 'Take this out of the box?',
-  message: 'It will be gone for good. Nobody will be able to read it again, and that includes you.',
-  confirm: 'Take it out',
-  cancel: 'Keep it',
+  get title() { return tr('Take this out of the box?'); },
+  get message() { return tr('It will be gone for good. Nobody will be able to read it again, and that includes you.'); },
+  get confirm() { return tr('Take it out'); },
+  get cancel() { return tr('Keep it'); },
 };
 
 /**
@@ -492,14 +461,14 @@ export const TAKE_OUT_OF_BOX = {
 export const RELEASE_CONTACT = {
   who: 'Towinly',
   /** Said in place of an address, never beside one. */
-  notSetYet: 'Towinly has not set an address to write to yet.',
+  get notSetYet() { return tr('Towinly has not set an address to write to yet.'); },
 };
 
 /**
  * The one sentence that carries the address, so her own screen and the copy her family keeps
  * can never spell it differently.
  */
-const writeToUs = email => `Write to ${RELEASE_CONTACT.who} at ${email}.`;
+const writeToUs = email => tr('Write to {who} at {email}.', { who: RELEASE_CONTACT.who, email });
 
 /**
  * What the saved copy says instead, when there is no address.
@@ -508,9 +477,9 @@ const writeToUs = email => `Write to ${RELEASE_CONTACT.who} at ${email}.`;
  * will carry the address once there is one, so it is worth saving again. On her own screen
  * that sentence would be noise — she is looking at a live page — so only the sheet says it.
  */
-const NO_ADDRESS_ON_THE_SHEET =
-  `${RELEASE_CONTACT.notSetYet} Save a new copy of this page from time to time, and the address `
-  + 'will be on it once it is set.';
+const noAddressOnTheSheet = () =>
+  `${RELEASE_CONTACT.notSetYet} `
+  + tr('Save a new copy of this page from time to time, and the address will be on it once it is set.');
 
 /**
  * The saved copy — one page she takes out of the app and keeps somewhere her family would
@@ -530,72 +499,66 @@ const NO_ADDRESS_ON_THE_SHEET =
  */
 export const SHEET = {
   /** The page around the copy, which is not part of the copy itself. */
-  pageTitle: 'Your one-page copy',
-  pageLead:
-    'This is the copy you keep outside Towinly. Save it, and put it wherever your family would '
-    + 'think to look. Do not let this app be your only copy.',
-  save: 'Save this to my computer',
-  saved: 'Saved. Now put it somewhere your family would look.',
-  failedToSave: 'We could not save that file. Please try again.',
-  back: 'Go back to my sealed box',
-  loading: 'Getting your copy ready…',
-  failed: 'We could not get your copy ready. Please try again.',
-  lastSaved: when => `You last saved a copy on ${when}.`,
-  neverSaved: 'You have not saved a copy yet.',
+  get pageTitle() { return tr('Your one-page copy'); },
+  get pageLead() { return tr('This is the copy you keep outside Towinly. Save it, and put it wherever your family would think to look. Do not let this app be your only copy.'); },
+  get save() { return tr('Save this to my computer'); },
+  get saved() { return tr('Saved. Now put it somewhere your family would look.'); },
+  get failedToSave() { return tr('We could not save that file. Please try again.'); },
+  get back() { return tr('Go back to my sealed box'); },
+  get loading() { return tr('Getting your copy ready…'); },
+  get failed() { return tr('We could not get your copy ready. Please try again.'); },
+  lastSaved: when => tr('You last saved a copy on {when}.', { when }),
+  get neverSaved() { return tr('You have not saved a copy yet.'); },
   /** What she is looking at, above the copy itself. */
-  previewHeading: 'This is what you will save',
+  get previewHeading() { return tr('This is what you will save'); },
   /** The way in, from her sealed box. A page nobody can reach is a page that is not shipped. */
-  linkFromBox: 'Save your one-page copy',
+  get linkFromBox() { return tr('Save your one-page copy'); },
 
   // ── the copy itself, in the order it is read ──
 
-  title: name => `What ${name} passes on`,
-  madeOn: when => `Made on ${when}, from Towinly.`,
+  title: name => tr('What {name} passes on', { name }),
+  madeOn: when => tr('Made on {when}, from Towinly.', { when }),
 
   inTheBox: {
-    heading: 'What is in the sealed box',
-    blurb:
-      'These are the names of the things inside. What any of them says is not written here, and '
-      + 'it is not written down anywhere outside Towinly.',
-    empty: 'There is nothing in the box yet.',
+    get heading() { return tr('What is in the sealed box'); },
+    get blurb() { return tr('These are the names of the things inside. What any of them says is not written here, and it is not written down anywhere outside Towinly.'); },
+    get empty() { return tr('There is nothing in the box yet.'); },
     /** "Where the money is — Money". The name she gave it, then its chip. */
     line: (label, kind) => `${label} — ${kind}`,
   },
 
   whoCanOpen: {
-    heading: 'Who can ask to open it',
-    empty: 'Nobody has been asked yet.',
+    get heading() { return tr('Who can ask to open it'); },
+    get empty() { return tr('Nobody has been asked yet.'); },
   },
 
   howToAsk: {
-    heading: 'How your family asks for it to be opened',
+    get heading() { return tr('How your family asks for it to be opened'); },
     /** @param email the configured address, or nothing when this deployment has not set one. */
-    writeTo: email => (email ? writeToUs(email) : NO_ADDRESS_ON_THE_SHEET),
+    writeTo: email => (email ? writeToUs(email) : noAddressOnTheSheet()),
     /** The same sentence as a value, so the page and its tests can name what a family reads. */
-    noAddressYet: NO_ADDRESS_ON_THE_SHEET,
-    askedFor: 'They will be asked for:',
+    get noAddressYet() { return noAddressOnTheSheet(); },
+    get askedFor() { return tr('They will be asked for:'); },
     /**
      * The manual release procedure, said to a family rather than to an operator. It is written
      * out in full in docs/operations/sealed-box-release.md; these three lines are what somebody
      * holding this page needs to know before they start.
      */
     steps: name => [
-      'a death certificate, which a person here reads and writes down',
-      'word from each of the people above, one at a time, that they agree',
-      `then a wait of thirty days, while Towinly keeps trying to reach ${name}`,
+      tr('a death certificate, which a person here reads and writes down'),
+      tr('word from each of the people above, one at a time, that they agree'),
+      tr('then a wait of thirty days, while Towinly keeps trying to reach {name}', { name }),
     ],
     /**
      * The sentence that stops a family waiting for something to happen on its own. There is no
      * button anywhere in Towinly that opens a box, and saying so here is kinder than letting
      * them find out by waiting.
      */
-    thenWhat:
-      'Only then does somebody here pass on what is in the box. None of this happens by itself, '
-      + 'and there is no button anywhere that opens the box.',
+    get thenWhat() { return tr('Only then does somebody here pass on what is in the box. None of this happens by itself, and there is no button anywhere that opens the box.'); },
   },
 
   /** The design copy's last line, and the whole legal point of the page. */
-  closing: 'This is not a will.',
+  get closing() { return tr('This is not a will.'); },
 };
 
 /**
@@ -609,7 +572,7 @@ export const SHEET = {
 export const onDay = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+  return date.toLocaleDateString(dateLocale('en-GB'), { day: 'numeric', month: 'long' });
 };
 
 /**
@@ -623,7 +586,7 @@ export const onDay = (value) => {
 export const onDayInFull = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  return date.toLocaleDateString(dateLocale('en-GB'), { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 /**
@@ -650,16 +613,16 @@ export const keyholderLine = (person) => {
  * form letter on a page somebody may be opening the week she died.
  */
 export const FROM_PAGE = {
-  title: name => `From ${name}`,
-  lead: name => `What ${name} chose to share with you.`,
-  empty: name => `${name} has not shared anything with you yet.`,
+  title: name => tr('From {name}', { name }),
+  lead: name => tr('What {name} chose to share with you.', { name }),
+  empty: name => tr('{name} has not shared anything with you yet.', { name }),
   /** A letter is written to one person. If you are reading one, it was written to you. */
-  letterChip: 'A letter for you',
-  failed: 'We could not open that page.',
-  back: 'Go back',
+  get letterChip() { return tr('A letter for you'); },
+  get failed() { return tr('We could not open that page.'); },
+  get back() { return tr('Go back'); },
   /** The way in, from the profile of the person whose page it is. */
-  linkFromProfile: name => `What ${name} passes on`,
-  linkBlurb: 'Her stories, and any letter she wrote to you.',
+  linkFromProfile: name => tr('What {name} passes on', { name }),
+  get linkBlurb() { return tr('Her stories, and any letter she wrote to you.'); },
 };
 
 /**
@@ -675,20 +638,20 @@ export const FROM_PAGE = {
  * the writer, which is the report that already exists on her profile.
  */
 export const REPORT_STORY = {
-  open: 'Report this',
-  reasonPrompt: 'What is wrong with it?',
+  get open() { return tr('Report this'); },
+  get reasonPrompt() { return tr('What is wrong with it?'); },
   reasons: [
     'It says something untrue about me',
     'It should not be shown to people',
     'It is unkind or hurtful',
     'Something else',
   ],
-  notePrompt: 'Tell us more (you can skip this)',
-  send: 'Send this to Towinly',
-  cancel: 'Never mind',
+  get notePrompt() { return tr('Tell us more (you can skip this)'); },
+  get send() { return tr('Send this to Towinly'); },
+  get cancel() { return tr('Never mind'); },
   sending: 'Sending…',
-  sent: 'Thank you. Somebody at Towinly will read this.',
-  failed: 'We could not send that. Please try again.',
+  get sent() { return tr('Thank you. Somebody at Towinly will read this.'); },
+  get failed() { return tr('We could not send that. Please try again.'); },
 };
 
 /**
@@ -705,28 +668,26 @@ export const REPORT_STORY = {
  * state: she can ask people before she picks the number.
  */
 export const KEYHOLDER_ASK = {
-  heading: name => `${name} has asked you to hold a key.`,
+  heading: name => tr('{name} has asked you to hold a key.', { name }),
   body: name =>
-    `One day, after they are gone, you would be one of the people who can ask to open `
-    + `${name}'s Sealed box. You cannot see anything in it now and you never will unless that `
-    + `day comes.`,
+    tr("One day, after they are gone, you would be one of the people who can ask to open {name}'s Sealed box. You cannot see anything in it now and you never will unless that day comes.", { name }),
   /** Only when both numbers are real. `agree` is how many must say yes, `of` how many were asked. */
   threshold: (agree, of) =>
-    `${agree} of the ${of} of you would have to agree, and someone here at Towinly would check first.`,
-  yes: 'Yes, I will do that',
-  no: 'No thanks',
+    tr('{agree} of the {of} of you would have to agree, and someone here at Towinly would check first.', { agree, of }),
+  get yes() { return tr('Yes, I will do that'); },
+  get no() { return tr('No thanks'); },
   /** Under every card, every time. Nobody is held to this. */
-  reassurance: 'You can change your mind whenever you like.',
+  get reassurance() { return tr('You can change your mind whenever you like.'); },
   /** Written here rather than in the design copy, which does not cover the failure. */
-  failed: 'We could not send your answer. Please try again.',
-  accepted: name => `Thank you. ${name} will see that you said yes.`,
-  declined: 'That is fine. Nothing more is needed from you.',
+  get failed() { return tr('We could not send your answer. Please try again.'); },
+  accepted: name => tr('Thank you. {name} will see that you said yes.', { name }),
+  get declined() { return tr('That is fine. Nothing more is needed from you.'); },
 };
 
 /** Taking something down is permanent, so it is asked for in plain words. */
 export const TAKE_DOWN = {
-  title: 'Take this down?',
-  message: 'It will be gone from your page, and nobody will be able to read it.',
-  confirm: 'Take it down',
-  cancel: 'Keep it',
+  get title() { return tr('Take this down?'); },
+  get message() { return tr('It will be gone from your page, and nobody will be able to read it.'); },
+  get confirm() { return tr('Take it down'); },
+  get cancel() { return tr('Keep it'); },
 };

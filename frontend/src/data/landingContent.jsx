@@ -17,6 +17,8 @@ import {
   Users, Eye, Bell,
 } from 'lucide-react';
 import { IntroBrandLockup } from '../components/TortoiseMark';
+import { tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
 
 const SERIF = `'Newsreader', Georgia, 'Times New Roman', serif`;  // headings + tagline, weight 400
 const SANS  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`; // wordmark, labels, UI numerals
@@ -145,7 +147,7 @@ function MiniCard({ title, badge, stars, compact, icon: Icon, children }) {
         )}
       </div>
       {stars && (
-        <div aria-label="five stars" style={{ display: 'flex', gap: '3px', marginBottom: compact ? '5px' : '9px' }}>
+        <div aria-label={tr('five stars')} style={{ display: 'flex', gap: '3px', marginBottom: compact ? '5px' : '9px' }}>
           {Array.from({ length: 5 }).map((_, i) => (
             <span key={i} style={{ fontSize: compact ? '13px' : '16px', lineHeight: 1, color: GOLD }}>★</span>
           ))}
@@ -210,9 +212,9 @@ function ExchangeBoard({ sides }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
           }}>
             <Icon size={16} strokeWidth={2.1} style={{ color: SLATE, flexShrink: 0 }} />
-            {role}
+            {tr(role)}
           </p>,
-          ...[['have', 'Have', have], ['need', 'Need', need]].map(([area, label, text]) => (
+          ...[['have', tr('Have'), have], ['need', tr('Need'), need]].map(([area, label, text]) => (
             <div key={`${role}-${area}`} style={{
               gridArea: `${col}-${area}`, background: 'var(--canvas)',
               display: 'flex', gap: '10px', padding: '10px 22px',
@@ -269,7 +271,7 @@ function StageLadder({ stages }) {
                 color: SLATE, flexShrink: 0,
               }}>
                 {isGoal
-                  ? <img src="/logo.png" alt="Towinly" draggable="false"
+                  ? <img src="/logo.png" alt={tr('Towinly')} draggable="false"
                       loading="lazy" decoding="async"
                       style={{ width: 26, height: 26, objectFit: 'contain', transform: 'rotate(90deg)' }} />
                   : (() => { const I = STAGE_ICONS[s]; return I ? <I size={15} strokeWidth={2.2} /> : i + 1; })()}
@@ -291,12 +293,12 @@ function StageLadder({ stages }) {
                 fontWeight: isGoal ? 400 : 500,
                 letterSpacing: isGoal ? '-0.01em' : 0,
                 color: INK,
-              }}>{s}</span>
+              }}>{tr(s)}</span>
               <span style={{
                 fontFamily: SANS, fontSize: 'var(--text-xs)', fontWeight: 700, color: SLATE,
                 background: WASH, border: `1px solid ${SKYLINE}`, borderRadius: '9999px',
                 padding: '2px 9px', whiteSpace: 'nowrap', flexShrink: 0,
-              }}><span style={{ color: GOLD_TEXT }}>+1</span> trust score</span>
+              }}><span style={{ color: GOLD_TEXT }}>+1</span>{' '}{tr('trust score')}</span>
             </div>
           </div>
         );
@@ -313,11 +315,11 @@ function StageLadder({ stages }) {
 export const SLIDES = [
   {
     id: 'welcome',
-    nextLabel: 'See why →',
+    get nextLabel() { return tr('See why →'); },
     readMs: 3000,
     render: () => (
       <div style={{ textAlign: 'center' }}>
-        <Chapter n={1} label="Welcome" align="center" />
+        <Chapter n={1} label={tr('Welcome')} align="center" />
 
         {/* Brand lockup — the mark and wordmark read as one unit (wordmark stays sans).
             On every landing view it plays the intro: the tortoise draws itself in
@@ -341,18 +343,18 @@ export const SLIDES = [
           letterSpacing: '-0.02em', lineHeight: 1.05, margin: '0 auto 20px',
           maxWidth: '14ch',
         }}>
-          It takes <span style={{ fontStyle: 'italic' }}>two</span> To&nbsp;Win.
+          {emphasize(tr('It takes *two* To Win.'), (part) => <span style={{ fontStyle: 'italic' }}>{part}</span>)}
         </h1>
 
         <p className="landing-lead" style={{
           fontFamily: SF, fontSize: '20px', fontWeight: 500, color: SLATE,
           textAlign: 'center', margin: '0 0 18px',
         }}>
-          Connecting generations, building <span style={{ color: GOLD, fontWeight: 600 }}>trust</span>.
+          {emphasize(tr('Connecting generations, building *trust*.'), (part) => <span style={{ color: GOLD, fontWeight: 600 }}>{part}</span>)}
         </p>
 
         <Body align="center">
-          A place where elders connect with younger people for company and daily help, with a trust score and trust ladder that keeps every connection safe.
+          {tr('A place where elders connect with younger people for company and daily help, with a trust score and trust ladder that keeps every connection safe.')}
         </Body>
       </div>
     ),
@@ -362,19 +364,19 @@ export const SLIDES = [
     readMs: 2600,
     render: () => (
       <Slide>
-        <Chapter n={2} label="Who it's for" align="center" />
-        <Title align="center">Three kinds of people</Title>
-        <Lead align="center">Everyone on Towinly is one of these three.</Lead>
+        <Chapter n={2} label={tr("Who it's for")} align="center" />
+        <Title align="center">{tr('Three kinds of people')}</Title>
+        <Lead align="center">{tr('Everyone on Towinly is one of these three.')}</Lead>
         <div style={{ height: '24px' }} />
         <CardGrid>
-          <MiniCard title="Elder" icon={Armchair}>
-            An older person looking for friendship, company, or help with daily tasks.
+          <MiniCard title={tr('Elder')} icon={Armchair}>
+            {tr('An older person looking for friendship, company, or help with daily tasks.')}
           </MiniCard>
-          <MiniCard title="Helper" icon={HandHeart}>
-            A younger person who gives time, company, and a hand with everyday things.
+          <MiniCard title={tr('Helper')} icon={HandHeart}>
+            {tr('A younger person who gives time, company, and a hand with everyday things.')}
           </MiniCard>
-          <MiniCard title="Family" icon={Users}>
-            A relative who stays close, sees how their elder&apos;s friendships grow, and helps when needed.
+          <MiniCard title={tr('Family')} icon={Users}>
+            {tr("A relative who stays close, sees how their elder's friendships grow, and helps when needed.")}
           </MiniCard>
         </CardGrid>
       </Slide>
@@ -385,15 +387,14 @@ export const SLIDES = [
     readMs: 2900,
     render: () => (
       <Slide>
-        <Chapter n={3} label="The problem we solve" align="center" />
-        <Title align="center">Help is hard to find alone for elder people</Title>
+        <Chapter n={3} label={tr('The problem we solve')} align="center" />
+        <Title align="center">{tr('Help is hard to find alone for elder people')}</Title>
         <Lead align="center">
-          Small daily things, like shopping, a ride, or someone to talk to, take
-          energy that elders don&apos;t always have.
+          {tr("Small daily things, like shopping, a ride, or someone to talk to, take energy that elders don't always have.")}
         </Lead>
         {/* The three examples from the lead, as scannable chips */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', margin: '20px 0 0' }}>
-          {[[ShoppingBag, 'Shopping'], [Car, 'A ride'], [MessageCircle, 'Someone to talk to']].map(([I, label]) => (
+          {[[ShoppingBag, tr('Shopping')], [Car, tr('A ride')], [MessageCircle, tr('Someone to talk to')]].map(([I, label]) => (
             <span key={label} style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               background: 'var(--canvas)', border: `1px solid ${HAIR}`, borderRadius: '9999px',
@@ -406,8 +407,7 @@ export const SLIDES = [
         </div>
         <div style={{ height: '18px' }} />
         <Body align="center">
-          On Towinly, an elder simply asks. Helpers nearby see the request and
-          come to help with whatever is needed.
+          {tr('On Towinly, an elder simply asks. Helpers nearby see the request and come to help with whatever is needed.')}
         </Body>
       </Slide>
     ),
@@ -420,30 +420,29 @@ export const SLIDES = [
       <div className="landing-split" style={{ display: 'flex', alignItems: 'center', gap: '52px' }}>
         {/* Left: story */}
         <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
-          <Chapter n={4} label="The real problem is trust" />
+          <Chapter n={4} label={tr('The real problem is trust')} />
           <Title align="left">
-            <span style={{ color: GOLD }}>Trust</span> is earned,<br />not given
+            {emphasize(tr('*Trust* is earned,'), (part) => <span style={{ color: GOLD }}>{part}</span>)}<br />{tr('not given')}
           </Title>
           <Lead align="left">
-            Letting someone new into your life is a big step. So every member
-            has a <span style={{ color: GOLD, fontWeight: 600 }}>Trust Score</span>, visible to elders before they ever say yes.
+            {emphasize(tr('Letting someone new into your life is a big step. So every member has a *Trust Score*, visible to elders before they ever say yes.'), (part) => <span style={{ color: GOLD, fontWeight: 600 }}>{part}</span>)}
           </Lead>
           <div style={{ height: '18px' }} />
           <NoteBox align="left">
-            Each person you help can earn you a <strong style={{ color: INK }}>maximum of 15 points</strong>, so your score grows with every new connection.
+            {emphasize(tr('Each person you help can earn you a *maximum of 15 points*, so your score grows with every new connection.'), (part) => <strong style={{ color: INK }}>{part}</strong>)}
           </NoteBox>
         </div>
 
         {/* Right: three score cards + total */}
         <div style={{ flexShrink: 0, width: '288px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
-          <MiniCard title="Profile" badge="+3" compact icon={BadgeCheck}>
-            Full profile with ID, phone, and photo, all checked.
+          <MiniCard title={tr('Profile')} badge="+3" compact icon={BadgeCheck}>
+            {tr('Full profile with ID, phone, and photo, all checked.')}
           </MiniCard>
-          <MiniCard title="Trust Ladder" badge="+7" compact icon={TrendingUp}>
-            With each new person you climb the same seven steps, points earned as that friendship grows.
+          <MiniCard title={tr('Trust Ladder')} badge="+7" compact icon={TrendingUp}>
+            {tr('With each new person you climb the same seven steps, points earned as that friendship grows.')}
           </MiniCard>
-          <MiniCard title="Review" badge="+5" stars compact icon={Star}>
-            Star ratings from the people they have already helped.
+          <MiniCard title={tr('Review')} badge="+5" stars compact icon={Star}>
+            {tr('Star ratings from the people they have already helped.')}
           </MiniCard>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
@@ -451,7 +450,7 @@ export const SLIDES = [
           }}>
             <span style={{ fontFamily: SF, fontSize: 'var(--text-sm)', fontWeight: 500, color: SLATE }}>3 + 7 + 5 =</span>
             <span style={{ fontFamily: SERIF, fontSize: '24px', fontWeight: 400, color: GOLD }}>15</span>
-            <span style={{ fontFamily: SF, fontSize: '14px', color: SLATE }}>points per connection</span>
+            <span style={{ fontFamily: SF, fontSize: '14px', color: SLATE }}>{tr('points per connection')}</span>
           </div>
         </div>
       </div>
@@ -465,18 +464,16 @@ export const SLIDES = [
       <div className="landing-split" style={{ display: 'flex', alignItems: 'center', gap: '52px' }}>
         {/* Left: the story */}
         <div className="landing-split-text" style={{ flex: 1, textAlign: 'left' }}>
-          <Chapter n={5} label="One step at a time" />
+          <Chapter n={5} label={tr('One step at a time')} />
           <Title align="left">
-            Rooting (<span style={{ color: GOLD }}>Trust</span> Ladder): how trust grows
+            {emphasize(tr('Rooting (*Trust* Ladder): how trust grows'), (part) => <span style={{ color: GOLD }}>{part}</span>)}
           </Title>
           <Lead align="left">
-            Like a tree growing roots, every friendship on Towinly grows slowly,
-            through 7 simple stages.
+            {tr('Like a tree growing roots, every friendship on Towinly grows slowly, through 7 simple stages.')}
           </Lead>
           <div style={{ height: '18px' }} />
           <NoteBox align="left">
-            <strong style={{ color: INK }}>Both people must agree to every step.</strong> Nothing personal,
-            like a phone number, is shared until trust has grown.
+            {emphasize(tr('*Both people must agree to every step.* Nothing personal, like a phone number, is shared until trust has grown.'), (part) => <strong style={{ color: INK }}>{part}</strong>)}
           </NoteBox>
         </div>
 
@@ -495,30 +492,28 @@ export const SLIDES = [
     readMs: 3200,
     render: () => (
       <Slide>
-        <Chapter n={6} label="Family stays close" align="center" />
-        <Title align="center">Family can watch over</Title>
+        <Chapter n={6} label={tr('Family stays close')} align="center" />
+        <Title align="center">{tr('Family can watch over')}</Title>
         <Lead align="center">
-          An elder can invite up to five family members to stay close and
-          step in if they are ever needed.
+          {tr('An elder can invite up to five family members to stay close and step in if they are ever needed.')}
         </Lead>
         {/* Compact cards + tight spacers: this slide must fit one screen with
             no scrolling inside the deck (user rule). */}
         <div style={{ height: '14px' }} />
         <CardGrid>
-          <MiniCard title="See the journey" compact icon={Eye}>
-            Watch each friendship climb its seven steps.
+          <MiniCard title={tr('See the journey')} compact icon={Eye}>
+            {tr('Watch each friendship climb its seven steps.')}
           </MiniCard>
-          <MiniCard title="Hear right away" compact icon={Bell}>
-            Alerts the moment something needs attention.
+          <MiniCard title={tr('Hear right away')} compact icon={Bell}>
+            {tr('Alerts the moment something needs attention.')}
           </MiniCard>
-          <MiniCard title="Help decide" compact icon={Users}>
-            Look at a new helper and share their view.
+          <MiniCard title={tr('Help decide')} compact icon={Users}>
+            {tr('Look at a new helper and share their view.')}
           </MiniCard>
         </CardGrid>
         <div style={{ height: '12px' }} />
         <NoteBox>
-          The elder is always in charge — one switch turns family sharing on
-          or off, at any time.
+          {tr('The elder is always in charge — one switch turns family sharing on or off, at any time.')}
         </NoteBox>
       </Slide>
     ),
@@ -527,25 +522,23 @@ export const SLIDES = [
     id: 'why',
     render: () => (
       <Slide>
-        <Chapter n={7} label="Why Towinly" align="center" />
-        <Title align="center">Both sides win</Title>
+        <Chapter n={7} label={tr('Why Towinly')} align="center" />
+        <Title align="center">{tr('Both sides win')}</Title>
         <Lead align="center">
-          Today&apos;s elders use phones, shop online, and pay online. Tomorrow
-          there will be many more. But the hardest parts of growing older haven&apos;t
-          changed: feeling lonely, and not having enough energy for everyday things.
+          {tr("Today's elders use phones, shop online, and pay online. Tomorrow there will be many more. But the hardest parts of growing older haven't changed: feeling lonely, and not having enough energy for everyday things.")}
         </Lead>
         <div style={{ height: '14px' }} />
         {/* Read across: each side's Have answers the other side's Need. */}
         <ExchangeBoard sides={[
           {
             role: 'Elders', icon: Armchair,
-            have: 'Time, money, and life lessons to share',
-            need: 'Energy and company',
+            have: tr('Time, money, and life lessons to share'),
+            need: tr('Energy and company'),
           },
           {
             role: 'Helpers', icon: HandHeart,
-            have: 'Energy, time, and good company',
-            need: 'Money, care, and life advice',
+            have: tr('Energy, time, and good company'),
+            need: tr('Money, care, and life advice'),
           },
         ]} />
         {/* The payoff line, set like the tagline: serif 400, italic emphasis. */}
@@ -554,7 +547,7 @@ export const SLIDES = [
           letterSpacing: '-0.01em', lineHeight: 1.4, textAlign: 'center',
           maxWidth: '54ch', margin: '16px auto 0', textWrap: 'balance',
         }}>
-          Towinly is where they meet and share, and&nbsp;<span style={{ fontStyle: 'italic' }}>both</span>&nbsp;win.
+          {emphasize(tr('Towinly is where they meet and share, and *both* win.'), (part) => <span style={{ fontStyle: 'italic' }}>{part}</span>)}
         </p>
       </Slide>
     ),

@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
+import { tr } from '../i18n';
 
 const SKY_TINT = 'var(--blue-tint)';
 const SKY_BORDER = 'var(--blue-soft)';
 
-export default function TagInput({ value = [], onChange, placeholder = 'Type and press Enter…', style }) {
+export default function TagInput({ value = [], onChange, placeholder = tr('Type and press Enter…'), style }) {
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
 
@@ -79,7 +80,7 @@ export default function TagInput({ value = [], onChange, placeholder = 'Type and
               justifyContent: 'center',
               opacity: 0.7,
             }}
-            aria-label={`Remove ${tag}`}
+            aria-label={tr('Remove {tag}', { tag })}
           >
             ×
           </button>

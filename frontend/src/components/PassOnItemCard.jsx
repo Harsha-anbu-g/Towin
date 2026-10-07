@@ -1,5 +1,6 @@
 import { NO_CAPTURE } from '../lib/analytics';
 import { AUDIENCES, LETTERS } from './passOnLocks';
+import { dateLocale, tr } from '../i18n';
 
 /**
  * One thing she has written, as it sits on her own page.
@@ -31,7 +32,7 @@ export default function PassOnItemCard({ item, onChange, onRemove }) {
           {item.title}
         </h3>
         {isLetter
-          ? <span style={quietChip}>To {item.audienceUserName || 'someone'}</span>
+          ? <span style={quietChip}>{item.audienceUserName ? tr('To {name}', { name: item.audienceUserName }) : tr('To someone')}</span>
           : audience && <span style={quietChip}>{audience.title}</span>}
       </div>
 
@@ -52,15 +53,15 @@ export default function PassOnItemCard({ item, onChange, onRemove }) {
             : <span style={greenChip}>{LETTERS.readableNow}</span>}
           {item.firstReadAt && (
             <span style={{ fontSize: '16px', color: 'var(--ink-3)' }}>
-              {item.audienceUserName} read this on {onDay(item.firstReadAt)}
+              {tr('{audienceUserName} read this on {onDay}', { audienceUserName: item.audienceUserName, onDay: onDay(item.firstReadAt) })}
             </span>
           )}
         </div>
       )}
 
       <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
-        <button type="button" onClick={() => onChange(item)} style={ghostBtn}>Change</button>
-        <button type="button" onClick={() => onRemove(item)} style={ghostBtn}>Remove</button>
+        <button type="button" onClick={() => onChange(item)} style={ghostBtn}>{tr('Change')}</button>
+        <button type="button" onClick={() => onRemove(item)} style={ghostBtn}>{tr('Remove')}</button>
       </div>
     </article>
   );
@@ -70,7 +71,7 @@ export default function PassOnItemCard({ item, onChange, onRemove }) {
 function onDay(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+  return date.toLocaleDateString(dateLocale('en-GB'), { day: 'numeric', month: 'long' });
 }
 
 const cardStyle = {
