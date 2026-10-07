@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -52,7 +53,7 @@ export default function FamilyNeedsForParent({
   const [confirmId, setConfirmId] = useState(null);
   const [busyId, setBusyId] = useState(null);
 
-  const parent = elderName || 'your parent';
+  const parent = elderName || tr('your parent');
   const needs = openNeeds || [];
 
   // Nothing to say: no open requests, and no permission to add one.
@@ -63,7 +64,7 @@ export default function FamilyNeedsForParent({
   async function postNeed(e) {
     e.preventDefault();
     if (!form.title.trim()) {
-      setFormMsg(`Please write what ${parent} needs help with.`);
+      setFormMsg(tr('Please write what {parent} needs help with.', { parent }));
       return;
     }
     setPosting(true);
@@ -80,10 +81,10 @@ export default function FamilyNeedsForParent({
       });
       setForm(EMPTY_FORM);
       setFormOpen(false);
-      toast.success(`Asked for help for ${parent}. Helpers will see you asked for them.`);
+      toast.success(tr('Asked for help for {parent}. Helpers will see you asked for them.', { parent }));
       onChanged?.();
     } catch (err) {
-      setFormMsg(err?.response?.data?.message || 'Could not send that request. Please try again.');
+      setFormMsg(err?.response?.data?.message || tr('Could not send that request. Please try again.'));
     } finally {
       setPosting(false);
     }
@@ -94,10 +95,10 @@ export default function FamilyNeedsForParent({
     setBusyId(needId);
     try {
       await api.delete(`/needs/${needId}`);
-      toast.success(`Closed that request for ${parent}.`);
+      toast.success(tr('Closed that request for {parent}.', { parent }));
       onChanged?.();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not close that request. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not close that request. Please try again.'));
     } finally {
       setBusyId(null);
     }
@@ -106,20 +107,20 @@ export default function FamilyNeedsForParent({
   return (
     <div style={{ marginTop: '16px' }}>
       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: '0 0 6px' }}>
-        {parent}&apos;s open help requests
+        {tr("{parent}'s open help requests", { parent })}
       </p>
 
       {/* One line, in the same words as every other "acting for them" note on
           this page: the request is theirs, your name is on it. */}
       {canManage && (
         <p style={{ fontSize: '14px', color: 'var(--gold-deep)', fontFamily: SFText, margin: '0 0 12px', lineHeight: 1.5 }}>
-          {parent} asked you to handle these. Helpers see your name on anything you do here.
+          {tr('{parent} asked you to handle these. Helpers see your name on anything you do here.', { parent })}
         </p>
       )}
 
       {needs.length === 0 && (
         <p style={{ fontSize: '16px', color: 'var(--ink-3)', fontFamily: SFText, margin: '0 0 12px', lineHeight: 1.5 }}>
-          {parent} has no open help requests right now.
+          {tr('{parent} has no open help requests right now.', { parent })}
         </p>
       )}
 
@@ -135,7 +136,7 @@ export default function FamilyNeedsForParent({
           )}
           {n.actedByName && (
             <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', fontFamily: SFText, margin: '6px 0 0', lineHeight: 1.4 }}>
-              Asked by {n.actedByName}, for {parent}
+              {tr('Asked by {actedByName}, for {parent}', { actedByName: n.actedByName, parent })}
             </p>
           )}
 
@@ -152,7 +153,7 @@ export default function FamilyNeedsForParent({
                 cursor: busyId === n.id ? 'default' : 'pointer',
               }}
             >
-              {busyId === n.id ? 'Closing…' : `Close this request for ${parent}`}
+              {busyId === n.id ? tr('Closing…') : tr('Close this request for {parent}', { parent })}
             </button>
           )}
 
@@ -162,7 +163,7 @@ export default function FamilyNeedsForParent({
               marginTop: '10px', animation: OPEN_ANIM,
             }}>
               <span style={{ fontSize: '16px', color: 'var(--ink)', fontFamily: SFText, flex: '1 1 180px', lineHeight: 1.4 }}>
-                Close this for {parent}? Helpers will stop seeing it.
+                {tr('Close this for {parent}? Helpers will stop seeing it.', { parent })}
               </span>
               <button
                 type="button"
@@ -174,7 +175,7 @@ export default function FamilyNeedsForParent({
                   fontFamily: SFText, cursor: 'pointer',
                 }}
               >
-                Yes, close it
+                {tr('Yes, close it')}
               </button>
               <button
                 type="button"
@@ -186,7 +187,7 @@ export default function FamilyNeedsForParent({
                   fontSize: '16px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                 }}
               >
-                Keep it
+                {tr('Keep it')}
               </button>
             </div>
           )}
@@ -210,7 +211,7 @@ export default function FamilyNeedsForParent({
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
-          Ask for help for {parent}
+          {tr('Ask for help for {parent}', { parent })}
         </button>
       )}
 
@@ -225,25 +226,25 @@ export default function FamilyNeedsForParent({
           }}
         >
           <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0, lineHeight: 1.4 }}>
-            Ask for help for {parent}
+            {tr('Ask for help for {parent}', { parent })}
           </p>
 
           <div>
             <label htmlFor={`need-title-${elderId}`} style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-              What does {parent} need help with?
+              {tr('What does {parent} need help with?', { parent })}
             </label>
             <input
               id={`need-title-${elderId}`}
               className="field"
               value={form.title}
               onChange={set('title')}
-              placeholder="A ride to the doctor on Tuesday"
+              placeholder={tr('A ride to the doctor on Tuesday')}
             />
           </div>
 
           <div>
             <label htmlFor={`need-desc-${elderId}`} style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-              Anything else a helper should know? (optional)
+              {tr('Anything else a helper should know? (optional)')}
             </label>
             <textarea
               id={`need-desc-${elderId}`}
@@ -257,7 +258,7 @@ export default function FamilyNeedsForParent({
 
           <div>
             <p id={`need-cat-${elderId}`} style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 8px' }}>
-              What kind of help?
+              {tr('What kind of help?')}
             </p>
             <div role="radiogroup" aria-labelledby={`need-cat-${elderId}`} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {CATEGORIES.map(([key, label]) => (
@@ -269,7 +270,7 @@ export default function FamilyNeedsForParent({
                   onClick={() => setForm(f => ({ ...f, category: key }))}
                   style={chipBtn(form.category === key)}
                 >
-                  {label}
+                  {tr(label)}
                 </button>
               ))}
             </div>
@@ -277,7 +278,7 @@ export default function FamilyNeedsForParent({
 
           <div>
             <p id={`need-urg-${elderId}`} style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 8px' }}>
-              How soon does {parent} need it?
+              {tr('How soon does {parent} need it?', { parent })}
             </p>
             <div role="radiogroup" aria-labelledby={`need-urg-${elderId}`} style={{ display: 'flex', gap: '8px' }}>
               {URGENCIES.map(([key, label]) => (
@@ -300,7 +301,7 @@ export default function FamilyNeedsForParent({
           )}
 
           <p style={{ fontSize: '15px', color: 'var(--gold-deep)', fontFamily: SFText, margin: 0, lineHeight: 1.5 }}>
-            This goes out as {parent}&apos;s request, with your name on it as the person who asked.
+            {tr("This goes out as {parent}'s request, with your name on it as the person who asked.", { parent })}
           </p>
 
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -315,7 +316,7 @@ export default function FamilyNeedsForParent({
                 opacity: posting ? 0.6 : 1,
               }}
             >
-              {posting ? 'Sending…' : `Send for ${parent}`}
+              {posting ? tr('Sending…') : tr('Send for {parent}', { parent })}
             </button>
             <button
               type="button"
@@ -327,7 +328,7 @@ export default function FamilyNeedsForParent({
                 fontSize: '16px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
               }}
             >
-              Never mind
+              {tr('Never mind')}
             </button>
           </div>
         </form>

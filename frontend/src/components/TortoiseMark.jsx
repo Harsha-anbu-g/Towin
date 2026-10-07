@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DRAW, CELLS, VIEWBOX, STROKE } from './tortoiseMarkPaths';
 import { useLogoIntro } from './useLogoIntro';
+import { tr } from '../i18n';
 
 /**
  * The Towinly tortoise, as vector geometry rather than a raster.
@@ -115,7 +116,7 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, m
         size={size}
         animated={play}
         running={running}
-        title="Towinly tortoise logo"
+        title={tr('Towinly tortoise logo')}
         style={{ objectFit: 'contain', ...(play ? { '--intro-shift': `${shift}px` } : null) }}
       />
       {/* The wipe is done with overflow + a translated inner span (transform,
@@ -125,7 +126,7 @@ export function IntroBrandLockup({ wrapStyle, wordStyle, size = 104, gap = 16, m
         className={play ? `logo-wordmark${running ? ' is-writing' : ''}` : undefined}
         style={wordStyle}
       >
-        <span className="logo-wordmark-inner">Towinly</span>
+        <span className="logo-wordmark-inner">{tr('Towinly')}</span>
       </span>
     </div>
   );

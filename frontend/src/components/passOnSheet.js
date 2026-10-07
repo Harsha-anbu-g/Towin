@@ -1,6 +1,7 @@
 import {
   SEALED_KINDS, SETUP, SHEET, keyholderLine, onDayInFull,
 } from './passOnLocks';
+import { tr } from '../i18n';
 
 /**
  * The elder's saved one-page copy, as one structure that both the screen and the file are
@@ -115,7 +116,7 @@ export function sheetAsText(sheet) {
  */
 export function sheetFileName(ownerName) {
   const safe = (ownerName || '').replace(NOT_IN_A_FILE_NAME, '').trim();
-  return `Towinly - what ${safe} passes on.txt`;
+  return tr('Towinly - what {safe} passes on.txt', { safe });
 }
 
 /** "Where the money is — Money". The name she gave it, then its chip, and nothing else. */

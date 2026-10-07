@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useToast } from '../context/useToast';
 import api from '../api/axios';
+import { tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
 
 // Shown right after a manual signup. The account does NOT exist yet — it's
 // created only when the user opens the link. So the user is not logged in here.
@@ -12,13 +14,13 @@ export default function CheckEmail() {
   const [sending, setSending] = useState(false);
 
   const resend = async () => {
-    if (!email) { toast.error('Please sign up again to get a new link.'); return; }
+    if (!email) { toast.error(tr('Please sign up again to get a new link.')); return; }
     setSending(true);
     try {
       await api.post('/auth/resend-verification', { email });
-      toast.success('Verification email sent. Check your inbox.');
+      toast.success(tr('Verification email sent. Check your inbox.'));
     } catch {
-      toast.error('Could not resend right now. Try again shortly.');
+      toast.error(tr('Could not resend right now. Try again shortly.'));
     } finally {
       setSending(false);
     }
@@ -37,27 +39,28 @@ export default function CheckEmail() {
   return (
     <div style={card}>
       <div style={{ fontSize: 44, marginBottom: 16 }}>✉️</div>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Confirm your email</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>{tr('Confirm your email')}</h1>
       <p style={{ color: 'var(--slate)', marginBottom: 8 }}>
-        We sent a confirmation link to{email ? <> <strong>{email}</strong></> : ' your email'}.
+        {email
+          ? tr('We sent a confirmation link to {email}.').split('{email}').map((part, i) => (i === 0 ? part : <span key={i}><strong>{email}</strong>{part}</span>))
+          : tr('We sent a confirmation link to your email.')}
       </p>
       <p style={{ color: 'var(--slate)', marginBottom: 20 }}>
-        Open it to finish creating your account — then come back and log in.
+        {tr('Open it to finish creating your account — then come back and log in.')}
       </p>
 
       <div style={{
         background: 'var(--gold-wash)', color: 'var(--gold-deep)', borderRadius: 10,
         padding: '12px 16px', marginBottom: 28, fontSize: 'var(--text-sm)', lineHeight: 1.5, textAlign: 'left',
       }}>
-        📁 <strong>Can't find it?</strong> Please check your <strong>Spam</strong> or <strong>Junk</strong> folder —
-        the Towinly email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox.
+        📁 {emphasize(tr("*Can't find it?* Please check your *Spam* or *Junk* folder — the Towinly email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox."), (part) => <strong>{part}</strong>)}
       </div>
 
       <button onClick={resend} disabled={sending} style={primaryBtn}>
-        {sending ? 'Sending…' : 'Resend email'}
+        {sending ? tr('Sending…') : tr('Resend email')}
       </button>
       <Link to="/login" style={{ color: 'var(--blue-deep)', fontWeight: 600, textDecoration: 'underline', fontSize: 'var(--text-sm)' }}>
-        Back to log in
+        {tr('Back to log in')}
       </Link>
     </div>
   );

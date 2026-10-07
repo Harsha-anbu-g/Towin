@@ -2,6 +2,7 @@ import { useState } from 'react';
 import SmoothInput from './SmoothInput';
 import PersonPicker from './PersonPicker';
 import { AUDIENCES, LETTERS, NOT_HERE, STORY_BOX } from './passOnLocks';
+import { tr } from '../i18n';
 
 /**
  * Writing one story, or one letter — and changing one afterwards.
@@ -57,9 +58,9 @@ export default function PassOnItemForm({
 
   function submit(e) {
     e.preventDefault();
-    if (!title.trim()) return setProblem('Please give it a name.');
-    if (!body.trim()) return setProblem(isLetter ? 'Please write something before you save it.' : 'Please tell it before you save it.');
-    if (wantsPerson && !personId) return setProblem('Please choose the one person this is for.');
+    if (!title.trim()) return setProblem(tr('Please give it a name.'));
+    if (!body.trim()) return setProblem(isLetter ? tr('Please write something before you save it.') : tr('Please tell it before you save it.'));
+    if (wantsPerson && !personId) return setProblem(tr('Please choose the one person this is for.'));
     setProblem('');
     onSave({
       kind,
@@ -84,7 +85,7 @@ export default function PassOnItemForm({
           className="field"
           value={title}
           onChange={e => setTitle(e.target.value)}
-          placeholder={isLetter ? 'For Sarah' : STORY_BOX.namePlaceholder}
+          placeholder={isLetter ? tr('For Sarah') : STORY_BOX.namePlaceholder}
           maxLength={120}
         />
       </div>
@@ -109,7 +110,7 @@ export default function PassOnItemForm({
           fontSize: '16px', color: 'var(--gold-deep)', lineHeight: 1.5,
           margin: '0 0 18px',
         }}>
-          {NOT_HERE}
+          {tr(NOT_HERE)}
         </p>
       )}
 
@@ -160,10 +161,10 @@ export default function PassOnItemForm({
 
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button type="submit" disabled={saving} style={{ ...fillBtn, flex: 1, minWidth: '160px' }}>
-          {saving ? 'Saving…' : isLetter ? LETTERS.save : STORY_BOX.save}
+          {saving ? tr('Saving…') : isLetter ? LETTERS.save : STORY_BOX.save}
         </button>
         <button type="button" onClick={onCancel} disabled={saving} style={{ ...ghostBtn, flex: 1, minWidth: '120px' }}>
-          Cancel
+          {tr('Cancel')}
         </button>
       </div>
     </form>

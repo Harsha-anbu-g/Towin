@@ -7,18 +7,19 @@ import SmoothInput from '../components/SmoothInput';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
 import { useAuth } from '../context/useAuth';
 import { parseServerDate } from '../lib/utils';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 const TRUST_LABELS = {
-  DISCOVERED: 'Just Connected',
-  MESSAGING: 'Messaging',
-  PHONE_CALL: 'Phone Ready',
-  VIDEO_CALL: 'Video Ready',
-  VERIFIED: 'Verified',
-  FIRST_MEET: 'Ready to Meet',
-  TRUSTED: 'Fully Trusted',
+  get DISCOVERED() { return tr('Just Connected'); },
+  get MESSAGING() { return tr('Messaging'); },
+  get PHONE_CALL() { return tr('Phone Ready'); },
+  get VIDEO_CALL() { return tr('Video Ready'); },
+  get VERIFIED() { return tr('Verified'); },
+  get FIRST_MEET() { return tr('Ready to Meet'); },
+  get TRUSTED() { return tr('Fully Trusted'); },
 };
 
 function timeAgo(iso) {
@@ -81,11 +82,11 @@ const ROLE_TAB_ORDER = {
 };
 const DEFAULT_TAB_ORDER = ['Elders', 'Helpers', 'Friends', 'Groups', 'Family'];
 const EMPTY_TAB_COPY = {
-  groups: 'No group chats yet. When a friendship is shared with family, its updates will show here.',
-  elders: 'No chats with elders yet. Offer to help on your dashboard to start one.',
-  helpers: 'No chats with helpers yet. Connect with someone on your dashboard to start one.',
-  family: 'No family chats yet. When a family member joins you here, your chat with them will show up.',
-  friends: 'No friends to chat with yet. Find people like you under Add Friends on your dashboard.',
+  get groups() { return tr('No group chats yet. When a friendship is shared with family, its updates will show here.'); },
+  get elders() { return tr('No chats with elders yet. Offer to help on your dashboard to start one.'); },
+  get helpers() { return tr('No chats with helpers yet. Connect with someone on your dashboard to start one.'); },
+  get family() { return tr('No family chats yet. When a family member joins you here, your chat with them will show up.'); },
+  get friends() { return tr('No friends to chat with yet. Find people like you under Add Friends on your dashboard.'); },
 };
 function sectionOf(c) {
   if (c.type === 'PEER') return 'Friends';
@@ -128,7 +129,7 @@ export default function MessagesInbox() {
   const participantThreads = connections
     .filter(c => c.status === 'ACTIVE' && c.sharedWithFamily
       && (c.currentTrustLevel === 'FIRST_MEET' || c.currentTrustLevel === 'TRUSTED'))
-    .map(c => ({ id: c.id, title: `You & ${c.otherUserName}`, photo: null }));
+    .map(c => ({ id: c.id, title: tr('You & {otherUserName}', { otherUserName: c.otherUserName }), photo: null }));
   const groupThreads = [
     ...participantThreads,
     ...journeyThreads.filter(t => !participantThreads.some(p => p.id === t.id)),
@@ -171,10 +172,10 @@ export default function MessagesInbox() {
       </span>
       <span style={{ minWidth: 0 }}>
         <span style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)' }}>
-          Family updates
+          {tr('Family updates')}
         </span>
         <span style={{ display: 'block', fontSize: '14px', color: 'var(--ink-3)', marginTop: '2px' }}>
-          {t.title} — everyone reads the same notes
+          {tr('{title} — everyone reads the same notes', { title: t.title })}
         </span>
       </span>
     </button>
@@ -204,7 +205,7 @@ export default function MessagesInbox() {
                 color: 'var(--ink)', fontFamily: SF,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>
-                {c.otherUserName || 'User'}
+                {c.otherUserName || tr('User')}
                 {/* A helper sees whose family this person is: "Sarah (Margaret's family)". */}
                 {c.otherUserContext && (
                   <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}> ({c.otherUserContext})</span>
@@ -233,7 +234,7 @@ export default function MessagesInbox() {
               fontWeight: c.unreadCount > 0 ? 500 : 400,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
-              {c.lastMessagePreview || 'No messages yet'}
+              {c.lastMessagePreview || tr('No messages yet')}
             </p>
             {c.unreadCount > 0 && (
               <span style={{
@@ -260,8 +261,8 @@ export default function MessagesInbox() {
   // shows a friendly empty note instead of disappearing.
   const tabNames = ROLE_TAB_ORDER[user?.role] || DEFAULT_TAB_ORDER;
   const sections = tabNames.map(name => name === 'Groups'
-    ? { id: 'groups', label: 'Groups', rows: q ? [] : groupThreads, renderRow: groupRow }
-    : { id: name.toLowerCase(), label: name, rows: buckets[name], renderRow: convRow });
+    ? { id: 'groups', label: tr('Groups'), rows: q ? [] : groupThreads, renderRow: groupRow }
+    : { id: name.toLowerCase(), label: tr(name), rows: buckets[name], renderRow: convRow });
   // Land on the first tab that has a conversation, not on an empty one.
   const activeTab = sections.some(s => s.id === tab)
     ? tab
@@ -284,10 +285,10 @@ export default function MessagesInbox() {
             letterSpacing: '-0.02em',
             marginBottom: '8px',
           }}>
-            Messages
+            {tr('Messages')}
           </h1>
           <p style={{ fontSize: '16px', color: 'var(--ink-slate-2)', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
-            Your conversations with trusted connections.
+            {tr('Your conversations with trusted connections.')}
           </p>
         </div>
       </BlurFade>
@@ -324,10 +325,10 @@ export default function MessagesInbox() {
                 </svg>
               </div>
               <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                No conversations yet
+                {tr('No conversations yet')}
               </p>
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '20px' }}>
-                Connect with someone on your dashboard to start chatting.
+                {tr('Connect with someone on your dashboard to start chatting.')}
               </p>
               <button
                 onClick={() => navigate('/dashboard')}
@@ -337,7 +338,7 @@ export default function MessagesInbox() {
                   fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
                 }}
               >
-                Go to Dashboard
+                {tr('Go to Dashboard')}
               </button>
             </div>
           </BlurFade>
@@ -356,8 +357,8 @@ export default function MessagesInbox() {
                 <SmoothInput
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Search conversations"
-                  aria-label="Search conversations"
+                  placeholder={tr('Search conversations')}
+                  aria-label={tr('Search conversations')}
                   style={{
                     width: '100%', boxSizing: 'border-box', height: '48px',
                     border: '1.5px solid var(--border)', borderRadius: '9999px',
@@ -377,7 +378,7 @@ export default function MessagesInbox() {
                 segments={sections.map(s => ({ id: s.id, label: s.label }))}
                 value={activeTab}
                 onChange={setTab}
-                label="Filter conversations by who they're with"
+                label={tr("Filter conversations by who they're with")}
               />
             </div>
             {currentSection.rows.length > 0 ? (
@@ -390,7 +391,7 @@ export default function MessagesInbox() {
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
               }>
-                {q ? `No conversations here match “${query.trim()}”.` : EMPTY_TAB_COPY[currentSection.id]}
+                {q ? tr('No conversations here match “{trim}”.', { trim: query.trim() }) : EMPTY_TAB_COPY[currentSection.id]}
               </SegmentEmpty>
             )}
           </>

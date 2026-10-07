@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
+import { tr } from '../i18n';
 
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
@@ -33,7 +34,7 @@ export default function FamilyShareToggle({ connectionId, shared: initialShared 
       await api.post(`/connections/${connectionId}/family-visibility`, { shared: next });
     } catch {
       setShared(!next);
-      toast.error("Couldn't save that change. Please try again.");
+      toast.error(tr("Couldn't save that change. Please try again."));
     } finally {
       setSaving(false);
     }
@@ -44,7 +45,7 @@ export default function FamilyShareToggle({ connectionId, shared: initialShared 
       type="button"
       role="switch"
       aria-checked={shared}
-      aria-label="Let my family see this friendship"
+      aria-label={tr('Let my family see this friendship')}
       onClick={flip}
       disabled={saving}
       style={{
@@ -56,12 +57,12 @@ export default function FamilyShareToggle({ connectionId, shared: initialShared 
     >
       <span style={{ minWidth: 0 }}>
         <span style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.35 }}>
-          Share with family — let them see this friendship
+          {tr('Share with family — let them see this friendship')}
         </span>
         <span style={{ display: 'block', fontSize: '14px', color: 'var(--ink-slate)', lineHeight: 1.4, marginTop: '2px' }}>
           {shared
-            ? 'Your family can see how this friendship is going. They cannot change anything here.'
-            : 'Kept private from family. Only you can change this.'}
+            ? tr('Your family can see how this friendship is going. They cannot change anything here.')
+            : tr('Kept private from family. Only you can change this.')}
         </span>
       </span>
       {/* Track + knob — same geometry as the NavBar night-mode switch. */}

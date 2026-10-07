@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 import api from '../api/axios';
+import { tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
 
 function emailFromToken(token) {
   try { return JSON.parse(atob(token.split('.')[1])).email; } catch { return null; }
@@ -25,9 +27,9 @@ export default function VerifyPending() {
     setSending(true);
     try {
       await api.post('/auth/resend-verification');
-      toast.success('Verification email sent. Check your inbox.');
+      toast.success(tr('Verification email sent. Check your inbox.'));
     } catch (e) {
-      toast.error(e?.response?.data?.message || 'Could not send the email. Try again shortly.');
+      toast.error(e?.response?.data?.message || tr('Could not send the email. Try again shortly.'));
     } finally {
       setSending(false);
     }
@@ -52,27 +54,28 @@ export default function VerifyPending() {
   return (
     <div style={card}>
       <div style={{ fontSize: 44, marginBottom: 16 }}>✉️</div>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Verify your email</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>{tr('Verify your email')}</h1>
       <p style={{ color: 'var(--slate)', marginBottom: 8 }}>
-        We sent a verification link to{email ? <> <strong>{email}</strong></> : ' your email'}.
+        {email
+          ? tr('We sent a verification link to {email}.').split('{email}').map((part, i) => (i === 0 ? part : <span key={i}><strong>{email}</strong>{part}</span>))
+          : tr('We sent a verification link to your email.')}
       </p>
       <p style={{ color: 'var(--slate)', marginBottom: 20 }}>
-        Open it to activate your account, then sign in again to continue.
+        {tr('Open it to activate your account, then sign in again to continue.')}
       </p>
 
       <div style={{
         background: 'var(--gold-wash)', color: 'var(--gold-deep)', borderRadius: 10,
         padding: '12px 16px', marginBottom: 28, fontSize: 'var(--text-sm)', lineHeight: 1.5, textAlign: 'left',
       }}>
-        📁 <strong>Can't find it?</strong> Please check your <strong>Spam</strong> or <strong>Junk</strong> folder —
-        the Towinly verification email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox.
+        📁 {emphasize(tr("*Can't find it?* Please check your *Spam* or *Junk* folder — the Towinly verification email often lands there. If you find it, mark it “Not spam” so future emails reach your inbox."), (part) => <strong>{part}</strong>)}
       </div>
 
       <button onClick={resend} disabled={sending} style={primaryBtn}>
-        {sending ? 'Sending…' : 'Resend email'}
+        {sending ? tr('Sending…') : tr('Resend email')}
       </button>
       <button onClick={backToLogin} style={linkBtn}>
-        I've verified — sign in
+        {tr("I've verified — sign in")}
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../api/axios';
+import { tr } from '../i18n';
 
 // Landing page for the link sent in the verification email. Reads ?token=,
 // confirms it with the backend, and shows the result. No auth required.
@@ -31,28 +32,28 @@ export default function VerifyEmail() {
     <div style={card}>
       {state === 'verifying' && (
         <>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Verifying your email…</h1>
-          <p style={{ color: 'var(--slate)' }}>Just a moment.</p>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>{tr('Verifying your email…')}</h1>
+          <p style={{ color: 'var(--slate)' }}>{tr('Just a moment.')}</p>
         </>
       )}
       {state === 'success' && (
         <>
           <div style={{ fontSize: 44, marginBottom: 12 }}>✅</div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Email verified!</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>{tr('Email verified!')}</h1>
           <p style={{ color: 'var(--slate)', marginBottom: 24 }}>
-            Your account is ready. Please log in to get started.
+            {tr('Your account is ready. Please log in to get started.')}
           </p>
-          <Link to="/login" style={linkStyle}>Go to login →</Link>
+          <Link to="/login" style={linkStyle}>{tr('Go to login →')}</Link>
         </>
       )}
       {state === 'error' && (
         <>
           <div style={{ fontSize: 44, marginBottom: 12 }}>⚠️</div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Link didn't work</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>{tr("Link didn't work")}</h1>
           <p style={{ color: 'var(--slate)', marginBottom: 24 }}>
-            This link is invalid or has expired. Please sign up again to get a fresh one.
+            {tr('This link is invalid or has expired. Please sign up again to get a fresh one.')}
           </p>
-          <Link to="/register" style={linkStyle}>Back to sign up →</Link>
+          <Link to="/register" style={linkStyle}>{tr('Back to sign up →')}</Link>
         </>
       )}
     </div>

@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
+import { tr } from '../i18n';
 
 const SF = '-apple-system, "SF Pro Text", system-ui, sans-serif';
 const SFD = '-apple-system, "SF Pro Display", system-ui, sans-serif';
@@ -10,8 +11,8 @@ const BLUE = 'var(--blue)';
 const BORDER = 'var(--blue-soft)';
 
 const ROLES = [
-  { value: 'ELDER', label: 'Elder', desc: 'Looking for friends or help' },
-  { value: 'HELPER', label: 'Helper', desc: 'Want to help others' },
+  { value: 'ELDER', get label() { return tr('Elder'); }, get desc() { return tr('Looking for friends or help'); } },
+  { value: 'HELPER', get label() { return tr('Helper'); }, get desc() { return tr('Want to help others'); } },
 ];
 
 export default function FinishSetup() {
@@ -39,7 +40,7 @@ export default function FinishSetup() {
         fontFamily: SF, textAlign: 'center',
       }}>
         <p style={{ color: 'var(--ink-slate)', marginBottom: '20px' }}>
-          This page is only accessible after signing in with Google.
+          {tr('This page is only accessible after signing in with Google.')}
         </p>
         <Link to="/login" style={{
           height: '44px', lineHeight: '44px', padding: '0 28px',
@@ -47,7 +48,7 @@ export default function FinishSetup() {
           borderRadius: '9999px', textDecoration: 'none',
           fontSize: '16px', fontFamily: SF,
         }}>
-          Go to log in
+          {tr('Go to log in')}
         </Link>
       </div>
     );
@@ -57,9 +58,9 @@ export default function FinishSetup() {
     e.preventDefault();
     setError('');
     const errs = {};
-    if (!/^[a-z0-9_]{3,20}$/.test(username)) errs.username = 'Username must be 3-20 characters: lowercase letters, numbers, underscores only';
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) errs.username = tr('Username must be 3-20 characters: lowercase letters, numbers, underscores only');
     const digits = phone.replace(/[\s()-]/g, '');
-    if (!/^\+?[0-9]{10,15}$/.test(digits)) errs.phone = 'Enter a valid phone number (10 to 15 digits)';
+    if (!/^\+?[0-9]{10,15}$/.test(digits)) errs.phone = tr('Enter a valid phone number (10 to 15 digits)');
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
     setLoading(true);
@@ -73,7 +74,7 @@ export default function FinishSetup() {
       login(data.token);
       navigate('/profile', { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message || 'Something went wrong. Please try again.');
+      setError(err?.response?.data?.message || tr('Something went wrong. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export default function FinishSetup() {
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-          <img src="/tortoise-logo-alpha.png" alt="Towinly" style={{ width: 48, height: 48, objectFit: 'contain' }} />
+          <img src="/tortoise-logo-alpha.png" alt={tr('Towinly')} style={{ width: 48, height: 48, objectFit: 'contain' }} />
         </div>
 
         <h2 style={{
@@ -102,14 +103,14 @@ export default function FinishSetup() {
           color: 'var(--ink)', textAlign: 'center', margin: '0 0 8px',
           letterSpacing: '-0.02em',
         }}>
-          One last step
+          {tr('One last step')}
         </h2>
         <p style={{
           fontSize: '16px', color: 'var(--ink-3)', textAlign: 'center',
           margin: '0 0 28px', lineHeight: 1.5,
         }}>
-          {googleName ? `Welcome, ${googleName.split(' ')[0]}! ` : ''}
-          Tell us a little more to finish creating your account.
+          {googleName ? tr('Welcome, {name}!', { name: googleName.split(' ')[0] }) + ' ' : ''}
+          {tr('Tell us a little more to finish creating your account.')}
         </p>
 
         {googleEmail && (
@@ -119,7 +120,7 @@ export default function FinishSetup() {
             fontSize: '14px', color: 'var(--blue-teal)', marginBottom: '24px',
             textAlign: 'center',
           }}>
-            Signing in as <strong>{googleEmail}</strong>
+            {tr('Signing in as')}{' '}<strong>{googleEmail}</strong>
           </div>
         )}
 
@@ -140,7 +141,7 @@ export default function FinishSetup() {
               display: 'block', fontSize: '14px', fontWeight: 600,
               color: 'var(--ink)', marginBottom: '10px',
             }}>
-              I am joining as
+              {tr('I am joining as')}
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {ROLES.map(({ value, label, desc }) => {
@@ -172,7 +173,7 @@ export default function FinishSetup() {
           {/* Username */}
           <div>
             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-              Username
+              {tr('Username')}
             </label>
             <div style={{ position: 'relative' }}>
               <span style={{
@@ -190,7 +191,7 @@ export default function FinishSetup() {
             </div>
             {fieldErrors.username && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.username}</p>}
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
-              3-20 characters. Visible to others on your profile.
+              {tr('3-20 characters. Visible to others on your profile.')}
             </p>
           </div>
 
@@ -200,7 +201,7 @@ export default function FinishSetup() {
               display: 'block', fontSize: '14px', fontWeight: 600,
               color: 'var(--ink)', marginBottom: '6px',
             }}>
-              Phone number
+              {tr('Phone number')}
             </label>
             <SmoothInput
               type="tel" autoComplete="tel" required
@@ -214,7 +215,7 @@ export default function FinishSetup() {
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--red-error)', marginTop: '4px' }}>{fieldErrors.phone}</p>
             )}
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)', marginTop: '4px', lineHeight: 1.4 }}>
-              Only shared after both people reach the Phone Ready trust stage.
+              {tr('Only shared after both people reach the Phone Ready trust stage.')}
             </p>
           </div>
 
@@ -231,7 +232,7 @@ export default function FinishSetup() {
               boxShadow: '0 6px 18px rgba(79,163,206,0.35)',
             }}
           >
-            {loading ? 'Signing in…' : 'Sign In'}
+            {loading ? tr('Signing in…') : tr('Sign In')}
           </button>
         </form>
       </div>

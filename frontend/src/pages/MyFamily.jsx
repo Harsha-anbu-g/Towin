@@ -11,6 +11,7 @@ import DelegatedPowerToggle from '../components/DelegatedPowerToggle';
 import { POWERS } from '../components/familyPowers';
 import { SHARING_GIVES } from '../components/sharingGives';
 import FamilyShareToggle from '../components/FamilyShareToggle';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -126,7 +127,7 @@ export default function MyFamily({ embedded = false }) {
       const r = await api.post(`/family/chat/${l.otherUserId}`);
       navigate(`/messages/${r.data}`);
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not open the chat. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not open the chat. Please try again.'));
       setChatBusyId(null);
     }
   };
@@ -153,10 +154,10 @@ export default function MyFamily({ embedded = false }) {
       });
       setForm({ identifier: '', relationship: '' });
       setShowAddForm(false);
-      toast.success('Request sent. It becomes a family link when they accept.');
+      toast.success(tr('Request sent. It becomes a family link when they accept.'));
       await load();
     } catch (err) {
-      setFormMsg(err?.response?.data?.message || 'Could not send the request. Please try again.');
+      setFormMsg(err?.response?.data?.message || tr('Could not send the request. Please try again.'));
     } finally { setSending(false); }
   }
 
@@ -164,10 +165,10 @@ export default function MyFamily({ embedded = false }) {
     setBusyId(id);
     try {
       await api.post(`/family/requests/${id}/respond`, { accept });
-      toast.success(accept ? 'They are now part of your family here.' : 'Request declined.');
+      toast.success(accept ? tr('They are now part of your family here.') : tr('Request declined.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Something went wrong. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Something went wrong. Please try again.'));
     } finally { setBusyId(null); }
   }
 
@@ -175,10 +176,10 @@ export default function MyFamily({ embedded = false }) {
     setBusyId(id);
     try {
       await api.post(`/family/power-requests/${id}/respond`, { accept });
-      toast.success(accept ? 'Done — they can do this for you now.' : 'Okay — nothing changes.');
+      toast.success(accept ? tr('Done — they can do this for you now.') : tr('Okay — nothing changes.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Something went wrong. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Something went wrong. Please try again.'));
     } finally { setBusyId(null); }
   }
 
@@ -186,10 +187,10 @@ export default function MyFamily({ embedded = false }) {
     setBusyId(id);
     try {
       await api.delete(`/family/links/${id}`);
-      toast.success('Request cancelled.');
+      toast.success(tr('Request cancelled.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not cancel the request. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not cancel the request. Please try again.'));
     } finally { setBusyId(null); }
   }
 
@@ -198,10 +199,10 @@ export default function MyFamily({ embedded = false }) {
     try {
       await api.delete(`/family/links/${id}`);
       setPendingRemove(null);
-      toast.success('Removed from your family.');
+      toast.success(tr('Removed from your family.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not remove them. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not remove them. Please try again.'));
     } finally { setRemoving(false); }
   }
 
@@ -209,10 +210,10 @@ export default function MyFamily({ embedded = false }) {
     setBusyId(id);
     try {
       await api.post(`/family/links/${id}/primary`);
-      toast.success('Main contact updated.');
+      toast.success(tr('Main contact updated.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not change your main contact. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not change your main contact. Please try again.'));
     } finally { setBusyId(null); }
   }
 
@@ -229,7 +230,7 @@ export default function MyFamily({ embedded = false }) {
           <h1 style={embedded
             ? { fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', margin: '8px 0 0' }
             : sectionH}>
-            My Family
+            {tr('My Family')}
             <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
               ({seatCount}/{FAMILY_MAX})
             </span>
@@ -243,13 +244,13 @@ export default function MyFamily({ embedded = false }) {
         <div style={{ margin: '18px 0 0' }}>
           <SegmentedTabs
             segments={[
-              { id: 'controls', label: 'Controls' },
-              { id: 'members', label: 'My family', count: incoming.length + powerAsks.length, notify: incoming.length + powerAsks.length > 0 },
-              { id: 'how', label: 'How it works' },
+              { id: 'controls', label: tr('Controls') },
+              { id: 'members', label: tr('My family'), count: incoming.length + powerAsks.length, notify: incoming.length + powerAsks.length > 0 },
+              { id: 'how', label: tr('How it works') },
             ]}
             value={tab}
             onChange={setTab}
-            label="Your family: controls, who they are, and how it works"
+            label={tr('Your family: controls, who they are, and how it works')}
           />
         </div>
 
@@ -257,16 +258,15 @@ export default function MyFamily({ embedded = false }) {
         {tab === 'how' && (
         <BlurFade delay={3}>
           <div style={{ ...cardStyle, padding: '24px', marginTop: '18px' }}>
-            <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>How family works here</h2>
+            <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>{tr('How family works here')}</h2>
             <ul style={{ margin: 0, padding: '0 0 0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>Your family can see you're safe.</li>
-              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>They only see the friendships you choose to share.</li>
-              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>They can only do something for you if you ask them to, and their name is always on it.</li>
-              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>You can remove anyone at any time.</li>
+              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>{tr("Your family can see you're safe.")}</li>
+              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>{tr('They only see the friendships you choose to share.')}</li>
+              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>{tr('They can only do something for you if you ask them to, and their name is always on it.')}</li>
+              <li style={{ fontSize: '16px', color: 'var(--ink-slate)', lineHeight: 1.5 }}>{tr('You can remove anyone at any time.')}</li>
             </ul>
             <p style={{ fontSize: '16px', color: 'var(--gold-deep)', fontWeight: 600, margin: '14px 0 0' }}>
-              Family connected gives you +1 trust point — one point total, however many
-              family members you add (up to 5 people).
+              {tr('Family connected gives you +1 trust point — one point total, however many family members you add (up to 5 people).')}
             </p>
           </div>
         </BlurFade>
@@ -277,10 +277,10 @@ export default function MyFamily({ embedded = false }) {
         <>
         <BlurFade delay={3}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', margin: '18px 0 16px' }}>
-            <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)' }}>People in your family</h2>
+            <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)' }}>{tr('People in your family')}</h2>
             {canAdd && !showAddForm && (
               <button onClick={() => { setShowAddForm(true); setFormMsg(''); }} style={{ ...fillBtn, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                + Add a family member
+                {tr('+ Add a family member')}
               </button>
             )}
           </div>
@@ -288,8 +288,7 @@ export default function MyFamily({ embedded = false }) {
 
         {!canAdd && (
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '0 0 16px' }}>
-            You've reached the limit of {FAMILY_MAX} family members, counting open requests.
-            Remove someone or cancel a request to add another person.
+            {tr("You've reached the limit of {FAMILY_MAX} family members, counting open requests. Remove someone or cancel a request to add another person.", { FAMILY_MAX })}
           </p>
         )}
 
@@ -297,33 +296,33 @@ export default function MyFamily({ embedded = false }) {
         {showAddForm && (
           <div style={cardStyle}>
             <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, marginBottom: '6px' }}>
-              Add a family member
+              {tr('Add a family member')}
             </p>
             <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '18px', lineHeight: 1.5 }}>
-              Type their exact Towinly username, email or phone. They must say yes before anything is shared.
+              {tr('Type their exact Towinly username, email or phone. They must say yes before anything is shared.')}
             </p>
             <form onSubmit={sendRequest} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label htmlFor="family-identifier" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                  Username, email or phone
+                  {tr('Username, email or phone')}
                 </label>
-                <SmoothInput id="family-identifier" {...f('identifier')} className="field" placeholder="Exactly as they use it on Towinly" required />
+                <SmoothInput id="family-identifier" {...f('identifier')} className="field" placeholder={tr('Exactly as they use it on Towinly')} required />
               </div>
               <div>
                 <label htmlFor="family-relationship" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                  Relationship
+                  {tr('Relationship')}
                 </label>
-                <SmoothInput id="family-relationship" {...f('relationship')} className="field" placeholder="Daughter, Son, Niece…" />
+                <SmoothInput id="family-relationship" {...f('relationship')} className="field" placeholder={tr('Daughter, Son, Niece…')} />
               </div>
               {formMsg && (
                 <p className="danger-text" style={{ fontSize: 'var(--text-sm)', fontWeight: 500, margin: 0 }}>{formMsg}</p>
               )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button type="submit" disabled={sending} style={{ ...fillBtn, flex: 1, fontSize: '16px' }}>
-                  {sending ? 'Sending…' : 'Send request'}
+                  {sending ? tr('Sending…') : tr('Send request')}
                 </button>
                 <button type="button" onClick={() => { setShowAddForm(false); setFormMsg(''); }} style={{ ...ghostBtn, flex: 1, fontSize: '16px' }}>
-                  Cancel
+                  {tr('Cancel')}
                 </button>
               </div>
             </form>
@@ -336,7 +335,7 @@ export default function MyFamily({ embedded = false }) {
         {powerAsks.length > 0 && (
           <BlurFade delay={4}>
             <div style={{ margin: '8px 0 16px' }}>
-              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>They're asking you</h2>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>{tr("They're asking you")}</h2>
               {powerAsks.map(a => {
                 const p = POWERS.find(x => x.key === a.power);
                 const name = a.link.otherUserName;
@@ -346,11 +345,11 @@ export default function MyFamily({ embedded = false }) {
                       <DefaultAvatar color="var(--gold-deep)" size={48} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
-                          {name} asks: {p ? p.title.toLowerCase() : 'a new power'}
+                          {tr('{name} asks:', { name })}{' '}{p ? p.title.toLowerCase() : tr('a new power')}
                         </p>
                         <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '2px 0 0', lineHeight: 1.5 }}>
-                          {p ? `If you say yes: ${p.on(name)} ` : ''}
-                          It's your choice, and you can turn it off again any time.
+                          {p ? tr('If you say yes: {on}', { on: p.on(name) }) + ' ' : ''}
+                          {tr("It's your choice, and you can turn it off again any time.")}
                         </p>
                       </div>
                     </div>
@@ -363,10 +362,10 @@ export default function MyFamily({ embedded = false }) {
                           color: 'var(--blue-deep)', borderColor: 'var(--blue-soft)',
                         }}
                       >
-                        Yes
+                        {tr('Yes')}
                       </button>
                       <button onClick={() => respondToAsk(a.id, false)} disabled={busyId === a.id} style={{ ...ghostBtn, flex: 1 }}>
-                        Not now
+                        {tr('Not now')}
                       </button>
                     </div>
                   </div>
@@ -380,7 +379,7 @@ export default function MyFamily({ embedded = false }) {
         {incoming.length > 0 && (
           <BlurFade delay={4}>
             <div style={{ margin: '8px 0 16px' }}>
-              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>They want to join your family</h2>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>{tr('They want to join your family')}</h2>
               {incoming.map(r => (
                 <div key={r.id} style={cardStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -388,7 +387,7 @@ export default function MyFamily({ embedded = false }) {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>{r.otherUserName}</p>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '2px 0 0', lineHeight: 1.5 }}>
-                        {r.relationship ? `${r.relationship} · ` : ''}wants to join as your family. It's your choice.
+                        {r.relationship ? `${r.relationship} · ` : ''}{tr("wants to join as your family. It's your choice.")}
                       </p>
                     </div>
                   </div>
@@ -401,10 +400,10 @@ export default function MyFamily({ embedded = false }) {
                         color: 'var(--blue-deep)', borderColor: 'var(--blue-soft)',
                       }}
                     >
-                      Accept
+                      {tr('Accept')}
                     </button>
                     <button onClick={() => respond(r.id, false)} disabled={busyId === r.id} style={{ ...ghostBtn, flex: 1 }}>
-                      Not now
+                      {tr('Not now')}
                     </button>
                   </div>
                 </div>
@@ -417,7 +416,7 @@ export default function MyFamily({ embedded = false }) {
         {outgoing.length > 0 && (
           <BlurFade delay={4}>
             <div style={{ margin: '8px 0 16px' }}>
-              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>Requests you sent</h2>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>{tr('Requests you sent')}</h2>
               {outgoing.map(r => (
                 <div key={r.id} style={cardStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -428,13 +427,13 @@ export default function MyFamily({ embedded = false }) {
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '2px 0 0' }}>{r.relationship}</p>
                       )}
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '4px 0 0', lineHeight: 1.5 }}>
-                        Waiting for {r.otherUserName} to accept — only they can say yes. You can cancel any time.
+                        {tr('Waiting for {otherUserName} to accept — only they can say yes. You can cancel any time.', { otherUserName: r.otherUserName })}
                       </p>
                     </div>
                   </div>
                   <div style={{ marginTop: '14px' }}>
                     <button onClick={() => cancelRequest(r.id)} disabled={busyId === r.id} style={{ ...ghostBtn, width: '100%' }}>
-                      Cancel request
+                      {tr('Cancel request')}
                     </button>
                   </div>
                 </div>
@@ -449,10 +448,10 @@ export default function MyFamily({ embedded = false }) {
             {loaded && active.length === 0 && (
               <div style={{ ...cardStyle, padding: '40px 24px', textAlign: 'center' }}>
                 <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                  No family linked yet
+                  {tr('No family linked yet')}
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0 }}>
-                  Add up to {FAMILY_MAX} people. Each one must accept before they're linked to you.
+                  {tr("Add up to {FAMILY_MAX} people. Each one must accept before they're linked to you.", { FAMILY_MAX })}
                 </p>
               </div>
             )}
@@ -466,7 +465,7 @@ export default function MyFamily({ embedded = false }) {
                       {l.otherUserName}
                     </p>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '2px 0 0' }}>
-                      {l.relationship || 'Family member'}
+                      {l.relationship || tr('Family member')}
                     </p>
                   </div>
                   {l.isPrimary && (
@@ -475,7 +474,7 @@ export default function MyFamily({ embedded = false }) {
                       background: 'var(--gold-wash)', border: '1px solid var(--gold-line)',
                       borderRadius: '9999px', padding: '6px 14px', whiteSpace: 'nowrap', flexShrink: 0,
                     }}>
-                      Main contact
+                      {tr('Main contact')}
                     </span>
                   )}
                 </div>
@@ -494,15 +493,15 @@ export default function MyFamily({ embedded = false }) {
                       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                     </svg>
-                    {chatBusyId === l.id ? 'Opening…' : 'Message'}
+                    {chatBusyId === l.id ? tr('Opening…') : tr('Message')}
                   </button>
                   {!l.isPrimary && (
                     <button onClick={() => makePrimary(l.id)} disabled={busyId === l.id} style={{ ...ghostBtn, flex: 1, color: 'var(--gold-deep)', borderColor: 'var(--gold-line)' }}>
-                      Make main contact
+                      {tr('Make main contact')}
                     </button>
                   )}
                   <button onClick={() => setPendingRemove(l)} style={{ ...ghostBtn, flex: 1 }}>
-                    Remove
+                    {tr('Remove')}
                   </button>
                 </div>
               </div>
@@ -519,28 +518,26 @@ export default function MyFamily({ embedded = false }) {
             {active.length === 0 ? (
               <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center', marginTop: '18px' }}>
                 <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                  Add a family member first
+                  {tr('Add a family member first')}
                 </p>
                 <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                  Once someone is in your family, you choose here what they can see
-                  and what they can do for you. Everything starts off.
+                  {tr('Once someone is in your family, you choose here what they can see and what they can do for you. Everything starts off.')}
                 </p>
               </div>
             ) : (
             <div style={{ marginTop: '18px' }}>
               <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 14px', lineHeight: 1.5 }}>
-                Sharing is what your family can see. Act for me is what they can do.
-                Both start off, and only you can change them.
+                {tr('Sharing is what your family can see. Act for me is what they can do. Both start off, and only you can change them.')}
               </p>
 
               <SegmentedTabs
                 segments={[
-                  { id: 'watching', label: 'Sharing', count: connections.filter(c => c.sharedWithFamily).length },
-                  { id: 'acting', label: 'Act for me', count: active.filter(l => (l.delegatedPowers || []).length > 0).length },
+                  { id: 'watching', label: tr('Sharing'), count: connections.filter(c => c.sharedWithFamily).length },
+                  { id: 'acting', label: tr('Act for me'), count: active.filter(l => (l.delegatedPowers || []).length > 0).length },
                 ]}
                 value={controlsTab}
                 onChange={setControlsTab}
-                label="Family controls"
+                label={tr('Family controls')}
               />
 
               {controlsTab === 'watching' && (
@@ -548,15 +545,13 @@ export default function MyFamily({ embedded = false }) {
                   {connections.length === 0 ? (
                     <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                        You have no friendships yet. Once you do, you choose here which ones
-                        your family can see.
+                        {tr('You have no friendships yet. Once you do, you choose here which ones your family can see.')}
                       </p>
                     </div>
                   ) : (
                     <div style={cardStyle}>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
-                        Everyone in your family gets the friendships you turn on here.
-                        On a shared friendship they can:
+                        {tr('Everyone in your family gets the friendships you turn on here. On a shared friendship they can:')}
                       </p>
                       <ul style={{ margin: '0 0 12px', paddingLeft: '22px' }}>
                         {SHARING_GIVES.map(g => (
@@ -566,7 +561,7 @@ export default function MyFamily({ embedded = false }) {
                         ))}
                       </ul>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 12px', lineHeight: 1.5 }}>
-                        Turn a friendship off any time — your family loses all of this straight away.
+                        {tr('Turn a friendship off any time — your family loses all of this straight away.')}
                       </p>
                       {connections.map(c => (
                         <div key={c.id} style={{ marginBottom: '10px' }}>
@@ -590,12 +585,10 @@ export default function MyFamily({ embedded = false }) {
                   {!connections.some(c => c.sharedWithFamily) ? (
                     <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
                       <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                        Share a friendship first
+                        {tr('Share a friendship first')}
                       </p>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>
-                        Your family can only act on a friendship you share with them.
-                        Turn on at least one friendship on the Sharing tab, then choose
-                        here what they may do for you.
+                        {tr('Your family can only act on a friendship you share with them. Turn on at least one friendship on the Sharing tab, then choose here what they may do for you.')}
                       </p>
                     </div>
                   ) : active.map(l => (
@@ -603,7 +596,7 @@ export default function MyFamily({ embedded = false }) {
                       <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>
                         {l.otherUserName}
                         <span style={{ fontSize: '14px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
-                          {l.relationship || 'Family member'}
+                          {l.relationship || tr('Family member')}
                         </span>
                       </p>
                       <DelegatedPowerToggle
@@ -628,10 +621,10 @@ export default function MyFamily({ embedded = false }) {
       <ConfirmDialog
         open={!!pendingRemove}
         danger
-        title={`Remove ${pendingRemove?.otherUserName || 'this person'} from your family?`}
-        message="They will no longer see that you're safe or any friendship you shared. If they're your last family member here, your family trust point goes too. You can add them again later — they would need to accept again."
-        confirmLabel="Remove from family"
-        cancelLabel="Keep"
+        title={pendingRemove?.otherUserName ? tr('Remove {name} from your family?', { name: pendingRemove.otherUserName }) : tr('Remove this person from your family?')}
+        message={tr("They will no longer see that you're safe or any friendship you shared. If they're your last family member here, your family trust point goes too. You can add them again later — they would need to accept again.")}
+        confirmLabel={tr('Remove from family')}
+        cancelLabel={tr('Keep')}
         loading={removing}
         onConfirm={() => pendingRemove && removeLink(pendingRemove.id)}
         onCancel={() => setPendingRemove(null)}

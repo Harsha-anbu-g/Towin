@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SLIDES } from '../data/landingContent';
 import TortoiseMark from '../components/TortoiseMark';
+import { tr } from '../i18n';
+import LanguagePicker from '../components/LanguagePicker';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SF = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -47,7 +49,7 @@ function TortoiseTrail({ count, current, arrived, onJump, walkedRef, tortoiseRef
         <button
           key={i}
           onClick={() => onJump(i)}
-          aria-label={`Go to page ${i + 1}`}
+          aria-label={tr('Go to page {n}', { n: i + 1 })}
           aria-current={i === current ? 'step' : undefined}
           style={{
             position: 'absolute', left: `${(i / (count - 1)) * 100}%`, bottom: 0,
@@ -132,7 +134,7 @@ function MobileTrail({ count, current, arrived, onJump, walkedRef, tortoiseRef, 
           <button
             key={i}
             onClick={() => onJump(i)}
-            aria-label={`Go to page ${i + 1}`}
+            aria-label={tr('Go to page {n}', { n: i + 1 })}
             aria-current={i === current ? 'step' : undefined}
             style={{
               position: 'absolute', top: `${(i / (count - 1)) * 100}%`, left: '50%',
@@ -207,7 +209,7 @@ function StartButton({ onStart }) {
       onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
       onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
     >
-      Start
+      {tr('Start')}
     </button>
   );
 }
@@ -227,7 +229,7 @@ function DemoLink() {
       border: '1.5px solid var(--blue-soft)', borderRadius: '9999px',
       background: 'var(--canvas)',
     }}>
-      Try the demo
+      {tr('Try the demo')}
     </Link>
   );
 }
@@ -676,6 +678,9 @@ export default function Landing() {
               <header className="landing-topbar" style={{
                 flex: '0 0 auto', display: 'flex', alignItems: 'center',
                 justifyContent: 'space-between', padding: '16px 20px',
+                // Longer French and Tamil labels drop to a second line instead
+                // of running into the brand.
+                flexWrap: 'wrap', rowGap: '8px',
               }}>
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: '9px',
@@ -688,20 +693,21 @@ export default function Landing() {
                     alt=""
                     style={{ width: 32, height: 32, objectFit: 'contain' }}
                   />
-                  Towinly
+                  {tr('Towinly')}
                 </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}>
                   <Link to="/login" style={{
                     fontFamily: SF, fontSize: '15px', fontWeight: 600, color: SKY,
                     textDecoration: 'none', padding: '0 4px',
                     display: 'inline-flex', alignItems: 'center', minHeight: '44px',
                   }}>
-                    Log in
+                    {tr('Log in')}
                   </Link>
                   <DemoLink />
                 </span>
               </header>
             )}
+            {i === 0 && <LanguagePicker style={{ padding: '0 16px' }} />}
             <div style={{
               flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
@@ -798,15 +804,16 @@ export default function Landing() {
                 alt=""
                 style={{ width: 34, height: 34, objectFit: 'contain' }}
               />
-              Towinly
+              {tr('Towinly')}
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '20px' }}>
+              <LanguagePicker />
               <Link to="/login" style={{
                 fontFamily: SF, fontSize: '16px', fontWeight: 600, color: SKY,
                 textDecoration: 'none', padding: '0 6px',
                 display: 'inline-flex', alignItems: 'center', minHeight: '44px',
               }}>
-                Already a member? Log in
+                {tr('Already a member? Log in')}
               </Link>
               <DemoLink />
             </span>
@@ -880,7 +887,7 @@ export default function Landing() {
                 color: 'var(--ink-4)',
               }}>
                 <span style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, letterSpacing: '0.4px' }}>
-                  Scroll
+                  {tr('Scroll')}
                 </span>
                 <svg
                   className="hint-bob"

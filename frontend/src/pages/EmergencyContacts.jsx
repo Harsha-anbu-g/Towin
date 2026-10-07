@@ -7,6 +7,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -69,10 +70,10 @@ export default function EmergencyContacts() {
       const res = await api.post('/emergency/contacts', { ...form, inactivityDays: Number(form.inactivityDays) });
       setContacts(prev => [...prev, res.data]);
       setForm({ name: '', phone: '', relationship: '', inactivityDays: 5 });
-      setMsg('Contact added.');
+      setMsg(tr('Contact added.'));
       setShowAddForm(false);
     } catch (err) {
-      setMsg(err?.response?.data?.message || 'Failed to add contact.');
+      setMsg(err?.response?.data?.message || tr('Failed to add contact.'));
     } finally { setAdding(false); }
   }
 
@@ -82,8 +83,8 @@ export default function EmergencyContacts() {
       await api.delete(`/emergency/contacts/${contactId}`);
       setContacts(prev => prev.filter(c => c.id !== contactId));
       setPendingRemove(null);
-      toast.success('Contact removed.');
-    } catch { toast.error('Could not remove contact. Please try again.'); }
+      toast.success(tr('Contact removed.'));
+    } catch { toast.error(tr('Could not remove contact. Please try again.')); }
     finally { setRemoving(false); }
   }
 
@@ -92,8 +93,8 @@ export default function EmergencyContacts() {
     try {
       await api.post('/emergency/sos');
       setSosSent(true);
-      setSosMsg('SOS sent to all emergency contacts.');
-    } catch { setSosMsg('Failed to send SOS.'); }
+      setSosMsg(tr('SOS sent to all emergency contacts.'));
+    } catch { setSosMsg(tr('Failed to send SOS.')); }
   }
 
   return (
@@ -130,10 +131,10 @@ export default function EmergencyContacts() {
             marginBottom: '12px',
             lineHeight: 1.1,
           }}>
-            Emergency Contacts
+            {tr('Emergency Contacts')}
           </h1>
           <p style={{ fontSize: '17px', color: 'var(--ink-slate-2)', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
-            We'll alert these people if you don't check in for several days.
+            {tr("We'll alert these people if you don't check in for several days.")}
           </p>
         </div>
       </BlurFade>
@@ -160,7 +161,7 @@ export default function EmergencyContacts() {
               boxShadow: sosSent ? '0 4px 24px rgba(26,122,60,0.3)' : '0 4px 24px rgba(204,0,0,0.35)',
             }}
           >
-            {sosSent ? 'SOS Sent' : 'SOS: Call All Contacts Now'}
+            {sosSent ? tr('SOS Sent') : tr('SOS: Call All Contacts Now')}
           </button>
           {sosMsg && (
             <p style={{
@@ -194,7 +195,7 @@ export default function EmergencyContacts() {
               fontFamily: SF,
               letterSpacing: '-0.3px',
             }}>
-              My Contacts
+              {tr('My Contacts')}
               <span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--ink-3)', marginLeft: '8px' }}>
                 ({contacts.length}/3)
               </span>
@@ -217,7 +218,7 @@ export default function EmergencyContacts() {
                   flexShrink: 0,
                 }}
               >
-                + Add Contact
+                {tr('+ Add Contact')}
               </button>
             )}
           </div>
@@ -249,9 +250,9 @@ export default function EmergencyContacts() {
                 </svg>
               </div>
               <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                No contacts yet
+                {tr('No contacts yet')}
               </p>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>Add up to 3 people who care about you.</p>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)' }}>{tr('Add up to 3 people who care about you.')}</p>
             </div>
           </BlurFade>
         )}
@@ -287,7 +288,7 @@ export default function EmergencyContacts() {
                         {c.phone}
                       </p>
                       <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>
-                        Alerts after {c.inactivityDays} inactive days
+                        {tr('Alerts after {inactivityDays} inactive days', { inactivityDays: c.inactivityDays })}
                       </p>
                     </div>
                   </div>
@@ -308,7 +309,7 @@ export default function EmergencyContacts() {
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}>
-                      Call Now
+                      {tr('Call Now')}
                     </a>
                     <button
                       onClick={() => setPendingRemove(c)}
@@ -325,7 +326,7 @@ export default function EmergencyContacts() {
                         cursor: 'pointer',
                       }}
                     >
-                      Remove
+                      {tr('Remove')}
                     </button>
                   </div>
                 </div>
@@ -351,19 +352,19 @@ export default function EmergencyContacts() {
                 marginBottom: '20px',
                 letterSpacing: '-0.3px',
               }}>
-                Add Contact
+                {tr('Add Contact')}
               </p>
               <form onSubmit={addContact} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                      Name
+                      {tr('Name')}
                     </label>
-                    <SmoothInput {...f('name')} className="field" placeholder="Contact name" required />
+                    <SmoothInput {...f('name')} className="field" placeholder={tr('Contact name')} required />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                      Phone
+                      {tr('Phone')}
                     </label>
                     <SmoothInput {...f('phone')} className="field" placeholder="+1 555 000 0000" required />
                   </div>
@@ -371,19 +372,19 @@ export default function EmergencyContacts() {
                 <div className="two-col-grid" style={{ gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                      Relationship
+                      {tr('Relationship')}
                     </label>
-                    <SmoothInput {...f('relationship')} className="field" placeholder="Daughter, Doctor…" />
+                    <SmoothInput {...f('relationship')} className="field" placeholder={tr('Daughter, Doctor…')} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                      Alert after (days)
+                      {tr('Alert after (days)')}
                     </label>
                     <SmoothInput {...f('inactivityDays')} type="number" min={1} max={30} className="field" />
                   </div>
                 </div>
                 {msg && (
-                  <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('added') ? 'var(--blue-teal)' : 'var(--red)', fontWeight: 500 }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: msg === tr('Contact added.') ? 'var(--blue-teal)' : 'var(--red)', fontWeight: 500 }}>
                     {msg}
                   </p>
                 )}
@@ -404,7 +405,7 @@ export default function EmergencyContacts() {
                       cursor: 'pointer',
                     }}
                   >
-                    {adding ? 'Adding…' : 'Add Contact'}
+                    {adding ? tr('Adding…') : tr('Add Contact')}
                   </button>
                   <button
                     type="button"
@@ -422,7 +423,7 @@ export default function EmergencyContacts() {
                       cursor: 'pointer',
                     }}
                   >
-                    Cancel
+                    {tr('Cancel')}
                   </button>
                 </div>
               </form>
@@ -435,10 +436,10 @@ export default function EmergencyContacts() {
       <ConfirmDialog
         open={!!pendingRemove}
         danger
-        title={`Remove ${pendingRemove?.name || 'this contact'}?`}
-        message="They will no longer be alerted if you trigger an SOS or go inactive. You can add them again later."
-        confirmLabel="Remove Contact"
-        cancelLabel="Keep"
+        title={pendingRemove?.name ? tr('Remove {name}?', { name: pendingRemove.name }) : tr('Remove this contact?')}
+        message={tr('They will no longer be alerted if you trigger an SOS or go inactive. You can add them again later.')}
+        confirmLabel={tr('Remove Contact')}
+        cancelLabel={tr('Keep')}
         loading={removing}
         onConfirm={() => pendingRemove && remove(pendingRemove.id)}
         onCancel={() => setPendingRemove(null)}

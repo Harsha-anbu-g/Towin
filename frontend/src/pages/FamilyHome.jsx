@@ -6,6 +6,8 @@ import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import SmoothInput from '../components/SmoothInput';
 import KeyholderAsk from '../components/KeyholderAsk';
+import { dateLocale, tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
 // The per-parent detail — trust ladders, guardian actions, the updates thread —
 // now lives on FamilyParent.jsx, so this page imports none of it.
 
@@ -16,18 +18,18 @@ const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 // this line explains what kind of news it is.
 const ALERT_KINDS = {
   SOS: {
-    label: 'Urgent help',
-    explain: 'They pressed their SOS button and asked for urgent help. A call right now matters.',
+    get label() { return tr('Urgent help'); },
+    get explain() { return tr('They pressed their SOS button and asked for urgent help. A call right now matters.'); },
     color: 'var(--red-deep)',
   },
   INACTIVITY: {
-    label: 'Quiet lately',
-    explain: 'They have not checked in for a while. A friendly call could help.',
+    get label() { return tr('Quiet lately'); },
+    get explain() { return tr('They have not checked in for a while. A friendly call could help.'); },
     color: 'var(--gold-deep)',
   },
   FIRST_MEET: {
-    label: 'First meeting',
-    explain: "They're meeting a friend in person for the first time — a friendship they chose to share with you.",
+    get label() { return tr('First meeting'); },
+    get explain() { return tr("They're meeting a friend in person for the first time — a friendship they chose to share with you."); },
     color: 'var(--blue-deep)',
   },
 };
@@ -103,26 +105,28 @@ function reassuranceFor(elderName, j, alerts, elderId) {
     a.type === 'SOS' && a.elderId === elderId &&
     now - new Date(a.createdAt).getTime() < 48 * 3600 * 1000);
   if (sos) {
-    return { kind: 'urgent', color: 'var(--red-deep)', text: `${elderName} asked for urgent help — see News.` };
+    return { kind: 'urgent', color: 'var(--red-deep)', text: tr('{elderName} asked for urgent help — see News.', { elderName }) };
   }
   if (j?.lastCheckinDate) {
     const days = Math.floor((now - new Date(j.lastCheckinDate).getTime()) / 86400000);
     if (days >= QUIET_AFTER_DAYS) {
-      return { kind: 'quiet', color: 'var(--gold-deep)', text: `It's been quiet — ${elderName} hasn't checked in for a few days.` };
+      return { kind: 'quiet', color: 'var(--gold-deep)', text: tr("It's been quiet — {elderName} hasn't checked in for a few days.", { elderName }) };
     }
   }
   if (j?.checkedInToday) {
-    return { kind: 'well', color: 'var(--green-deep)', text: `All looks well — ${elderName} checked in today.` };
+    return { kind: 'well', color: 'var(--green-deep)', text: tr('All looks well — {elderName} checked in today.', { elderName }) };
   }
-  return { kind: 'none', color: 'var(--ink-3)', text: 'No check-in yet today.' };
+  return { kind: 'none', color: 'var(--ink-3)', text: tr('No check-in yet today.') };
 }
 
 function friendlyDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric' }) +
-    ' at ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return tr('{date} at {time}', {
+    date: d.toLocaleDateString(dateLocale(), { month: 'long', day: 'numeric' }),
+    time: d.toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit' }),
+  });
 }
 
 export default function FamilyHome() {
@@ -168,10 +172,10 @@ export default function FamilyHome() {
       });
       setForm({ identifier: '', relationship: '' });
       setTab('parents');
-      toast.success('Request sent. You become family here once they accept.');
+      toast.success(tr('Request sent. You become family here once they accept.'));
       await load();
     } catch (err) {
-      setFormMsg(err?.response?.data?.message || 'Could not send the request. Please try again.');
+      setFormMsg(err?.response?.data?.message || tr('Could not send the request. Please try again.'));
     } finally { setSending(false); }
   }
 
@@ -179,10 +183,10 @@ export default function FamilyHome() {
     setBusyId(id);
     try {
       await api.post(`/family/requests/${id}/respond`, { accept });
-      toast.success(accept ? "You're now linked as their family." : 'Request declined.');
+      toast.success(accept ? tr("You're now linked as their family.") : tr('Request declined.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Something went wrong. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Something went wrong. Please try again.'));
     } finally { setBusyId(null); }
   }
 
@@ -190,10 +194,10 @@ export default function FamilyHome() {
     setBusyId(id);
     try {
       await api.delete(`/family/links/${id}`);
-      toast.success('Request cancelled.');
+      toast.success(tr('Request cancelled.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not cancel the request. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not cancel the request. Please try again.'));
     } finally { setBusyId(null); }
   }
 
@@ -206,8 +210,8 @@ export default function FamilyHome() {
       {/* Section tabs — the same top-of-dashboard pattern elders and helpers get (user call 2026-07-19). */}
       <div style={{ position: 'sticky', top: '60px', zIndex: 'var(--z-sticky)', background: 'var(--canvas)', borderBottom: '1px solid var(--border)' }}>
         <div className="dash-tab-wrap">
-          <div className="dash-tab-scroll" role="tablist" aria-label="Family sections">
-            {[['parents', 'My Parents', 0], ['add', 'Add Parent', 0], ['news', 'News', alerts.length]].map(([id, label, badge]) => {
+          <div className="dash-tab-scroll" role="tablist" aria-label={tr('Family sections')}>
+            {[['parents', tr('My Parents'), 0], ['add', tr('Add Parent'), 0], ['news', tr('News'), alerts.length]].map(([id, label, badge]) => {
               const active = tab === id;
               return (
                 <button
@@ -246,7 +250,7 @@ export default function FamilyHome() {
         {/* Page title — the big hero card was removed on the user's call (2026-07-18);
             adding a parent now lives on its own top tab (user call 2026-07-19). */}
         <BlurFade delay={2}>
-          <h1 style={{ ...sectionH, margin: '0 0 16px' }}>My Parents</h1>
+          <h1 style={{ ...sectionH, margin: '0 0 16px' }}>{tr('My Parents')}</h1>
         </BlurFade>
 
         {/* Someone has asked me to hold a key to their Sealed box. Sits with the other
@@ -258,7 +262,7 @@ export default function FamilyHome() {
         {incoming.length > 0 && (
           <BlurFade delay={3}>
             <div style={{ margin: '8px 0 16px' }}>
-              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>They added you as family</h2>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>{tr('They added you as family')}</h2>
               {incoming.map(r => (
                 <div key={r.id} style={cardStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -266,7 +270,9 @@ export default function FamilyHome() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>{r.otherUserName}</p>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '2px 0 0', lineHeight: 1.5 }}>
-                        wants you as their family here{r.relationship ? ` (as their ${r.relationship.toLowerCase()})` : ''}. It's your choice.
+                        {r.relationship
+                          ? tr("wants you as their family here (as their {relationship}). It's your choice.", { relationship: r.relationship.toLowerCase() })
+                          : tr("wants you as their family here. It's your choice.")}
                       </p>
                     </div>
                   </div>
@@ -276,10 +282,10 @@ export default function FamilyHome() {
                       disabled={busyId === r.id}
                       style={{ ...ghostBtn, flex: 1, color: 'var(--blue-deep)', borderColor: 'var(--blue-soft)' }}
                     >
-                      Accept
+                      {tr('Accept')}
                     </button>
                     <button onClick={() => respond(r.id, false)} disabled={busyId === r.id} style={{ ...ghostBtn, flex: 1 }}>
-                      Not now
+                      {tr('Not now')}
                     </button>
                   </div>
                 </div>
@@ -292,7 +298,7 @@ export default function FamilyHome() {
         {outgoing.length > 0 && (
           <BlurFade delay={3}>
             <div style={{ margin: '8px 0 16px' }}>
-              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>Requests you sent</h2>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)', marginBottom: '12px' }}>{tr('Requests you sent')}</h2>
               {outgoing.map(r => (
                 <div key={r.id} style={cardStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -300,13 +306,13 @@ export default function FamilyHome() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0 }}>{r.otherUserName}</p>
                       <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '4px 0 0', lineHeight: 1.5 }}>
-                        Waiting for {r.otherUserName} to accept — only they can say yes. You can cancel any time.
+                        {tr('Waiting for {otherUserName} to accept — only they can say yes. You can cancel any time.', { otherUserName: r.otherUserName })}
                       </p>
                     </div>
                   </div>
                   <div style={{ marginTop: '14px' }}>
                     <button onClick={() => cancelRequest(r.id)} disabled={busyId === r.id} style={{ ...ghostBtn, width: '100%' }}>
-                      Cancel request
+                      {tr('Cancel request')}
                     </button>
                   </div>
                 </div>
@@ -321,10 +327,10 @@ export default function FamilyHome() {
             {loaded && elders.length === 0 && (
               <div style={{ ...cardStyle, padding: '40px 24px', textAlign: 'center' }}>
                 <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                  No parent linked yet
+                  {tr('No parent linked yet')}
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0 }}>
-                  Use the <strong>Add Parent</strong> tab up top. They must accept before you're linked.
+                  {emphasize(tr("Use the *Add Parent* tab up top. They must accept before you're linked."), (part) => <strong>{part}</strong>)}
                 </p>
               </div>
             )}
@@ -356,7 +362,7 @@ export default function FamilyHome() {
                         {l.otherUserName}
                       </p>
                       <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '2px 0 0' }}>
-                        {l.relationship ? `You're their ${l.relationship.toLowerCase()}` : 'Your family member'}
+                        {l.relationship ? tr("You're their {toLowerCase}", { toLowerCase: l.relationship.toLowerCase() }) : tr('Your family member')}
                       </p>
                     </div>
                     <span style={{
@@ -365,7 +371,7 @@ export default function FamilyHome() {
                       border: '1px solid color-mix(in srgb, var(--green-deep) 25%, transparent)',
                       borderRadius: '9999px', padding: '6px 14px', whiteSpace: 'nowrap', flexShrink: 0,
                     }}>
-                      Linked
+                      {tr('Linked')}
                     </span>
                   </div>
 
@@ -396,11 +402,11 @@ export default function FamilyHome() {
                             <path d="M12 7v5l3 2" />
                           </svg>
                         )}
-                        {j.checkedInToday ? 'Checked in today' : 'No check-in yet today'}
+                        {j.checkedInToday ? tr('Checked in today') : tr('No check-in yet today')}
                       </span>
                       {j.openNeedsCount > 0 && (
                         <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)' }}>
-                          {j.openNeedsCount} help request{j.openNeedsCount === 1 ? '' : 's'} open
+                          {j.openNeedsCount === 1 ? tr('1 help request open') : tr('{count} help requests open', { count: j.openNeedsCount })}
                         </span>
                       )}
                     </div>
@@ -422,8 +428,8 @@ export default function FamilyHome() {
                     }}
                   >
                     <span>
-                      Open {l.otherUserName}'s page
-                      {sharedCount > 0 && ` · ${sharedCount} friendship${sharedCount === 1 ? '' : 's'}`}
+                      {tr("Open {otherUserName}'s page", { otherUserName: l.otherUserName })}
+                      {sharedCount > 0 && ' · ' + (sharedCount === 1 ? tr('1 friendship') : tr('{count} friendships', { count: sharedCount }))}
                     </span>
                     <svg width="9" height="15" viewBox="0 0 10 16" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
                       <path d="M1.5 1L8.5 8L1.5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -441,33 +447,33 @@ export default function FamilyHome() {
 
         {tab === 'add' && (
         <BlurFade delay={2}>
-          <h1 style={{ ...sectionH, margin: '0 0 16px' }}>Add your parent</h1>
+          <h1 style={{ ...sectionH, margin: '0 0 16px' }}>{tr('Add your parent')}</h1>
           <div style={cardStyle}>
             <p style={{ fontSize: '16px', color: 'var(--ink-3)', marginBottom: '18px', lineHeight: 1.5 }}>
-              Type their exact Towinly username, email or phone. They must say yes before you see anything.
+              {tr('Type their exact Towinly username, email or phone. They must say yes before you see anything.')}
             </p>
             <form onSubmit={sendRequest} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label htmlFor="parent-identifier" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                  Username, email or phone
+                  {tr('Username, email or phone')}
                 </label>
-                <SmoothInput id="parent-identifier" {...f('identifier')} className="field" placeholder="Exactly as they use it on Towinly" required />
+                <SmoothInput id="parent-identifier" {...f('identifier')} className="field" placeholder={tr('Exactly as they use it on Towinly')} required />
               </div>
               <div>
                 <label htmlFor="parent-relationship" style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                  Relationship (what you are to them)
+                  {tr('Relationship (what you are to them)')}
                 </label>
-                <SmoothInput id="parent-relationship" {...f('relationship')} className="field" placeholder="Daughter, Son, Niece…" />
+                <SmoothInput id="parent-relationship" {...f('relationship')} className="field" placeholder={tr('Daughter, Son, Niece…')} />
               </div>
               {formMsg && (
                 <p className="danger-text" style={{ fontSize: 'var(--text-sm)', fontWeight: 500, margin: 0 }}>{formMsg}</p>
               )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button type="submit" disabled={sending} style={{ ...fillBtn, flex: 1, fontSize: '16px' }}>
-                  {sending ? 'Sending…' : 'Send request'}
+                  {sending ? tr('Sending…') : tr('Send request')}
                 </button>
                 <button type="button" onClick={() => { setTab('parents'); setFormMsg(''); }} style={{ ...ghostBtn, flex: 1, fontSize: '16px' }}>
-                  Back to my parents
+                  {tr('Back to my parents')}
                 </button>
               </div>
             </form>
@@ -478,25 +484,24 @@ export default function FamilyHome() {
         {tab === 'news' && (
         <BlurFade delay={5}>
           <div>
-            <h1 style={{ ...sectionH, margin: '0 0 6px' }}>News about your family</h1>
+            <h1 style={{ ...sectionH, margin: '0 0 6px' }}>{tr('News about your family')}</h1>
             <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 14px', lineHeight: 1.5 }}>
-              Alerts appear here when something needs your attention — nothing is sent by text or email.
+              {tr('Alerts appear here when something needs your attention — nothing is sent by text or email.')}
             </p>
 
             {loaded && alerts.length === 0 && (
               <div style={{ ...cardStyle, padding: '32px 24px', textAlign: 'center' }}>
                 <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-                  No alerts right now
+                  {tr('No alerts right now')}
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0 }}>
-                  That's good news — you'll see it here if your parent asks for help,
-                  goes quiet for a while, or shares a first meeting with a friend.
+                  {tr("That's good news — you'll see it here if your parent asks for help, goes quiet for a while, or shares a first meeting with a friend.")}
                 </p>
               </div>
             )}
 
             {alerts.map(a => {
-              const kind = ALERT_KINDS[a.type] || { label: 'Update', explain: '', color: 'var(--ink-3)' };
+              const kind = ALERT_KINDS[a.type] || { label: tr('Update'), explain: '', color: 'var(--ink-3)' };
               return (
                 <div key={a.id} style={cardStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>

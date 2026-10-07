@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 /**
  * Bumble-style permission primer: a friendly screen shown BEFORE the browser's
  * own location popup. Tapping "Enable location" is what triggers the real OS
@@ -16,18 +17,18 @@ export default function LocationPrimer({ onEnable, onManual }) {
       </div>
       <div style={{ flex: 1, minWidth: '200px' }}>
         <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
-          See people near you
+          {tr('See people near you')}
         </p>
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', lineHeight: 1.4, margin: '2px 0 0' }}>
-          We only use your location to show distance — never your exact spot.
+          {tr('We only use your location to show distance — never your exact spot.')}
         </p>
       </div>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <button onClick={onEnable} className="btn-primary" style={{ height: '44px', padding: '0 18px', fontSize: 'var(--text-sm)' }}>
-          Enable location
+          {tr('Enable location')}
         </button>
         <button onClick={onManual} className="btn-ghost" style={{ height: '44px', padding: '0 14px', fontSize: 'var(--text-sm)' }}>
-          Enter my town
+          {tr('Enter my town')}
         </button>
       </div>
     </div>

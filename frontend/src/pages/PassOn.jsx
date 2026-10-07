@@ -12,17 +12,18 @@ import SealedItems from '../components/SealedItems';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import {
-  ANYONE_CHECK, LETTERS, NOT_A_WILL, PAGE_LEAD, SEALED_BOX, SEALED_ITEMS, SETUP, STORY_BOX,
+  ANYONE_CHECK, LETTERS, NOT_A_WILL, pageLead, SEALED_BOX, SEALED_ITEMS, SETUP, STORY_BOX,
   TAKE_DOWN, TAKE_OUT_OF_BOX,
 } from '../components/passOnLocks';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
 const TABS = [
-  { id: 'stories', label: 'Story box' },
-  { id: 'letters', label: 'Letter box' },
-  { id: 'sealed', label: 'Sealed box' },
+  { id: 'stories', get label() { return tr('Story box'); } },
+  { id: 'letters', get label() { return tr('Letter box'); } },
+  { id: 'sealed', get label() { return tr('Sealed box'); } },
 ];
 
 /**
@@ -121,10 +122,10 @@ export default function PassOn() {
       else await api.post('/passon/items', payload);
       setWriting(null);
       setAskAnyone(null);
-      toast.success(payload.kind === 'LETTER' ? 'Your letter is saved.' : 'Your story is saved.');
+      toast.success(payload.kind === 'LETTER' ? tr('Your letter is saved.') : tr('Your story is saved.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'We could not save that. Please try again.');
+      toast.error(err?.response?.data?.message || tr('We could not save that. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -134,10 +135,10 @@ export default function PassOn() {
     try {
       await api.delete(`/passon/items/${item.id}`);
       setPendingRemove(null);
-      toast.success('Taken down.');
+      toast.success(tr('Taken down.'));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'We could not take that down. Please try again.');
+      toast.error(err?.response?.data?.message || tr('We could not take that down. Please try again.'));
     }
   }
 
@@ -230,10 +231,10 @@ export default function PassOn() {
             fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.02em',
             fontSize: 'var(--text-xl)', color: 'var(--ink)', margin: 0,
           }}>
-            What I pass on
+            {tr('What I pass on')}
           </h1>
           <p style={{ fontSize: '17px', color: 'var(--ink-3)', lineHeight: 1.55, margin: '8px 0 0' }}>
-            {PAGE_LEAD}
+            {pageLead()}
           </p>
         </BlurFade>
 
@@ -248,14 +249,14 @@ export default function PassOn() {
             segments={TABS}
             value={tab}
             onChange={changeTab}
-            label="Your stories, your letters, and your sealed box"
+            label={tr('Your stories, your letters, and your sealed box')}
           />
         </div>
 
         {/* ── Story box ─────────────────────────────────────────────────────── */}
         {tab === 'stories' && (
           <BlurFade delay={4}>
-            <div role="tabpanel" aria-label="Your story box" style={{ marginTop: '20px' }}>
+            <div role="tabpanel" aria-label={tr('Your story box')} style={{ marginTop: '20px' }}>
               {writingHere('STORY') ? (
                 <PassOnItemForm
                   kind="STORY"
@@ -292,7 +293,7 @@ export default function PassOn() {
         {/* ── Letters ───────────────────────────────────────────────────────── */}
         {tab === 'letters' && (
           <BlurFade delay={4}>
-            <div role="tabpanel" aria-label="Your letters" style={{ marginTop: '20px' }}>
+            <div role="tabpanel" aria-label={tr('Your letters')} style={{ marginTop: '20px' }}>
               {/* Both halves of the Letter box, said before she writes anything —
                   including the part that matters most, which is that nothing here
                   happens on its own. There is no timer and no button anywhere that
@@ -346,7 +347,7 @@ export default function PassOn() {
         {/* ── Sealed box ────────────────────────────────────────────────────── */}
         {tab === 'sealed' && (
           <BlurFade delay={4}>
-            <div role="tabpanel" aria-label="Your sealed box" style={{ marginTop: '20px' }}>
+            <div role="tabpanel" aria-label={tr('Your sealed box')} style={{ marginTop: '20px' }}>
               {/* Three states, one at a time: the teaching card before she has
                   decided anything, the three steps while she is deciding, and who
                   holds a key once she has. */}
@@ -462,11 +463,11 @@ export default function PassOn() {
 function peopleSheKnows(links, connections) {
   const family = (links || [])
     .filter(l => l.status === 'ACTIVE' && l.otherUserId)
-    .map(l => ({ id: l.otherUserId, name: l.otherUserName, note: l.relationship || 'Family' }));
+    .map(l => ({ id: l.otherUserId, name: l.otherUserName, note: l.relationship || tr('Family') }));
 
   const helpers = (connections || [])
     .filter(c => c.status === 'ACTIVE' && c.type !== 'FAMILY' && c.currentTrustLevel === 'TRUSTED' && c.otherUserId)
-    .map(c => ({ id: c.otherUserId, name: c.otherUserName, note: 'Helper you trust' }));
+    .map(c => ({ id: c.otherUserId, name: c.otherUserName, note: tr('Helper you trust') }));
 
   const seen = new Set();
   return [...family, ...helpers].filter(p => !seen.has(p.id) && seen.add(p.id));
@@ -480,7 +481,7 @@ function peopleSheKnows(links, connections) {
 function herFamilyList(links) {
   return (links || [])
     .filter(l => l.status === 'ACTIVE' && l.otherUserId)
-    .map(l => ({ id: l.otherUserId, name: l.otherUserName, note: l.relationship || 'Family' }));
+    .map(l => ({ id: l.otherUserId, name: l.otherUserName, note: l.relationship || tr('Family') }));
 }
 
 /**

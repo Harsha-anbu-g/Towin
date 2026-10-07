@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -23,7 +24,7 @@ function StarPicker({ value, onChange }) {
           key={n}
           type="button"
           onClick={() => onChange(n)}
-          aria-label={`${n} star${n === 1 ? '' : 's'}`}
+          aria-label={n === 1 ? tr('1 star') : tr('{n} stars', { n })}
           aria-pressed={n <= value}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
@@ -48,7 +49,7 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
   const [done, setDone] = useState(false);
   const [errMsg, setErrMsg] = useState('');
 
-  const parent = elderName || 'your parent';
+  const parent = elderName || tr('your parent');
   const firstName = (helper?.helperName || 'them').split(' ')[0];
 
   // Only a fully trusted friendship can be reviewed — the same gate the parent
@@ -69,9 +70,9 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
       });
       setDone(true);
       setOpen(false);
-      toast.success(`Review saved for ${parent}. ${firstName} will see you wrote it.`);
+      toast.success(tr('Review saved for {parent}. {firstName} will see you wrote it.', { parent, firstName }));
     } catch (err) {
-      setErrMsg(err?.response?.data?.message || 'Could not save that review. Please try again.');
+      setErrMsg(err?.response?.data?.message || tr('Could not save that review. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -80,7 +81,7 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
   if (done) {
     return (
       <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--gold-deep)', fontFamily: SFText, margin: '12px 0 0', lineHeight: 1.5 }}>
-        Review saved for {parent}, with your name on it.
+        {tr('Review saved for {parent}, with your name on it.', { parent })}
       </p>
     );
   }
@@ -103,7 +104,7 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
           <path d="M12 20h9" />
           <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
         </svg>
-        Leave a review for {parent}
+        {tr('Leave a review for {parent}', { parent })}
       </button>
     );
   }
@@ -119,14 +120,14 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
       }}
     >
       <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, margin: 0, lineHeight: 1.4 }}>
-        How has {firstName} been for {parent}?
+        {tr('How has {firstName} been for {parent}?', { firstName, parent })}
       </p>
 
       <StarPicker value={rating} onChange={setRating} />
 
       <div>
         <label htmlFor={`review-comment-${helper.connectionId}`} style={{ display: 'block', fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-          A few words (optional)
+          {tr('A few words (optional)')}
         </label>
         <textarea
           id={`review-comment-${helper.connectionId}`}
@@ -134,7 +135,7 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
           value={comment}
           onChange={e => setComment(e.target.value)}
           rows={3}
-          placeholder={`What ${firstName} has been like for ${parent}`}
+          placeholder={tr('What {firstName} has been like for {parent}', { firstName, parent })}
           style={{ resize: 'vertical', fontFamily: SFText, fontSize: '16px' }}
         />
       </div>
@@ -144,7 +145,7 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
       )}
 
       <p style={{ fontSize: '15px', color: 'var(--gold-deep)', fontFamily: SFText, margin: 0, lineHeight: 1.5 }}>
-        This is saved as {parent}&apos;s review, with your name on it as the person who wrote it.
+        {tr("This is saved as {parent}'s review, with your name on it as the person who wrote it.", { parent })}
       </p>
 
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -159,7 +160,7 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
             opacity: saving ? 0.6 : 1,
           }}
         >
-          {saving ? 'Saving…' : `Save for ${parent}`}
+          {saving ? tr('Saving…') : tr('Save for {parent}', { parent })}
         </button>
         <button
           type="button"
@@ -171,7 +172,7 @@ export default function FamilyReviewForParent({ helper, elderId, elderName }) {
             fontSize: '16px', fontWeight: 600, fontFamily: SFText, cursor: 'pointer',
           }}
         >
-          Never mind
+          {tr('Never mind')}
         </button>
       </div>
     </form>

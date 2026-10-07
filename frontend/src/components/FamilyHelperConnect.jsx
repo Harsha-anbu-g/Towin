@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import ConfirmDialog from './ConfirmDialog';
 import { useToast } from '../context/useToast';
+import { tr } from '../i18n';
 
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
@@ -31,13 +32,13 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   const firstName = (helper.helperName || '').split(' ')[0];
-  const parent = elderName || 'your parent';
+  const parent = elderName || tr('your parent');
 
   // Below Messaging there is nothing to inherit yet — say what unlocks it.
   if (helper.stageIndex < MESSAGING_STAGE) {
     return (
       <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText, margin: '10px 0 0', lineHeight: 1.5 }}>
-        Family chat opens when {parent} and {firstName} reach Messaging — they&apos;re still at the first step.
+        {tr("Family chat opens when {parent} and {firstName} reach Messaging — they're still at the first step.", { parent, firstName })}
       </p>
     );
   }
@@ -49,7 +50,7 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
       if (okMessage) toast.success(okMessage);
       if (onChanged) onChanged();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'That didn’t work. Please try again.');
+      toast.error(err?.response?.data?.message || tr('That didn’t work. Please try again.'));
     } finally {
       setBusy(false);
     }
@@ -63,18 +64,18 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
   if (!standing) {
     return (
       <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText, margin: '10px 0 0', lineHeight: 1.5 }}>
-        You removed this connection.{' '}
+        {tr('You removed this connection.')}{' '}
         <button
           type="button"
           disabled={busy}
-          onClick={() => call(`/family/standings/${helper.connectionId}/resume`, 'Connection restored.')}
+          onClick={() => call(`/family/standings/${helper.connectionId}/resume`, tr('Connection restored.'))}
           style={{
             background: 'transparent', border: 'none', padding: '10px 6px', minHeight: '44px',
             color: 'var(--blue-deep)', fontSize: '14px', fontWeight: 600, fontFamily: SFText,
             cursor: busy ? 'default' : 'pointer', textDecoration: 'underline',
           }}
         >
-          Bring it back
+          {tr('Bring it back')}
         </button>
       </p>
     );
@@ -84,12 +85,12 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
     return (
       <div style={{ margin: '10px 0 0' }}>
         <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText, margin: 0, lineHeight: 1.5 }}>
-          You paused this chat — neither of you can send messages until you resume it.
+          {tr('You paused this chat — neither of you can send messages until you resume it.')}
         </p>
         <button
           type="button"
           disabled={busy}
-          onClick={() => call(`/family/standings/${standing.standingConnectionId}/resume`, 'Chat resumed.')}
+          onClick={() => call(`/family/standings/${standing.standingConnectionId}/resume`, tr('Chat resumed.'))}
           style={{
             marginTop: '8px', background: 'transparent', color: 'var(--blue-deep)',
             border: '1.5px solid var(--blue-soft)', borderRadius: '9999px',
@@ -98,7 +99,7 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
             cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1,
           }}
         >
-          Resume
+          {tr('Resume')}
         </button>
       </div>
     );
@@ -114,14 +115,14 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
       const r = await api.post(`/family/standings/${standing.standingConnectionId}/chat`);
       navigate(`/messages/${r.data}`);
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not open the chat. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not open the chat. Please try again.'));
       setBusy(false);
     }
   }
 
   async function remove() {
     setConfirmRemove(false);
-    await call(`/family/standings/${standing.standingConnectionId}/revoke`, 'Connection removed.');
+    await call(`/family/standings/${standing.standingConnectionId}/revoke`, tr('Connection removed.'));
   }
 
   const panelId = `manage-${standing.standingConnectionId}`;
@@ -129,7 +130,7 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
   return (
     <div style={{ margin: '10px 0 0' }}>
       <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--green-deep)', fontFamily: SFText, margin: 0, lineHeight: 1.5 }}>
-        You hold {parent}&apos;s trust with {firstName}.
+        {tr("You hold {parent}'s trust with {firstName}.", { parent, firstName })}
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
         <button
@@ -144,7 +145,7 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
             cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1,
           }}
         >
-          {busy ? 'Opening…' : `Message ${firstName}`}
+          {busy ? tr('Opening…') : tr('Message {firstName}', { firstName })}
         </button>
         <button
           type="button"
@@ -153,7 +154,7 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
           aria-controls={panelId}
           style={{ ...quietBtn(false), display: 'inline-flex', alignItems: 'center', gap: '5px' }}
         >
-          Manage this chat
+          {tr('Manage this chat')}
           <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"
             style={{
               transform: manageOpen ? 'rotate(180deg)' : 'none',
@@ -167,16 +168,16 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
       {manageOpen && (
         <div id={panelId} style={{ marginTop: '8px' }}>
           <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontFamily: SFText, margin: 0, lineHeight: 1.5 }}>
-            {parent} always sees that you two can talk. If {parent} stops sharing this friendship, the chat closes.
+            {tr('{parent} always sees that you two can talk. If {parent} stops sharing this friendship, the chat closes.', { parent })}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <button
               type="button"
-              onClick={() => call(`/family/standings/${standing.standingConnectionId}/pause`, 'Chat paused.')}
+              onClick={() => call(`/family/standings/${standing.standingConnectionId}/pause`, tr('Chat paused.'))}
               disabled={busy}
               style={quietBtn(busy)}
             >
-              Pause
+              {tr('Pause')}
             </button>
             <button
               type="button"
@@ -184,7 +185,7 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
               disabled={busy}
               style={quietBtn(busy)}
             >
-              Remove
+              {tr('Remove')}
             </button>
           </div>
         </div>
@@ -192,10 +193,10 @@ export default function FamilyHelperConnect({ helper, standing, standingsLoaded 
 
       <ConfirmDialog
         open={confirmRemove}
-        title={`Remove ${firstName}?`}
-        message={`You will not be able to message ${firstName} any more. You can bring this back later from this card.`}
-        confirmLabel="Yes, remove"
-        cancelLabel="Keep it"
+        title={tr('Remove {firstName}?', { firstName })}
+        message={tr('You will not be able to message {firstName} any more. You can bring this back later from this card.', { firstName })}
+        confirmLabel={tr('Yes, remove')}
+        cancelLabel={tr('Keep it')}
         danger
         loading={busy}
         onConfirm={remove}

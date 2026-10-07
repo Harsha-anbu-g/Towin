@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import { tr } from '../i18n';
 
 const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -102,10 +103,10 @@ export default function PeekabooGame() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '18px', gap: '16px' }}>
           <div>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '38px', fontWeight: 400, color: GREEN, margin: 0, letterSpacing: '-0.02em', lineHeight: 1 }}>
-              Peekaboo!
+              {tr('Peekaboo!')}
             </h1>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '5px 0 0' }}>
-              Match all {PAIRS} pairs to win
+              {tr('Match all {PAIRS} pairs to win', { PAIRS })}
             </p>
           </div>
 
@@ -123,7 +124,7 @@ export default function PeekabooGame() {
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ fontFamily: SF, fontSize: 'var(--text-base)', fontWeight: 600, color: timerColor, lineHeight: 1, transition: 'color 0.3s' }}>{timeLeft}</span>
-              <span style={{ fontSize: '9px', color: 'var(--ink-4)' }}>SEC</span>
+              <span style={{ fontSize: '9px', color: 'var(--ink-4)' }}>{tr('SEC')}</span>
             </div>
           </div>
         </div>
@@ -138,7 +139,7 @@ export default function PeekabooGame() {
 
         {/* Why we play — the point isn't winning, it's coming back each day */}
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', textAlign: 'center', lineHeight: 1.6, margin: '0 auto 32px', maxWidth: '400px', fontFamily: SFT }}>
-          A one-minute game for your memory. Win or lose doesn't matter, what counts is playing a little each day. The playing itself is the good part.
+          {tr("A one-minute game for your memory. Win or lose doesn't matter, what counts is playing a little each day. The playing itself is the good part.")}
         </p>
 
         {/* Tortoise — single SVG */}
@@ -206,7 +207,7 @@ export default function PeekabooGame() {
         {/* Skip */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
           <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, textDecoration: 'underline', padding: '8px' }}>
-            Skip to Dashboard
+            {tr('Skip to Dashboard')}
           </button>
         </div>
       </div>
@@ -215,17 +216,17 @@ export default function PeekabooGame() {
       {phase !== 'playing' && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 'var(--z-modal)' }}>
           <div style={{ background: 'var(--canvas)', borderRadius: '18px', padding: '48px 40px', maxWidth: '340px', width: '90%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-            <img src="/logo.png" alt="tortoise" style={{ width: 80, height: 80, objectFit: 'contain', marginBottom: '16px', filter: 'drop-shadow(0 4px 16px rgba(26,92,46,0.25))' }} />
+            <img src="/logo.png" alt={tr('tortoise')} style={{ width: 80, height: 80, objectFit: 'contain', marginBottom: '16px', filter: 'drop-shadow(0 4px 16px rgba(26,92,46,0.25))' }} />
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
-              {phase === 'won' ? 'You found them all!' : "Time's up!"}
+              {phase === 'won' ? tr('You found them all!') : tr("Time's up!")}
             </h2>
             <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 28px', lineHeight: 1.55, fontFamily: SFT }}>
               {phase === 'won'
-                ? `All ${PAIRS} pairs matched. Your streak keeps going!`
-                : `You got ${matchedCount} of ${PAIRS}. Streak still counts!`}
+                ? tr('All {PAIRS} pairs matched. Your streak keeps going!', { PAIRS })
+                : tr('You got {matchedCount} of {PAIRS}. Streak still counts!', { matchedCount, PAIRS })}
             </p>
             <button onClick={() => navigate('/dashboard')} style={{ width: '100%', background: GREEN, color: '#fff', border: 'none', borderRadius: '9999px', padding: '16px 0', fontSize: '17px', fontWeight: 600, fontFamily: SFT, cursor: 'pointer', boxShadow: '0 4px 16px rgba(26,92,46,0.3)' }}>
-              Continue to Dashboard
+              {tr('Continue to Dashboard')}
             </button>
           </div>
         </div>

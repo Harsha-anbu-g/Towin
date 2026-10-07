@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { SETUP, listOfNames } from './passOnLocks';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -74,7 +75,7 @@ export default function SealedSetup({ family, setup, already = [], saving, onFin
   });
 
   return (
-    <section style={cardStyle} aria-label="Setting up your sealed box">
+    <section style={cardStyle} aria-label={tr('Setting up your sealed box')}>
       <p style={stepCount}>{SETUP.step(step, STEPS)}</p>
 
       {step === 1 && (

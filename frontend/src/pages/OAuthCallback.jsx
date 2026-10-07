@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import api from '../api/axios';
 import { landingPathForRole } from '../lib/landingPath';
+import { tr } from '../i18n';
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -12,7 +13,7 @@ export default function OAuthCallback() {
   // initial state instead of setting state synchronously inside the effect.
   const [error, setError] = useState(() =>
     (searchParams.get('error') || !searchParams.get('code'))
-      ? 'Could not connect with Google. Please try again.'
+      ? tr('Could not connect with Google. Please try again.')
       : ''
   );
 
@@ -38,7 +39,7 @@ export default function OAuthCallback() {
         }
       })
       .catch(() => {
-        setError('Something went wrong. Please try again.');
+        setError(tr('Something went wrong. Please try again.'));
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -68,7 +69,7 @@ export default function OAuthCallback() {
               fontSize: '16px', cursor: 'pointer', fontFamily: SF,
             }}
           >
-            Back to log in
+            {tr('Back to log in')}
           </button>
         </div>
       ) : (
@@ -79,7 +80,7 @@ export default function OAuthCallback() {
             animation: 'spin 0.8s linear infinite', margin: '0 auto 16px',
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <p style={{ fontSize: '16px', margin: 0 }}>One moment…</p>
+          <p style={{ fontSize: '16px', margin: 0 }}>{tr('One moment…')}</p>
         </div>
       )}
     </div>

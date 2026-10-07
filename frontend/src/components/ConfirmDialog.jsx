@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { tr } from '../i18n';
 
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -18,8 +19,8 @@ export default function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel = tr('Confirm'),
+  cancelLabel = tr('Cancel'),
   danger = false,
   loading = false,
   onConfirm,
@@ -117,7 +118,7 @@ export default function ConfirmDialog({
               opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? 'Working…' : confirmLabel}
+            {loading ? tr('Working…') : confirmLabel}
           </button>
         </div>
       </div>

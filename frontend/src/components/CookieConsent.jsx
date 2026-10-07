@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { tr } from '../i18n';
 
 const STORAGE_KEY = 'cookieConsent';
 
@@ -29,7 +30,7 @@ export default function CookieConsent() {
   return (
     <div
       role="region"
-      aria-label="Cookie notice"
+      aria-label={tr('Cookie notice')}
       className="cookie-notice"
       style={{
         position: 'fixed',
@@ -53,9 +54,11 @@ export default function CookieConsent() {
       }}
     >
       <span style={{ flex: 1, minWidth: 220 }}>
-        We keep you signed in and use tools that record how the site is used
-        (including replays of screen activity) to make it better. See our{' '}
-        <Link to="/privacy" style={{ color: '#7cc4e8', textDecoration: 'underline' }}>Privacy Policy</Link>.
+        {tr('We keep you signed in and use tools that record how the site is used (including replays of screen activity) to make it better. See our {link}.')
+          .split('{link}')
+          .map((part, i) => (i === 0 ? part : (
+            <span key={i}><Link to="/privacy" style={{ color: '#7cc4e8', textDecoration: 'underline' }}>{tr('Privacy Policy')}</Link>{part}</span>
+          )))}
       </span>
       <button
         onClick={accept}
@@ -72,7 +75,7 @@ export default function CookieConsent() {
           whiteSpace: 'nowrap',
         }}
       >
-        Got it
+        {tr('Got it')}
       </button>
     </div>
   );

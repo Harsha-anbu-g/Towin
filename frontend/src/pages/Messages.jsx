@@ -3,23 +3,25 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
 import { useAuth } from '../context/useAuth';
+import { dateLocale, tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
 
 const TRUST_LABELS = {
-  DISCOVERED: 'Just Connected',
-  MESSAGING: 'Messaging',
-  PHONE_CALL: 'Phone Ready',
-  VIDEO_CALL: 'Video Ready',
-  VERIFIED: 'Verified',
-  FIRST_MEET: 'Ready to Meet',
-  TRUSTED: 'Fully Trusted',
+  get DISCOVERED() { return tr('Just Connected'); },
+  get MESSAGING() { return tr('Messaging'); },
+  get PHONE_CALL() { return tr('Phone Ready'); },
+  get VIDEO_CALL() { return tr('Video Ready'); },
+  get VERIFIED() { return tr('Verified'); },
+  get FIRST_MEET() { return tr('Ready to Meet'); },
+  get TRUSTED() { return tr('Fully Trusted'); },
 };
 
 const TRUST_BANNERS = {
-  PHONE_CALL: { text: 'Ready for a phone call? Share your number when comfortable.' },
-  VIDEO_CALL:  { text: 'Time for a video call? Exchange details when ready.' },
-  VERIFIED:    { text: 'Both of you are verified. Trust is growing.' },
-  FIRST_MEET:  { text: 'Planning your first meet? Choose a public place.' },
-  TRUSTED:     { text: 'Fully trusted connection. Enjoy your friendship.' },
+  PHONE_CALL: { get text() { return tr('Ready for a phone call? Share your number when comfortable.'); } },
+  VIDEO_CALL:  { get text() { return tr('Time for a video call? Exchange details when ready.'); } },
+  VERIFIED:    { get text() { return tr('Both of you are verified. Trust is growing.'); } },
+  FIRST_MEET:  { get text() { return tr('Planning your first meet? Choose a public place.'); } },
+  TRUSTED:     { get text() { return tr('Fully trusted connection. Enjoy your friendship.'); } },
 };
 
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
@@ -62,7 +64,7 @@ export default function Messages() {
     api.get('/connections').then(r => {
       const conn = r.data.find(c => c.id === connectionId);
       if (conn) {
-        setOtherName(conn.otherUserName || 'User');
+        setOtherName(conn.otherUserName || tr('User'));
         // A helper sees whose family this person is: "Sarah (Margaret's family)".
         setOtherContext(conn.otherUserContext || '');
         setOtherUserId(conn.otherUserId);
@@ -150,7 +152,7 @@ export default function Messages() {
       setSent(true);
       setTimeout(() => setSent(false), 1200);
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Message not sent. Tap to retry.');
+      toast.error(err?.response?.data?.message || tr('Message not sent. Tap to retry.'));
     } finally { setSending(false); }
   }
 
@@ -161,14 +163,14 @@ export default function Messages() {
     setReportMsg('');
     try {
       await api.post('/reports', { reportedUserId: otherUserId, ...reportForm });
-      setReportMsg('Report submitted. Thank you.');
+      setReportMsg(tr('Report submitted. Thank you.'));
       setReportForm({ reason: 'Inappropriate Behavior', description: '' });
     } catch (err) {
-      setReportMsg(err?.response?.data?.message || 'Could not submit report.');
+      setReportMsg(err?.response?.data?.message || tr('Could not submit report.'));
     } finally { setReporting(false); }
   }
 
-  const fmtTime = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const fmtTime = (iso) => new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
   const banner = trustLevel ? TRUST_BANNERS[trustLevel] : null;
 
   return (
@@ -217,7 +219,7 @@ export default function Messages() {
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
             <path d="M8.5 1L1.5 8L8.5 15" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span className="chat-back-label">Back</span>
+          <span className="chat-back-label">{tr('Back')}</span>
         </button>
 
         {/* Avatar — real photo or initials. A family thread has three people in
@@ -239,7 +241,7 @@ export default function Messages() {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.2px', margin: 0 }}>
-            {otherName || 'Conversation'}
+            {otherName || tr('Conversation')}
             {otherContext && (
               <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}> ({otherContext})</span>
             )}
@@ -248,7 +250,7 @@ export default function Messages() {
             <div className="chat-trust-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--ink-slate)', flexShrink: 0 }} />
               <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
-                {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ` · Trust ${otherTrustScore}` : ''}
+                {(TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '))}{otherTrustScore != null ? ' · ' + tr('Trust {score}', { score: otherTrustScore }) : ''}
               </span>
             </div>
           )}
@@ -259,7 +261,7 @@ export default function Messages() {
           onClick={() => { setShowReport(r => !r); setReportMsg(''); }}
           style={{ fontSize: '14px', color: 'var(--ink-3)', background: 'transparent', border: '1px solid var(--border)', borderRadius: '9999px', padding: '6px 14px', minHeight: '44px', cursor: 'pointer', fontFamily: SFText, fontWeight: 500 }}
         >
-          Report
+          {tr('Report')}
         </button>
       </header>
 
@@ -268,7 +270,7 @@ export default function Messages() {
         <div style={{ background: 'var(--sky-ghost)', borderBottom: '1px solid var(--sky-hairline)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
-            Family updates — the elder, the helper and the family all read the same notes.
+            {tr('Family updates — the elder, the helper and the family all read the same notes.')}
           </p>
         </div>
       )}
@@ -278,7 +280,7 @@ export default function Messages() {
         <div style={{ background: 'var(--sky-ghost)', borderBottom: '1px solid var(--sky-hairline)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, fontFamily: SFText, margin: 0 }}>
-            {banner ? banner.text : `You're at the ${TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' ')} stage with ${otherName}.`}
+            {banner ? banner.text : tr("You're at the {stage} stage with {otherName}.", { stage: TRUST_LABELS[trustLevel] || trustLevel.replace(/_/g, ' '), otherName })}
           </p>
         </div>
       )}
@@ -291,7 +293,7 @@ export default function Messages() {
           padding: '16px 20px',
         }}>
           <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--red-mid)', marginBottom: '12px', fontFamily: SF }}>
-            Report {otherName}
+            {tr('Report {otherName}', { otherName })}
           </p>
           <form onSubmit={submitReport} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <select
@@ -300,21 +302,21 @@ export default function Messages() {
               className="field"
               style={{ borderColor: 'var(--red-line)' }}
             >
-              <option>Inappropriate Behavior</option>
-              <option>Spam</option>
-              <option>Safety Concern</option>
-              <option>Other</option>
+              <option value="Inappropriate Behavior">{tr('Inappropriate Behavior')}</option>
+              <option value="Spam">{tr('Spam')}</option>
+              <option value="Safety Concern">{tr('Safety Concern')}</option>
+              <option value="Other">{tr('Other')}</option>
             </select>
             <textarea
               value={reportForm.description}
               onChange={e => setReportForm(f => ({ ...f, description: e.target.value }))}
-              placeholder="Describe what happened (optional)..."
+              placeholder={tr('Describe what happened (optional)...')}
               rows={2}
               className="field"
               style={{ borderColor: 'var(--red-line)', resize: 'none' }}
             />
             {reportMsg && (
-              <p style={{ fontSize: '14px', color: reportMsg.includes('Thank') ? 'var(--blue)' : 'var(--red-mid)' }}>
+              <p style={{ fontSize: '14px', color: reportMsg === tr('Report submitted. Thank you.') ? 'var(--blue)' : 'var(--red-mid)' }}>
                 {reportMsg}
               </p>
             )}
@@ -325,10 +327,10 @@ export default function Messages() {
                 className="btn-danger"
                 style={{ fontSize: '14px', padding: '7px 16px' }}
               >
-                {reporting ? 'Submitting...' : 'Submit Report'}
+                {reporting ? tr('Submitting...') : tr('Submit Report')}
               </button>
               <button type="button" onClick={() => setShowReport(false)} className="ghost-btn">
-                Cancel
+                {tr('Cancel')}
               </button>
             </div>
           </form>
@@ -364,7 +366,7 @@ export default function Messages() {
               {otherName}
             </p>
             {loadError !== 'trust' && (
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)' }}>No messages yet. Send the first message to {otherName}.</p>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)' }}>{tr('No messages yet. Send the first message to {otherName}.', { otherName })}</p>
             )}
           </div>
         )}
@@ -397,7 +399,9 @@ export default function Messages() {
                   margin: '10px 0 2px', textAlign: isMe ? 'right' : 'left',
                   padding: isMe ? '0 14px 0 0' : '0 0 0 14px',
                 }}>
-                  {m.actedByUserId === myUserId ? 'You' : m.actedByName}, writing for {m.senderName || 'them'}
+                  {m.actedByUserId === myUserId
+                    ? (m.senderName ? tr('You, writing for {name}', { name: m.senderName }) : tr('You, writing for them'))
+                    : (m.senderName ? tr('{actor}, writing for {name}', { actor: m.actedByName, name: m.senderName }) : tr('{actor}, writing for them', { actor: m.actedByName }))}
                 </p>
               )}
               {showGroupName && (
@@ -413,7 +417,7 @@ export default function Messages() {
                     fontFamily: SFText,
                     fontWeight: 500,
                   }}>
-                    {new Date(m.createdAt).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {new Date(m.createdAt).toLocaleDateString(dateLocale(), { weekday: 'long', month: 'short', day: 'numeric' })}
                   </span>
                 </div>
               )}
@@ -448,7 +452,7 @@ export default function Messages() {
                     marginTop: '4px',
                     color: isMe ? 'rgba(255,255,255,0.6)' : 'var(--ink-4)',
                   }}>
-                    {fmtTime(m.createdAt)}{isMe && m.seenAt && ' · Seen'}
+                    {fmtTime(m.createdAt)}{isMe && m.seenAt && ' · ' + tr('Seen')}
                   </p>
                 </div>
               </div>
@@ -465,7 +469,7 @@ export default function Messages() {
           padding: '12px 20px', textAlign: 'center',
         }}>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--amber-deep)', fontFamily: SFText, margin: 0 }}>
-            Messaging is locked. Both of you need to click <strong>Confirm Trust</strong> on the dashboard to unlock messages.
+            {emphasize(tr('Messaging is locked. Both of you need to click *Confirm Trust* on the dashboard to unlock messages.'), (part) => <strong>{part}</strong>)}
           </p>
         </div>
       )}
@@ -489,7 +493,7 @@ export default function Messages() {
                 if (text.trim() && !sending) send(e);
               }
             }}
-            placeholder={loadError === 'trust' ? 'Confirm trust on dashboard first…' : 'Type a message…'}
+            placeholder={loadError === 'trust' ? tr('Confirm trust on dashboard first…') : tr('Type a message…')}
             disabled={loadError === 'trust'}
             rows={2}
             className="field"
@@ -507,14 +511,14 @@ export default function Messages() {
             }}
           />
           <span className="chat-kbd-hint" style={{ fontSize: '13px', color: 'var(--ink-4)', marginTop: '4px', paddingLeft: '4px' }}>
-            Enter to send · Shift+Enter for new line
+            {tr('Enter to send · Shift+Enter for new line')}
           </span>
         </div>
         <button
           type="submit"
           disabled={sending || !text.trim() || loadError === 'trust'}
-          title="Send message (Enter)"
-          aria-label="Send message"
+          title={tr('Send message (Enter)')}
+          aria-label={tr('Send message')}
           className="chat-send-btn"
           style={{
             background: text.trim() && loadError !== 'trust' ? 'var(--blue)' : 'var(--border)',

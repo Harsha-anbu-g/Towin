@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { tr } from '../i18n';
 
 const STORAGE_KEY = 'towinly_beta_banner_dismissed';
 
@@ -32,7 +33,7 @@ export default function BetaBanner() {
       boxSizing: 'border-box',
     }}>
       <span>
-        Towinly is in beta testing. Your feedback helps us improve.{' '}
+        {tr('Towinly is in beta testing. Your feedback helps us improve.')}{' '}
         <button
           onClick={() => navigate('/feedback')}
           style={{
@@ -43,12 +44,12 @@ export default function BetaBanner() {
             padding: '12px 4px', margin: '-12px -4px',
           }}
         >
-          Give Feedback →
+          {tr('Give Feedback →')}
         </button>
       </span>
       <button
         onClick={dismiss}
-        aria-label="Dismiss beta banner"
+        aria-label={tr('Dismiss beta banner')}
         style={{
           position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)',
           background: 'none', border: 'none', color: '#fff',

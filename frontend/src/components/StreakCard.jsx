@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SKY = 'var(--blue)';
 
@@ -48,7 +49,7 @@ export default function StreakCard({ streak, loading, justCheckedIn }) {
       textAlign: 'center', marginBottom: '18px',
     }}>
       {loading ? (
-        <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>Loading…</p>
+        <p style={{ fontSize: '16px', color: 'var(--ink-4)' }}>{tr('Loading…')}</p>
       ) : (
         <>
           <p
@@ -66,7 +67,7 @@ export default function StreakCard({ streak, loading, justCheckedIn }) {
             fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--ink-3)',
             fontFamily: SFT, marginBottom: '16px',
           }}>
-            days in a row
+            {tr('days in a row')}
           </p>
 
           {/* Week tracker */}
@@ -96,7 +97,7 @@ export default function StreakCard({ streak, loading, justCheckedIn }) {
 
           {streak?.longestStreak > 0 && (
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, margin: '18px 0 0' }}>
-              Best streak: {streak.longestStreak} {streak.longestStreak === 1 ? 'day' : 'days'}
+              {streak.longestStreak === 1 ? tr('Best streak: 1 day') : tr('Best streak: {count} days', { count: streak.longestStreak })}
             </p>
           )}
         </>

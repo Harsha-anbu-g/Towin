@@ -1,5 +1,6 @@
 import Avatar from './ui/Avatar';
 import MutualFriends from './MutualFriends';
+import { tr } from '../i18n';
 
 // One suggested person on Add Friends: who they are, how far, who you both
 // know, and the one action. Shared by the helper, elder and helper-friend lists
@@ -18,17 +19,17 @@ export default function DiscoverCard({ person, index = 0, fallbackName, tags = [
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <p style={{ fontWeight: 600, fontSize: 'var(--text-base)', color: 'var(--ink)', margin: 0 }}>{person.name || fallbackName}</p>
             {person.age != null && (
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>Age {person.age}</span>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', fontWeight: 500 }}>{tr('Age {age}', { age: person.age })}</span>
             )}
             {(person.trustScore != null || person.trustTier) && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'var(--slate-tint)', padding: '3px 10px', borderRadius: '9999px', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--ink-slate)' }}>
-                ★ {person.trustScore != null ? `${person.trustScore} points` : '-'}{person.trustTier ? ` · ${person.trustTier}` : ''}
+                ★ {person.trustScore != null ? tr('{trustScore} points', { trustScore: person.trustScore }) : '-'}{person.trustTier ? ` · ${person.trustTier}` : ''}
               </span>
             )}
           </div>
           {(person.city || person.distanceKm > 0) && (
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0' }}>
-              {person.city}{person.city && person.distanceKm > 0 ? ' · ' : ''}{person.distanceKm > 0 ? `${Math.round(person.distanceKm * 10) / 10} km away` : ''}
+              {person.city}{person.city && person.distanceKm > 0 ? ' · ' : ''}{person.distanceKm > 0 ? tr('{km} km away', { km: Math.round(person.distanceKm * 10) / 10 }) : ''}
             </p>
           )}
           <MutualFriends person={person} />
@@ -42,18 +43,18 @@ export default function DiscoverCard({ person, index = 0, fallbackName, tags = [
           )}
         </div>
         <div className="card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch', flexShrink: 0 }}>
-          {status === 'connected' ? pill('Friends', 'var(--green-deep)')
-            : status === 'requested' ? pill('Requested', 'var(--ink-slate)')
+          {status === 'connected' ? pill(tr('Friends'), 'var(--green-deep)')
+            : status === 'requested' ? pill(tr('Requested'), 'var(--ink-slate)')
             : status ? pill(status, 'var(--ink-slate)')
             : (
               <button onClick={onAdd} disabled={adding}
                 style={{ minHeight: '44px', padding: '0 22px', background: 'var(--blue-wash)', color: 'var(--blue-deep)', border: '1px solid var(--blue-soft)', borderRadius: '9999px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-                {adding ? 'Sending…' : 'Add Friend'}
+                {adding ? tr('Sending…') : tr('Add Friend')}
               </button>
             )}
           <button onClick={onView}
             style={{ height: '44px', padding: '0 14px', background: 'var(--canvas)', color: 'var(--ink-slate)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>
-            View Profile
+            {tr('View Profile')}
           </button>
         </div>
       </div>

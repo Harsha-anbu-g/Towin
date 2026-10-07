@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { familyNamesLabel } from '../lib/copy';
+import { tr } from '../i18n';
 
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
@@ -21,9 +22,8 @@ export default function CheckInFamilyNote({ names, checkedIn }) {
         fontFamily: SFT, lineHeight: 1.5, margin: '14px 0 0',
       }}>
         <Link to="/family" style={{ color: 'var(--blue-deep)', fontWeight: 600 }}>
-          Add your family
-        </Link>{' '}
-        and they will see you checked in.
+          {tr('Add your family')}
+        </Link>{' '}{tr('and they will see you checked in.')}
       </p>
     );
   }
@@ -34,7 +34,7 @@ export default function CheckInFamilyNote({ names, checkedIn }) {
       color: checkedIn ? 'var(--green-deep)' : 'var(--ink-3)',
       fontFamily: SFT, lineHeight: 1.5, margin: '14px 0 0',
     }}>
-      {checkedIn ? `${label} can see you checked in.` : `${label} will see this.`}
+      {checkedIn ? tr('{label} can see you checked in.', { label }) : tr('{label} will see this.', { label })}
     </p>
   );
 }

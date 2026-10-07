@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
+import { tr } from '../i18n';
 
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 
@@ -21,7 +22,7 @@ export default function FamilyTrustAdvance({
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
 
-  const parent = elderName || 'your parent';
+  const parent = elderName || tr('your parent');
   const firstName = (helperName || 'them').split(' ')[0];
 
   // At the top of the ladder there is no next step to take.
@@ -33,10 +34,10 @@ export default function FamilyTrustAdvance({
       // No elder id in the body on purpose: the connection already names both
       // seats, so the server works out whose seat this caller may take.
       await api.post(`/trust/${connectionId}/confirm`);
-      toast.success(`Step taken for ${parent}. ${firstName} will see you moved it.`);
+      toast.success(tr('Step taken for {parent}. {firstName} will see you moved it.', { parent, firstName }));
       onChanged?.();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not move that step. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not move that step. Please try again.'));
     } finally {
       setBusy(false);
     }
@@ -66,10 +67,10 @@ export default function FamilyTrustAdvance({
           <path d="M5 12h14" />
           <path d="m12 5 7 7-7 7" />
         </svg>
-        {busy ? 'Moving…' : `Move the next step forward for ${parent}`}
+        {busy ? tr('Moving…') : tr('Move the next step forward for {parent}', { parent })}
       </button>
       <p style={{ fontSize: '15px', color: 'var(--gold-deep)', fontFamily: SFText, margin: '8px 0 0', lineHeight: 1.5 }}>
-        The step counts as {parent}&apos;s. {firstName} sees that you took it for them.
+        {tr("The step counts as {parent}'s. {firstName} sees that you took it for them.", { parent, firstName })}
       </p>
     </div>
   );

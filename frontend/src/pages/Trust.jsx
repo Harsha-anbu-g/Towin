@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import NavBar from '../components/NavBar';
 import api from '../api/axios';
+import { tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
 
 const SF  = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
 const SFD = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
@@ -16,12 +18,13 @@ const GREY  = 'var(--ink-3)';
 const FAINT = 'var(--ink-4)';
 const EMPTY = 'var(--track-empty)';
 
+// key: the tier as the server names it; name: the same tier in the reader's language.
 const TIERS = [
-  { name: 'New Member',         min: 0 },
-  { name: 'Getting Started',    min: 1 },
-  { name: 'Reliable',           min: 15 },
-  { name: 'Highly Trusted',     min: 45 },
-  { name: 'Community Champion', min: 90 },
+  { key: 'New Member',         get name() { return tr('New Member'); },         min: 0 },
+  { key: 'Getting Started',    get name() { return tr('Getting Started'); },    min: 1 },
+  { key: 'Reliable',           get name() { return tr('Reliable'); },           min: 15 },
+  { key: 'Highly Trusted',     get name() { return tr('Highly Trusted'); },     min: 45 },
+  { key: 'Community Champion', get name() { return tr('Community Champion'); }, min: 90 },
 ];
 
 const TIER_COLORS = {
@@ -39,7 +42,7 @@ const card = {
 // Top of the trust ladder (TrustLevel.TRUSTED = 6). Reviews only open here.
 const FULLY_TRUSTED_STAGE = 6;
 
-const firstName = (name) => (name || '').trim().split(' ')[0] || 'They';
+const firstName = (name) => (name || '').trim().split(' ')[0] || tr('They');
 
 /* ── The trust seal: the running total, framed as a warm gold plaque. It's a
       seal, not a ring or a bar — the score keeps growing, so nothing here
@@ -61,7 +64,7 @@ function ScoreSeal({ score }) {
         {score}
       </span>
       <span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--gold-deep)', marginTop: '5px', letterSpacing: '0.02em' }}>
-        points
+        {tr('points')}
       </span>
     </div>
   );
@@ -93,7 +96,7 @@ function Meter({ label, earned, max, shape }) {
       <span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: 1, flexWrap: 'wrap' }}>
         {marks}
       </span>
-      <span aria-label={`${earned} of ${max}`} style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: earned > 0 ? INK : FAINT, flexShrink: 0 }}>
+      <span aria-label={tr('{earned} of {max}', { earned, max })} style={{ fontFamily: SF, fontSize: '14px', fontWeight: 600, color: earned > 0 ? INK : FAINT, flexShrink: 0 }}>
         {earned}<span aria-hidden="true" style={{ color: FAINT, fontWeight: 400 }}>/{max}</span>
       </span>
     </div>
@@ -144,7 +147,7 @@ function HelperStack({ people }) {
         )}
       </div>
       <span style={{ fontFamily: SF, fontSize: '13px', color: GREY, lineHeight: 1.4 }}>
-        {n} {n === 1 ? 'person' : 'people'} helped you reach this
+        {n === 1 ? tr('1 person helped you reach this') : tr('{count} people helped you reach this', { count: n })}
       </span>
     </div>
   );
@@ -154,7 +157,7 @@ function HelperStack({ people }) {
 function ScoreSummary({ data }) {
   const score = Math.round(data.totalScore);
   const tierStyle = TIER_COLORS[data.tier] ?? TIER_COLORS['New Member'];
-  const idx = TIERS.findIndex(t => t.name === data.tier);
+  const idx = TIERS.findIndex(t => t.key === data.tier);
   const next = TIERS[idx + 1];
   const toNext = next ? next.min - score : 0;
   const people = data.customers ?? [];
@@ -170,19 +173,19 @@ function ScoreSummary({ data }) {
             borderRadius: '9999px', padding: '4px 13px',
             fontSize: 'var(--text-xs)', fontWeight: 600, fontFamily: SF, marginBottom: '10px',
           }}>
-            {data.tier}
+            {TIERS[idx]?.name ?? data.tier}
           </div>
           {/* The headline names the goal, not the number again — the seal already
               shows the total, so restating it here read as auto-generated filler. */}
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, color: INK, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
             {next
-              ? <>{toNext} {toNext === 1 ? 'point' : 'points'} to {next.name}</>
-              : <>You've reached the top tier</>}
+              ? (toNext === 1 ? tr('1 point to {tier}', { tier: next.name }) : tr('{count} points to {tier}', { count: toNext, tier: next.name }))
+              : tr("You've reached the top tier")}
           </h2>
           <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.55 }}>
             {next
-              ? <>Every person you help fully adds up to 15 points.</>
-              : <>Keep helping — every person still adds up to 15 points.</>}
+              ? tr('Every person you help fully adds up to 15 points.')
+              : tr('Keep helping — every person still adds up to 15 points.')}
           </p>
           <HelperStack people={people} />
         </div>
@@ -211,20 +214,20 @@ function FamilyCard({ family }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: '200px' }}>
           <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: TRUST, margin: '0 0 3px' }}>
-            Family connected
+            {tr('Family connected')}
           </p>
           <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: 0, lineHeight: 1.5 }}>
-            One point for having your family connected — however many family members you add.
+            {tr('One point for having your family connected — however many family members you add.')}
           </p>
         </div>
         <span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           {marks}
         </span>
-        <span aria-label={`+${earned} of ${max}`} style={{
+        <span aria-label={tr('+{earned} of {max}', { earned, max })} style={{
           fontFamily: SF, fontSize: '15px', fontWeight: 600,
           color: earned > 0 ? TRUST : FAINT, flexShrink: 0, whiteSpace: 'nowrap',
         }}>
-          +{earned}<span aria-hidden="true" style={{ color: FAINT, fontWeight: 400 }}> of {max}</span>
+          +{earned}<span aria-hidden="true" style={{ color: FAINT, fontWeight: 400 }}>{' '}{tr('of {max}', { max })}</span>
         </span>
       </div>
     </div>
@@ -250,7 +253,7 @@ function ProfileGroup({ group }) {
           background: completed ? SKY : 'var(--grey-fill-4)',
           borderRadius: '9999px', padding: '3px 10px', whiteSpace: 'nowrap', flexShrink: 0,
         }}>
-          {completed ? '+1 point ✓' : `${doneCount}/${itemCount} · +1 point`}
+          {completed ? tr('+1 point ✓') : tr('{doneCount}/{itemCount} · +1 point', { doneCount, itemCount })}
         </span>
       </div>
 
@@ -285,10 +288,10 @@ function ProfileCard({ profile, onGoToProfile }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
         <div>
           <h3 style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: '0 0 4px' }}>
-            Your profile
+            {tr('Your profile')}
           </h3>
           <p style={{ fontFamily: SF, fontSize: 'var(--text-xs)', color: FAINT, margin: 0 }}>
-            Fill a whole set to earn its point — and it counts for <em>every</em> customer you help
+            {emphasize(tr('Fill a whole set to earn its point — and it counts for *every* customer you help'), (part) => <em>{part}</em>)}
           </p>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -308,7 +311,7 @@ function ProfileCard({ profile, onGoToProfile }) {
             padding: '12px 28px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SF,
             cursor: 'pointer', boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
           }}>
-            Finish your profile →
+            {tr('Finish your profile →')}
           </button>
         </div>
       )}
@@ -351,7 +354,7 @@ function CustomerCard({ c }) {
           <div style={{ fontFamily: SFD, fontSize: 'var(--text-base)', fontWeight: 700, color: INK, lineHeight: 1 }}>
             {c.total}<span style={{ fontFamily: SF, fontSize: 'var(--text-xs)', color: FAINT, fontWeight: 400 }}> / {c.totalMax}</span>
           </div>
-          <div style={{ fontFamily: SF, fontSize: '13px', color: FAINT, marginTop: '2px' }}>points</div>
+          <div style={{ fontFamily: SF, fontSize: '13px', color: FAINT, marginTop: '2px' }}>{tr('points')}</div>
         </div>
       </div>
 
@@ -368,8 +371,8 @@ function CustomerCard({ c }) {
       </div>
 
       <div style={{ borderTop: '1px solid var(--hairline-3)', paddingTop: '6px' }}>
-        <Meter label="Trust stages" earned={c.rooting} max={c.rootingMax} shape="dot" />
-        <Meter label="Their review" earned={c.review}  max={c.reviewMax}  shape="star" />
+        <Meter label={tr('Trust stages')} earned={c.rooting} max={c.rootingMax} shape="dot" />
+        <Meter label={tr('Their review')} earned={c.review}  max={c.reviewMax}  shape="star" />
         {/* An empty star row has two different causes, and five grey stars on
             their own read as a poor rating. Say which one it is: still climbing
             the ladder (reviews aren't open to either of you yet), or fully
@@ -378,13 +381,13 @@ function CustomerCard({ c }) {
         {!c.hasReview && (
           <p style={{ fontFamily: SF, fontSize: '14px', color: FAINT, margin: '-4px 0 8px', paddingLeft: '104px', lineHeight: 1.4 }}>
             {c.stageIndex < FULLY_TRUSTED_STAGE
-              ? "You can review each other once you're fully trusted friends."
-              : `${firstName(c.customerName)} hasn't left a review yet.`}
+              ? tr("You can review each other once you're fully trusted friends.")
+              : tr("{firstName} hasn't left a review yet.", { firstName: firstName(c.customerName) })}
           </p>
         )}
-        <Meter label="Your profile" earned={c.profile} max={c.profileMax} shape="dot" />
+        <Meter label={tr('Your profile')} earned={c.profile} max={c.profileMax} shape="dot" />
         {c.familyMax > 0 && (
-          <Meter label="Family" earned={c.family} max={c.familyMax} shape="dot" />
+          <Meter label={tr('Family')} earned={c.family} max={c.familyMax} shape="dot" />
         )}
       </div>
     </div>
@@ -402,7 +405,7 @@ export default function Trust() {
   useEffect(() => {
     api.get('/trust/my-score')
       .then(r => setData(r.data))
-      .catch(() => setError('Could not load your trust score. Please try again.'))
+      .catch(() => setError(tr('Could not load your trust score. Please try again.')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -418,21 +421,18 @@ export default function Trust() {
 
         <div style={{ marginBottom: '22px' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 400, color: INK, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-            Your <span style={{ color: TRUST }}>Trust</span> Score
+            {emphasize(tr('Your *Trust* Score'), (part) => <span style={{ color: TRUST }}>{part}</span>)}
           </h1>
           <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: 0, lineHeight: 1.5 }}>
             {isHelper
-              ? <>Each person you help can earn you up to 15 points:
-                 7 for growing trust together, 5 from their review, and 3 for your profile.</>
-              : <>Each person who helps you can earn you up to 15 points:
-                 7 for growing trust together, 5 from their review, 2 for your profile,
-                 and 1 for family connected.</>}
+              ? tr('Each person you help can earn you up to 15 points: 7 for growing trust together, 5 from their review, and 3 for your profile.')
+              : tr('Each person who helps you can earn you up to 15 points: 7 for growing trust together, 5 from their review, 2 for your profile, and 1 for family connected.')}
           </p>
         </div>
 
         {loading && (
           <div style={{ ...card, padding: '64px', textAlign: 'center', fontFamily: SF, fontSize: '16px', color: FAINT }}>
-            Loading your score…
+            {tr('Loading your score…')}
           </div>
         )}
 
@@ -449,11 +449,11 @@ export default function Trust() {
 
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '24px 0 12px' }}>
               <h3 style={{ fontFamily: SFD, fontSize: '17px', fontWeight: 700, color: INK, margin: 0 }}>
-                {isHelper ? 'People you help' : 'Your helpers'}
+                {isHelper ? tr('People you help') : tr('Your helpers')}
               </h3>
               {customers.length > 0 && (
                 <span style={{ fontFamily: SF, fontSize: '14px', color: FAINT }}>
-                  {customers.length} {customers.length === 1 ? 'person' : 'people'}
+                  {customers.length === 1 ? tr('1 person') : tr('{count} people', { count: customers.length })}
                 </span>
               )}
             </div>
@@ -461,19 +461,19 @@ export default function Trust() {
             {customers.length === 0 ? (
               <div style={{ ...card, padding: '40px 28px', textAlign: 'center' }}>
                 <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: '0 0 6px' }}>
-                  No one here yet
+                  {tr('No one here yet')}
                 </p>
                 <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: '0 0 18px', lineHeight: 1.5 }}>
                   {isHelper
-                    ? 'Connect with your first elder. As your trust grows step by step, you earn points here.'
-                    : 'Connect with your first helper. As your trust grows step by step, you earn points here.'}
+                    ? tr('Connect with your first elder. As your trust grows step by step, you earn points here.')
+                    : tr('Connect with your first helper. As your trust grows step by step, you earn points here.')}
                 </p>
                 <button onClick={() => navigate('/dashboard')} style={{
                   background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',
                   padding: '12px 28px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SF,
                   cursor: 'pointer', boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
                 }}>
-                  Find {isHelper ? 'an elder' : 'a helper'} →
+                  {isHelper ? tr('Find an elder') : tr('Find a helper')} →
                 </button>
               </div>
             ) : (

@@ -11,6 +11,7 @@ import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
 import TagInput from '../components/TagInput';
 import { isTooBig, TOO_BIG_MESSAGE } from '../lib/uploads';
+import { dateLocale, tr } from '../i18n';
 
 const MUTED = 'var(--ink-4)';
 const BORDER = 'var(--border)';
@@ -157,8 +158,8 @@ export default function ProfileEdit() {
       setTimeout(() => setLocationSaved(false), 2000);
     } catch (err) {
       setLocationMsg(err?.response?.status === 404
-        ? "We couldn't find that place — try a postcode."
-        : 'Could not save location. Please try again.');
+        ? tr("We couldn't find that place — try a postcode.")
+        : tr('Could not save location. Please try again.'));
     } finally {
       setSavingLocation(false);
     }
@@ -168,8 +169,8 @@ export default function ProfileEdit() {
     if (!idFile) return;
     setUploadingId(true);
     const fd = new FormData(); fd.append('file', idFile);
-    try { await api.post('/auth/verify-id', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); setIdMsg('ID uploaded. Verification pending review.'); }
-    catch (err) { setIdMsg(err?.response?.data?.message || 'Upload failed.'); }
+    try { await api.post('/auth/verify-id', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); setIdMsg(tr('ID uploaded. Verification pending review.')); }
+    catch (err) { setIdMsg(err?.response?.data?.message || tr('Upload failed.')); }
     finally { setUploadingId(false); }
   }
 
@@ -201,10 +202,10 @@ export default function ProfileEdit() {
       setProfileData(p => ({ ...p, photoUrl: r.data.photoUrl }));
       // Keep localPhotoPreview showing — it's the same bytes as the S3 file,
       // so the avatar stays instant without waiting for the S3 round-trip.
-      setPhotoMsg('Photo updated.'); setPhotoFile(null);
+      setPhotoMsg(tr('Photo updated.')); setPhotoFile(null);
     } catch (err) {
       if (localPhotoPreview) { URL.revokeObjectURL(localPhotoPreview); setLocalPhotoPreview(null); }
-      setPhotoMsg(err?.response?.data?.message || 'Upload failed.');
+      setPhotoMsg(err?.response?.data?.message || tr('Upload failed.'));
     }
     finally { setUploadingPhoto(false); }
   }
@@ -219,9 +220,9 @@ export default function ProfileEdit() {
       setEmContacts(prev => [...prev, res.data]);
       setEmForm({ name: '', phone: '', relationship: '', inactivityDays: 5 });
       setEmShowAdd(false);
-      setEmMsg('Contact added.');
+      setEmMsg(tr('Contact added.'));
     } catch (err) {
-      setEmMsg(err?.response?.data?.message || 'Could not add contact.');
+      setEmMsg(err?.response?.data?.message || tr('Could not add contact.'));
     } finally { setEmAdding(false); }
   }
 
@@ -232,7 +233,7 @@ export default function ProfileEdit() {
       setEmContacts(prev => prev.filter(c => c.id !== id));
       setEmPendingRemove(null);
     } catch {
-      setEmMsg('Could not remove contact. Please try again.');
+      setEmMsg(tr('Could not remove contact. Please try again.'));
     } finally { setEmRemoving(false); }
   }
 
@@ -264,8 +265,8 @@ export default function ProfileEdit() {
           dateOfBirth: form.dateOfBirth || null,
         });
       }
-      setMsg('Profile saved.');
-    } catch (err) { setMsg(err?.response?.data?.message || 'Failed to save. Try again.'); }
+      setMsg(tr('Profile saved.'));
+    } catch (err) { setMsg(err?.response?.data?.message || tr('Failed to save. Try again.')); }
     finally { setSaving(false); }
   }
 
@@ -273,7 +274,7 @@ export default function ProfileEdit() {
     ? (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--green-deep)', whiteSpace: 'nowrap' }}>
         <svg aria-hidden width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-        Verified · +{pts} pts
+        {tr('Verified · +{pts} pts', { pts })}
       </span>
     )
     : null;
@@ -305,22 +306,22 @@ export default function ProfileEdit() {
               <Avatar name={form.name} photoUrl={localPhotoPreview || profileData?.photoUrl} size={84} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <h1 style={{ fontSize: 'var(--text-xl)', lineHeight: 1.2, margin: 0, overflowWrap: 'anywhere' }}>
-                  {form.name || 'Your Name'}
+                  {form.name || tr('Your Name')}
                 </h1>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '6px 0 0' }}>
-                  {[isElder ? 'Elder' : 'Helper', profileData?.username && `@${profileData.username}`].filter(Boolean).join(' · ')}
+                  {[isElder ? tr('Elder') : tr('Helper'), profileData?.username && `@${profileData.username}`].filter(Boolean).join(' · ')}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
                   <input type="file" accept="image/*" id="photo-upload" onChange={handlePhotoSelect}
                     style={{ display: 'none' }} />
                   <label htmlFor="photo-upload" className="ghost-btn"
                     style={{ fontSize: 'var(--text-sm)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', minHeight: '44px', boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
-                    {photoFile ? photoFile.name.slice(0, 14) + '…' : 'Change photo'}
+                    {photoFile ? photoFile.name.slice(0, 14) + '…' : tr('Change photo')}
                   </label>
                   {photoFile && (
                     <button onClick={uploadPhoto} disabled={uploadingPhoto} className="primary-btn"
                       style={{ fontSize: 'var(--text-sm)', minHeight: '44px' }}>
-                      {uploadingPhoto ? 'Uploading…' : 'Upload'}
+                      {uploadingPhoto ? tr('Uploading…') : tr('Upload')}
                     </button>
                   )}
                   {photoMsg && <p style={{ fontSize: '14px', color: 'var(--blue-deep)', margin: 0 }}>{photoMsg}</p>}
@@ -330,7 +331,7 @@ export default function ProfileEdit() {
                 <div className="pe-idtrust" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                     <span aria-hidden className="star-lit">★</span>
-                    {profileData.trustScore ?? 0} points
+                    {profileData.trustScore ?? 0}{' '}{tr('points')}
                   </span>
                   <TrustBadge tier={profileData.trustTier} />
                 </div>
@@ -345,14 +346,14 @@ export default function ProfileEdit() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <BlurFade delay={2}>
               <div className="pe-card" style={card}>
-                {sectionHeader('Personal Information')}
+                {sectionHeader(tr('Personal Information'))}
                 <Divider />
                 <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column' }}>
-                  <FieldRow label="Full Name">
-                    <SmoothInput {...f('name')} placeholder="Your name" required style={{ width: '100%', boxSizing: 'border-box' }} />
+                  <FieldRow label={tr('Full Name')}>
+                    <SmoothInput {...f('name')} placeholder={tr('Your name')} required style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Age">
+                  <FieldRow label={tr('Age')}>
                     {form.dateOfBirth ? (() => {
                       const age = computeAge(form.dateOfBirth);
                       return age ? (
@@ -364,22 +365,22 @@ export default function ProfileEdit() {
                           <span style={{ fontWeight: 600, fontSize: '20px', color: 'var(--ink)' }}>
                             {age.years}
                           </span>
-                          <span style={{ color: 'var(--ink-3)' }}> years old</span>
+                          <span style={{ color: 'var(--ink-3)' }}>{' '}{tr('years old')}</span>
                           <br />
                           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>
-                            {age.totalDays.toLocaleString()} days · {age.months} mo {age.days} d
+                            {tr('{total} days · {months} mo {days} d', { total: age.totalDays.toLocaleString(dateLocale()), months: age.months, days: age.days })}
                           </span>
                         </div>
                       ) : null;
                     })() : (
                       <SmoothInput {...f('age')} type="number"
-                        placeholder="Your age"
+                        placeholder={tr('Your age')}
                         min={1} max={150}
                         style={{ width: '100%', boxSizing: 'border-box' }} />
                     )}
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Bio">
+                  <FieldRow label={tr('Bio')}>
                     <textarea {...f('bio')} rows={3}
                       style={{
                         width: '100%',
@@ -393,14 +394,14 @@ export default function ProfileEdit() {
                         resize: 'vertical',
                         boxSizing: 'border-box',
                       }}
-                      placeholder="Tell us a bit about yourself..." />
+                      placeholder={tr('Tell us a bit about yourself...')} />
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Languages">
+                  <FieldRow label={tr('Languages')}>
                     <TagInput
                       value={form.languages}
                       onChange={tags => setForm(p => ({ ...p, languages: tags }))}
-                      placeholder="Type a language, press Enter…"
+                      placeholder={tr('Type a language, press Enter…')}
                       style={{ width: '100%', boxSizing: 'border-box' }}
                     />
                   </FieldRow>
@@ -408,19 +409,19 @@ export default function ProfileEdit() {
                   {isElder && (
                     <>
                       <Divider />
-                      <FieldRow label="Interests">
+                      <FieldRow label={tr('Interests')}>
                         <TagInput
                           value={form.interests}
                           onChange={tags => setForm(p => ({ ...p, interests: tags }))}
-                          placeholder="Type an interest, press Enter…"
+                          placeholder={tr('Type an interest, press Enter…')}
                           style={{ width: '100%', boxSizing: 'border-box' }}
                         />
                       </FieldRow>
                       <Divider />
-                      <FieldRow label="Looking For">
+                      <FieldRow label={tr('Looking For')}>
                         <select {...f('lookingFor')} className="field" style={{ width: '100%', boxSizing: 'border-box' }}>
-                          <option value="FRIENDSHIP">Friendship</option>
-                          <option value="HELP">Help</option>
+                          <option value="FRIENDSHIP">{tr('Friendship')}</option>
+                          <option value="HELP">{tr('Help')}</option>
                         </select>
                       </FieldRow>
                     </>
@@ -429,20 +430,20 @@ export default function ProfileEdit() {
                   {!isElder && (
                     <>
                       <Divider />
-                      <FieldRow label="Hobbies">
+                      <FieldRow label={tr('Hobbies')}>
                         <TagInput
                           value={form.hobbies}
                           onChange={tags => setForm(p => ({ ...p, hobbies: tags }))}
-                          placeholder="Type a hobby, press Enter…"
+                          placeholder={tr('Type a hobby, press Enter…')}
                           style={{ width: '100%', boxSizing: 'border-box' }}
                         />
                       </FieldRow>
                       <Divider />
-                      <FieldRow label="Skills Offered">
+                      <FieldRow label={tr('Skills Offered')}>
                         <TagInput
                           value={form.skillsOffered}
                           onChange={tags => setForm(p => ({ ...p, skillsOffered: tags }))}
-                          placeholder="Type a skill, press Enter…"
+                          placeholder={tr('Type a skill, press Enter…')}
                           style={{ width: '100%', boxSizing: 'border-box' }}
                         />
                       </FieldRow>
@@ -451,44 +452,44 @@ export default function ProfileEdit() {
 
                   {/* Shared fields — all roles */}
                   <Divider />
-                  <FieldRow label="Date of Birth">
+                  <FieldRow label={tr('Date of Birth')}>
                     <SmoothInput {...f('dateOfBirth')} type="date" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Occupation">
-                    <SmoothInput {...f('occupation')} placeholder="e.g. Retired teacher, Artist" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  <FieldRow label={tr('Occupation')}>
+                    <SmoothInput {...f('occupation')} placeholder={tr('e.g. Retired teacher, Artist')} style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Sex">
+                  <FieldRow label={tr('Sex')}>
                     <select {...f('gender')} className="field" style={{ width: '100%', boxSizing: 'border-box' }}>
-                      <option value="">Select…</option>
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
-                      <option value="OTHER">Other</option>
+                      <option value="">{tr('Select…')}</option>
+                      <option value="MALE">{tr('Male')}</option>
+                      <option value="FEMALE">{tr('Female')}</option>
+                      <option value="OTHER">{tr('Other')}</option>
                     </select>
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Facebook URL">
+                  <FieldRow label={tr('Facebook URL')}>
                     <SmoothInput {...f('facebookUrl')} placeholder="https://facebook.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Instagram URL">
+                  <FieldRow label={tr('Instagram URL')}>
                     <SmoothInput {...f('instagramUrl')} placeholder="https://instagram.com/yourname" style={{ width: '100%', boxSizing: 'border-box' }} />
                   </FieldRow>
                   <Divider />
-                  <FieldRow label="Location">
+                  <FieldRow label={tr('Location')}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <SmoothInput
                         value={locationQuery}
                         onChange={e => { setLocationQuery(e.target.value); setLocationSaved(false); }}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveLocation(); } }}
-                        placeholder="Town or postcode…"
+                        placeholder={tr('Town or postcode…')}
                         className="field"
                         wrapperStyle={{ flex: 1 }}
                       />
                       <button type="button" onClick={saveLocation} disabled={savingLocation || locationSaved} className="ghost-btn"
                         style={{ fontSize: '14px', whiteSpace: 'nowrap', color: locationSaved ? 'var(--green-deep)' : undefined, borderColor: locationSaved ? 'var(--green-deep)' : undefined }}>
-                        {savingLocation ? 'Saving…' : locationSaved ? 'Saved ✓' : 'Save'}
+                        {savingLocation ? tr('Saving…') : locationSaved ? tr('Saved ✓') : tr('Save')}
                       </button>
                     </div>
                     {locationMsg && (
@@ -499,7 +500,7 @@ export default function ProfileEdit() {
                   </FieldRow>
 
                   {msg && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: msg.includes('saved') ? 'var(--blue)' : 'var(--ink-slate)', fontWeight: 500, marginTop: '8px' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', color: msg === tr('Profile saved.') ? 'var(--blue)' : 'var(--ink-slate)', fontWeight: 500, marginTop: '8px' }}>
                       {msg}
                     </p>
                   )}
@@ -521,7 +522,7 @@ export default function ProfileEdit() {
                       cursor: 'pointer',
                     }}
                   >
-                    {saving ? 'Saving…' : 'Save Profile'}
+                    {saving ? tr('Saving…') : tr('Save Profile')}
                   </button>
                 </form>
               </div>
@@ -534,31 +535,31 @@ export default function ProfileEdit() {
             {/* Verification card */}
             <BlurFade delay={4}>
               <div className="pe-card" style={card}>
-                {sectionHeader('Verification')}
+                {sectionHeader(tr('Verification'))}
 
                 {/* Phone */}
                 <div style={{ border: '1.5px solid var(--border)', borderRadius: '14px', padding: '18px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>Phone number</p>
-                      <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0' }}>{profileData?.phone || 'No number on file'}</p>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>{tr('Phone number')}</p>
+                      <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0' }}>{profileData?.phone || tr('No number on file')}</p>
                     </div>
                     {profileData?.phoneVerified
                       ? verBadge(true, 10)
-                      : <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontWeight: 600, whiteSpace: 'nowrap' }}>Not verified</span>
+                      : <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontWeight: 600, whiteSpace: 'nowrap' }}>{tr('Not verified')}</span>
                     }
                   </div>
 
                   {!editingPhone ? (
                     <button onClick={() => { setEditingPhone(true); setNewPhone(profileData?.phone || ''); }}
                       className="ghost-btn" style={{ alignSelf: 'flex-start', fontSize: 'var(--text-xs)', padding: '5px 14px' }}>
-                      Change number
+                      {tr('Change number')}
                     </button>
                   ) : (
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <SmoothInput value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="416 555 0123" className="field" wrapperStyle={{ flex: 1 }} />
-                      <button onClick={savePhone} className="primary-btn" style={{ fontSize: '14px' }}>Save</button>
-                      <button onClick={() => setEditingPhone(false)} className="ghost-btn" style={{ fontSize: '14px' }}>Cancel</button>
+                      <button onClick={savePhone} className="primary-btn" style={{ fontSize: '14px' }}>{tr('Save')}</button>
+                      <button onClick={() => setEditingPhone(false)} className="ghost-btn" style={{ fontSize: '14px' }}>{tr('Cancel')}</button>
                     </div>
                   )}
 
@@ -568,14 +569,14 @@ export default function ProfileEdit() {
                 <div style={{ border: '1.5px solid var(--border)', borderRadius: '14px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>ID document</p>
-                      <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0' }}>Driver's licence or passport</p>
+                      <p style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)' }}>{tr('ID document')}</p>
+                      <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0' }}>{tr("Driver's licence or passport")}</p>
                     </div>
                     {profileData?.verificationStatus === 'VERIFIED'
                       ? verBadge(true, 20)
                       : profileData?.verificationStatus === 'PENDING'
-                      ? <span style={{ fontSize: 'var(--text-sm)', color: 'var(--blue-deep)', fontWeight: 600, whiteSpace: 'nowrap' }}>Under review</span>
-                      : <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontWeight: 600, whiteSpace: 'nowrap' }}>Not submitted</span>
+                      ? <span style={{ fontSize: 'var(--text-sm)', color: 'var(--blue-deep)', fontWeight: 600, whiteSpace: 'nowrap' }}>{tr('Under review')}</span>
+                      : <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontWeight: 600, whiteSpace: 'nowrap' }}>{tr('Not submitted')}</span>
                     }
                   </div>
                   {(profileData?.verificationStatus === 'NONE' || !profileData?.verificationStatus) && (
@@ -584,12 +585,12 @@ export default function ProfileEdit() {
                         style={{ fontSize: '14px', color: 'var(--ink-3)', flex: 1 }} />
                       {idFile && (
                         <button onClick={uploadId} disabled={uploadingId} className="primary-btn" style={{ fontSize: '14px' }}>
-                          {uploadingId ? 'Uploading…' : 'Upload'}
+                          {uploadingId ? tr('Uploading…') : tr('Upload')}
                         </button>
                       )}
                     </div>
                   )}
-                  {idMsg && <p style={{ fontSize: '14px', color: idMsg.includes('pending') ? 'var(--blue-deep)' : MUTED, fontWeight: 500 }}>{idMsg}</p>}
+                  {idMsg && <p style={{ fontSize: '14px', color: idMsg === tr('ID uploaded. Verification pending review.') ? 'var(--blue-deep)' : MUTED, fontWeight: 500 }}>{idMsg}</p>}
                 </div>
               </div>
             </BlurFade>
@@ -599,19 +600,19 @@ export default function ProfileEdit() {
               <BlurFade delay={4}>
                 <div className="pe-card" style={card}>
                   <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 6px' }}>
-                    Emergency Contacts
+                    {tr('Emergency Contacts')}
                     <span style={{ fontSize: '16px', color: 'var(--ink-4)', marginLeft: '8px' }}>
                       ({emContacts.length}/3)
                     </span>
                   </h2>
                   <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.5 }}>
-                    People we'll alert if you don't check in for several days, or when you press SOS.
+                    {tr("People we'll alert if you don't check in for several days, or when you press SOS.")}
                   </p>
 
                   {emContacts.length === 0 ? (
                     <div style={{ border: '1.5px solid var(--border)', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
                       <p style={{ fontSize: 'var(--text-sm)', color: MUTED, margin: 0 }}>
-                        No emergency contacts yet. Add up to 3 people who care about you.
+                        {tr('No emergency contacts yet. Add up to 3 people who care about you.')}
                       </p>
                     </div>
                   ) : (
@@ -631,7 +632,7 @@ export default function ProfileEdit() {
                             minHeight: '44px',
                             fontFamily: 'inherit', cursor: 'pointer',
                           }}>
-                            Remove
+                            {tr('Remove')}
                           </button>
                         </div>
                       ))}
@@ -639,7 +640,7 @@ export default function ProfileEdit() {
                   )}
 
                   {emMsg && (
-                    <p className={emMsg.includes('added') ? undefined : 'danger-text'} style={{ fontSize: '14px', fontWeight: 500, marginTop: '12px', color: emMsg.includes('added') ? 'var(--blue-teal)' : undefined }}>
+                    <p className={emMsg === tr('Contact added.') ? undefined : 'danger-text'} style={{ fontSize: '14px', fontWeight: 500, marginTop: '12px', color: emMsg === tr('Contact added.') ? 'var(--blue-teal)' : undefined }}>
                       {emMsg}
                     </p>
                   )}
@@ -650,37 +651,37 @@ export default function ProfileEdit() {
                       <form onSubmit={addEmContact} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px', borderTop: '1px solid var(--hairline)', paddingTop: '16px' }}>
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Name</label>
-                            <SmoothInput {...emF('name')} className="field" placeholder="Contact name" required />
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('Name')}</label>
+                            <SmoothInput {...emF('name')} className="field" placeholder={tr('Contact name')} required />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Phone</label>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('Phone')}</label>
                             <SmoothInput {...emF('phone')} className="field" placeholder="+1 555 000 0000" required />
                           </div>
                         </div>
                         <div className="two-col-grid" style={{ gap: '12px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Relationship</label>
-                            <SmoothInput {...emF('relationship')} className="field" placeholder="Daughter, Doctor…" />
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('Relationship')}</label>
+                            <SmoothInput {...emF('relationship')} className="field" placeholder={tr('Daughter, Doctor…')} />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>Alert after (days)</label>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>{tr('Alert after (days)')}</label>
                             <SmoothInput {...emF('inactivityDays')} type="number" min={1} max={30} className="field" />
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button type="submit" disabled={emAdding} className="btn-confirm" style={{ flex: 1, fontSize: 'var(--text-sm)' }}>
-                            {emAdding ? 'Adding…' : 'Add Contact'}
+                            {emAdding ? tr('Adding…') : tr('Add Contact')}
                           </button>
                           <button type="button" onClick={() => { setEmShowAdd(false); setEmMsg(''); }} className="ghost-btn" style={{ flex: 1, fontSize: 'var(--text-sm)' }}>
-                            Cancel
+                            {tr('Cancel')}
                           </button>
                         </div>
                       </form>
                     ) : (
                       <button type="button" onClick={() => { setEmShowAdd(true); setEmMsg(''); }} className="ghost-btn"
                         style={{ width: '100%', marginTop: '16px', fontSize: 'var(--text-sm)', minHeight: '44px' }}>
-                        Add contact
+                        {tr('Add contact')}
                       </button>
                     )
                   )}
@@ -692,10 +693,9 @@ export default function ProfileEdit() {
             {isElder && (
               <BlurFade delay={4}>
                 <div className="pe-card" style={card}>
-                  <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 6px' }}>My Family</h2>
+                  <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 6px' }}>{tr('My Family')}</h2>
                   <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.5 }}>
-                    Link your family so they can see you're safe. They only see the friendships
-                    you choose to share, and you can remove anyone at any time.
+                    {tr("Link your family so they can see you're safe. They only see the friendships you choose to share, and you can remove anyone at any time.")}
                   </p>
                   <button
                     type="button"
@@ -703,7 +703,7 @@ export default function ProfileEdit() {
                     className="ghost-btn"
                     style={{ width: '100%', fontSize: 'var(--text-sm)', minHeight: '44px' }}
                   >
-                    Manage My Family
+                    {tr('Manage My Family')}
                   </button>
                 </div>
               </BlurFade>
@@ -713,7 +713,7 @@ export default function ProfileEdit() {
             <BlurFade delay={4}>
               <div className="pe-card" style={card}>
                 <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 16px' }}>
-                  Reviews Received {reviews.length > 0 && (
+                  {tr('Reviews Received')}{' '}{reviews.length > 0 && (
                     <span style={{ fontSize: '16px', color: 'var(--ink-4)' }}>({reviews.length})</span>
                   )}
                 </h2>
@@ -722,7 +722,7 @@ export default function ProfileEdit() {
                     <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid var(--blue-soft)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <StarIcon size={20} color={STAR_GOLD} strokeWidth={2} fill={STAR_GOLD} />
                     </div>
-                    <p style={{ fontSize: 'var(--text-sm)', color: MUTED }}>No reviews yet. Complete a service to receive your first review.</p>
+                    <p style={{ fontSize: 'var(--text-sm)', color: MUTED }}>{tr('No reviews yet. Complete a service to receive your first review.')}</p>
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -735,7 +735,7 @@ export default function ProfileEdit() {
                               anonymous — the server sends no name for those, so there
                               is simply nothing here to show. */}
                           {r.actedByName && (
-                            <span style={{ fontWeight: 600, color: 'var(--gold-deep)' }}> · written by {r.actedByName}</span>
+                            <span style={{ fontWeight: 600, color: 'var(--gold-deep)' }}>{' '}{tr('· written by {actedByName}', { actedByName: r.actedByName })}</span>
                           )}
                         </p>
                         <Stars rating={r.rating} />
@@ -748,7 +748,7 @@ export default function ProfileEdit() {
                         </div>
                       )}
                       {r.comment && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', lineHeight: 1.6 }}>{r.comment}</p>}
-                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>{new Date(r.createdAt).toLocaleDateString()}</p>
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-4)' }}>{new Date(r.createdAt).toLocaleDateString(dateLocale())}</p>
                     </div>
                   ))}
                 </div>
@@ -764,13 +764,13 @@ export default function ProfileEdit() {
                 border: `1px solid ${BORDER}`,
               }}>
                 <h2 style={{ fontSize: 'var(--text-lg)', margin: '0 0 14px' }}>
-                  Account
+                  {tr('Account')}
                 </h2>
 
                 {/* Username */}
                 {profileData?.username && (
                   <div style={{ marginBottom: '10px', padding: '10px 14px', background: 'var(--surface)', borderRadius: '10px' }}>
-                    <p style={{ fontSize: '13px', fontWeight: 600, color: MUTED, margin: '0 0 2px' }}>Username</p>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: MUTED, margin: '0 0 2px' }}>{tr('Username')}</p>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0 }}>@{profileData.username}</p>
                   </div>
                 )}
@@ -785,7 +785,7 @@ export default function ProfileEdit() {
                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                     </svg>
                     <div>
-                      <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blue-deep)', margin: '0 0 1px' }}>Linked Google account</p>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blue-deep)', margin: '0 0 1px' }}>{tr('Linked Google account')}</p>
                       <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink)', margin: 0 }}>{profileData.email}</p>
                     </div>
                   </div>
@@ -800,7 +800,7 @@ export default function ProfileEdit() {
                     className="ghost-btn"
                     style={{ width: '100%', fontSize: 'var(--text-sm)', minHeight: '44px', marginBottom: '10px' }}
                   >
-                    {profileData.hasPassword ? 'Change Password' : 'Set a Password'}
+                    {profileData.hasPassword ? tr('Change Password') : tr('Set a Password')}
                   </button>
                 )}
 
@@ -811,7 +811,7 @@ export default function ProfileEdit() {
                     className="ghost-btn"
                     style={{ flex: 1, fontSize: 'var(--text-sm)' }}
                   >
-                    Sign Out
+                    {tr('Sign Out')}
                   </button>
                 </div>
               </div>
@@ -823,10 +823,10 @@ export default function ProfileEdit() {
 
       <ConfirmDialog
         open={confirmSignOut}
-        title="Sign out of Towinly?"
-        message="You can sign back in any time with your username and password."
-        confirmLabel="Sign Out"
-        cancelLabel="Stay Signed In"
+        title={tr('Sign out of Towinly?')}
+        message={tr('You can sign back in any time with your username and password.')}
+        confirmLabel={tr('Sign Out')}
+        cancelLabel={tr('Stay Signed In')}
         onConfirm={() => { setConfirmSignOut(false); logout(); navigate('/login'); }}
         onCancel={() => setConfirmSignOut(false)}
       />
@@ -834,10 +834,10 @@ export default function ProfileEdit() {
       <ConfirmDialog
         open={!!emPendingRemove}
         danger
-        title={`Remove ${emPendingRemove?.name || 'this contact'}?`}
-        message="They will no longer be alerted if you trigger an SOS or go inactive. You can add them again later."
-        confirmLabel="Remove Contact"
-        cancelLabel="Keep"
+        title={emPendingRemove?.name ? tr('Remove {name}?', { name: emPendingRemove.name }) : tr('Remove this contact?')}
+        message={tr('They will no longer be alerted if you trigger an SOS or go inactive. You can add them again later.')}
+        confirmLabel={tr('Remove Contact')}
+        cancelLabel={tr('Keep')}
         loading={emRemoving}
         onConfirm={() => emPendingRemove && removeEmContact(emPendingRemove.id)}
         onCancel={() => setEmPendingRemove(null)}

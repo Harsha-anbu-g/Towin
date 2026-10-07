@@ -18,8 +18,9 @@
 //
 // Semantics: a real tab strip (tablist/tab/aria-selected) with roving focus —
 // Left/Right/Home/End move between segments for keyboard users.
+import { tr } from '../i18n';
 
-export default function SegmentedTabs({ segments, value, onChange, label = 'Filter' }) {
+export default function SegmentedTabs({ segments, value, onChange, label = tr('Filter') }) {
   const onKeyDown = (e) => {
     const ids = segments.map(s => s.id);
     const i = ids.indexOf(value);
@@ -47,7 +48,7 @@ export default function SegmentedTabs({ segments, value, onChange, label = 'Filt
             data-seg={seg.id}
             aria-selected={active}
             tabIndex={active ? 0 : -1}
-            aria-label={seg.notify && seg.count > 0 ? `${seg.label}, ${seg.count} waiting` : undefined}
+            aria-label={seg.notify && seg.count > 0 ? tr('{label}, {count} waiting', { label: seg.label, count: seg.count }) : undefined}
             onClick={() => onChange(seg.id)}
             onKeyDown={onKeyDown}
             className="seg-tab"

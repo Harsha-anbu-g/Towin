@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 /**
  * Where a person writes to Towinly about the Terms of Service and the Privacy Policy.
  *
@@ -22,9 +23,7 @@
 
 export const LEGAL_CONTACT = {
   /** Said in place of an address, never beside one. */
-  noAddressYet:
-    'Towinly has not set an address to write to yet. We would rather tell you that than send '
-    + 'you to a mailbox that cannot answer.',
+  get noAddressYet() { return tr('Towinly has not set an address to write to yet. We would rather tell you that than send you to a mailbox that cannot answer.'); },
 };
 
 /**

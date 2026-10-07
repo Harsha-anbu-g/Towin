@@ -4,6 +4,7 @@ import NavBar from '../components/NavBar';
 import BlurFade from '../components/magic/BlurFade';
 import api from '../api/axios';
 import SmoothInput from '../components/SmoothInput';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -34,8 +35,8 @@ export default function ChangePassword() {
 
   async function submit(e) {
     e.preventDefault(); setMsg('');
-    if (pw.next.length < 8) { setMsg('New password must be at least 8 characters.'); return; }
-    if (pw.next !== pw.confirm) { setMsg('New passwords do not match.'); return; }
+    if (pw.next.length < 8) { setMsg(tr('New password must be at least 8 characters.')); return; }
+    if (pw.next !== pw.confirm) { setMsg(tr('New passwords do not match.')); return; }
     setSaving(true);
     try {
       if (settingFirst) {
@@ -46,7 +47,7 @@ export default function ChangePassword() {
       setDone(true);
       setPw({ current: '', next: '', confirm: '' });
     } catch (err) {
-      setMsg(err?.response?.data?.message || (settingFirst ? 'Could not set password.' : 'Could not change password.'));
+      setMsg(err?.response?.data?.message || (settingFirst ? tr('Could not set password.') : tr('Could not change password.')));
     } finally { setSaving(false); }
   }
 
@@ -68,53 +69,53 @@ export default function ChangePassword() {
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
             <path d="M8.5 1L1.5 8L8.5 15" stroke={SKY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Back to profile
+          {tr('Back to profile')}
         </button>
 
         {hasPassword !== null && (
         <BlurFade delay={1}>
           <div style={{ background: 'var(--canvas)', borderRadius: '18px', padding: '28px', border: '1px solid var(--border)' }}>
             <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--ink)', fontFamily: SF, letterSpacing: '-0.3px', marginBottom: '6px' }}>
-              {settingFirst ? 'Set a Password' : 'Change Password'}
+              {settingFirst ? tr('Set a Password') : tr('Change Password')}
             </p>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', marginBottom: '22px' }}>
               {settingFirst
-                ? 'Choose a password so you can also sign in with your username. Signing in with Google will keep working.'
-                : 'Enter your current password, then choose a new one.'}
+                ? tr('Choose a password so you can also sign in with your username. Signing in with Google will keep working.')
+                : tr('Enter your current password, then choose a new one.')}
             </p>
 
             {done ? (
               <div>
                 <p style={{ fontSize: '16px', color: 'var(--blue-deep)', fontWeight: 600, marginBottom: '20px' }}>
                   {settingFirst
-                    ? '✓ Password set. Next time you can sign in with your username and password, or with Google.'
-                    : '✓ Password changed. You can use your new password next time you sign in.'}
+                    ? tr('✓ Password set. Next time you can sign in with your username and password, or with Google.')
+                    : tr('✓ Password changed. You can use your new password next time you sign in.')}
                 </p>
                 <button onClick={() => navigate('/profile')} className="primary-btn" style={{ fontSize: '16px' }}>
-                  Back to profile
+                  {tr('Back to profile')}
                 </button>
               </div>
             ) : (
               <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {!settingFirst && (
                   <div>
-                    <label style={labelStyle}>Current password</label>
+                    <label style={labelStyle}>{tr('Current password')}</label>
                     <SmoothInput type="password" autoComplete="current-password" value={pw.current}
                       onChange={e => setPw(p => ({ ...p, current: e.target.value }))}
-                      placeholder="Your current password" className="field" required style={inputStyle} />
+                      placeholder={tr('Your current password')} className="field" required style={inputStyle} />
                   </div>
                 )}
                 <div>
-                  <label style={labelStyle}>New password</label>
+                  <label style={labelStyle}>{tr('New password')}</label>
                   <SmoothInput type="password" autoComplete="new-password" value={pw.next}
                     onChange={e => setPw(p => ({ ...p, next: e.target.value }))}
-                    placeholder="At least 8 characters" className="field" required style={inputStyle} />
+                    placeholder={tr('At least 8 characters')} className="field" required style={inputStyle} />
                 </div>
                 <div>
-                  <label style={labelStyle}>Confirm new password</label>
+                  <label style={labelStyle}>{tr('Confirm new password')}</label>
                   <SmoothInput type="password" autoComplete="new-password" value={pw.confirm}
                     onChange={e => setPw(p => ({ ...p, confirm: e.target.value }))}
-                    placeholder="Type it again" className="field" required style={inputStyle} />
+                    placeholder={tr('Type it again')} className="field" required style={inputStyle} />
                 </div>
                 {msg && (
                   <p style={{ fontSize: '14px', color: 'var(--ink-slate)', fontWeight: 500, margin: 0 }}>
@@ -122,7 +123,7 @@ export default function ChangePassword() {
                   </p>
                 )}
                 <button type="submit" disabled={saving} className="primary-btn" style={{ fontSize: '16px', marginTop: '4px' }}>
-                  {saving ? 'Saving…' : settingFirst ? 'Set password' : 'Change password'}
+                  {saving ? tr('Saving…') : settingFirst ? tr('Set password') : tr('Change password')}
                 </button>
               </form>
             )}

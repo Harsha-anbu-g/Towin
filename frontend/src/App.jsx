@@ -40,6 +40,7 @@ import OAuthCallback from './pages/OAuthCallback';
 import FinishSetup from './pages/FinishSetup';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import { tr } from './i18n';
 
 // First tab stop on every page (WCAG 2.4.1). The NavBar renders inside each
 // page, so a fixed anchor can't work; instead focus jumps to the page's first
@@ -55,7 +56,7 @@ function SkipLink() {
   };
   return (
     <a href="#main" className="skip-link" onClick={handleSkip}>
-      Skip to main content
+      {tr('Skip to main content')}
     </a>
   );
 }

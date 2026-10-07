@@ -7,6 +7,9 @@ import SiteFooter from '../components/SiteFooter';
 import SmoothInput from '../components/SmoothInput';
 import { yearsOld } from '../lib/copy';
 import { landingPathForRole } from '../lib/landingPath';
+import { tr } from '../i18n';
+import emphasize from '../i18n/emphasize';
+import LanguagePicker from '../components/LanguagePicker';
 
 function HeroPanel() {
   return (
@@ -25,7 +28,7 @@ function HeroPanel() {
       {/* Hero photo — handshake between elder and younger hand */}
       <img
         src="/image3.jpg"
-        alt="A handshake between an elder and a younger person"
+        alt={tr('A handshake between an elder and a younger person')}
         draggable="false"
         onDragStart={e => e.preventDefault()}
         style={{
@@ -50,7 +53,7 @@ function HeroPanel() {
         textShadow: '0 2px 20px rgba(20,55,80,0.55)',
         fontFamily: 'var(--font-display)',
       }}>
-        It takes two To Win.
+        {tr('It takes two To Win.')}
       </p>
 
       {/* Turtle logo + wordmark top-left — back to the landing story */}
@@ -67,14 +70,14 @@ function HeroPanel() {
           boxShadow: '0 2px 10px rgba(20,55,80,0.22)',
           flexShrink: 0,
         }}>
-          <img src="/tortoise-logo-alpha.png" alt="Towinly logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+          <img src="/tortoise-logo-alpha.png" alt={tr('Towinly logo')} style={{ width: 26, height: 26, objectFit: 'contain' }} />
         </span>
         <p style={{
           fontSize: '21px', fontWeight: 600, color: '#ffffff', letterSpacing: '-0.374px',
           fontFamily: '-apple-system, "SF Pro Display", system-ui, sans-serif',
           margin: 0,
         }}>
-          Towinly
+          {tr('Towinly')}
         </p>
       </Link>
 
@@ -87,7 +90,7 @@ function HeroPanel() {
           marginBottom: '16px', letterSpacing: '-0.02em', fontWeight: 400,
           textShadow: '0 2px 24px rgba(20,55,80,0.45)',
         }}>
-          Connecting generations,<br />building <span style={{ color: 'var(--trust-gold)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.08em' }}>trust.</span>
+          {tr('Connecting generations,')}<br />{emphasize(tr('building *trust.*'), (part) => <span style={{ color: 'var(--trust-gold)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.08em' }}>{part}</span>)}
         </h1>
         <p style={{
           fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
@@ -95,7 +98,7 @@ function HeroPanel() {
           lineHeight: 1.55, margin: 0,
           textShadow: '0 1px 12px rgba(20,55,80,0.5)',
         }}>
-          A safer place for elders and helpers to meet, talk, and grow trust at their own pace.
+          {tr('A safer place for elders and helpers to meet, talk, and grow trust at their own pace.')}
         </p>
       </div>
     </div>
@@ -168,8 +171,8 @@ export default function Login() {
     } catch (err) {
       setError(
         err?.response?.status === 429
-          ? (err.response.data?.message || 'Too many attempts. Please try again later.')
-          : 'Could not start demo session. Please try again.'
+          ? (err.response.data?.message || tr('Too many attempts. Please try again later.'))
+          : tr('Could not start demo session. Please try again.')
       );
     } finally {
       setGuestLoading('');
@@ -181,8 +184,8 @@ export default function Login() {
     setLoading(true);
     setError('');
     const errs = {};
-    if (!form.identifier.trim()) errs.identifier = 'Enter your username, Gmail, or phone number';
-    if (form.password.length < 6) errs.password = 'Password must be at least 6 characters';
+    if (!form.identifier.trim()) errs.identifier = tr('Enter your username, Gmail, or phone number');
+    if (form.password.length < 6) errs.password = tr('Password must be at least 6 characters');
     if (Object.keys(errs).length) { setFieldErrors(errs); setLoading(false); return; }
     setFieldErrors({});
     try {
@@ -192,8 +195,8 @@ export default function Login() {
     } catch (err) {
       setError(
         err?.response?.status === 429
-          ? (err.response.data?.message || 'Too many attempts. Please try again later.')
-          : 'Invalid username or password.'
+          ? (err.response.data?.message || tr('Too many attempts. Please try again later.'))
+          : tr('Invalid username or password.')
       );
     } finally {
       setLoading(false);
@@ -208,6 +211,7 @@ export default function Login() {
       <div className="auth-form" style={{ flexDirection: 'column', paddingBottom: 0 }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 0 }}>
         <div style={{ width: '100%', maxWidth: '420px' }}>
+          <LanguagePicker style={{ marginBottom: '16px' }} />
           {/* Demo accounts — shown first so users don't miss it */}
           <div style={{
             marginBottom: '20px', background: 'var(--blue-wash)',
@@ -223,29 +227,29 @@ export default function Login() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               textTransform: 'uppercase',
             }}>
-              DEMO
+              {tr('DEMO')}
             </span>
             <p style={{
               fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 4px',
             }}>
-              Just want to see how it works?
+              {tr('Just want to see how it works?')}
             </p>
             <p style={{
               fontSize: 'var(--text-xs)', color: 'var(--ink-slate)', textAlign: 'center',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               margin: '0 0 14px', lineHeight: 1.5,
             }}>
-              Look around with a sample account, no account needed.
+              {tr('Look around with a sample account, no account needed.')}
             </p>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {[
                 // Ages track the demo accounts' seeded birthdates (DemoDataSeeder)
                 // so the chips never drift from what the app itself computes.
-                { role: 'ELDER', label: 'Try as an Elder', sub: `Margaret, ${yearsOld('1953-05-14')}` },
-                { role: 'HELPER', label: 'Try as a Helper', sub: `Harsha, ${yearsOld('2003-03-14')}` },
-                { role: 'FAMILY', label: 'Try as Family', sub: "Sarah, Margaret's daughter" },
+                { role: 'ELDER', label: tr('Try as an Elder'), sub: tr('Margaret, {yearsOld}', { yearsOld: yearsOld('1953-05-14') }) },
+                { role: 'HELPER', label: tr('Try as a Helper'), sub: tr('Harsha, {yearsOld}', { yearsOld: yearsOld('2003-03-14') }) },
+                { role: 'FAMILY', label: tr('Try as Family'), sub: tr("Sarah, Margaret's daughter") },
               ].map(({ role, label, sub }) => (
                 <button
                   key={role}
@@ -269,7 +273,7 @@ export default function Login() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--blue-soft)'; }}
                 >
                   <span style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--blue-deep)' }}>
-                    {guestLoading === role ? 'Opening…' : label}
+                    {guestLoading === role ? tr('Opening…') : label}
                   </span>
                   <span style={{ display: 'block', fontSize: '13px', color: 'var(--ink-3)', marginTop: '2px' }}>
                     {sub}
@@ -292,12 +296,12 @@ export default function Login() {
                 flex: 1, height: '44px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'default', fontFamily: 'inherit',
                 background: 'var(--seg-active)', color: 'var(--blue-deep)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-              }}>Log in</button>
+              }}>{tr('Log in')}</button>
               <button type="button" onClick={() => navigate('/register')} style={{
                 flex: 1, height: '44px', border: 'none', borderRadius: '9999px',
                 fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 background: 'transparent', color: 'var(--ink-3)',
-              }}>Create account</button>
+              }}>{tr('Create account')}</button>
             </div>
 
             {/* Headline */}
@@ -306,13 +310,13 @@ export default function Login() {
               fontSize: '28px', fontWeight: 400, color: 'var(--ink)',
               marginBottom: '6px', letterSpacing: '-0.02em',
             }}>
-              Welcome back.
+              {tr('Welcome back.')}
             </h2>
             <p style={{
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               fontSize: '16px', color: 'var(--ink-3)', marginBottom: '20px',
             }}>
-              Log in to your Towinly account.
+              {tr('Log in to your Towinly account.')}
             </p>
 
             {/* Session expired notice — explains why they're back here (H9) */}
@@ -323,7 +327,7 @@ export default function Login() {
                 fontSize: 'var(--text-sm)', color: 'var(--blue-teal)', marginBottom: '20px',
                 lineHeight: 1.45,
               }}>
-                For your safety, you were logged out after a period of inactivity. Please log in again.
+                {tr('For your safety, you were logged out after a period of inactivity. Please log in again.')}
               </div>
             )}
 
@@ -339,15 +343,15 @@ export default function Login() {
             )}
 
             {/* Google log-in — the easiest path, especially for new users */}
-            <GoogleButton label="Log in with Google" />
+            <GoogleButton label={tr('Log in with Google')} />
             <p style={{ textAlign: 'center', fontSize: '14px', color: 'var(--ink-4)', marginTop: '8px', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>
-              Fastest way in, no password to remember.
+              {tr('Fastest way in, no password to remember.')}
             </p>
 
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
               <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-              <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>or log in with username</span>
+              <span style={{ fontSize: '14px', color: 'var(--ink-4)', fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif' }}>{tr('or log in with username')}</span>
               <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
             </div>
 
@@ -358,7 +362,7 @@ export default function Login() {
                   color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Username, Gmail, or phone
+                  {tr('Username, Gmail, or phone')}
                 </label>
                 <SmoothInput
                   id="login-identifier"
@@ -377,7 +381,7 @@ export default function Login() {
                   color: 'var(--ink)', marginBottom: '8px',
                   fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                 }}>
-                  Password
+                  {tr('Password')}
                 </label>
                 <div style={{ position: 'relative' }}>
                   <SmoothInput
@@ -391,7 +395,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPwd(v => !v)}
-                    aria-label={showPwd ? 'Hide password' : 'Show password'}
+                    aria-label={showPwd ? tr('Hide password') : tr('Show password')}
                     style={{
                       position: 'absolute', right: '2px', top: '50%', transform: 'translateY(-50%)',
                       background: 'none', border: 'none', cursor: 'pointer',
@@ -410,7 +414,7 @@ export default function Login() {
                     textDecoration: 'none', display: 'inline-block', padding: '12px 0 12px 12px',
                     fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
                   }}>
-                    Forgot password?
+                    {tr('Forgot password?')}
                   </Link>
                 </div>
               </div>
@@ -432,7 +436,7 @@ export default function Login() {
                   boxShadow: '0 2px 10px rgba(79,163,206,0.22)',
                 }}
               >
-                {loading ? 'Logging in…' : 'Log In'}
+                {loading ? tr('Logging in…') : tr('Log In')}
               </button>
             </form>
 
@@ -441,9 +445,9 @@ export default function Login() {
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
               marginTop: '20px',
             }}>
-              New here?{' '}
+              {tr('New here?')}{' '}
               <Link to="/register" style={{ color: 'var(--blue-deep)', fontWeight: 600, textDecoration: 'none' }}>
-                Create Account
+                {tr('Create Account')}
               </Link>
             </p>
           </div>
@@ -457,7 +461,7 @@ export default function Login() {
               border: '1px solid var(--border)',
               fontFamily: '-apple-system, "SF Pro Text", system-ui, sans-serif',
             }}>
-              How It Works
+              {tr('How It Works')}
             </Link>
           </div>
           <p style={{
@@ -466,7 +470,7 @@ export default function Login() {
             marginTop: '12px',
           }}>
             <Link to="/feedback" style={{ color: 'var(--ink-3)', textDecoration: 'none' }}>
-              Share feedback
+              {tr('Share feedback')}
             </Link>
           </p>
         </div>

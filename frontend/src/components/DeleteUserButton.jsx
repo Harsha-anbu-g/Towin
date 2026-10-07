@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import ConfirmDialog from './ConfirmDialog';
+import { tr } from '../i18n';
 
 /**
  * Delete an account from the admin console, having first said what goes with it.
@@ -27,13 +28,12 @@ export default function DeleteUserButton({ userId, style, onDeleted }) {
   async function ask() {
     setOpen(true);
     setBusy(true);
-    setMessage('Checking what this account holds…');
+    setMessage(tr('Checking what this account holds…'));
     try {
       const { data } = await api.get(`/admin/users/${userId}/delete-preview`);
       setMessage([data?.summary, data?.keyholderNote].filter(Boolean).join(' '));
     } catch {
-      setMessage('Could not check what this account holds, so this may delete stories, '
-        + 'letters or a Sealed box without saying so.');
+      setMessage(tr('Could not check what this account holds, so this may delete stories, letters or a Sealed box without saying so.'));
     } finally {
       setBusy(false);
     }
@@ -46,7 +46,7 @@ export default function DeleteUserButton({ userId, style, onDeleted }) {
       setOpen(false);
       onDeleted?.();
     } catch {
-      setMessage('That account could not be deleted. Nothing was removed.');
+      setMessage(tr('That account could not be deleted. Nothing was removed.'));
     } finally {
       setBusy(false);
     }
@@ -54,16 +54,16 @@ export default function DeleteUserButton({ userId, style, onDeleted }) {
 
   return (
     <>
-      <button onClick={ask} style={style}>Delete</button>
+      <button onClick={ask} style={style}>{tr('Delete')}</button>
       <ConfirmDialog
         open={open}
-        title="Delete this account?"
+        title={tr('Delete this account?')}
         message={message}
         // Not "Delete" — the button that opened this dialog is still behind it with that
         // exact name, and two buttons called the same thing is a coin toss for anyone
         // listening to the page rather than looking at it.
-        confirmLabel="Delete account"
-        cancelLabel="Keep"
+        confirmLabel={tr('Delete account')}
+        cancelLabel={tr('Keep')}
         danger
         loading={busy}
         onConfirm={confirm}

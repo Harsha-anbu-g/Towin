@@ -5,6 +5,7 @@ import StreakCard from '../components/StreakCard';
 import CheckInFamilyNote from '../components/CheckInFamilyNote';
 import api from '../api/axios';
 import { useToast } from '../context/useToast';
+import { dateLocale, tr } from '../i18n';
 
 const SF  = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFT = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -16,9 +17,9 @@ const ACTION_SLOT_MIN_HEIGHT = '68px';
 
 function greeting() {
   const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 12) return tr('Good morning');
+  if (h < 18) return tr('Good afternoon');
+  return tr('Good evening');
 }
 
 function computeAge(dobStr) {
@@ -104,7 +105,7 @@ export default function Streaks() {
     } catch (err) {
       toast.error(
         err?.response?.data?.message ||
-        'Could not check in. Please try again.'
+        tr('Could not check in. Please try again.')
       );
     } finally {
       setCheckingIn(false);
@@ -128,7 +129,7 @@ export default function Streaks() {
             is pearl (#fbfaf6); multiply blending maps white onto the panel color
             exactly, so no rectangle edge shows regardless of the display panel. */}
         <div className="streaks-art" style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-          <img src="/journey.jpg" alt="The master and his turtles, growing up together" className="streaks-tortoise" style={{
+          <img src="/journey.jpg" alt={tr('The master and his turtles, growing up together')} className="streaks-tortoise" style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
             objectFit: 'contain', objectPosition: 'center bottom', zIndex: 0,
           }} />
@@ -144,7 +145,7 @@ export default function Streaks() {
           color: 'var(--steel-text)', letterSpacing: '-0.3px', lineHeight: 1.35,
           background: 'var(--surface-pearl)',
         }}>
-          Slow is smooth and Smooth is fast and constant
+          {tr('Slow is smooth and Smooth is fast and constant')}
         </p>
       </div>
 
@@ -169,8 +170,8 @@ export default function Streaks() {
             marginBottom: '20px', lineHeight: 1.15,
           }}>
             {alreadyDone
-              ? "Your family knows you're alright today."
-              : "Let your family know you're alright."}
+              ? tr("Your family knows you're alright today.")
+              : tr("Let your family know you're alright.")}
           </h1>
 
           {/* The one thing this page asks for, and who it reaches. */}
@@ -188,7 +189,7 @@ export default function Streaks() {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                   <span style={{ fontSize: '17px', color: 'var(--green-deep)', fontWeight: 600, fontFamily: SFT }}>
-                    You checked in today
+                    {tr('You checked in today')}
                   </span>
                 </div>
               ) : (
@@ -206,7 +207,7 @@ export default function Streaks() {
                     opacity: checkingIn ? 0.7 : 1,
                   }}
                 >
-                  {checkingIn ? 'Checking in…' : "I'm here today"}
+                  {checkingIn ? tr('Checking in…') : tr("I'm here today")}
                 </button>
               )}
               <CheckInFamilyNote names={familyNames} checkedIn={alreadyDone} />
@@ -232,22 +233,22 @@ export default function Streaks() {
                       color: 'var(--green-deep)', lineHeight: 1, margin: '0 0 6px',
                       letterSpacing: '-1px',
                     }}>
-                      {age.totalDays.toLocaleString()}
+                      {age.totalDays.toLocaleString(dateLocale())}
                     </p>
                     <p style={{
                       fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--ink-3)',
                       fontFamily: SFT, margin: 0,
                     }}>
-                      days you have lived
+                      {tr('days you have lived')}
                     </p>
                   </div>
                   <span style={{
                     fontSize: '14px', color: 'var(--ink-4)', fontFamily: SFT,
                     textAlign: 'right', lineHeight: 1.5, flexShrink: 0,
                   }}>
-                    {age.years} {age.years === 1 ? 'year' : 'years'},<br />
-                    {age.months} {age.months === 1 ? 'month' : 'months'},{' '}
-                    {age.days} {age.days === 1 ? 'day' : 'days'} old
+                    {age.years === 1 ? tr('1 year') : tr('{count} years', { count: age.years })},<br />
+                    {age.months === 1 ? tr('1 month') : tr('{count} months', { count: age.months })},{' '}
+                    {age.days === 1 ? tr('1 day old') : tr('{count} days old', { count: age.days })}
                   </span>
                 </div>
               );
@@ -257,10 +258,10 @@ export default function Streaks() {
                   fontFamily: SF, fontSize: 'var(--text-base)', fontWeight: 600,
                   color: 'var(--ink)', margin: '0 0 6px',
                 }}>
-                  How many days have you lived?
+                  {tr('How many days have you lived?')}
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-4)', fontFamily: SFT, margin: '0 0 14px' }}>
-                  Add your date of birth in your profile to see your life in days.
+                  {tr('Add your date of birth in your profile to see your life in days.')}
                 </p>
                 <button
                   onClick={() => navigate('/profile')}
@@ -271,7 +272,7 @@ export default function Streaks() {
                     fontFamily: SFT, cursor: 'pointer',
                   }}
                 >
-                  Add date of birth →
+                  {tr('Add date of birth →')}
                 </button>
               </>
             )}
@@ -291,7 +292,7 @@ export default function Streaks() {
                     fontFamily: SFT, cursor: 'pointer',
                   }}
                 >
-                  Continue to Dashboard
+                  {tr('Continue to Dashboard')}
                 </button>
                 <button
                   onClick={() => navigate('/game')}
@@ -302,7 +303,7 @@ export default function Streaks() {
                     fontFamily: SFT, cursor: 'pointer',
                   }}
                 >
-                  Play the game
+                  {tr('Play the game')}
                 </button>
               </div>
             ) : (
@@ -316,7 +317,7 @@ export default function Streaks() {
                     minHeight: '44px', // elderly-first tap-target floor
                   }}
                 >
-                  Skip for now, go to dashboard
+                  {tr('Skip for now, go to dashboard')}
                 </button>
               </div>
             )

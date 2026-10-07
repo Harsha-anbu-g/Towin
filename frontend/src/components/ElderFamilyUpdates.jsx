@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import FamilyThreadLink from './FamilyThreadLink';
+import { tr } from '../i18n';
 
 const TRUST_LEVEL_ORDER = {
   DISCOVERED: 1, MESSAGING: 2, PHONE_CALL: 3, VIDEO_CALL: 4,
@@ -37,19 +38,19 @@ export default function ElderFamilyUpdates({ conn }) {
   if (!gate) return null;
   if (!shared && !hasNotes) return null;
 
-  const helperName = conn.otherUserName || 'your helper';
+  const helperName = conn.otherUserName || tr('your helper');
 
   return (
     <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '14px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <div>
         <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          {shared ? 'Updates your family can see' : `Updates with ${helperName}`}
+          {shared ? tr('Updates your family can see') : tr('Updates with {helperName}', { helperName })}
         </p>
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-slate)', margin: '4px 0 0', lineHeight: 1.5 }}>
           {shared
-            ? `You, your family and ${helperName} all see the same notes.`
-            : `Sharing is off, so your family can't see these notes. You and ${helperName} still can. Use the switch above to share again.`}
+            ? tr('You, your family and {helperName} all see the same notes.', { helperName })
+            : tr("Sharing is off, so your family can't see these notes. You and {helperName} still can. Use the switch above to share again.", { helperName })}
         </p>
       </div>
       <div>

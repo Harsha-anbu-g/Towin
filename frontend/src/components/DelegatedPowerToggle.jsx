@@ -15,6 +15,7 @@ const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
    matching the endpoint's replace semantics: an unticked power is simply
    absent, so nothing is left half-on. */
 import { POWERS } from './familyPowers';
+import { tr } from '../i18n';
 
 export default function DelegatedPowerToggle({ linkId, familyName, powers = [], onSaved }) {
   const { toast } = useToast();
@@ -26,7 +27,7 @@ export default function DelegatedPowerToggle({ linkId, familyName, powers = [], 
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const knobTransition = `transform ${reduceMotion ? 60 : 160}ms ${EASE}`;
 
-  const name = familyName || 'They';
+  const name = familyName || tr('They');
 
   const flip = async (key) => {
     if (savingKey) return;
@@ -42,7 +43,7 @@ export default function DelegatedPowerToggle({ linkId, familyName, powers = [], 
       onSaved?.(data);
     } catch {
       setGranted(previous);
-      toast.error("Couldn't save that change. Please try again.");
+      toast.error(tr("Couldn't save that change. Please try again."));
     } finally {
       setSavingKey(null);
     }
@@ -54,14 +55,13 @@ export default function DelegatedPowerToggle({ linkId, familyName, powers = [], 
         fontSize: '16px', fontWeight: 600, color: 'var(--ink)', fontFamily: SFT,
         margin: '0 0 2px',
       }}>
-        Act for me
+        {tr('Act for me')}
       </p>
       <p style={{
         fontSize: '14px', color: 'var(--ink-slate)', fontFamily: SFT,
         margin: '0 0 8px', lineHeight: 1.4,
       }}>
-        Sharing lets {name} see. These let {name} act. Each one stays off until you
-        turn it on, and their name is always on whatever they do.
+        {tr('Sharing lets {name} see. These let {name} act. Each one stays off until you turn it on, and their name is always on whatever they do.', { name })}
       </p>
 
       {POWERS.map(p => {

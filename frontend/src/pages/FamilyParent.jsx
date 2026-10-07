@@ -14,6 +14,7 @@ import FamilyTrustAdvance from '../components/FamilyTrustAdvance';
 import FamilyReviewForParent from '../components/FamilyReviewForParent';
 import { POWERS } from '../components/familyPowers';
 import { SHARING_GIVES } from '../components/sharingGives';
+import { tr } from '../i18n';
 
 const SF = `-apple-system, 'SF Pro Display', system-ui, sans-serif`;
 const SFText = `-apple-system, 'SF Pro Text', system-ui, sans-serif`;
@@ -87,7 +88,7 @@ const CheckInChip = ({ checkedIn }) => (
     borderRadius: '9999px', padding: '5px 12px', whiteSpace: 'nowrap',
   }}>
     {checkedIn ? <CheckIcon /> : <ClockIcon />}
-    {checkedIn ? 'Checked in today' : 'No check-in yet today'}
+    {checkedIn ? tr('Checked in today') : tr('No check-in yet today')}
   </span>
 );
 
@@ -148,7 +149,7 @@ export default function FamilyParent() {
       const r = await api.post(`/family/chat/${elderId}`);
       navigate(`/messages/${r.data}`);
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not open the chat. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not open the chat. Please try again.'));
       setOpeningChat(false);
     }
   };
@@ -161,7 +162,7 @@ export default function FamilyParent() {
   const pendingAsks = (link?.pendingPowerRequests || []).map(r => r.power);
 
   const sharedHelpers = j?.sharedHelpers || [];
-  const elderName = j?.elderName || link?.otherUserName || 'your parent';
+  const elderName = j?.elderName || link?.otherUserName || tr('your parent');
   const firstName = elderName.split(' ')[0];
   const openNeedsCount = j?.openNeedsCount || 0;
 
@@ -170,10 +171,10 @@ export default function FamilyParent() {
     setAskingPower(powerKey);
     try {
       await api.post(`/family/links/${link.id}/power-requests`, { power: powerKey });
-      toast.success(`Asked. ${elderName} decides on their My Family page.`);
+      toast.success(tr('Asked. {elderName} decides on their My Family page.', { elderName }));
       await load();
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Could not send the ask. Please try again.');
+      toast.error(err?.response?.data?.message || tr('Could not send the ask. Please try again.'));
     } finally {
       setAskingPower(null);
     }
@@ -192,7 +193,7 @@ export default function FamilyParent() {
       <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">
         <path d="M8.5 1L1.5 8L8.5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      My Parents
+      {tr('My Parents')}
     </button>
   );
 
@@ -204,10 +205,10 @@ export default function FamilyParent() {
           {backBtn}
           <div style={{ ...cardStyle, padding: '40px 24px', textAlign: 'center', marginTop: '16px' }}>
             <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px', fontFamily: SF }}>
-              This parent is no longer linked to you
+              {tr('This parent is no longer linked to you')}
             </p>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: 0 }}>
-              This link may have been removed. Go back to see who you are linked with now.
+              {tr('This link may have been removed. Go back to see who you are linked with now.')}
             </p>
           </div>
         </div>
@@ -232,7 +233,7 @@ export default function FamilyParent() {
                 {j && <CheckInChip checkedIn={j.checkedInToday} />}
               </div>
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-3)', margin: '2px 0 0' }}>
-                {link?.relationship ? `You're ${elderName}'s ${link.relationship.toLowerCase()}` : 'Your family member'}
+                {link?.relationship ? tr("You're {elderName}'s {toLowerCase}", { elderName, toLowerCase: link.relationship.toLowerCase() }) : tr('Your family member')}
               </p>
             </div>
             <button
@@ -251,7 +252,7 @@ export default function FamilyParent() {
                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
-              {openingChat ? 'Opening…' : `Message ${firstName}`}
+              {openingChat ? tr('Opening…') : tr('Message {firstName}', { firstName })}
             </button>
           </div>
         </BlurFade>
@@ -261,15 +262,15 @@ export default function FamilyParent() {
         <div ref={tabsRef}>
           <SegmentedTabs
             segments={[
-              { id: 'friendships', label: 'Friendships' },
+              { id: 'friendships', label: tr('Friendships') },
               /* "Today", not "Margaret today" — the name is in the heading right
                  above, and the longer label truncated on a phone. */
-              { id: 'today', label: 'Today', count: openNeedsCount, notify: openNeedsCount > 0 },
-              { id: 'powers', label: 'What I can do' },
+              { id: 'today', label: tr('Today'), count: openNeedsCount, notify: openNeedsCount > 0 },
+              { id: 'powers', label: tr('What I can do') },
             ]}
             value={tab}
             onChange={changeTab}
-            label={`${elderName}: friendships, how they are today, and what you can do`}
+            label={tr('{elderName}: friendships, how they are today, and what you can do', { elderName })}
           />
         </div>
 
@@ -280,21 +281,21 @@ export default function FamilyParent() {
             do tab — never as a standing preamble above the cards. */}
         {tab === 'friendships' && j && (
           <BlurFade delay={3}>
-            <div role="tabpanel" aria-label={`Friendships ${elderName} shares with you`} style={{ marginTop: '18px' }}>
+            <div role="tabpanel" aria-label={tr('Friendships {elderName} shares with you', { elderName })} style={{ marginTop: '18px' }}>
               <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)' }}>
-                Friendships shared with you
+                {tr('Friendships shared with you')}
               </h2>
               <p style={tabLead}>
-                {elderName} chooses which friendships you see here.
+                {tr('{elderName} chooses which friendships you see here.', { elderName })}
               </p>
 
               {sharedHelpers.length === 0 ? (
                 <div style={{ ...cardStyle, padding: '28px 24px' }}>
                   <p style={{ fontSize: '16px', color: 'var(--ink)', fontWeight: 600, margin: '0 0 10px', lineHeight: 1.5 }}>
-                    No friendships shared with you yet.
+                    {tr('No friendships shared with you yet.')}
                   </p>
                   <p style={{ fontSize: '16px', color: 'var(--ink-3)', margin: '0 0 8px', lineHeight: 1.5 }}>
-                    When {elderName} shares one, you can:
+                    {tr('When {elderName} shares one, you can:', { elderName })}
                   </p>
                   <ul style={{ margin: 0, padding: '0 0 0 20px', listStyleType: 'disc' }}>
                     {SHARING_GIVES.map(g => (
@@ -332,7 +333,7 @@ export default function FamilyParent() {
                       <button
                         type="button"
                         onClick={() => navigate(`/user/${h.helperUserId}`)}
-                        aria-label={`View ${h.helperName}'s profile`}
+                        aria-label={tr("View {helperName}'s profile", { helperName: h.helperName })}
                         style={{
                           display: 'flex', alignItems: 'center', gap: '12px', width: '100%',
                           background: 'none', border: 'none', padding: 0, margin: 0,
@@ -383,7 +384,7 @@ export default function FamilyParent() {
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                             <circle cx="12" cy="7" r="4" />
                           </svg>
-                          {h.helperName} is getting ready to meet in person
+                          {tr('{helperName} is getting ready to meet in person', { helperName: h.helperName })}
                         </p>
                       )}
 
@@ -402,7 +403,7 @@ export default function FamilyParent() {
                       {canAct && (
                         <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
                           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--gold-deep)', fontFamily: SFText, margin: '0 0 8px', lineHeight: 1.5 }}>
-                            Acting for {firstName}
+                            {tr('Acting for {firstName}', { firstName })}
                           </p>
                           {canAdvance && (
                             <FamilyTrustAdvance
@@ -433,12 +434,12 @@ export default function FamilyParent() {
         {/* ── How they are today: the check-in, and the help they've asked for ── */}
         {tab === 'today' && j && (
           <BlurFade delay={3}>
-            <div role="tabpanel" aria-label={`How ${elderName} is today`} style={{ marginTop: '18px' }}>
-              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)' }}>How {elderName} is today</h2>
+            <div role="tabpanel" aria-label={tr('How {elderName} is today', { elderName })} style={{ marginTop: '18px' }}>
+              <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)' }}>{tr('How {elderName} is today', { elderName })}</h2>
               <p style={tabLead}>
                 {j.checkedInToday
-                  ? `${elderName} has checked in today.`
-                  : `${elderName} has not checked in yet today.`}
+                  ? tr('{elderName} has checked in today.', { elderName })
+                  : tr('{elderName} has not checked in yet today.', { elderName })}
               </p>
 
               <div style={{ ...cardStyle, paddingTop: '4px' }}>
@@ -464,13 +465,12 @@ export default function FamilyParent() {
             use. This tab is also where sharing is explained, once. */}
         {tab === 'powers' && link && (
           <BlurFade delay={3}>
-            <div role="tabpanel" aria-label={`What you can do for ${elderName}`} style={{ marginTop: '18px' }}>
+            <div role="tabpanel" aria-label={tr('What you can do for {elderName}', { elderName })} style={{ marginTop: '18px' }}>
               <h2 style={{ ...sectionH, fontSize: 'var(--text-lg)' }}>
-                What I can do for {elderName}
+                {tr('What I can do for {elderName}', { elderName })}
               </h2>
               <p style={tabLead}>
-                {elderName} decides each of these. Anything you do is done for {firstName},
-                with your name on it.
+                {tr('{elderName} decides each of these. Anything you do is done for {firstName}, with your name on it.', { elderName, firstName })}
               </p>
 
               <div style={cardStyle}>
@@ -488,12 +488,12 @@ export default function FamilyParent() {
                         </p>
                         <p style={{ fontSize: '14px', color: 'var(--ink-3)', margin: '2px 0 0', lineHeight: 1.45 }}>
                           {isGranted
-                            ? `${elderName} lets you do this.`
+                            ? tr('{elderName} lets you do this.', { elderName })
                             : isWaiting
-                              ? `You asked. Waiting for ${elderName} to decide — they answer on their My Family page.`
+                              ? tr('You asked. Waiting for {elderName} to decide — they answer on their My Family page.', { elderName })
                               : p.key === 'LEAVE_REVIEWS'
-                                ? `Not on yet — you can ask ${elderName}. Reviews unlock when a friendship is fully trusted.`
-                                : `Not on yet — you can ask ${elderName}.`}
+                                ? tr('Not on yet — you can ask {elderName}. Reviews unlock when a friendship is fully trusted.', { elderName })
+                                : tr('Not on yet — you can ask {elderName}.', { elderName })}
                         </p>
                       </div>
                       {isGranted ? (
@@ -505,7 +505,7 @@ export default function FamilyParent() {
                           borderRadius: '9999px', padding: '5px 12px', whiteSpace: 'nowrap',
                         }}>
                           <CheckIcon />
-                          On
+                          {tr('On')}
                         </span>
                       ) : isWaiting ? (
                         <span style={{
@@ -513,7 +513,7 @@ export default function FamilyParent() {
                           background: 'var(--chip-neutral)', border: '1px solid var(--border)',
                           borderRadius: '9999px', padding: '5px 12px', whiteSpace: 'nowrap',
                         }}>
-                          Waiting
+                          {tr('Waiting')}
                         </span>
                       ) : (
                         <button
@@ -528,7 +528,7 @@ export default function FamilyParent() {
                             cursor: askingPower ? 'wait' : 'pointer', whiteSpace: 'nowrap',
                           }}
                         >
-                          {askingPower === p.key ? 'Asking…' : `Ask ${firstName}`}
+                          {askingPower === p.key ? tr('Asking…') : tr('Ask {firstName}', { firstName })}
                         </button>
                       )}
                     </div>
@@ -540,7 +540,7 @@ export default function FamilyParent() {
                   every friendship card, on every visit. */}
               <div style={cardStyle}>
                 <h3 style={{ ...sectionH, fontSize: '16px', marginBottom: '8px' }}>
-                  On a friendship {elderName} shares, you can:
+                  {tr('On a friendship {elderName} shares, you can:', { elderName })}
                 </h3>
                 <ul style={{ margin: 0, padding: '0 0 0 20px', listStyleType: 'disc' }}>
                   {SHARING_GIVES.map(g => (
