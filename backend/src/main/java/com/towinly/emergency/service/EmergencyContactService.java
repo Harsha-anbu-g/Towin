@@ -31,6 +31,14 @@ public class EmergencyContactService {
     @Transactional
     public EmergencyContactResponse addContact(UUID elderId, EmergencyContactRequest request) {
         User elder = getElder(elderId);
+        // Count, duplicate check and insert run one at a time per elder, so two
+        // quick taps cannot pass the limit or save the same person twice.
+        contactRepository.lockUntilCommit(com.towinly.common.persistence.AdvisoryLocking.key("emergency-contacts", elderId));
+        String phoneDigits = digitsOf(request.getPhone());
+        if (!phoneDigits.isEmpty() && contactRepository.findByElderId(elderId).stream()
+                .anyMatch(c -> phoneDigits.equals(digitsOf(c.getPhone())))) {
+            throw new IllegalArgumentException("That number is already one of your emergency contacts.");
+        }
         if (contactRepository.countByElderId(elderId) >= MAX_CONTACTS) {
             throw new IllegalStateException("Maximum of " + MAX_CONTACTS + " emergency contacts allowed");
         }
@@ -75,5 +83,10 @@ public class EmergencyContactService {
                 .relationship(c.getRelationship())
                 .inactivityDays(c.getInactivityDays())
                 .build();
+    }
+
+    /** "+1 (416) 555-0101" and "4165550101" are the same person's phone. */
+    private static String digitsOf(String phone) {
+        return phone == null ? "" : phone.replaceAll("\\D", "");
     }
 }

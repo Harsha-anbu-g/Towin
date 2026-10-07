@@ -8,7 +8,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.UUID;
 
-public interface ReviewRepository extends JpaRepository<Review, UUID> {
+public interface ReviewRepository extends JpaRepository<Review, UUID>,
+        com.towinly.common.persistence.AdvisoryLocking {
 
     List<Review> findByRevieweeIdOrderByCreatedAtDesc(UUID revieweeId);
 

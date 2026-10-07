@@ -18,6 +18,8 @@ public interface FamilyLinkRepository extends JpaRepository<FamilyLink, UUID> {
 
     List<FamilyLink> findByElderIdAndStatus(UUID elderId, FamilyLinkStatus status);
 
+    List<FamilyLink> findByElderIdInAndStatus(java.util.Collection<UUID> elderIds, FamilyLinkStatus status);
+
     List<FamilyLink> findByFamilyUserIdAndStatus(UUID familyUserId, FamilyLinkStatus status);
 
     Optional<FamilyLink> findByElderIdAndFamilyUserId(UUID elderId, UUID familyUserId);

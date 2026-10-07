@@ -45,7 +45,13 @@ public class TrustService {
 
     @Transactional
     public TrustStatusResponse confirmTrustLevel(UUID callerId, UUID connectionId, TrustActionRequest request) {
+        // Both people confirming at the same moment would each read "the other has
+        // not confirmed", and the last save would wipe the first person's tick.
+        connectionRepository.lockUntilCommit(com.towinly.common.persistence.AdvisoryLocking.key("connection", connectionId));
         Connection connection = findConnection(connectionId);
+        if (com.towinly.common.enums.ConnectionType.isPeer(connection.getType())) {
+            throw new IllegalArgumentException("Friends don't have trust steps. You can just chat.");
+        }
 
         // Guardian mode: a family member the elder trusts with ADVANCE_TRUST takes
         // the elder's seat here. Working out the seat before any other check means

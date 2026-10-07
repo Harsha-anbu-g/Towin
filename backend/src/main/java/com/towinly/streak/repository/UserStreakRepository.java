@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserStreakRepository extends JpaRepository<UserStreak, UUID> {
+public interface UserStreakRepository extends JpaRepository<UserStreak, UUID>,
+        com.towinly.common.persistence.AdvisoryLocking {
     Optional<UserStreak> findByUserId(UUID userId);
 }

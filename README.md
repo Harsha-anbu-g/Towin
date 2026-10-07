@@ -105,6 +105,9 @@ Like a tree growing roots, every friendship on Towinly grows slowly, through **7
 - 💌 **Pass things on**: an elder writes stories and letters and keeps private ones in an encrypted sealed box.
 - 🔔 **Get push notifications**: new messages and help activity reach your phone.
 - 🚫 **Block someone**: a block hides both people from each other in connections, discovery, needs, and messages.
+- 👋 **Make friends like you**: elders can befriend other elders and helpers other helpers. These friendships just chat: no trust ladder, no points, no reviews, no phone numbers.
+- 🫂 **See who you both know**: every Add Friends suggestion names the family members and friends you share, or the friend you are linked through.
+- 🔁 **Retry safely**: every write carries an idempotency key, so a message sent on a weak signal is never saved twice.
 - 📱 **Use the iOS app**: the [Towinly iOS app](https://github.com/Harsha-anbu-g/ToWin-App) runs on this backend and is in TestFlight.
 
 ---
@@ -232,6 +235,7 @@ Towinly was reviewed against the **OWASP Top 10 (2021)** and scanned with **Sona
 - **Hardening** — stateless sessions, an env-driven CORS allowlist (no `*`, applied to HTTP **and** WebSocket origins), security headers (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, CSP), generic error responses that never leak internals, and server-validated uploads with a server-set content-type.
 - **Blocks and privacy**: the server enforces blocks in both directions, stores every location snapped to a 2 km grid, shares a phone number only on an accepted connection, and never tells a stranger at sign-up whether an email already has an account.
 - **Sealed letters**: the sealed box encrypts its contents with AES-GCM.
+- **Idempotent writes**: an `Idempotency-Key` header makes every signed-in POST, PUT, PATCH and DELETE safe to retry. The first successful answer is stored for 24 hours per user and replayed to a retry, and Postgres advisory locks close the check-then-insert races a key cannot (two taps from two devices).
 - **Scans on every push**: Snyk and SonarQube run in GitHub Actions on every push and pull request to `main`.
 - **Dependencies (OWASP A06)** — Snyk's dependency scanner surfaced **90 vulnerable paths** in the backend (6 critical, 46 high) that SonarQube and `npm audit` had missed — mostly transitive CVEs in Spring's bundled Tomcat/Netty, the AWS SDK, and Twilio. Remediated by upgrading **Spring Boot 3.4 → 3.5.15**, **AWS SDK S3 → 2.39.6**, and **Twilio → 10.9.2** (all backward-compatible release lines), plus a `form-data` CRLF-injection override that `npm audit` had missed → **0 vulnerable paths**, all 54 backend tests still passing.
 

@@ -160,6 +160,19 @@ class TrustScoreServiceTest {
     }
 
     @Test
+    void chatOnlyFriendsEarnNoPoints() {
+        Connection peer = connection(customer(), TrustLevel.TRUSTED);
+        peer.setType(com.towinly.common.enums.ConnectionType.PEER);
+        connections(peer);
+        reviews();
+
+        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+
+        assertThat(r.getCustomers()).isEmpty();
+        assertThat(r.getTotalScore()).isEqualTo(0.0);
+    }
+
+    @Test
     void rooting_isSeven_atTrusted() {
         connections(connection(customer(), TrustLevel.TRUSTED));
         reviews();

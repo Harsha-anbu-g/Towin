@@ -84,7 +84,7 @@ public class FamilyStandingService {
     public FamilyBehindResponse familyBehind(UUID helperUserId) {
         List<FamilyBehindResponse.Entry> entries = new ArrayList<>();
         for (Connection c : connectionRepository.findByUserAndStatus(helperUserId, ConnectionStatus.ACTIVE)) {
-            if (c.getType() == ConnectionType.FAMILY) continue;
+            if (!ConnectionType.earnsTrust(c.getType())) continue;
             User elder = c.getOtherUser(helperUserId);
             for (FamilyLink link : familyLinkRepository.findByElderIdAndStatus(elder.getId(), FamilyLinkStatus.ACTIVE)) {
                 Standing standing = toStanding(link.getFamilyUser().getId(), elder, c);
@@ -127,8 +127,9 @@ public class FamilyStandingService {
     }
 
     private Standing toStanding(UUID familyUserId, User elder, Connection c) {
-        // FAMILY-type rows are coordination chats, not trust journeys to inherit.
-        if (c.getType() == ConnectionType.FAMILY) return null;
+        // FAMILY-type rows are coordination chats and PEER rows are friends who just
+        // chat: neither is a trust journey for family to inherit.
+        if (!ConnectionType.earnsTrust(c.getType())) return null;
         if (c.getStatus() != ConnectionStatus.ACTIVE) return null;
         if (!Boolean.TRUE.equals(c.getSharedWithFamily())) return null;
         if (c.getCurrentTrustLevel().getValue() < TrustLevel.MESSAGING.getValue()) return null;

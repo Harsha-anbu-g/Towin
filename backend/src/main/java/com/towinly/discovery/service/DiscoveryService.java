@@ -42,6 +42,7 @@ public class DiscoveryService {
     private final TrustScoreService trustScoreService;
     private final S3Service s3Service;
     private final BlockService blockService;
+    private final MutualFriendsService mutualFriendsService;
 
     // SEC-07 completion: the size is part of the key — two differently-sized
     // requests are two different responses and must never share one cache entry.
@@ -68,10 +69,14 @@ public class DiscoveryService {
             visible = rankElders(elderProfileRepository.findAllActiveWithLocation(requestingUserId),
                     hidden, filter, lat, lng);
         }
-        return visible.stream()
+        List<Map.Entry<ElderProfile, Double>> page = visible.stream()
                 .skip((long) filter.getPage() * filter.getSize())
                 .limit(filter.getSize())
-                .map(e -> toElderResponse(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+        Map<UUID, MutualFriendsService.Mutuals> mutuals = mutualFriendsService.forCandidates(requestingUserId,
+                page.stream().map(e -> e.getKey().getUser().getId()).collect(Collectors.toList()), hidden);
+        return page.stream()
+                .map(e -> withMutuals(toElderResponse(e.getKey(), e.getValue()), mutuals))
                 .collect(Collectors.toList());
     }
 
@@ -120,10 +125,14 @@ public class DiscoveryService {
             visible = rankHelpers(helperProfileRepository.findAllActiveWithLocation(requestingUserId),
                     hidden, filter, lat, lng, hasLocation);
         }
-        return visible.stream()
+        List<Map.Entry<HelperProfile, Double>> page = visible.stream()
                 .skip((long) filter.getPage() * filter.getSize())
                 .limit(filter.getSize())
-                .map(e -> toHelperResponse(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+        Map<UUID, MutualFriendsService.Mutuals> mutuals = mutualFriendsService.forCandidates(requestingUserId,
+                page.stream().map(e -> e.getKey().getUser().getId()).collect(Collectors.toList()), hidden);
+        return page.stream()
+                .map(e -> withMutuals(toHelperResponse(e.getKey(), e.getValue()), mutuals))
                 .collect(Collectors.toList());
     }
 
@@ -180,6 +189,15 @@ public class DiscoveryService {
                     java.math.BigDecimal.valueOf(lng - lngDelta),
                     java.math.BigDecimal.valueOf(lng + lngDelta));
         }
+    }
+
+    private static DiscoveredUserResponse withMutuals(DiscoveredUserResponse response,
+                                                      Map<UUID, MutualFriendsService.Mutuals> mutuals) {
+        MutualFriendsService.Mutuals m = mutuals == null ? null : mutuals.get(response.getUserId());
+        if (m == null) m = MutualFriendsService.Mutuals.NONE;
+        response.setMutualFriends(m.shown());
+        response.setMutualCount(m.count());
+        return response;
     }
 
     private DiscoveredUserResponse toElderResponse(ElderProfile p, double distanceKm) {

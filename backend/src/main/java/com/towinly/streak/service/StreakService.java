@@ -18,6 +18,8 @@ public class StreakService {
 
     @Transactional
     public StreakResponse checkIn(UUID userId) {
+        // A first-ever check-in tapped twice would insert two rows for one person.
+        streakRepository.lockUntilCommit(com.towinly.common.persistence.AdvisoryLocking.key("streak", userId));
         UserStreak streak = streakRepository.findByUserId(userId)
                 .orElseGet(() -> UserStreak.builder().userId(userId).build());
 
