@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +30,8 @@ import java.util.Optional;
 @Component
 public class GroqClient {
 
+    private static final long RETRY_DELAY_MS = 700;
+
     private final RestClient client;
     private final String apiKey;
     private final String model;
@@ -41,7 +46,9 @@ public class GroqClient {
             @Value("${groq.reasoning-effort:low}") String reasoningEffort) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(5000);
-        factory.setReadTimeout(30000);
+        // Two tries (12s + 0.7s + 12s) must still finish inside the iPhone app's 30s
+        // request timeout. A low-effort answer from Groq normally takes a few seconds.
+        factory.setReadTimeout(12000);
         this.client = RestClient.builder().baseUrl(baseUrl).requestFactory(factory).build();
         this.apiKey = apiKey;
         this.model = model;
@@ -83,19 +90,55 @@ public class GroqClient {
                 body.put("reasoning_effort", reasoningEffort);
             }
 
-            Map<String, Object> response = client.post()
-                    .uri("/chat/completions")
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("Content-Type", "application/json")
-                    .body(body)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+            Map<String, Object> response;
+            try {
+                response = post(body);
+            } catch (RestClientException first) {
+                if (!isTransient(first)) throw first;
+                // A busy moment at Groq (rate limit, 5xx, a dropped connection) usually
+                // clears within a second. One quiet retry turns most of those into an
+                // answer instead of "Sorry, I can't answer just now".
+                log.info("Ask AI (Groq) transient failure, retrying once: {}", first.getMessage());
+                sleep(RETRY_DELAY_MS);
+                response = post(body);
+            }
 
             String text = extractContent(response);
             return (text == null || text.isBlank()) ? Optional.empty() : Optional.of(text.trim());
         } catch (Exception e) {
             log.warn("Ask AI (Groq) call failed: {}", e.getMessage());
             return Optional.empty();
+        }
+    }
+
+    private Map<String, Object> post(Map<String, Object> body) {
+        return client.post()
+                .uri("/chat/completions")
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .body(body)
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    /**
+     * Worth one more try: rate limited, a server error, or no reply at all.
+     * Never a 4xx we caused (bad key, bad request): a retry would only fail again.
+     */
+    static boolean isTransient(RestClientException e) {
+        if (e instanceof ResourceAccessException) return true;
+        if (e instanceof RestClientResponseException r) {
+            int status = r.getStatusCode().value();
+            return status == 429 || status >= 500;
+        }
+        return false;
+    }
+
+    private static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
         }
     }
 

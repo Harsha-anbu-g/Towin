@@ -30,6 +30,11 @@ const SUGGESTIONS = [
   'What is my trust score?',
 ];
 
+// Turns of earlier conversation sent with each question. The server refuses more
+// than 12, so a long chat must send only its recent part or every reply after
+// the sixth question fails.
+const HISTORY_TURNS = 10;
+
 // Browser speech features — both fail gracefully where unsupported.
 const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
 const SpeechRec =
@@ -71,6 +76,8 @@ export default function AskAiAssistant() {
     if (speakingIdx === idx) { setSpeakingIdx(null); return; }
     const utterance = new SpeechSynthesisUtterance(speakableText(content));
     utterance.rate = 0.95;
+    // Read French or Tamil with a French or Tamil voice, not an English one.
+    utterance.lang = dateLocale(navigator.language || 'en-US');
     utterance.onend = () => setSpeakingIdx(null);
     utterance.onerror = () => setSpeakingIdx(null);
     setSpeakingIdx(idx);
@@ -133,23 +140,26 @@ export default function AskAiAssistant() {
     setInput('');
     setLoading(true);
 
-    // History = the real exchange so far (drop the canned greeting). The server
-    // caps it further and attaches the JWT via the axios interceptor, so a
-    // logged-in user is recognised automatically for personal questions.
-    const history = nextMessages
+    // History = the recent exchange before this question (no canned greeting, and
+    // not the question itself, which goes as `message`). The axios interceptor
+    // attaches the JWT, so a logged-in user is recognised for personal questions,
+    // and the chosen language, so the tortoise answers in it.
+    const history = messages
       .filter((m) => !m.intro)
+      .slice(-HISTORY_TURNS)
       .map(({ role, content }) => ({ role, content }));
 
     try {
       const { data } = await api.post('/assistant/chat', { message: question, history });
       setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
-    } catch {
+    } catch (err) {
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content:
-            tr("Sorry, I couldn't answer just now. Please try again in a moment, or use the Feedback button and the Towinly team will help."),
+          content: err?.response?.status === 429
+            ? tr("You've asked a lot in a short time. Please wait a minute, then ask again.")
+            : tr("Sorry, I couldn't answer just now. Please try again in a moment, or use the Feedback button and the Towinly team will help."),
         },
       ]);
     } finally {

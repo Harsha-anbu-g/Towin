@@ -44,7 +44,10 @@ public class AssistantController {
         // client address into it, and the header itself is caller-spoofable — parsing
         // it would let an attacker mint a fresh identity per request. See IpRateLimiter.
         rateLimiter.check(userId, http.getRemoteAddr());
-        return ResponseEntity.ok(new ChatResponse(assistantService.answer(request, userId)));
+        // The site sends the language the person picked (English, French or Tamil),
+        // so the tortoise answers in it.
+        String language = AssistantService.languageOf(http.getHeader("Accept-Language"));
+        return ResponseEntity.ok(new ChatResponse(assistantService.answer(request, userId, language)));
     }
 
     private UUID parseUserId(String name) {
