@@ -2,6 +2,8 @@ package com.towinly.assistant.service;
 
 import com.towinly.assistant.dto.ChatMessage;
 import com.towinly.assistant.dto.ChatRequest;
+import com.towinly.assistant.guard.OutputGuard;
+import com.towinly.assistant.guard.PiiGuard;
 import com.towinly.assistant.guide.GuideRetriever;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.NeedStatus;
@@ -183,6 +185,8 @@ public class AssistantService {
         if (PromptSanitizer.hasHiddenCharacters(request.getMessage())) {
             log.warn("Ask AI: stripped hidden characters from a question (userId={})", userId);
         }
+        // Phone numbers, emails and card-like digit runs never leave for the model.
+        question = PiiGuard.redact(question);
 
         // Appended last so it sits nearest the question, and the stable prefix above
         // it stays cacheable at Groq. The retriever sees the cleaned question only.
@@ -218,6 +222,13 @@ public class AssistantService {
             action = round.action();
         }
         spend.record(reply, lang, userId, elapsedMs(started));
+        // The last check: a reply that asks for a secret, pushes money, leaks the
+        // prompt or invents a contact detail is swapped for the fallback sentence.
+        Optional<String> problem = OutputGuard.problem(reply.text());
+        if (problem.isPresent()) {
+            log.warn("Ask AI: reply withheld ({}), signedIn={}", problem.get(), userId != null);
+            return new Answer(CANNED.get("fallback").get(lang), null);
+        }
         return new Answer(reply.text(), action);
     }
 
@@ -270,7 +281,7 @@ public class AssistantService {
                 if (!"user".equals(m.getRole()) && !"assistant".equals(m.getRole())) {
                     continue;
                 }
-                String content = PromptSanitizer.clean(m.getContent(), ChatMessage.MAX_CONTENT_CHARS);
+                String content = PiiGuard.redact(PromptSanitizer.clean(m.getContent(), ChatMessage.MAX_CONTENT_CHARS));
                 if (content.isBlank()) {
                     continue; // an empty turn carries nothing; it must not truncate older ones
                 }
