@@ -46,7 +46,8 @@ class AssistantServicePromptHardeningTest {
                 mock(StreakService.class),
                 mock(ConnectionRepository.class),
                 mock(NeedRepository.class),
-                mock(TrustScoreService.class));
+                mock(TrustScoreService.class),
+                mock(AssistantSpend.class));
     }
 
     @SuppressWarnings("unchecked")

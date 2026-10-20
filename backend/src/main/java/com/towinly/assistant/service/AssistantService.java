@@ -96,6 +96,7 @@ public class AssistantService {
     private final ConnectionRepository connectionRepository;
     private final NeedRepository needRepository;
     private final TrustScoreService trustScoreService;
+    private final AssistantSpend spend;
 
     /** System prompt = tortoise persona/rules + the product knowledge base. Loaded once. */
     private final String basePrompt;
@@ -105,13 +106,15 @@ public class AssistantService {
                             StreakService streakService,
                             ConnectionRepository connectionRepository,
                             NeedRepository needRepository,
-                            TrustScoreService trustScoreService) {
+                            TrustScoreService trustScoreService,
+                            AssistantSpend spend) {
         this.groqClient = groqClient;
         this.profileService = profileService;
         this.streakService = streakService;
         this.connectionRepository = connectionRepository;
         this.needRepository = needRepository;
         this.trustScoreService = trustScoreService;
+        this.spend = spend;
         this.basePrompt = loadResource("assistant/system-prompt.txt")
                 + "\n\n=== TOWINLY KNOWLEDGE BASE ===\n"
                 + loadResource("assistant/knowledge.md");
@@ -160,8 +163,13 @@ public class AssistantService {
 
         List<ChatMessage> conversation = buildConversation(request, question);
 
+        long started = System.nanoTime();
         Optional<GroqReply> reply = groqClient.complete(systemPrompt, conversation);
-        return reply.map(GroqReply::text).orElse(CANNED.get("fallback").get(lang));
+        if (reply.isEmpty()) {
+            return CANNED.get("fallback").get(lang);
+        }
+        spend.record(reply.get(), lang, userId, (System.nanoTime() - started) / 1_000_000);
+        return reply.get().text();
     }
 
     /**
