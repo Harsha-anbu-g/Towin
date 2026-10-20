@@ -137,6 +137,12 @@ groq:
 # once it is spent, which is deliberate.
 assistant:
   max-calls-per-day: ${ASSISTANT_MAX_CALLS_PER_DAY:2000}
+  # Tokens are what Groq bills. A Tamil or French day costs two to four times the
+  # tokens of an English one for the same characters, so this is the ceiling that
+  # tracks the bill, and the one to set from the plan's daily token limit in the
+  # Groq console. Each answer's tokens are logged ("Ask AI: answered ...") and
+  # sent to PostHog as ask_ai_answered.
+  max-tokens-per-day: ${ASSISTANT_MAX_TOKENS_PER_DAY:2000000}
 
 springdoc:
   # Swagger UI and the OpenAPI spec expose the whole API surface, so they stay
