@@ -117,5 +117,12 @@
    "mustIncludeAny": ["இலவச"], "script": "tamil"},
   {"id": "ta-sos", "language": "ta", "signedIn": false,
    "question": "SOS பொத்தான் என்ன செய்யும்?",
-   "mustIncludeAny": ["SOS"], "script": "tamil"}
+   "mustIncludeAny": ["SOS"], "script": "tamil"},
+
+  {"id": "me-connections", "language": "en", "signedIn": true,
+   "question": "Which of my friendships is waiting on me?",
+   "mustIncludeAny": ["no connections", "waiting", "friendship", "connection"]},
+  {"id": "me-family", "language": "en", "signedIn": true,
+   "question": "Is my family linked?",
+   "mustIncludeAny": ["no family", "family", "linked"]}
 ]
