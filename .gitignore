@@ -43,3 +43,6 @@ build/
 docs/architecture/towinly-api-docs.html
 docs/architecture/towinly-openapi.json
 docs/architecture/towinly-openapi.yaml
+
+# Git worktrees live here (using-git-worktrees skill)
+.worktrees/
