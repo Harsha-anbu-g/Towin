@@ -43,7 +43,8 @@ class AssistantLanguageTest {
                 mock(ConnectionRepository.class),
                 mock(NeedRepository.class),
                 mock(TrustScoreService.class),
-                mock(AssistantSpend.class));
+                mock(AssistantSpend.class),
+                mock(AssistantTools.class));
     }
 
     private static ChatRequest ask(String message) {

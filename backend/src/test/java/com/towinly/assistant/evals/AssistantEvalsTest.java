@@ -4,6 +4,7 @@ import com.towinly.assistant.dto.ChatRequest;
 import com.towinly.assistant.security.AssistantRateLimiter;
 import com.towinly.assistant.service.AssistantService;
 import com.towinly.assistant.service.AssistantSpend;
+import com.towinly.assistant.service.AssistantTools;
 import com.towinly.assistant.service.GroqClient;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.NeedStatus;
@@ -11,7 +12,10 @@ import com.towinly.common.service.PostHogService;
 import com.towinly.common.service.TrustScoreService;
 import com.towinly.connection.entity.Connection;
 import com.towinly.connection.repository.ConnectionRepository;
+import com.towinly.connection.service.ConnectionService;
+import com.towinly.family.service.FamilyService;
 import com.towinly.need.repository.NeedRepository;
+import com.towinly.need.service.NeedService;
 import com.towinly.profile.dto.ProfileResponse;
 import com.towinly.profile.service.ProfileService;
 import com.towinly.streak.dto.StreakResponse;
@@ -98,7 +102,8 @@ class AssistantEvalsTest {
         AssistantSpend spend = new AssistantSpend(
                 new AssistantRateLimiter(Integer.MAX_VALUE, Long.MAX_VALUE),
                 new PostHogService("", "https://us.i.posthog.com"));
-        return new AssistantService(groq, profile(), streak(), connections(), needs(), trust(), spend);
+        return new AssistantService(groq, profile(), streak(), connections(), needs(), trust(), spend,
+                new AssistantTools(mock(ConnectionService.class), mock(NeedService.class), mock(FamilyService.class)));
     }
 
     // --- Mary: elder, Getting Started, mid-week, with things waiting on her ---

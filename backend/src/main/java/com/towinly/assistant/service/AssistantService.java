@@ -97,6 +97,7 @@ public class AssistantService {
     private final NeedRepository needRepository;
     private final TrustScoreService trustScoreService;
     private final AssistantSpend spend;
+    private final AssistantTools tools;
 
     /** System prompt = tortoise persona/rules + the product knowledge base. Loaded once. */
     private final String basePrompt;
@@ -107,7 +108,8 @@ public class AssistantService {
                             ConnectionRepository connectionRepository,
                             NeedRepository needRepository,
                             TrustScoreService trustScoreService,
-                            AssistantSpend spend) {
+                            AssistantSpend spend,
+                            AssistantTools tools) {
         this.groqClient = groqClient;
         this.profileService = profileService;
         this.streakService = streakService;
@@ -115,6 +117,7 @@ public class AssistantService {
         this.needRepository = needRepository;
         this.trustScoreService = trustScoreService;
         this.spend = spend;
+        this.tools = tools;
         this.basePrompt = loadResource("assistant/system-prompt.txt")
                 + "\n\n=== TOWINLY KNOWLEDGE BASE ===\n"
                 + loadResource("assistant/knowledge.md");
@@ -164,12 +167,46 @@ public class AssistantService {
         List<ChatMessage> conversation = buildConversation(request, question);
 
         long started = System.nanoTime();
-        Optional<GroqReply> reply = groqClient.complete(systemPrompt, conversation);
-        if (reply.isEmpty()) {
+        Optional<GroqReply> first = userId == null
+                ? groqClient.complete(systemPrompt, conversation)
+                : groqClient.complete(systemPrompt, GroqClient.toMessages(conversation),
+                        AssistantTools.DEFINITIONS, "auto", true);
+        if (first.isEmpty()) {
             return CANNED.get("fallback").get(lang);
         }
-        spend.record(reply.get(), lang, userId, (System.nanoTime() - started) / 1_000_000);
-        return reply.get().text();
+
+        GroqReply reply = first.get();
+        if (reply.hasToolCalls()) {
+            reply = answerWithTools(systemPrompt, conversation, first.get(), userId);
+            if (reply == null) {
+                // The lookups ran but the second call failed: the first call still cost tokens.
+                spend.record(first.get(), lang, userId, elapsedMs(started));
+                return CANNED.get("fallback").get(lang);
+            }
+        }
+        spend.record(reply, lang, userId, elapsedMs(started));
+        return reply.text();
+    }
+
+    /**
+     * One tool round: run every tool the model asked for, hand the results back, and
+     * make it answer in words. Returns the final reply with both calls' tokens, or
+     * null when the second call failed.
+     */
+    private GroqReply answerWithTools(String systemPrompt, List<ChatMessage> conversation,
+                                      GroqReply first, UUID userId) {
+        List<Map<String, Object>> messages = GroqClient.toMessages(conversation);
+        messages.add(GroqClient.toolCallTurn(first.toolCalls()));
+        for (GroqReply.ToolCall call : first.toolCalls()) {
+            messages.add(GroqClient.toolResultTurn(call, tools.run(call.name(), userId)));
+        }
+        return groqClient.complete(systemPrompt, messages, AssistantTools.DEFINITIONS, "none", false)
+                .map(second -> second.addingTokensOf(first))
+                .orElse(null);
+    }
+
+    private static long elapsedMs(long startedNanos) {
+        return (System.nanoTime() - startedNanos) / 1_000_000;
     }
 
     /**

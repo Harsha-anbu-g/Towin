@@ -15,6 +15,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,7 +44,8 @@ class AssistantServiceSpendTest {
                 mock(ConnectionRepository.class),
                 mock(NeedRepository.class),
                 mock(TrustScoreService.class),
-                spend);
+                spend,
+                mock(AssistantTools.class));
     }
 
     private static ChatRequest ask(String message) {
@@ -53,7 +56,8 @@ class AssistantServiceSpendTest {
 
     @Test
     void anAnsweredQuestion_isBookedWithItsTokensLanguageAndUser() {
-        when(groq.complete(anyString(), any()))
+        // Signed in, so the tool-enabled call is the one that answers.
+        when(groq.complete(anyString(), anyList(), any(), any(), anyBoolean()))
                 .thenReturn(Optional.of(new GroqReply("Bonjour.", 4000, 120, 3800)));
         UUID user = UUID.randomUUID();
 
