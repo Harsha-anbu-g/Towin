@@ -101,6 +101,17 @@ public class AssistantService {
     private final AssistantTools tools;
     private final GuideRetriever retriever;
 
+    /** One thing the app may offer to confirm: the name of an app API function and its input. */
+    public record Action(String name, Map<String, Object> arguments) {}
+
+    /** The words for the person, and the one action the app may offer to confirm (or null). */
+    public record Answer(String reply, Action action) {}
+
+    /** Proposed by a tool round that asked the app to confirm the daily check-in. */
+    public static final Action ACTION_CHECK_IN = new Action("check_in", Map.of());
+
+    private record ToolRound(GroqReply reply, Action action) {}
+
     /** System prompt = tortoise persona/rules + the product knowledge base. Loaded once. */
     private final String basePrompt;
 
@@ -140,9 +151,17 @@ public class AssistantService {
      * reads as English), the language the person chose on the site.
      */
     public String answer(ChatRequest request, UUID userId, String language) {
+        return answerWithAction(request, userId, language).reply();
+    }
+
+    /**
+     * Answers, and names the one action (if any) the app should ask the person to
+     * confirm. The model never performs an action; it can only propose one.
+     */
+    public Answer answerWithAction(ChatRequest request, UUID userId, String language) {
         String lang = LANGUAGE_RULE.containsKey(language) ? language : "en";
         if (!groqClient.isConfigured()) {
-            return CANNED.get("off").get(lang);
+            return new Answer(CANNED.get("off").get(lang), null);
         }
 
         String systemPrompt = basePrompt + "\n\n=== LANGUAGE ===\n" + LANGUAGE_RULE.get(lang);
@@ -162,7 +181,7 @@ public class AssistantService {
             // Everything they sent was strippable — i.e. the "question" was nothing but
             // hidden characters. There is no genuine question here to answer.
             log.warn("Ask AI: rejected a question that was entirely hidden characters (userId={})", userId);
-            return CANNED.get("unreadable").get(lang);
+            return new Answer(CANNED.get("unreadable").get(lang), null);
         }
         if (PromptSanitizer.hasHiddenCharacters(request.getMessage())) {
             log.warn("Ask AI: stripped hidden characters from a question (userId={})", userId);
@@ -186,20 +205,23 @@ public class AssistantService {
                 : groqClient.complete(systemPrompt, GroqClient.toMessages(conversation),
                         AssistantTools.DEFINITIONS, "auto", true);
         if (first.isEmpty()) {
-            return CANNED.get("fallback").get(lang);
+            return new Answer(CANNED.get("fallback").get(lang), null);
         }
 
         GroqReply reply = first.get();
+        Action action = null;
         if (reply.hasToolCalls()) {
-            reply = answerWithTools(systemPrompt, conversation, first.get(), userId);
-            if (reply == null) {
+            ToolRound round = answerWithTools(systemPrompt, conversation, first.get(), userId);
+            if (round == null) {
                 // The lookups ran but the second call failed: the first call still cost tokens.
                 spend.record(first.get(), lang, userId, elapsedMs(started));
-                return CANNED.get("fallback").get(lang);
+                return new Answer(CANNED.get("fallback").get(lang), null);
             }
+            reply = round.reply();
+            action = round.action();
         }
         spend.record(reply, lang, userId, elapsedMs(started));
-        return reply.text();
+        return new Answer(reply.text(), action);
     }
 
     /**
@@ -207,16 +229,20 @@ public class AssistantService {
      * make it answer in words. Returns the final reply with both calls' tokens, or
      * null when the second call failed.
      */
-    private GroqReply answerWithTools(String systemPrompt, List<ChatMessage> conversation,
+    private ToolRound answerWithTools(String systemPrompt, List<ChatMessage> conversation,
                                       GroqReply first, UUID userId) {
         List<Map<String, Object>> messages = GroqClient.toMessages(conversation);
         messages.add(GroqClient.toolCallTurn(first.toolCalls()));
+        Action action = null;
         for (GroqReply.ToolCall call : first.toolCalls()) {
             messages.add(GroqClient.toolResultTurn(call, tools.run(call.name(), userId)));
+            // A proposal never writes here; the app asks the person and acts on a Yes.
+            if (AssistantTools.isProposal(call.name())) action = ACTION_CHECK_IN;
         }
-        return groqClient.complete(systemPrompt, messages, AssistantTools.DEFINITIONS, "none", false)
-                .map(second -> second.addingTokensOf(first))
+        GroqReply second = groqClient.complete(systemPrompt, messages, AssistantTools.DEFINITIONS, "none", false)
+                .map(s -> s.addingTokensOf(first))
                 .orElse(null);
+        return second == null ? null : new ToolRound(second, action);
     }
 
     private static long elapsedMs(long startedNanos) {

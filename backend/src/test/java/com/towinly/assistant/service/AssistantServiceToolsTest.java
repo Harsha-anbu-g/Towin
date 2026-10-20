@@ -135,4 +135,29 @@ class AssistantServiceToolsTest {
         verify(tools).run("get_my_family", ME);
         verify(groq, times(2)).complete(anyString(), anyList(), any(), any(), anyBoolean());
     }
+    @Test
+    void aProposeCall_marksTheAnswerWithTheAction_andTheReplyStillComesFromTheModel() {
+        GroqReply.ToolCall propose = new GroqReply.ToolCall("call_9", "propose_check_in", "{}");
+        when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
+                .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(propose))));
+        when(tools.run("propose_check_in", ME)).thenReturn("Proposed.");
+        when(groq.complete(anyString(), anyList(), any(), eq("none"), eq(false)))
+                .thenReturn(Optional.of(new GroqReply("Tap Yes to check in.", 1, 1, 0)));
+
+        AssistantService.Answer answer = service.answerWithAction(ask("Check me in"), ME, "en");
+
+        assertThat(answer.reply()).isEqualTo("Tap Yes to check in.");
+        assertThat(answer.action().name()).isEqualTo("check_in");
+    }
+
+    @Test
+    void aReadToolCall_hasNoAction() {
+        when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
+                .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(CALL))));
+        when(tools.run(anyString(), any())).thenReturn("nothing");
+        when(groq.complete(anyString(), anyList(), any(), eq("none"), eq(false)))
+                .thenReturn(Optional.of(new GroqReply("Nobody is waiting.", 1, 1, 0)));
+
+        assertThat(service.answerWithAction(ask("Who is waiting?"), ME, "en").action()).isNull();
+    }
 }

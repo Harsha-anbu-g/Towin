@@ -47,7 +47,8 @@ public class AssistantController {
         // The site sends the language the person picked (English, French or Tamil),
         // so the tortoise answers in it.
         String language = AssistantService.languageOf(http.getHeader("Accept-Language"));
-        return ResponseEntity.ok(new ChatResponse(assistantService.answer(request, userId, language)));
+        AssistantService.Answer answer = assistantService.answerWithAction(request, userId, language);
+        return ResponseEntity.ok(new ChatResponse(answer.reply(), answer.action()));
     }
 
     private UUID parseUserId(String name) {
