@@ -56,7 +56,14 @@ class AssistantToolsTest {
     void definitions_areTheThreeReadOnlyTools() {
         List<String> names = AssistantTools.DEFINITIONS.stream()
                 .map(d -> ((java.util.Map<?, ?>) d.get("function")).get("name").toString()).toList();
-        assertThat(names).containsExactly("get_my_connections", "get_my_help_requests", "get_my_family");
+        assertThat(names).containsExactly("get_my_connections", "get_my_help_requests", "get_my_family", "propose_check_in");
+    }
+
+    @Test
+    void proposeCheckIn_neverWrites_itOnlyProposes() {
+        assertThat(tools.run("propose_check_in", ME)).isEqualTo(AssistantTools.PROPOSED_CHECK_IN);
+        assertThat(AssistantTools.isProposal("propose_check_in")).isTrue();
+        assertThat(AssistantTools.isProposal("get_my_family")).isFalse();
     }
 
     @Test
