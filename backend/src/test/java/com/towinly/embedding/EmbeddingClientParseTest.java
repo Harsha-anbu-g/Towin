@@ -48,4 +48,10 @@ class EmbeddingClientParseTest {
         assertThat(disabled.isConfigured()).isFalse();
         assertThat(off.embed(List.of("hello"))).isEmpty();
     }
+    @Test
+    void vectorLiteral_roundTrips() {
+        float[] v = {0.1f, -2f, 3.25f};
+        assertThat(EmbeddingClient.fromVectorLiteral(EmbeddingClient.toVectorLiteral(v))).containsExactly(v);
+        assertThat(EmbeddingClient.fromVectorLiteral("[1,2]")).containsExactly(1f, 2f);
+    }
 }

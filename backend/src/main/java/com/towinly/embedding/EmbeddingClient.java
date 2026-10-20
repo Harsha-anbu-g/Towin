@@ -126,6 +126,17 @@ public class EmbeddingClient {
         return Optional.of(out);
     }
 
+    /** The reverse of {@link #toVectorLiteral}: what {@code embedding::text} gives back. */
+    public static float[] fromVectorLiteral(String literal) {
+        String inner = literal.trim();
+        inner = inner.substring(1, inner.length() - 1);
+        if (inner.isBlank()) return new float[0];
+        String[] parts = inner.split(",");
+        float[] v = new float[parts.length];
+        for (int i = 0; i < parts.length; i++) v[i] = Float.parseFloat(parts[i].trim());
+        return v;
+    }
+
     /** The literal pgvector reads: {@code [0.1,0.2,...]}. */
     public static String toVectorLiteral(float[] vector) {
         StringBuilder sb = new StringBuilder(vector.length * 10).append('[');
