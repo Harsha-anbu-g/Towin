@@ -17,7 +17,9 @@ jobs:
     # throwaway database is where the migrations get to fail instead.
     services:
       postgres:
-        image: postgres:16
+        # pgvector's official image: Postgres 16 with the vector extension that
+        # migrations V62 and V63 create (Railway's Postgres has it too).
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: towin
           POSTGRES_PASSWORD: towin
