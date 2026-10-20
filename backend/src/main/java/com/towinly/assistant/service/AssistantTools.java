@@ -37,10 +37,12 @@ public class AssistantTools {
     static final String UNKNOWN = "Unknown tool.";
     static final String UNAVAILABLE = "This detail is not available right now.";
 
-    /** The one tool that proposes a write. It never writes: the app asks the person and acts on a Yes. */
-    public static final String PROPOSE_CHECK_IN = "propose_check_in";
+    /** The tools that propose a write. They never write: the app asks the person and acts on a Yes. */
+    public static final String PROPOSE_CHECK_IN = AssistantActions.PROPOSE_CHECK_IN;
     static final String PROPOSED_CHECK_IN = "Proposed. The app will now ask the person to confirm today's check-in. "
             + "Tell them to tap Yes if they want it, and do not say it is done.";
+    static final String PROPOSED_HELP_REQUEST = "Proposed. The app will show the person the request and ask them "
+            + "to confirm. Do not say it is posted.";
 
     /** Longest value lifted from a row into the prompt. A name or a title is far shorter. */
     private static final int MAX_FIELD_CHARS = 120;
@@ -60,7 +62,20 @@ public class AssistantTools {
             tool(PROPOSE_CHECK_IN,
                     "Propose marking the person as here today (the elder's daily check-in). Use only when "
                     + "they ask you to check in for them or say they are here today. You cannot do it: "
-                    + "the app asks them to confirm, and only their Yes does it."));
+                    + "the app asks them to confirm, and only their Yes does it."),
+            Map.of("type", "function", "function", Map.of(
+                    "name", AssistantActions.PROPOSE_HELP_REQUEST,
+                    "description", "Propose posting a help request for the elder: a lift, groceries, company, "
+                            + "cleaning, an errand. Use when they ask you to post, ask for, or request help. Put "
+                            + "what they said into title and description and pick the closest category. The app "
+                            + "shows them the request and asks to confirm; only their Yes posts it.",
+                    "parameters", Map.of("type", "object",
+                            "properties", Map.of(
+                                    "title", Map.of("type", "string", "description", "Short title, their words, under 200 characters"),
+                                    "description", Map.of("type", "string", "description", "When, where, anything a helper should know"),
+                                    "category", Map.of("type", "string", "enum", List.of("TRANSPORTATION", "CLEANING", "COMPANIONSHIP", "ERRANDS", "OTHER")),
+                                    "urgency", Map.of("type", "string", "enum", List.of("NORMAL", "URGENT"))),
+                            "required", List.of("title", "category")))));
 
     private final ConnectionService connectionService;
     private final NeedService needService;
@@ -80,6 +95,7 @@ public class AssistantTools {
                 case "get_my_help_requests" -> helpRequests(userId);
                 case "get_my_family" -> family(userId);
                 case PROPOSE_CHECK_IN -> PROPOSED_CHECK_IN;
+                case AssistantActions.PROPOSE_HELP_REQUEST -> PROPOSED_HELP_REQUEST;
                 default -> UNKNOWN;
             };
         } catch (Exception e) {
@@ -88,9 +104,9 @@ public class AssistantTools {
         }
     }
 
-    /** True for the one tool that proposes a write; the app, not the model, performs it after a confirm. */
+    /** True for a tool that proposes a write; the app, not the model, performs it after a confirm. */
     public static boolean isProposal(String name) {
-        return PROPOSE_CHECK_IN.equals(name);
+        return AssistantActions.isProposal(name);
     }
 
     private String connections(UUID userId) {

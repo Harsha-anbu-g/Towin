@@ -107,9 +107,6 @@ public class AssistantService {
     /** The words for the person, and the one action the app may offer to confirm (or null). */
     public record Answer(String reply, Action action) {}
 
-    /** Proposed by a tool round that asked the app to confirm the daily check-in. */
-    public static final Action ACTION_CHECK_IN = new Action("check_in", Map.of());
-
     private record ToolRound(GroqReply reply, Action action) {}
 
     /** System prompt = tortoise persona/rules + the product knowledge base. Loaded once. */
@@ -237,7 +234,8 @@ public class AssistantService {
         for (GroqReply.ToolCall call : first.toolCalls()) {
             messages.add(GroqClient.toolResultTurn(call, tools.run(call.name(), userId)));
             // A proposal never writes here; the app asks the person and acts on a Yes.
-            if (AssistantTools.isProposal(call.name())) action = ACTION_CHECK_IN;
+            // One action per answer: the first usable proposal wins.
+            if (action == null) action = AssistantActions.toAction(call).orElse(null);
         }
         GroqReply second = groqClient.complete(systemPrompt, messages, AssistantTools.DEFINITIONS, "none", false)
                 .map(s -> s.addingTokensOf(first))

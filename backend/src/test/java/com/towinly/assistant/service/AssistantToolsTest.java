@@ -56,7 +56,7 @@ class AssistantToolsTest {
     void definitions_areTheThreeReadOnlyTools() {
         List<String> names = AssistantTools.DEFINITIONS.stream()
                 .map(d -> ((java.util.Map<?, ?>) d.get("function")).get("name").toString()).toList();
-        assertThat(names).containsExactly("get_my_connections", "get_my_help_requests", "get_my_family", "propose_check_in");
+        assertThat(names).containsExactly("get_my_connections", "get_my_help_requests", "get_my_family", "propose_check_in", "propose_help_request");
     }
 
     @Test

@@ -147,7 +147,7 @@ class AssistantServiceToolsTest {
         AssistantService.Answer answer = service.answerWithAction(ask("Check me in"), ME, "en");
 
         assertThat(answer.reply()).isEqualTo("Tap Yes to check in.");
-        assertThat(answer.action().name()).isEqualTo("check_in");
+        assertThat(answer.action().name()).isEqualTo("checkInToday");
     }
 
     @Test
