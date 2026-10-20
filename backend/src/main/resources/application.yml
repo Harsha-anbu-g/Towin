@@ -144,6 +144,19 @@ assistant:
   # sent to PostHog as ask_ai_answered.
   max-tokens-per-day: ${ASSISTANT_MAX_TOKENS_PER_DAY:2000000}
 
+# Embeddings turn text into vectors so Ask AI can find the user-guide passages
+# that match a question (and, from step 6, so discovery can match a request to a
+# profile). Any OpenAI-compatible /embeddings endpoint works: OpenAI (default),
+# Gemini or Mistral. The key lives ONLY here (env var). A blank key switches the
+# whole thing off: the guide is not indexed, questions are not embedded, and Ask
+# AI answers from the knowledge base alone, exactly as before.
+embeddings:
+  api-key: ${EMBEDDINGS_API_KEY:}
+  base-url: ${EMBEDDINGS_BASE_URL:https://api.openai.com/v1}
+  model: ${EMBEDDINGS_MODEL:text-embedding-3-small}
+  dimensions: ${EMBEDDINGS_DIMENSIONS:1536}
+  enabled: ${EMBEDDINGS_ENABLED:true}
+
 springdoc:
   # Swagger UI and the OpenAPI spec expose the whole API surface, so they stay
   # off unless a profile (dev) or env var turns them on.
