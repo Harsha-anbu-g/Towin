@@ -34,6 +34,11 @@ class AssistantRateLimiterTest {
         return new AssistantRateLimiter(clock, MAX_TRACKED, maxPerDay);
     }
 
+    /** A limiter whose daily token ceiling is the limit under test. */
+    private AssistantRateLimiter withTokenBudget(long maxTokensPerDay) {
+        return new AssistantRateLimiter(clock, MAX_TRACKED, UNLIMITED_DAY, maxTokensPerDay);
+    }
+
     // --- per-identity, per-minute ---
 
     @Test
@@ -172,5 +177,60 @@ class AssistantRateLimiterTest {
         }
 
         assertThat(limiter.trackedKeys()).isEqualTo(MAX_TRACKED);
+    }
+    // --- the daily token ceiling: spend in the unit Groq bills ---
+
+    @Test
+    void chargedTokens_addUp() {
+        AssistantRateLimiter capped = withTokenBudget(10_000);
+        capped.charge(4_000);
+        capped.charge(120);
+
+        assertThat(capped.spentTokensToday()).isEqualTo(4_120);
+    }
+
+    @Test
+    void onceTheTokenBudgetIsSpent_theNextQuestionRestsKindly() {
+        AssistantRateLimiter capped = withTokenBudget(10_000);
+        capped.check(null, IP);
+        capped.charge(10_000);
+
+        assertThatThrownBy(() -> capped.check(null, "10.9.0.2"))
+                .isInstanceOf(RateLimitException.class)
+                .hasMessageContaining("resting");
+    }
+
+    @Test
+    void theLastAnswerMayOvershoot_butNoMore() {
+        // Tokens are known only after an answer, so the answer that crosses the line
+        // is served; the one after it is not.
+        AssistantRateLimiter capped = withTokenBudget(10_000);
+        capped.check(null, IP);
+        capped.charge(9_999);
+        assertThatCode(() -> capped.check(null, "10.9.0.2")).doesNotThrowAnyException();
+        capped.charge(5_000);
+
+        assertThatThrownBy(() -> capped.check(null, "10.9.0.3"))
+                .isInstanceOf(RateLimitException.class);
+        assertThat(capped.spentTokensToday()).isEqualTo(14_999);
+    }
+
+    @Test
+    void theTokenBudgetRefills_theNextDay() {
+        AssistantRateLimiter capped = withTokenBudget(10_000);
+        capped.charge(10_000);
+        clock.advanceSeconds(86_401);
+
+        assertThatCode(() -> capped.check(null, IP)).doesNotThrowAnyException();
+        assertThat(capped.spentTokensToday()).isZero();
+    }
+
+    @Test
+    void aZeroOrNegativeCharge_changesNothing() {
+        AssistantRateLimiter capped = withTokenBudget(10_000);
+        capped.charge(0);
+        capped.charge(-5);
+
+        assertThat(capped.spentTokensToday()).isZero();
     }
 }

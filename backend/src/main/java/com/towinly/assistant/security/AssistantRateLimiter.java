@@ -50,6 +50,11 @@ public class AssistantRateLimiter implements SweepableRateLimiter {
 
     private static final long DAY_SECONDS = 86_400;
 
+    /** Said when either daily ceiling is spent: a silent tortoise costs nothing. */
+    private static final String RESTING =
+            "The helper is resting just now and can't answer any more questions today. "
+            + "Please try again tomorrow, or use the Feedback button and the Towinly team will help.";
+
     private static final class Window {
         int minuteCount;
         Instant minuteResetAt;
@@ -63,22 +68,37 @@ public class AssistantRateLimiter implements SweepableRateLimiter {
     /** Whole-service calls per day. Tunable without a redeploy; see application.yml. */
     private final int maxPerDay;
 
+    /**
+     * Whole-service tokens per day: the ceiling that tracks the bill. Calls are a
+     * proxy; tokens are what Groq charges, and a Tamil or French day costs two to
+     * four times the tokens of the same day in English. See application.yml.
+     */
+    private final long maxTokensPerDay;
+
     /** Guarded by {@code dayLock} — a burst of concurrent requests must not overspend. */
     private final Object dayLock = new Object();
     private int dayCount;
+    private long dayTokens;
     private Instant dayResetAt;
 
-    // Explicit: the class has a second, test-only constructor, and with more than one
+    // Explicit: the class has test-only constructors, and with more than one
     // candidate Spring falls back to looking for a no-arg constructor and fails to start.
     @Autowired
-    public AssistantRateLimiter(@Value("${assistant.max-calls-per-day:2000}") int maxPerDay) {
-        this(Clock.systemUTC(), ExpiringKeyStore.DEFAULT_MAX_ENTRIES, maxPerDay);
+    public AssistantRateLimiter(@Value("${assistant.max-calls-per-day:2000}") int maxPerDay,
+                                @Value("${assistant.max-tokens-per-day:2000000}") long maxTokensPerDay) {
+        this(Clock.systemUTC(), ExpiringKeyStore.DEFAULT_MAX_ENTRIES, maxPerDay, maxTokensPerDay);
     }
 
+    /** For tests about the other limits: no token ceiling in the way. */
     AssistantRateLimiter(Clock clock, int maxEntries, int maxPerDay) {
+        this(clock, maxEntries, maxPerDay, Long.MAX_VALUE);
+    }
+
+    AssistantRateLimiter(Clock clock, int maxEntries, int maxPerDay, long maxTokensPerDay) {
         this.clock = clock;
         this.windows = new ExpiringKeyStore<>(w -> w.hourResetAt, clock, maxEntries);
         this.maxPerDay = maxPerDay;
+        this.maxTokensPerDay = maxTokensPerDay;
         this.dayResetAt = clock.instant().plusSeconds(DAY_SECONDS);
     }
 
@@ -101,17 +121,38 @@ public class AssistantRateLimiter implements SweepableRateLimiter {
     private void checkDailyBudget() {
         Instant now = clock.instant();
         synchronized (dayLock) {
-            if (dayResetAt.isBefore(now)) {
-                dayCount = 0;
-                dayResetAt = now.plusSeconds(DAY_SECONDS);
-            }
+            rollDayIfOver(now);
             if (dayCount >= maxPerDay) {
                 log.warn("Ask AI daily budget of {} calls is spent; refusing until {}", maxPerDay, dayResetAt);
-                throw new RateLimitException(
-                        "The helper is resting just now and can't answer any more questions today. "
-                        + "Please try again tomorrow, or use the Feedback button and the Towinly team will help.");
+                throw new RateLimitException(RESTING);
+            }
+            if (dayTokens >= maxTokensPerDay) {
+                log.warn("Ask AI daily budget of {} tokens is spent; refusing until {}", maxTokensPerDay, dayResetAt);
+                throw new RateLimitException(RESTING);
             }
             dayCount++;
+        }
+    }
+
+    /**
+     * Adds a finished answer's tokens to today's spend. Called after the reply is
+     * back, because that is when the count is known; the ceiling can therefore
+     * overshoot by one answer, never more.
+     */
+    public void charge(int tokens) {
+        if (tokens <= 0) return;
+        synchronized (dayLock) {
+            rollDayIfOver(clock.instant());
+            dayTokens += tokens;
+        }
+    }
+
+    /** Both daily counters share one window. Call with {@code dayLock} held. */
+    private void rollDayIfOver(Instant now) {
+        if (dayResetAt.isBefore(now)) {
+            dayCount = 0;
+            dayTokens = 0;
+            dayResetAt = now.plusSeconds(DAY_SECONDS);
         }
     }
 
@@ -165,6 +206,13 @@ public class AssistantRateLimiter implements SweepableRateLimiter {
     int spentToday() {
         synchronized (dayLock) {
             return dayCount;
+        }
+    }
+
+    /** Tokens charged against today's budget. Visible for tests. */
+    long spentTokensToday() {
+        synchronized (dayLock) {
+            return dayTokens;
         }
     }
 }
