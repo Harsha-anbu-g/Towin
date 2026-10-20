@@ -1,6 +1,7 @@
 package com.towinly.assistant.service;
 
 import com.towinly.assistant.dto.ChatRequest;
+import com.towinly.assistant.guide.GuideRetriever;
 import com.towinly.common.service.TrustScoreService;
 import com.towinly.connection.repository.ConnectionRepository;
 import com.towinly.need.repository.NeedRepository;
@@ -45,7 +46,8 @@ class AssistantServiceSpendTest {
                 mock(NeedRepository.class),
                 mock(TrustScoreService.class),
                 spend,
-                mock(AssistantTools.class));
+                mock(AssistantTools.class),
+                mock(GuideRetriever.class));
     }
 
     private static ChatRequest ask(String message) {

@@ -2,6 +2,7 @@ package com.towinly.assistant.service;
 
 import com.towinly.assistant.dto.ChatMessage;
 import com.towinly.assistant.dto.ChatRequest;
+import com.towinly.assistant.guide.GuideRetriever;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.NeedStatus;
 import com.towinly.common.service.TrustScoreService;
@@ -98,6 +99,7 @@ public class AssistantService {
     private final TrustScoreService trustScoreService;
     private final AssistantSpend spend;
     private final AssistantTools tools;
+    private final GuideRetriever retriever;
 
     /** System prompt = tortoise persona/rules + the product knowledge base. Loaded once. */
     private final String basePrompt;
@@ -109,7 +111,8 @@ public class AssistantService {
                             NeedRepository needRepository,
                             TrustScoreService trustScoreService,
                             AssistantSpend spend,
-                            AssistantTools tools) {
+                            AssistantTools tools,
+                            GuideRetriever retriever) {
         this.groqClient = groqClient;
         this.profileService = profileService;
         this.streakService = streakService;
@@ -118,6 +121,7 @@ public class AssistantService {
         this.trustScoreService = trustScoreService;
         this.spend = spend;
         this.tools = tools;
+        this.retriever = retriever;
         this.basePrompt = loadResource("assistant/system-prompt.txt")
                 + "\n\n=== TOWINLY KNOWLEDGE BASE ===\n"
                 + loadResource("assistant/knowledge.md");
@@ -162,6 +166,16 @@ public class AssistantService {
         }
         if (PromptSanitizer.hasHiddenCharacters(request.getMessage())) {
             log.warn("Ask AI: stripped hidden characters from a question (userId={})", userId);
+        }
+
+        // Appended last so it sits nearest the question, and the stable prefix above
+        // it stays cacheable at Groq. The retriever sees the cleaned question only.
+        Optional<String> passages = retriever.passagesFor(question);
+        if (passages.isPresent()) {
+            systemPrompt += "\n\n=== FROM THE USER GUIDE ===\n"
+                    + "These passages come from the Towinly user guide. Prefer these passages for how-to "
+                    + "steps and button names. If they do not cover the question, use the knowledge base above.\n\n"
+                    + passages.get();
         }
 
         List<ChatMessage> conversation = buildConversation(request, question);
