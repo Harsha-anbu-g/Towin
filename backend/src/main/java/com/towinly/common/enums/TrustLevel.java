@@ -10,6 +10,19 @@ public enum TrustLevel {
 
     public int getValue() { return value; }
 
+    /** The ladder words people see in the app for this step. */
+    public String label() {
+        return switch (this) {
+            case MESSAGING -> "Messaging";
+            case PHONE_CALL -> "Phone Ready";
+            case VIDEO_CALL -> "Video Ready";
+            case VERIFIED -> "Social Media";
+            case FIRST_MEET -> "Ready to Meet";
+            case TRUSTED -> "Fully Trusted";
+            case DISCOVERED -> "Just Connected";
+        };
+    }
+
     public static TrustLevel fromValue(int value) {
         for (TrustLevel level : values()) {
             if (level.value == value) return level;
