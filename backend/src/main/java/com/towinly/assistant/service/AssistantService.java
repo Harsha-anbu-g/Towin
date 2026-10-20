@@ -282,10 +282,9 @@ public class AssistantService {
                     if (notBlank(p.getTrustTier())) sb.append(" (tier: ").append(safeFact(p.getTrustTier())).append(')');
                     sb.append('\n');
                 }
-                if (notBlank(p.getVerificationStatus())) {
-                    sb.append("- Identity verification: ").append(safeFact(p.getVerificationStatus())).append('\n');
-                }
-                if (notBlank(p.getCity())) sb.append("- City: ").append(safeFact(p.getCity())).append('\n');
+                // City and identity-verification status stay out on purpose (2026-10-19 privacy
+                // review): the privacy policy promises location is used only to show people
+                // nearby, and the profile-gap tips below already say "verify yourself".
             }
 
             StreakResponse s = streakService.getStreak(userId);

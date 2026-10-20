@@ -186,9 +186,12 @@ export function privacySections(email) {
     { h: 'Where it is kept',
       p: 'Your information is kept on servers in the United States. Photos and identity '
         + 'documents are kept in Amazon S3, also in the United States. The Ask AI helper '
-        + 'sends your question and a short summary of your own activity to Groq to write '
-        + 'its answer, and your question alone to OpenAI to find the matching page of the '
-        + 'guide. Neither gets your contact details.' },
+        + 'sends your question, the recent messages of that chat, and a short summary of '
+        + 'your own activity (your first name, role, trust score, streak, and how many '
+        + 'connections and requests you have) to Groq to write its answer. If you ask about '
+        + 'your connections, family or requests, it also sends their first names, how you '
+        + 'are linked, and the request titles. Your question alone goes to OpenAI to find '
+        + 'the matching page of the guide. Neither gets your email address or phone number.' },
 
     { h: 'Location',
       p: 'If you share your location, we use it only to show you people who are nearby. You can '
