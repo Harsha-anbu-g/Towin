@@ -185,7 +185,10 @@ export function privacySections(email) {
 
     { h: 'Where it is kept',
       p: 'Your information is kept on servers in the United States. Photos and identity '
-        + 'documents are kept in Amazon S3, also in the United States.' },
+        + 'documents are kept in Amazon S3, also in the United States. The Ask AI helper '
+        + 'sends your question and a short summary of your own activity to Groq to write '
+        + 'its answer, and your question alone to OpenAI to find the matching page of the '
+        + 'guide. Neither gets your contact details.' },
 
     { h: 'Location',
       p: 'If you share your location, we use it only to show you people who are nearby. You can '
