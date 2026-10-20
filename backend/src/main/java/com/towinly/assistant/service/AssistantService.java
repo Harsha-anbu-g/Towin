@@ -160,8 +160,8 @@ public class AssistantService {
 
         List<ChatMessage> conversation = buildConversation(request, question);
 
-        Optional<String> reply = groqClient.complete(systemPrompt, conversation);
-        return reply.orElse(CANNED.get("fallback").get(lang));
+        Optional<GroqReply> reply = groqClient.complete(systemPrompt, conversation);
+        return reply.map(GroqReply::text).orElse(CANNED.get("fallback").get(lang));
     }
 
     /**

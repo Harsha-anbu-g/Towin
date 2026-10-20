@@ -52,7 +52,7 @@ class AssistantLanguageTest {
     }
 
     private String systemPromptFor(String language) {
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of("ok"));
+        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("ok", 0, 0, 0)));
         service.answer(ask("How does the Trust Journey work?"), null, language);
         ArgumentCaptor<String> prompt = ArgumentCaptor.forClass(String.class);
         verify(groq).complete(prompt.capture(), any());

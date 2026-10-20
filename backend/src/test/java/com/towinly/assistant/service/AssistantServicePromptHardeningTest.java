@@ -38,7 +38,7 @@ class AssistantServicePromptHardeningTest {
     void setUp() {
         groq = mock(GroqClient.class);
         when(groq.isConfigured()).thenReturn(true);
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of("A kind tortoise answer."));
+        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("A kind tortoise answer.", 0, 0, 0)));
 
         service = new AssistantService(
                 groq,

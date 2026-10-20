@@ -63,10 +63,11 @@ public class GroqClient {
 
     /**
      * Sends the system prompt + conversation to Groq and returns the assistant's
-     * text. Returns empty on any misconfiguration, timeout, or API error so the
-     * caller can fall back to a friendly message.
+     * text with the token usage Groq reports for the call. Returns empty on any
+     * misconfiguration, timeout, or API error so the caller can fall back to a
+     * friendly message.
      */
-    public Optional<String> complete(String systemPrompt, List<ChatMessage> conversation) {
+    public Optional<GroqReply> complete(String systemPrompt, List<ChatMessage> conversation) {
         if (!isConfigured()) {
             log.warn("Ask AI called but Groq is not configured (missing key or disabled).");
             return Optional.empty();
@@ -103,8 +104,7 @@ public class GroqClient {
                 response = post(body);
             }
 
-            String text = extractContent(response);
-            return (text == null || text.isBlank()) ? Optional.empty() : Optional.of(text.trim());
+            return parse(response);
         } catch (Exception e) {
             log.warn("Ask AI (Groq) call failed: {}", e.getMessage());
             return Optional.empty();
@@ -142,8 +142,35 @@ public class GroqClient {
         }
     }
 
+    /**
+     * Reads the answer and its token usage out of a chat-completions response.
+     * Empty when there is no text to show. Package-private so a test can feed it
+     * a response map without an HTTP call.
+     */
+    static Optional<GroqReply> parse(Map<String, Object> response) {
+        String text = extractContent(response);
+        if (text == null || text.isBlank()) return Optional.empty();
+
+        int prompt = 0;
+        int completion = 0;
+        int cached = 0;
+        if (response.get("usage") instanceof Map<?, ?> usage) {
+            prompt = intOf(usage.get("prompt_tokens"));
+            completion = intOf(usage.get("completion_tokens"));
+            if (usage.get("prompt_tokens_details") instanceof Map<?, ?> details) {
+                cached = intOf(details.get("cached_tokens"));
+            }
+        }
+        return Optional.of(new GroqReply(text.trim(), prompt, completion, cached));
+    }
+
+    /** Groq sends integers; anything else (missing, a string) counts as nothing. */
+    private static int intOf(Object value) {
+        return value instanceof Number n ? n.intValue() : 0;
+    }
+
     @SuppressWarnings("unchecked")
-    private String extractContent(Map<String, Object> response) {
+    private static String extractContent(Map<String, Object> response) {
         if (response == null) return null;
         Object choices = response.get("choices");
         if (choices instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof Map<?, ?> first) {
