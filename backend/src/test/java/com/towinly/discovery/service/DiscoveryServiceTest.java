@@ -37,6 +37,7 @@ class DiscoveryServiceTest {
     @Mock S3Service s3Service;
     @Mock com.towinly.block.service.BlockService blockService;
     @Mock MutualFriendsService mutualFriendsService;
+    @Mock com.towinly.embedding.EmbeddingIndex embeddingIndex;
 
     @InjectMocks DiscoveryService discoveryService;
 
@@ -453,6 +454,34 @@ class DiscoveryServiceTest {
         when(elderProfileRepository.findAllActiveWithLocation(requesterId)).thenReturn(List.of(profiles));
         when(elderProfileRepository.findAllActiveWithLocationInBox(
                 eq(requesterId), any(), any(), any(), any())).thenReturn(List.of(profiles));
+    }
+
+    // ── semantic matching (AI step 6) ────────────────────────────────────────
+
+    @Test
+    void discoverHelpers_liftsAHelperWhoMatchesTheOpenRequest_aboveACloserStranger() {
+        HelperProfile near = helperAt("Near", HOME_LAT + 0.01, HOME_LNG);
+        HelperProfile far = helperAt("Far", HOME_LAT + 0.04, HOME_LNG);
+        helpers(near, far);
+        when(embeddingIndex.queryVectorForElder(requesterId)).thenReturn(java.util.Optional.of(new float[] {1f}));
+        when(embeddingIndex.similarity(eq(com.towinly.embedding.EmbeddingStore.Kind.PROFILES), any(), any()))
+                .thenReturn(java.util.Map.of(far.getUser().getId(), 0.9, near.getUser().getId(), 0.1));
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, new DiscoveryFilter());
+
+        // 4.4 km with 0.9 keys at -0.1; 1.1 km with 0.1 keys at 0.6. The match wins.
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Far", "Near");
+    }
+
+    @Test
+    void discoverHelpers_keepsTheDistanceOrder_whenThereIsNothingToMatchAgainst() {
+        HelperProfile near = helperAt("Near", HOME_LAT + 0.01, HOME_LNG);
+        HelperProfile far = helperAt("Far", HOME_LAT + 0.04, HOME_LNG);
+        helpers(near, far);
+
+        List<DiscoveredUserResponse> result = discoveryService.discoverHelpers(requesterId, new DiscoveryFilter());
+
+        assertThat(result).extracting(DiscoveredUserResponse::getName).containsExactly("Near", "Far");
     }
 
     private void helpers(HelperProfile... profiles) {

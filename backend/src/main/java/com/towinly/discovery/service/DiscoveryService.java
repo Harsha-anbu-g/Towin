@@ -22,7 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.towinly.embedding.EmbeddingIndex;
+import com.towinly.embedding.EmbeddingStore;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +47,7 @@ public class DiscoveryService {
     private final S3Service s3Service;
     private final BlockService blockService;
     private final MutualFriendsService mutualFriendsService;
+    private final EmbeddingIndex embeddingIndex;
 
     // SEC-07 completion: the size is part of the key — two differently-sized
     // requests are two different responses and must never share one cache entry.
@@ -68,6 +73,14 @@ public class DiscoveryService {
             // The demo fallback ignores the radius, so it ranks the whole directory.
             visible = rankElders(elderProfileRepository.findAllActiveWithLocation(requestingUserId),
                     hidden, filter, lat, lng);
+        }
+        // AI step 6: an elder whose profile fits this helper is worth up to MATCH_WORTH_KM
+        // of closeness. The shown distance is untouched; only the order moves.
+        Optional<float[]> me = embeddingIndex.profileVector(requestingUserId);
+        if (me.isPresent()) {
+            Map<UUID, Double> match = embeddingIndex.similarity(EmbeddingStore.Kind.PROFILES, me.get(),
+                    visible.stream().map(e -> e.getKey().getUser().getId()).toList());
+            visible = EmbeddingIndex.byMatch(visible, match, e -> e.getKey().getUser().getId(), Map.Entry::getValue);
         }
         List<Map.Entry<ElderProfile, Double>> page = visible.stream()
                 .skip((long) filter.getPage() * filter.getSize())
@@ -124,6 +137,14 @@ public class DiscoveryService {
         if (withinRadius.isEmpty() && isDemoAccount(requester)) {
             visible = rankHelpers(helperProfileRepository.findAllActiveWithLocation(requestingUserId),
                     hidden, filter, lat, lng, hasLocation);
+        }
+        // AI step 6: the elder's newest open request (or their profile) is the query; a
+        // helper who fits it is worth up to MATCH_WORTH_KM of closeness.
+        Optional<float[]> query = embeddingIndex.queryVectorForElder(requestingUserId);
+        if (query.isPresent()) {
+            Map<UUID, Double> match = embeddingIndex.similarity(EmbeddingStore.Kind.PROFILES, query.get(),
+                    visible.stream().map(e -> e.getKey().getUser().getId()).toList());
+            visible = EmbeddingIndex.byMatch(visible, match, e -> e.getKey().getUser().getId(), Map.Entry::getValue);
         }
         List<Map.Entry<HelperProfile, Double>> page = visible.stream()
                 .skip((long) filter.getPage() * filter.getSize())

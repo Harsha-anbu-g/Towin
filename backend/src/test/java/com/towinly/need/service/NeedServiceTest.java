@@ -44,6 +44,7 @@ class NeedServiceTest {
     @Mock com.towinly.family.service.FamilyDelegationService familyDelegationService;
     @Mock ExpoPushService expoPushService;
     @Mock com.towinly.block.service.BlockService blockService;
+    @Mock com.towinly.embedding.EmbeddingIndex embeddingIndex;
     NeedService needService;
 
     private User elder;
@@ -57,7 +58,7 @@ class NeedServiceTest {
                 needRepository, applicationRepository, userRepository,
                 elderProfileRepository, helperProfileRepository, s3Service,
                 trustScoreService, connectionRepository, Optional.empty(),
-                familyDelegationService, expoPushService, blockService);
+                familyDelegationService, expoPushService, blockService, embeddingIndex);
         elder = buildUser(UUID.randomUUID(), UserRole.ELDER);
         elder.setLocationLat(BigDecimal.valueOf(43.65));
         elder.setLocationLng(BigDecimal.valueOf(-79.38));
@@ -357,6 +358,37 @@ class NeedServiceTest {
                 .id(id).email(id + "@test.com").phone("+1234567890")
                 .passwordHash("hash").role(role).trustScore(0.0)
                 .verificationStatus(VerificationStatus.NONE).isActive(true).build();
+    }
+
+    // ── semantic matching (AI step 6) ────────────────────────────────────────
+
+    @Test
+    void browseNearby_liftsARequestThatFitsTheHelper_aboveACloserOne() {
+        when(userRepository.findById(helper.getId())).thenReturn(Optional.of(helper));
+        Need near = buildNeed(elder, NeedStatus.OPEN);
+        Need far = buildNeed(elder, NeedStatus.OPEN);
+        far.setLocationLat(BigDecimal.valueOf(43.70)); // about 5.6 km from the helper; near is about 1.4 km
+        when(needRepository.findOpenNeedsWithLocation(NeedStatus.OPEN)).thenReturn(List.of(near, far));
+        when(embeddingIndex.profileVector(helper.getId())).thenReturn(Optional.of(new float[] {1f}));
+        when(embeddingIndex.similarity(eq(com.towinly.embedding.EmbeddingStore.Kind.NEEDS), any(), any()))
+                .thenReturn(Map.of(far.getId(), 0.9));
+
+        List<NeedResponse> result = needService.browseNearby(helper.getId(), null, null, 50.0, 0, 20);
+
+        assertThat(result).extracting(NeedResponse::getId).containsExactly(far.getId(), near.getId());
+    }
+
+    @Test
+    void postingARequest_refreshesItsEmbedding_fromTheRequestText() {
+        when(userRepository.findById(elder.getId())).thenReturn(Optional.of(elder));
+        when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
+        NeedRequest request = new NeedRequest();
+        request.setTitle("Need a ride to the doctor");
+        request.setCategory(NeedCategory.TRANSPORTATION);
+
+        needService.postNeed(elder.getId(), request);
+
+        verify(embeddingIndex).refreshNeed(any(), org.mockito.ArgumentMatchers.contains("Help request: Need a ride to the doctor."));
     }
 
     private Need buildNeed(User elder, NeedStatus status) {

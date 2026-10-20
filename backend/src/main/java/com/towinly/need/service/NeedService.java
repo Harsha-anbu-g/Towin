@@ -47,6 +47,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.towinly.embedding.EmbeddingIndex;
+import com.towinly.embedding.EmbeddingStore;
+import com.towinly.embedding.EmbeddingText;
+
 @Service
 @RequiredArgsConstructor
 public class NeedService {
@@ -67,6 +71,7 @@ public class NeedService {
     private final FamilyDelegationService familyDelegationService;
     private final ExpoPushService expoPushService;
     private final BlockService blockService;
+    private final EmbeddingIndex embeddingIndex;
 
     @Transactional
     public NeedResponse postNeed(UUID callerId, NeedRequest request) {
@@ -115,7 +120,9 @@ public class NeedService {
                 .locationLng(lng)
                 .build();
 
-        return toResponse(needRepository.save(need), null);
+        Need saved = needRepository.save(need);
+        embeddingIndex.refreshNeed(saved.getId(), EmbeddingText.forNeed(saved));
+        return toResponse(saved, null);
     }
 
     public List<NeedResponse> getAllOpen(UUID helperId) {
@@ -185,6 +192,15 @@ public class NeedService {
         // Sample/demo accounts must never show an empty list — if nothing is within the
         // radius, fall back to the nearest open needs so the demo always has something.
         List<Object[]> visible = (withinRadius.isEmpty() && isDemoAccount(helper)) ? ranked : withinRadius;
+
+        // AI step 6: a request that fits this helper is worth up to MATCH_WORTH_KM of
+        // closeness. The shown distance is untouched; only the order moves.
+        Optional<float[]> me = embeddingIndex.profileVector(helperId);
+        if (me.isPresent()) {
+            Map<UUID, Double> match = embeddingIndex.similarity(EmbeddingStore.Kind.NEEDS, me.get(),
+                    visible.stream().map(pair -> ((Need) pair[0]).getId()).toList());
+            visible = EmbeddingIndex.byMatch(visible, match, pair -> ((Need) pair[0]).getId(), pair -> (double) pair[1]);
+        }
 
         List<Object[]> pageSlice = visible.stream()
                 .skip((long) page * size)
@@ -397,7 +413,9 @@ public class NeedService {
                         "needId", need.getId().toString(),
                         "connectionId", savedConn.getId().toString()));
 
-        return toResponse(needRepository.save(need), null);
+        Need saved = needRepository.save(need);
+        embeddingIndex.refreshNeed(saved.getId(), EmbeddingText.forNeed(saved));
+        return toResponse(saved, null);
     }
 
     public NeedResponse getOne(UUID callerId, UUID needId) {

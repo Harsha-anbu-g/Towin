@@ -40,6 +40,7 @@ class ProfileServiceTest {
     @Mock com.towinly.connection.repository.ConnectionRepository connectionRepository;
     @Mock BlockService blockService;
     @Mock com.towinly.profile.security.PhoneChangeRateLimiter phoneChangeRateLimiter;
+    @Mock com.towinly.embedding.EmbeddingIndex embeddingIndex;
     @InjectMocks ProfileService profileService;
 
     @Test
@@ -659,5 +660,34 @@ class ProfileServiceTest {
         // Skipping FAMILY rows must not cost a pair the friendship they actually built.
         assertThat(response.getFacebookUrl()).isEqualTo(FACEBOOK);
         assertThat(response.getInstagramUrl()).isEqualTo(INSTAGRAM);
+    }
+    // ── semantic matching (AI step 6): a saved profile refreshes its embedding ──
+
+    @Test
+    void savingAnElderProfile_refreshesItsEmbedding_fromTheProfileText() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .email("walks@test.com")
+                .phone("+1234567899")
+                .passwordHash("hash")
+                .role(UserRole.ELDER)
+                .trustScore(0.0)
+                .verificationStatus(VerificationStatus.NONE)
+                .isActive(true)
+                .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(elderProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(elderProfileRepository.save(any(ElderProfile.class))).thenAnswer(i -> i.getArgument(0));
+
+        ElderProfileRequest request = new ElderProfileRequest();
+        request.setName("Mary Walker");
+        request.setAge(72);
+        request.setBio("I like walks.");
+
+        profileService.createOrUpdateElderProfile(userId, request);
+
+        verify(embeddingIndex).refreshProfile(org.mockito.ArgumentMatchers.eq(userId),
+                org.mockito.ArgumentMatchers.contains("About: I like walks."));
     }
 }

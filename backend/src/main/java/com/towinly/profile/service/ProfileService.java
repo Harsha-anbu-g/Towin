@@ -18,6 +18,9 @@ import com.towinly.block.service.BlockService;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.towinly.embedding.EmbeddingIndex;
+import com.towinly.embedding.EmbeddingText;
+
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
@@ -36,6 +39,7 @@ public class ProfileService {
     private final BlockService blockService;
     // A refused change reveals the number is a member's, so changes are capped per user.
     private final com.towinly.profile.security.PhoneChangeRateLimiter phoneChangeRateLimiter;
+    private final EmbeddingIndex embeddingIndex;
 
     @Transactional
     public ProfileResponse createOrUpdateElderProfile(UUID userId, ElderProfileRequest request) {
@@ -64,6 +68,7 @@ public class ProfileService {
         }
 
         elderProfileRepository.save(profile);
+        embeddingIndex.refreshProfile(userId, EmbeddingText.forElder(profile));
         trustScoreService.recalculate(userId);
         return buildProfileResponse(user, profile, null);
     }
@@ -92,6 +97,7 @@ public class ProfileService {
         profile.setDateOfBirth(request.getDateOfBirth());
 
         helperProfileRepository.save(profile);
+        embeddingIndex.refreshProfile(userId, EmbeddingText.forHelper(profile));
         trustScoreService.recalculate(userId);
         return buildProfileResponse(user, null, profile);
     }
