@@ -236,11 +236,17 @@ public class AssistantService {
      * One tool round: run every tool the model asked for, hand the results back, and
      * make it answer in words. Returns the final reply with both calls' tokens, or
      * null when the second call failed.
+     *
+     * <p>The second call carries no tools at all, which is Groq's own documented
+     * pattern. Offering the tools again with {@code tool_choice: "none"} is not the
+     * same thing: Groq warns that some models still try a tool, and the request then
+     * fails with a 400. With nothing to call, the model can only answer in words,
+     * which is the one-round rule stated plainly to the API.
      */
     private ToolRound answerWithTools(String systemPrompt, List<ChatMessage> conversation,
                                       GroqReply first, UUID userId) {
         List<Map<String, Object>> messages = GroqClient.toMessages(conversation);
-        messages.add(GroqClient.toolCallTurn(first.toolCalls()));
+        messages.add(GroqClient.toolCallTurn(first));
         Action action = null;
         for (GroqReply.ToolCall call : first.toolCalls()) {
             messages.add(GroqClient.toolResultTurn(call, tools.run(call.name(), userId)));
@@ -248,7 +254,7 @@ public class AssistantService {
             // One action per answer: the first usable proposal wins.
             if (action == null) action = AssistantActions.toAction(call).orElse(null);
         }
-        GroqReply second = groqClient.complete(systemPrompt, messages, AssistantTools.DEFINITIONS, "none", false)
+        GroqReply second = groqClient.complete(systemPrompt, messages, null, null, false)
                 .map(s -> s.addingTokensOf(first))
                 .orElse(null);
         return second == null ? null : new ToolRound(second, action);

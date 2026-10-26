@@ -86,16 +86,21 @@ class AssistantServiceToolsTest {
         when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
                 .thenReturn(Optional.of(new GroqReply("", 4000, 20, 3800, List.of(CALL))));
         when(tools.run("get_my_connections", ME)).thenReturn("- Rita (Helper): active, at Phone Ready.");
-        when(groq.complete(anyString(), anyList(), any(), eq("none"), eq(false)))
+        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
                 .thenReturn(Optional.of(new GroqReply("Rita is at Phone Ready.", 4300, 90, 4000)));
 
         String reply = service.answer(ask("Where is Rita?"), ME, "en");
 
         assertThat(reply).isEqualTo("Rita is at Phone Ready.");
         ArgumentCaptor<List<Map<String, Object>>> second = ArgumentCaptor.forClass(List.class);
-        verify(groq).complete(anyString(), second.capture(), eq(AssistantTools.DEFINITIONS), eq("none"), eq(false));
+        // Groq's documented follow-up: no tools offered again, the model can only answer in words.
+        verify(groq).complete(anyString(), second.capture(),
+                org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), eq(false));
         List<Map<String, Object>> turns = second.getValue();
-        assertThat(turns.get(turns.size() - 2)).containsEntry("role", "assistant").containsKey("tool_calls");
+        // The echoed assistant turn must carry a string content: Groq rejects a missing one with a 400.
+        assertThat(turns.get(turns.size() - 2)).containsEntry("role", "assistant")
+                .containsEntry("content", "")
+                .containsKey("tool_calls");
         assertThat(turns.get(turns.size() - 1)).containsEntry("role", "tool")
                 .containsEntry("tool_call_id", "call_1")
                 .containsEntry("content", "- Rita (Helper): active, at Phone Ready.");
@@ -111,7 +116,7 @@ class AssistantServiceToolsTest {
         when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
                 .thenReturn(Optional.of(new GroqReply("", 4000, 20, 0, List.of(CALL))));
         when(tools.run(anyString(), any())).thenReturn("No connections yet.");
-        when(groq.complete(anyString(), anyList(), any(), eq("none"), eq(false))).thenReturn(Optional.empty());
+        when(groq.complete(anyString(), anyList(), any(), any(), eq(false))).thenReturn(Optional.empty());
 
         assertThat(service.answer(ask("Who is waiting?"), ME, "en")).startsWith("Sorry");
 
@@ -126,7 +131,7 @@ class AssistantServiceToolsTest {
         when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
                 .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(CALL, fam))));
         when(tools.run(anyString(), any())).thenReturn("nothing");
-        when(groq.complete(anyString(), anyList(), any(), eq("none"), eq(false)))
+        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
                 .thenReturn(Optional.of(new GroqReply("Done.", 1, 1, 0)));
 
         service.answer(ask("Everything?"), ME, "en");
@@ -141,7 +146,7 @@ class AssistantServiceToolsTest {
         when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
                 .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(propose))));
         when(tools.run("propose_check_in", ME)).thenReturn("Proposed.");
-        when(groq.complete(anyString(), anyList(), any(), eq("none"), eq(false)))
+        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
                 .thenReturn(Optional.of(new GroqReply("Tap Yes to check in.", 1, 1, 0)));
 
         AssistantService.Answer answer = service.answerWithAction(ask("Check me in"), ME, "en");
@@ -155,7 +160,7 @@ class AssistantServiceToolsTest {
         when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
                 .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(CALL))));
         when(tools.run(anyString(), any())).thenReturn("nothing");
-        when(groq.complete(anyString(), anyList(), any(), eq("none"), eq(false)))
+        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
                 .thenReturn(Optional.of(new GroqReply("Nobody is waiting.", 1, 1, 0)));
 
         assertThat(service.answerWithAction(ask("Who is waiting?"), ME, "en").action()).isNull();

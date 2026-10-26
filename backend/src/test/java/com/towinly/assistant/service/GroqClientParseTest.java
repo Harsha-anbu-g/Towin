@@ -88,6 +88,7 @@ class GroqClientParseTest {
         Map<String, Object> message = new java.util.HashMap<>();
         message.put("role", "assistant");
         message.put("content", null);
+        message.put("reasoning", "They ask about their helpers, so look up the connections.");
         message.put("tool_calls", List.of(Map.of(
                 "id", "call_1", "type", "function",
                 "function", Map.of("name", "get_my_connections", "arguments", "{}"))));
@@ -100,7 +101,13 @@ class GroqClientParseTest {
         assertThat(reply.text()).isEmpty();
         assertThat(reply.hasToolCalls()).isTrue();
         assertThat(reply.toolCalls()).containsExactly(new GroqReply.ToolCall("call_1", "get_my_connections", "{}"));
+        assertThat(reply.reasoning()).isEqualTo("They ask about their helpers, so look up the connections.");
         assertThat(reply.promptTokens()).isEqualTo(100);
+    }
+
+    @Test
+    void aPlainAnswer_hasNoReasoning_whenGroqSentNone() {
+        assertThat(GroqClient.parse(choices("Hello.")).orElseThrow().reasoning()).isNull();
     }
 
     @Test
@@ -135,10 +142,24 @@ class GroqClientParseTest {
                 Map.of("role", "assistant", "content", "Hello"));
 
         GroqReply.ToolCall call = new GroqReply.ToolCall("call_1", "get_my_family", "{}");
-        assertThat(GroqClient.toolCallTurn(List.of(call))).isEqualTo(Map.of(
+        List<Map<String, Object>> echoed = List.of(Map.of("id", "call_1", "type", "function",
+                "function", Map.of("name", "get_my_family", "arguments", "{}")));
+
+        // Groq validates the echoed assistant turn: content is always a string, even when
+        // the model only called a tool, and a gpt-oss turn carries its reasoning back.
+        GroqReply withReasoning = new GroqReply("", 1, 1, 0, List.of(call), "Look up the family first.");
+        assertThat(GroqClient.toolCallTurn(withReasoning)).isEqualTo(Map.of(
                 "role", "assistant",
-                "tool_calls", List.of(Map.of("id", "call_1", "type", "function",
-                        "function", Map.of("name", "get_my_family", "arguments", "{}")))));
+                "content", "",
+                "reasoning", "Look up the family first.",
+                "tool_calls", echoed));
+
+        GroqReply withoutReasoning = new GroqReply("One moment.", 1, 1, 0, List.of(call));
+        assertThat(GroqClient.toolCallTurn(withoutReasoning)).isEqualTo(Map.of(
+                "role", "assistant",
+                "content", "One moment.",
+                "tool_calls", echoed));
+
         assertThat(GroqClient.toolResultTurn(call, "No family linked.")).isEqualTo(Map.of(
                 "role", "tool", "tool_call_id", "call_1", "name", "get_my_family", "content", "No family linked."));
     }

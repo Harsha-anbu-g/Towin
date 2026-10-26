@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClientResponseException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -121,6 +122,11 @@ public class GroqClient {
             }
 
             return parse(response);
+        } catch (RestClientResponseException e) {
+            // Groq's body names the field it rejected; without it a 400 is a guess.
+            log.warn("Ask AI (Groq) call failed: {} {}", e.getStatusCode().value(),
+                    abbreviate(e.getResponseBodyAsString()));
+            return Optional.empty();
         } catch (Exception e) {
             log.warn("Ask AI (Groq) call failed: {}", e.getMessage());
             return Optional.empty();
@@ -136,14 +142,26 @@ public class GroqClient {
         return messages;
     }
 
-    /** The assistant turn that carried the tool calls, echoed back before their results. */
-    public static Map<String, Object> toolCallTurn(List<GroqReply.ToolCall> calls) {
+    /**
+     * The assistant turn that carried the tool calls, echoed back before their
+     * results. Groq's documented follow-up appends the model's message whole, and
+     * it validates an assistant turn strictly: {@code content} must be a string
+     * (empty is fine, missing is a 400), and a gpt-oss turn keeps its
+     * {@code reasoning}. Sending only the tool calls was the live failure of
+     * 2026-10-25: every tool question ended in the fallback sentence.
+     */
+    public static Map<String, Object> toolCallTurn(GroqReply first) {
         List<Map<String, Object>> echoed = new ArrayList<>();
-        for (GroqReply.ToolCall c : calls) {
+        for (GroqReply.ToolCall c : first.toolCalls()) {
             echoed.add(Map.of("id", c.id(), "type", "function",
                     "function", Map.of("name", c.name(), "arguments", c.arguments())));
         }
-        return Map.of("role", "assistant", "tool_calls", echoed);
+        Map<String, Object> turn = new LinkedHashMap<>();
+        turn.put("role", "assistant");
+        turn.put("content", first.text() == null ? "" : first.text());
+        if (first.reasoning() != null) turn.put("reasoning", first.reasoning());
+        turn.put("tool_calls", echoed);
+        return turn;
     }
 
     /** One tool's result, in the turn shape Groq expects. */
@@ -205,12 +223,20 @@ public class GroqClient {
                 cached = intOf(details.get("cached_tokens"));
             }
         }
-        return Optional.of(new GroqReply(text, prompt, completion, cached, calls));
+        Object reasoning = message.get("reasoning");
+        return Optional.of(new GroqReply(text, prompt, completion, cached, calls,
+                reasoning == null ? null : reasoning.toString()));
     }
 
     /** Groq sends integers; anything else (missing, a string) counts as nothing. */
     private static int intOf(Object value) {
         return value instanceof Number n ? n.intValue() : 0;
+    }
+
+    /** Enough of an error body to read the reason, never a whole page of it. */
+    private static String abbreviate(String body) {
+        if (body == null) return "";
+        return body.length() <= 600 ? body : body.substring(0, 600) + "...";
     }
 
     private static Map<?, ?> messageOf(Map<String, Object> response) {
