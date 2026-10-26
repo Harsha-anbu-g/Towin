@@ -75,6 +75,25 @@ public class SosService {
                 });
     }
 
+    /**
+     * Reunions (2026-10-26): the elder approved the plan for a reunion with old
+     * classmates or colleagues. Emergency contacts get the same kind of SMS a
+     * first meet sends; family get one in-app alert (type REUNION), never SMS.
+     * Called when the plan is approved, which is always before the day itself.
+     */
+    public void notifyReunionPlanned(UUID elderId, String plannedOn, String venue) {
+        List<EmergencyContact> contacts = contactService.getContactEntities(elderId);
+        if (!contacts.isEmpty()) {
+            contacts.forEach(contact -> sendSms(contact.getPhone(),
+                    "Your contact has a reunion with old friends planned on " + plannedOn
+                            + " at " + venue + ". A trusted person is organising it."));
+            log.info("REUNION notification sent to {} contacts for elder {}", contacts.size(), elderId);
+        }
+        recordFamilyAlert(elderId, () -> userRepository.getReferenceById(elderId),
+                FamilyAlertType.REUNION,
+                "Planned a reunion with old friends on " + plannedOn + " at " + venue + ".");
+    }
+
     private static final int INACTIVITY_DAYS = 5;
 
     public void sendSmsPublic(String toNumber, String body) {

@@ -29,5 +29,12 @@ public enum FamilyAlertType {
      * one closely — the seven-day freeze blocks the first week, and this covers the rest of
      * the month behind it.
      */
-    SEALED_BOX_OPENED
+    SEALED_BOX_OPENED,
+
+    /**
+     * The elder approved the plan for a reunion with old classmates or
+     * colleagues. Written when the plan is approved, which is always before
+     * the day; the body names the day and the place.
+     */
+    REUNION
 }

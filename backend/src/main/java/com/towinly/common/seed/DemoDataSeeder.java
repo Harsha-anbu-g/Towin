@@ -145,6 +145,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final EmergencyContactRepository emergencyContactRepository;
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
+    private final com.towinly.reunion.repository.ReunionRepository reunionRepository;
     private final FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     private final com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
     private final ReportRepository reportRepository;
@@ -761,6 +762,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         sealedItemRepository.deleteByOwnerId(id);
         passOnSettingsRepository.deleteByOwnerId(id);
         passOnItemRepository.deleteByOwnerId(id);
+        // Reunions (2026-10-26): the demo elder's wishes go too; guests cascade.
+        reunionRepository.deleteByElderId(id);
         familyAlertRepository.deleteByElderId(id);
         familyDelegatedPowerRepository.deleteByElderIdOrFamilyUserId(id, id);
         familyPowerRequestRepository.deleteByElderIdOrFamilyUserId(id, id);

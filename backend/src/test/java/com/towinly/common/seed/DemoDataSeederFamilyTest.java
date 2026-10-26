@@ -80,6 +80,7 @@ class DemoDataSeederFamilyTest {
     @Mock PlatformTransactionManager transactionManager;
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock FamilyAlertRepository familyAlertRepository;
+    @Mock com.towinly.reunion.repository.ReunionRepository reunionRepository;
     @Mock FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
     // What an elder passes on. Nothing here is asserted in this class — they exist so the
