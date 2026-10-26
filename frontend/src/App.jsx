@@ -27,6 +27,8 @@ import Trust from './pages/Trust';
 import Streaks from './pages/Streaks';
 import UserProfile from './pages/UserProfile';
 import PeekabooGame from './pages/PeekabooGame';
+import Reunion from './pages/Reunion';
+import ReunionDetail from './pages/ReunionDetail';
 import PhoneAppRedirect from './components/PhoneAppRedirect';
 import FeedbackWidget from './components/FeedbackWidget';
 import AskAiAssistant from './components/AskAiAssistant';
@@ -172,6 +174,8 @@ function App() {
             <Route path="/streaks" element={<ElderOnly><Streaks /></ElderOnly>} />
             <Route path="/game" element={<PrivateRoute><PeekabooGame /></PrivateRoute>} />
             <Route path="/trust" element={<PrivateRoute><Trust /></PrivateRoute>} />
+            <Route path="/reunion" element={<PrivateRoute><Reunion /></PrivateRoute>} />
+            <Route path="/reunion/:reunionId" element={<PrivateRoute><ReunionDetail /></PrivateRoute>} />
             <Route path="/user/:id" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="/privacy" element={<Privacy />} />

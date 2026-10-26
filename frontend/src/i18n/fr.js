@@ -2791,4 +2791,223 @@ export default {
     "✓ Mot de passe changé. Vous pourrez utiliser votre nouveau mot de passe à votre prochaine connexion.",
   "✓ Password set. Next time you can sign in with your username and password, or with Google.":
     "✓ Mot de passe défini. La prochaine fois, vous pourrez vous connecter avec votre nom d'utilisateur et votre mot de passe, ou avec Google.",
+  // Reunion (2026-10-26): an elder meets old classmates or colleagues again.
+  "1968 to 1971":
+    "1968 à 1971",
+  "A day, a place, a ride for everyone. You approve it.":
+    "Un jour, un lieu, un transport pour chacun. Vous l'approuvez.",
+  "A name, at least.":
+    "Un nom, au moins.",
+  "A new wish":
+    "Un nouveau souhait",
+  "A public place or a family home. Never your own.":
+    "Un lieu public ou la maison d'un proche. Jamais la vôtre.",
+  "A thank-you to each guest":
+    "Un merci à chaque invité",
+  "Add to the list":
+    "Ajouter à la liste",
+  "After":
+    "Après",
+  "An elder who fully trusts you, or your parent, can ask you to plan their reunion. You find the people and plan the day. They approve each step.":
+    "Un aîné qui vous fait pleinement confiance, ou votre parent, peut vous demander d'organiser ses retrouvailles. Vous retrouvez les gens et planifiez la journée. Il approuve chaque étape.",
+  "Anything that helps find them. A cousin who has a number, a street, a nickname.":
+    "Tout ce qui aide à les retrouver. Un cousin qui a un numéro, une rue, un surnom.",
+  "Approve the guest list":
+    "Approuver la liste des invités",
+  "Approve the plan":
+    "Approuver le plan",
+  "Arrived":
+    "Arrivé",
+  "Ask {name} to plan it. {why}":
+    "Demander à {name} de l'organiser. {why}",
+  "Ask {name} to plan it?":
+    "Demander à {name} de l'organiser?",
+  "Ask":
+    "Demander",
+  "At least one guest needs to be coming before the plan.":
+    "Il faut au moins un invité qui vient avant le plan.",
+  "Cannot come":
+    "Ne peut pas venir",
+  "Close the reunion":
+    "Clore les retrouvailles",
+  "Coming after all":
+    "Vient finalement",
+  "Coming":
+    "Vient",
+  "Could not choose them right now. Please try again.":
+    "Impossible de le choisir pour l'instant. Veuillez réessayer.",
+  "Could not do that right now. Please try again.":
+    "Impossible de faire cela pour l'instant. Veuillez réessayer.",
+  "Could not load this reunion.":
+    "Impossible de charger ces retrouvailles.",
+  "Could not load who can plan it.":
+    "Impossible de charger qui peut l'organiser.",
+  "Could not load your reunions.":
+    "Impossible de charger vos retrouvailles.",
+  "Could not save that right now. Please try again.":
+    "Impossible d'enregistrer pour l'instant. Veuillez réessayer.",
+  "Could not save the plan right now. Please try again.":
+    "Impossible d'enregistrer le plan pour l'instant. Veuillez réessayer.",
+  "Could not save the wish right now. Please try again.":
+    "Impossible d'enregistrer le souhait pour l'instant. Veuillez réessayer.",
+  "Every guest is seen home, then a thank-you to each.":
+    "Chaque invité est raccompagné, puis un merci à chacun.",
+  "Every guest who came needs to be home first.":
+    "Chaque invité venu doit d'abord être rentré.",
+  "Everyone is checked in as they arrive.":
+    "Chacun est noté à son arrivée.",
+  "Everyone was home safe. The story is yours to keep.":
+    "Tout le monde est rentré sain et sauf. L'histoire est à vous.",
+  "Finding":
+    "Recherche",
+  "Food":
+    "Repas",
+  "For example: B.Sc. batch, Presidency College":
+    "Par exemple : promotion de B.Sc., Presidency College",
+  "For {name}":
+    "Pour {name}",
+  "Found":
+    "Retrouvé",
+  "Goes to everyone who came, with Towinly’s name on it.":
+    "Envoyé à tous ceux qui sont venus, au nom de Towinly.",
+  "Guests":
+    "Invités",
+  "Helper you fully trust":
+    "Aidant en qui vous avez pleine confiance",
+  "Home safe":
+    "Bien rentré",
+  "Home":
+    "Rentré",
+  "Keep going":
+    "Continuer",
+  "Keep planning":
+    "Continuer à organiser",
+  "Keep the story in your box":
+    "Garder l'histoire dans votre boîte",
+  "Make the wish":
+    "Faire le souhait",
+  "Mobility, hearing, diet, who has their number. Never money.":
+    "Mobilité, ouïe, régime, qui a son numéro. Jamais d'argent.",
+  "Names you remember":
+    "Les noms dont vous vous souvenez",
+  "Never a guest.":
+    "Jamais un invité.",
+  "No guests yet":
+    "Pas encore d'invités",
+  "No guests yet.":
+    "Pas encore d'invités.",
+  "Nobody to choose yet. A helper you fully trust, or a family member, can plan it.":
+    "Personne à choisir pour l'instant. Un aidant en qui vous avez pleine confiance, ou un membre de la famille, peut l'organiser.",
+  "Note":
+    "Note",
+  "Phone, if known":
+    "Téléphone, si connu",
+  "Plan saved.":
+    "Plan enregistré.",
+  "Reached":
+    "Joint",
+  "Remembered":
+    "En mémoire",
+  "Reunion":
+    "Retrouvailles",
+  "Reunion: step 7 of 7, everyone home":
+    "Retrouvailles : étape 7 sur 7, tout le monde est rentré",
+  "Reunion: step {n} of 7":
+    "Retrouvailles : étape {n} sur 7",
+  "Save the plan":
+    "Enregistrer le plan",
+  "Say which batch, class or office it was.":
+    "Dites quelle promotion, quelle classe ou quel bureau c'était.",
+  "Say who you want to see again. A helper you fully trust, or your family, finds them and plans the day. You approve each step. Every guest is seen home.":
+    "Dites qui vous voulez revoir. Un aidant en qui vous avez pleine confiance, ou votre famille, les retrouve et planifie la journée. Vous approuvez chaque étape. Chaque invité est raccompagné.",
+  "Send-off":
+    "Au revoir",
+  "Start with the names remembered. One at a time.":
+    "Commencez par les noms en mémoire. Un à la fois.",
+  "Step down from planning":
+    "Me retirer de l'organisation",
+  "Step down from planning?":
+    "Vous retirer de l'organisation?",
+  "Step down":
+    "Me retirer",
+  "Step {n} of 7 · {name}":
+    "Étape {n} sur 7 · {name}",
+  "Stop it":
+    "Arrêter",
+  "Stop this reunion":
+    "Arrêter ces retrouvailles",
+  "Stop this reunion?":
+    "Arrêter ces retrouvailles?",
+  "Stopped":
+    "Arrêtées",
+  "Sunday 14 December, 11 in the morning":
+    "Dimanche 14 décembre, 11 h",
+  "Take off":
+    "Retirer",
+  "Take {name} off the list":
+    "Retirer {name} de la liste",
+  "Take {name} off the list?":
+    "Retirer {name} de la liste?",
+  "The day is over":
+    "La journée est finie",
+  "The day":
+    "Le jour",
+  "The plan needs a day and a place first.":
+    "Le plan a d'abord besoin d'un jour et d'un lieu.",
+  "The plan":
+    "Le plan",
+  "They will find the people and plan the day. You approve each step.":
+    "Cette personne retrouvera les gens et planifiera la journée. Vous approuvez chaque étape.",
+  "This reunion was stopped.":
+    "Ces retrouvailles ont été arrêtées.",
+  "When someone asks you to plan their reunion, it shows here.":
+    "Quand quelqu'un vous demande d'organiser ses retrouvailles, cela apparaît ici.",
+  "When":
+    "Quand",
+  "Where this reunion stands":
+    "Où en sont ces retrouvailles",
+  "Where":
+    "Où",
+  "Which city?":
+    "Quelle ville?",
+  "Which years?":
+    "Quelles années?",
+  "Who brings whom, and who takes them home.":
+    "Qui amène qui, et qui les ramène.",
+  "Who covers what":
+    "Qui paie quoi",
+  "Who do you want to see again?":
+    "Qui voulez-vous revoir?",
+  "Who plans":
+    "Qui organise",
+  "Wish":
+    "Souhait",
+  "Yes, ask {name}":
+    "Oui, demander à {name}",
+  "You choose who plans it: a helper you fully trust, or family.":
+    "Vous choisissez qui organise : un aidant en qui vous avez pleine confiance, ou la famille.",
+  "You say who you want to see again.":
+    "Vous dites qui vous voulez revoir.",
+  "You stepped down. The elder has been told.":
+    "Vous vous êtes retiré. L'aîné a été prévenu.",
+  "Your organiser finds the people, one by one.":
+    "Votre organisateur retrouve les gens, un par un.",
+  "Your organiser is still writing the plan.":
+    "Votre organisateur écrit encore le plan.",
+  "Your organiser will be told. The guest list stays, and you can wish again later.":
+    "Votre organisateur sera prévenu. La liste des invités reste, et vous pourrez refaire un souhait plus tard.",
+  "{count} came, and every one of them got home.":
+    "{count} sont venus, et chacun est rentré.",
+  "{count} remembered · {coming} coming":
+    "{count} en mémoire · {coming} viennent",
+  "{institution}. {stage}":
+    "{institution}. {stage}",
+  "{name} is planning it":
+    "{name} l'organise",
+  "{name} will be asked to choose someone else. The guest list stays.":
+    "On demandera à {name} de choisir quelqu'un d'autre. La liste des invités reste.",
+  "{name} will plan it. They have been told.":
+    "{name} l'organisera. La personne a été prévenue.",
+  "← All reunions":
+    "← Toutes les retrouvailles",
 };

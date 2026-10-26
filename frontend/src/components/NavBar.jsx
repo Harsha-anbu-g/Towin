@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, Users, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon, HeartHandshake, ScrollText } from 'lucide-react';
+import { Home, MessageCircle, User, Users, UsersRound, ShieldCheck, HelpCircle, Gamepad2, LogOut, Siren, Plus, Moon, HeartHandshake, ScrollText } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 import { useTheme } from '../context/useTheme';
@@ -324,6 +324,7 @@ export default function NavBar() {
                   {isElder && <AccountLink to="/family" label={tr('My Family')} icon={Users} />}
                   {showFamilyHome && <AccountLink to="/family-home" label={tr('Family Home')} icon={HeartHandshake} />}
                   {isElder && <AccountLink to="/emergency-contacts" label={tr('Emergency Contacts')} icon={Siren} />}
+                  <AccountLink to="/reunion" label={tr('Reunion')} icon={UsersRound} />
                   {/* Peekaboo and Guide live here, not in the top bar: they are
                       occasional, and in the bar they sat in one cluster with SOS
                       (Hick: fewer top-level choices; proximity: a game does not
@@ -450,6 +451,7 @@ export default function NavBar() {
             {isElder && <MenuLink to="/what-i-pass-on" label={tr('My boxes')} icon={ScrollText} />}
             {showFamilyHome && <MenuLink to="/family-home" label={tr('Family Home')} icon={HeartHandshake} />}
             {isElder && <MenuLink to="/emergency-contacts" label={tr('Emergency Contacts')} icon={Siren} />}
+            <MenuLink to="/reunion" label={tr('Reunion')} icon={UsersRound} />
             <DrawerGap />
             <MenuLink to="/game" label={tr('Peekaboo')} icon={Gamepad2} />
             <MenuLink to="/how-it-works" label={tr('Guide')} icon={HelpCircle} />

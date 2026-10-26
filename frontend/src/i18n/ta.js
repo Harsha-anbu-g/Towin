@@ -2791,4 +2791,223 @@ export default {
     "✓ கடவுச்சொல் மாற்றப்பட்டது. அடுத்த முறை உள்நுழையும்போது புதிய கடவுச்சொல்லைப் பயன்படுத்தலாம்.",
   "✓ Password set. Next time you can sign in with your username and password, or with Google.":
     "✓ கடவுச்சொல் அமைக்கப்பட்டது. அடுத்த முறை உங்கள் பயனர்பெயர், கடவுச்சொல் மூலமோ Google மூலமோ உள்நுழையலாம்.",
+  // Reunion (2026-10-26): an elder meets old classmates or colleagues again.
+  "1968 to 1971":
+    "1968 முதல் 1971 வரை",
+  "A day, a place, a ride for everyone. You approve it.":
+    "ஒரு நாள், ஒரு இடம், எல்லோருக்கும் ஒரு வாகனம். நீங்கள் ஒப்புதல் தருகிறீர்கள்.",
+  "A name, at least.":
+    "குறைந்தது ஒரு பெயர்.",
+  "A new wish":
+    "ஒரு புதிய விருப்பம்",
+  "A public place or a family home. Never your own.":
+    "பொது இடம் அல்லது குடும்பத்தினர் வீடு. உங்கள் சொந்த வீடு வேண்டாம்.",
+  "A thank-you to each guest":
+    "ஒவ்வொரு விருந்தினருக்கும் ஒரு நன்றி",
+  "Add to the list":
+    "பட்டியலில் சேர்",
+  "After":
+    "பிறகு",
+  "An elder who fully trusts you, or your parent, can ask you to plan their reunion. You find the people and plan the day. They approve each step.":
+    "உங்களை முழுமையாக நம்பும் மூத்தவர், அல்லது உங்கள் பெற்றோர், தங்கள் மீள்சந்திப்பைத் திட்டமிடச் சொல்லலாம். நீங்கள் ஆட்களைக் கண்டுபிடித்து நாளைத் திட்டமிடுகிறீர்கள். ஒவ்வொரு படியையும் அவர்கள் ஒப்புதல் தருவார்கள்.",
+  "Anything that helps find them. A cousin who has a number, a street, a nickname.":
+    "அவர்களைக் கண்டுபிடிக்க உதவும் எதுவும். எண் வைத்திருக்கும் ஒரு உறவினர், ஒரு தெரு, ஒரு செல்லப்பெயர்.",
+  "Approve the guest list":
+    "விருந்தினர் பட்டியலை ஒப்புதல் செய்",
+  "Approve the plan":
+    "திட்டத்தை ஒப்புதல் செய்",
+  "Arrived":
+    "வந்துவிட்டார்",
+  "Ask {name} to plan it. {why}":
+    "{name} இடம் திட்டமிடச் சொல்லுங்கள். {why}",
+  "Ask {name} to plan it?":
+    "{name} இடம் திட்டமிடச் சொல்லவா?",
+  "Ask":
+    "கேள்",
+  "At least one guest needs to be coming before the plan.":
+    "திட்டத்திற்கு முன் குறைந்தது ஒரு விருந்தினர் வருவதாக இருக்க வேண்டும்.",
+  "Cannot come":
+    "வர முடியாது",
+  "Close the reunion":
+    "மீள்சந்திப்பை முடி",
+  "Coming after all":
+    "இறுதியில் வருகிறார்",
+  "Coming":
+    "வருகிறார்",
+  "Could not choose them right now. Please try again.":
+    "இப்போது அவரைத் தேர்வு செய்ய முடியவில்லை. மீண்டும் முயலவும்.",
+  "Could not do that right now. Please try again.":
+    "இப்போது அதைச் செய்ய முடியவில்லை. மீண்டும் முயலவும்.",
+  "Could not load this reunion.":
+    "இந்த மீள்சந்திப்பை ஏற்ற முடியவில்லை.",
+  "Could not load who can plan it.":
+    "யார் திட்டமிடலாம் என்பதை ஏற்ற முடியவில்லை.",
+  "Could not load your reunions.":
+    "உங்கள் மீள்சந்திப்புகளை ஏற்ற முடியவில்லை.",
+  "Could not save that right now. Please try again.":
+    "இப்போது சேமிக்க முடியவில்லை. மீண்டும் முயலவும்.",
+  "Could not save the plan right now. Please try again.":
+    "இப்போது திட்டத்தைச் சேமிக்க முடியவில்லை. மீண்டும் முயலவும்.",
+  "Could not save the wish right now. Please try again.":
+    "இப்போது விருப்பத்தைச் சேமிக்க முடியவில்லை. மீண்டும் முயலவும்.",
+  "Every guest is seen home, then a thank-you to each.":
+    "ஒவ்வொரு விருந்தினரும் வீடு சேர்க்கப்படுவார், பிறகு ஒவ்வொருவருக்கும் ஒரு நன்றி.",
+  "Every guest who came needs to be home first.":
+    "வந்த ஒவ்வொரு விருந்தினரும் முதலில் வீடு சேர வேண்டும்.",
+  "Everyone is checked in as they arrive.":
+    "வரும்போது ஒவ்வொருவரும் குறிக்கப்படுவார்கள்.",
+  "Everyone was home safe. The story is yours to keep.":
+    "எல்லோரும் பத்திரமாக வீடு சேர்ந்தனர். இந்தக் கதை உங்களுடையது.",
+  "Finding":
+    "தேடல்",
+  "Food":
+    "உணவு",
+  "For example: B.Sc. batch, Presidency College":
+    "உதாரணம்: B.Sc. பேட்ச், பிரசிடென்சி கல்லூரி",
+  "For {name}":
+    "{name} க்காக",
+  "Found":
+    "கண்டுபிடித்தோம்",
+  "Goes to everyone who came, with Towinly’s name on it.":
+    "Towinly பெயருடன், வந்த எல்லோருக்கும் செல்லும்.",
+  "Guests":
+    "விருந்தினர்கள்",
+  "Helper you fully trust":
+    "நீங்கள் முழுமையாக நம்பும் உதவியாளர்",
+  "Home safe":
+    "பத்திரமாக வீடு சேர்ந்தார்",
+  "Home":
+    "வீடு சேர்ந்தார்",
+  "Keep going":
+    "தொடரு",
+  "Keep planning":
+    "திட்டமிடலைத் தொடரு",
+  "Keep the story in your box":
+    "கதையை உங்கள் பெட்டியில் வையுங்கள்",
+  "Make the wish":
+    "விருப்பத்தைச் சொல்",
+  "Mobility, hearing, diet, who has their number. Never money.":
+    "நடமாட்டம், கேட்கும் திறன், உணவு, எண் யாரிடம் உள்ளது. பணம் வேண்டாம்.",
+  "Names you remember":
+    "நினைவில் உள்ள பெயர்கள்",
+  "Never a guest.":
+    "விருந்தினர் ஒருபோதும் இல்லை.",
+  "No guests yet":
+    "இன்னும் விருந்தினர்கள் இல்லை",
+  "No guests yet.":
+    "இன்னும் விருந்தினர்கள் இல்லை.",
+  "Nobody to choose yet. A helper you fully trust, or a family member, can plan it.":
+    "இன்னும் தேர்வு செய்ய யாரும் இல்லை. நீங்கள் முழுமையாக நம்பும் உதவியாளர், அல்லது குடும்ப உறுப்பினர், திட்டமிடலாம்.",
+  "Note":
+    "குறிப்பு",
+  "Phone, if known":
+    "தொலைபேசி, தெரிந்தால்",
+  "Plan saved.":
+    "திட்டம் சேமிக்கப்பட்டது.",
+  "Reached":
+    "தொடர்பு கொண்டோம்",
+  "Remembered":
+    "நினைவில்",
+  "Reunion":
+    "மீள்சந்திப்பு",
+  "Reunion: step 7 of 7, everyone home":
+    "மீள்சந்திப்பு: 7 இல் படி 7, எல்லோரும் வீடு சேர்ந்தனர்",
+  "Reunion: step {n} of 7":
+    "மீள்சந்திப்பு: 7 இல் படி {n}",
+  "Save the plan":
+    "திட்டத்தைச் சேமி",
+  "Say which batch, class or office it was.":
+    "எந்த பேட்ச், வகுப்பு அல்லது அலுவலகம் என்று சொல்லுங்கள்.",
+  "Say who you want to see again. A helper you fully trust, or your family, finds them and plans the day. You approve each step. Every guest is seen home.":
+    "யாரை மீண்டும் பார்க்க விரும்புகிறீர்கள் என்று சொல்லுங்கள். நீங்கள் முழுமையாக நம்பும் உதவியாளர், அல்லது உங்கள் குடும்பம், அவர்களைக் கண்டுபிடித்து நாளைத் திட்டமிடுவார்கள். ஒவ்வொரு படியையும் நீங்கள் ஒப்புதல் தருகிறீர்கள். ஒவ்வொரு விருந்தினரும் வீடு சேர்க்கப்படுவார்.",
+  "Send-off":
+    "வழியனுப்பல்",
+  "Start with the names remembered. One at a time.":
+    "நினைவில் உள்ள பெயர்களில் தொடங்குங்கள். ஒவ்வொன்றாக.",
+  "Step down from planning":
+    "திட்டமிடலில் இருந்து விலகு",
+  "Step down from planning?":
+    "திட்டமிடலில் இருந்து விலகவா?",
+  "Step down":
+    "விலகு",
+  "Step {n} of 7 · {name}":
+    "7 இல் படி {n} · {name}",
+  "Stop it":
+    "நிறுத்து",
+  "Stop this reunion":
+    "இந்த மீள்சந்திப்பை நிறுத்து",
+  "Stop this reunion?":
+    "இந்த மீள்சந்திப்பை நிறுத்தவா?",
+  "Stopped":
+    "நிறுத்தப்பட்டது",
+  "Sunday 14 December, 11 in the morning":
+    "ஞாயிறு 14 டிசம்பர், காலை 11 மணி",
+  "Take off":
+    "நீக்கு",
+  "Take {name} off the list":
+    "{name} ஐ பட்டியலில் இருந்து நீக்கு",
+  "Take {name} off the list?":
+    "{name} ஐ பட்டியலில் இருந்து நீக்கவா?",
+  "The day is over":
+    "நாள் முடிந்தது",
+  "The day":
+    "அந்த நாள்",
+  "The plan needs a day and a place first.":
+    "திட்டத்திற்கு முதலில் ஒரு நாளும் ஒரு இடமும் வேண்டும்.",
+  "The plan":
+    "திட்டம்",
+  "They will find the people and plan the day. You approve each step.":
+    "அவர் ஆட்களைக் கண்டுபிடித்து நாளைத் திட்டமிடுவார். ஒவ்வொரு படியையும் நீங்கள் ஒப்புதல் தருகிறீர்கள்.",
+  "This reunion was stopped.":
+    "இந்த மீள்சந்திப்பு நிறுத்தப்பட்டது.",
+  "When someone asks you to plan their reunion, it shows here.":
+    "யாராவது தங்கள் மீள்சந்திப்பைத் திட்டமிடச் சொன்னால், அது இங்கே தோன்றும்.",
+  "When":
+    "எப்போது",
+  "Where this reunion stands":
+    "இந்த மீள்சந்திப்பு எங்கே நிற்கிறது",
+  "Where":
+    "எங்கே",
+  "Which city?":
+    "எந்த ஊர்?",
+  "Which years?":
+    "எந்த ஆண்டுகள்?",
+  "Who brings whom, and who takes them home.":
+    "யார் யாரை அழைத்து வருவார், யார் வீடு சேர்ப்பார்.",
+  "Who covers what":
+    "யார் எதைச் செலவு செய்வார்",
+  "Who do you want to see again?":
+    "யாரை மீண்டும் பார்க்க விரும்புகிறீர்கள்?",
+  "Who plans":
+    "யார் திட்டமிடுவார்",
+  "Wish":
+    "விருப்பம்",
+  "Yes, ask {name}":
+    "ஆம், {name} இடம் கேள்",
+  "You choose who plans it: a helper you fully trust, or family.":
+    "யார் திட்டமிடுவார் என்று நீங்கள் தேர்வு செய்கிறீர்கள்: நீங்கள் முழுமையாக நம்பும் உதவியாளர், அல்லது குடும்பம்.",
+  "You say who you want to see again.":
+    "யாரை மீண்டும் பார்க்க விரும்புகிறீர்கள் என்று நீங்கள் சொல்கிறீர்கள்.",
+  "You stepped down. The elder has been told.":
+    "நீங்கள் விலகிவிட்டீர்கள். மூத்தவருக்குத் தெரிவிக்கப்பட்டது.",
+  "Your organiser finds the people, one by one.":
+    "உங்கள் ஏற்பாட்டாளர் ஆட்களை ஒவ்வொருவராகக் கண்டுபிடிக்கிறார்.",
+  "Your organiser is still writing the plan.":
+    "உங்கள் ஏற்பாட்டாளர் இன்னும் திட்டத்தை எழுதிக்கொண்டிருக்கிறார்.",
+  "Your organiser will be told. The guest list stays, and you can wish again later.":
+    "உங்கள் ஏற்பாட்டாளருக்குத் தெரிவிக்கப்படும். விருந்தினர் பட்டியல் அப்படியே இருக்கும், பிறகு மீண்டும் விரும்பலாம்.",
+  "{count} came, and every one of them got home.":
+    "{count} பேர் வந்தனர், ஒவ்வொருவரும் வீடு சேர்ந்தனர்.",
+  "{count} remembered · {coming} coming":
+    "{count} நினைவில் · {coming} வருகிறார்கள்",
+  "{institution}. {stage}":
+    "{institution}. {stage}",
+  "{name} is planning it":
+    "{name} திட்டமிடுகிறார்",
+  "{name} will be asked to choose someone else. The guest list stays.":
+    "{name} வேறு ஒருவரைத் தேர்வு செய்யச் சொல்லப்படுவார். விருந்தினர் பட்டியல் அப்படியே இருக்கும்.",
+  "{name} will plan it. They have been told.":
+    "{name} திட்டமிடுவார். அவருக்குத் தெரிவிக்கப்பட்டது.",
+  "← All reunions":
+    "← எல்லா மீள்சந்திப்புகளும்",
 };
