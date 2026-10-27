@@ -333,6 +333,8 @@ export default {
     "உரையாடல் மீண்டும் தொடங்கியது.",
   "Check in each day so your family know you are alright.":
     "நீங்கள் நலமாக இருப்பது உங்கள் குடும்பத்திற்குத் தெரிய, தினமும் நலம் பதிவு செய்யுங்கள்.",
+  "Check in today?":
+    "இன்று வருகை பதிவு செய்யவா?",
   "Check your email":
     "உங்கள் மின்னஞ்சலைப் பாருங்கள்",
   "Checked in today":
@@ -429,6 +431,8 @@ export default {
     "உங்கள் முதன்மைத் தொடர்பை மாற்ற முடியவில்லை. மீண்டும் முயலவும்.",
   "Could not check in. Please try again.":
     "வருகையைப் பதிவுசெய்ய முடியவில்லை. மீண்டும் முயலுங்கள்.",
+  "Could not check in. Please use the check-in page.":
+    "பதிவு செய்ய முடியவில்லை. வருகைப் பதிவுப் பக்கத்தைப் பயன்படுத்துங்கள்.",
   "Could not check what this account holds, so this may delete stories, letters or a Sealed box without saying so.":
     "இந்தக் கணக்கில் என்ன உள்ளது என்று சரிபார்க்க முடியவில்லை. எனவே இது கதைகள், கடிதங்கள் அல்லது முத்திரைப் பெட்டியைச் சொல்லாமலே நீக்கக்கூடும்.",
   "Could not close that request. Please try again.":
@@ -449,6 +453,8 @@ export default {
     "அந்தப் படியை நகர்த்த முடியவில்லை. மீண்டும் முயலவும்.",
   "Could not open the chat. Please try again.":
     "உரையாடலைத் திறக்க முடியவில்லை. மீண்டும் முயலவும்.",
+  "Could not post the request. Please use Post Help.":
+    "கோரிக்கையை வெளியிட முடியவில்லை. உதவிக் கோரிக்கையைப் பதிவிடு பக்கத்தைப் பயன்படுத்துங்கள்.",
   "Could not remove contact. Please try again.":
     "தொடர்பை நீக்க முடியவில்லை. மீண்டும் முயலுங்கள்.",
   "Could not remove them. Please try again.":
@@ -533,6 +539,10 @@ export default {
     "பீட்டா அறிவிப்பை மூடு",
   "Done — they can do this for you now.":
     "முடிந்தது: இனி அவர்கள் இதை உங்களுக்காகச் செய்யலாம்.",
+  "Done. You are checked in for today.":
+    "முடிந்தது. இன்றைய வருகை பதிவாகிவிட்டது.",
+  "Done. Your request is posted. Helpers nearby can see it now.":
+    "முடிந்தது. உங்கள் கோரிக்கை வெளியிடப்பட்டது. அருகிலுள்ள உதவியாளர்கள் இப்போது அதைப் பார்க்கலாம்.",
   "Driver's licence or passport":
     "ஓட்டுநர் உரிமம் அல்லது கடவுச்சீட்டு",
   "Each day, tap \"I'm here today\". The family you are linked with then see that you are alright, on their own page — you do not have to ring round or explain.":
@@ -1465,6 +1475,8 @@ export default {
     "துணை, வாகனப் பயணம், கடைக்குச் செல்லுதல், சுத்தம் செய்தல் போன்றவற்றுக்கு உதவிக் கோரிக்கையைப் பதிவிடுங்கள்.",
   "Post help and helpers near you will offer to assist. It only takes a minute.":
     "உதவிக் கோரிக்கையைப் பதிவிடுங்கள்; அருகிலுள்ள உதவியாளர்கள் உதவ முன்வருவார்கள். ஒரு நிமிடமே ஆகும்.",
+  "Post this request?":
+    "இந்தக் கோரிக்கையை வெளியிடவா?",
   "Posted Help":
     "பதிவிட்ட உதவிகள்",
   "Posted Help sections":
@@ -1907,6 +1919,10 @@ export default {
     "மூத்தவர் எல்லா உதவியாளர்களையும் பார்த்து ஒருவரைத் தேர்ந்தெடுக்கிறார்.",
   "The five tiers":
     "ஐந்து நிலைகள்",
+  "The helper suggests marking you as here today. Your family will see it.":
+    "நீங்கள் இன்று இங்கே இருப்பதாகக் குறிக்க உதவியாளர் பரிந்துரைக்கிறது. உங்கள் குடும்பம் அதைப் பார்க்கும்.",
+  "The helper wants to post this request for you:":
+    "உதவியாளர் உங்களுக்காக இந்தக் கோரிக்கையை வெளியிட விரும்புகிறது:",
   "The master and his turtles, growing up together":
     "குருவும் அவரது ஆமைகளும், சேர்ந்து வளர்கிறார்கள்",
   "The page tells you by name who will see it before you tap.":
@@ -2349,10 +2365,14 @@ export default {
     "ஆம், அதைச் செய்கிறேன்",
   "Yes, cancel":
     "ஆம், ரத்துசெய்",
+  "Yes, check in":
+    "ஆம், பதிவு செய்",
   "Yes, close it":
     "ஆம், மூடு",
   "Yes, end":
     "ஆம், முடி",
+  "Yes, post it":
+    "ஆம், வெளியிடு",
   "Yes, remove":
     "ஆம், நீக்கு",
   "Yes, show it to anyone":

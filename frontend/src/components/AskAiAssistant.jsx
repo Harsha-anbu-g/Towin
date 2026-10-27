@@ -3,7 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Volume2, Square, Mic, MicOff } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
-import api from '../api/axios';
+import { askAssistant } from '../api/assistant';
+import { runAssistantAction } from '../lib/assistantActions';
+import ConfirmDialog from './ConfirmDialog';
 import { dateLocale, tr } from '../i18n';
 
 // The tortoise mascot image (served from /public). The 256px variant — the
@@ -122,11 +124,26 @@ export default function AskAiAssistant() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, loading]);
 
+  // One proposal at a time: the dialog's words, and the resolver for the promise
+  // runAssistantAction awaits. The ref mirrors it for the Escape handler below,
+  // so Escape closes the dialog, not the whole chat.
+  const [pendingConfirm, setPendingConfirm] = useState(null);
+  const confirmRef = useRef(null);
+  const confirm = useCallback((opts) => new Promise((resolve) => {
+    confirmRef.current = resolve;
+    setPendingConfirm(opts);
+  }), []);
+  const settleConfirm = (ok) => {
+    confirmRef.current?.(ok);
+    confirmRef.current = null;
+    setPendingConfirm(null);
+  };
+
   // Focus the input when the panel opens; close on Escape.
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => inputRef.current?.focus(), 250);
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape' && !confirmRef.current) setOpen(false); };
     window.addEventListener('keydown', onKey);
     return () => { clearTimeout(t); window.removeEventListener('keydown', onKey); };
   }, [open]);
@@ -149,9 +166,11 @@ export default function AskAiAssistant() {
       .slice(-HISTORY_TURNS)
       .map(({ role, content }) => ({ role, content }));
 
+    let action = null;
     try {
-      const { data } = await api.post('/assistant/chat', { message: question, history });
+      const data = await askAssistant({ message: question, history });
       setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+      action = data.action ?? null;
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -165,7 +184,14 @@ export default function AskAiAssistant() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, messages]);
+    // The helper may only propose; the page asks, and only a Yes acts
+    // (src/lib/assistantActions). Asked once the reply is on screen, so the
+    // typing dots are gone while the dialog is up.
+    if (action) {
+      const outcome = await runAssistantAction(action, { confirm });
+      if (outcome) setMessages((prev) => [...prev, { role: 'assistant', content: outcome }]);
+    }
+  }, [input, loading, messages, confirm]);
 
   // Hide where it would cover a primary action: the live chat composer, the
   // feedback form itself, and the landing deck (user request 2026-07-06 —
@@ -363,8 +389,26 @@ export default function AskAiAssistant() {
           </MotionDiv>
         )}
       </AnimatePresence>
+
+      {/* The one action the helper proposed, in the site's own words; acted on only after Yes. */}
+      <ConfirmDialog
+        open={!!pendingConfirm}
+        title={pendingConfirm?.title}
+        message={pendingConfirm ? <Lines text={pendingConfirm.message} /> : null}
+        confirmLabel={pendingConfirm?.confirmLabel}
+        cancelLabel={pendingConfirm?.cancelLabel}
+        onConfirm={() => settleConfirm(true)}
+        onCancel={() => settleConfirm(false)}
+      />
     </>
   );
+}
+
+// A proposal has a line per field; the dialog's message is one paragraph.
+function Lines({ text }) {
+  return String(text ?? '').split('\n').map((line, i) => (
+    <span key={i}>{i > 0 && <br />}{line}</span>
+  ));
 }
 
 function Bubble({ role, content, speaking, onSpeak }) {

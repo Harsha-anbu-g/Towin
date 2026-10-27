@@ -90,7 +90,7 @@
   --z-menu:   110;    /* dropdown menus off the nav */
   --z-fab:    999;    /* floating helpers (Ask AI / feedback / peekaboo) */
   --z-banner: 1000;   /* fixed banners + cookie notice */
-  --z-modal:  1000;   /* dialog scrims + dialogs — sit above the FABs */
+  --z-modal:  1002;   /* dialog scrims + dialogs — above the FABs and the Ask AI panel */
   --z-panel:  1001;   /* Ask AI chat panel — above its own FAB */
   --z-skip:   1200;   /* skip-to-content link — above everything */
 

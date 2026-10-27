@@ -333,6 +333,8 @@ export default {
     "Discussion reprise.",
   "Check in each day so your family know you are alright.":
     "Confirmez votre présence chaque jour pour que votre famille sache que tout va bien.",
+  "Check in today?":
+    "Confirmer votre présence aujourd'hui?",
   "Check your email":
     "Vérifiez vos courriels",
   "Checked in today":
@@ -429,6 +431,8 @@ export default {
     "Impossible de changer votre contact principal. Veuillez réessayer.",
   "Could not check in. Please try again.":
     "Impossible d'enregistrer votre présence. Veuillez réessayer.",
+  "Could not check in. Please use the check-in page.":
+    "La confirmation a échoué. Utilisez la page de présence.",
   "Could not check what this account holds, so this may delete stories, letters or a Sealed box without saying so.":
     "Impossible de vérifier le contenu de ce compte : cette action pourrait donc supprimer des histoires, des lettres ou un coffre scellé sans le dire.",
   "Could not close that request. Please try again.":
@@ -449,6 +453,8 @@ export default {
     "Impossible de passer cette étape. Veuillez réessayer.",
   "Could not open the chat. Please try again.":
     "Impossible d'ouvrir la discussion. Veuillez réessayer.",
+  "Could not post the request. Please use Post Help.":
+    "La demande n'a pas pu être publiée. Utilisez Publier une demande.",
   "Could not remove contact. Please try again.":
     "Impossible de retirer le contact. Veuillez réessayer.",
   "Could not remove them. Please try again.":
@@ -533,6 +539,10 @@ export default {
     "Fermer la bannière bêta",
   "Done — they can do this for you now.":
     "C'est fait : cette personne peut maintenant le faire pour vous.",
+  "Done. You are checked in for today.":
+    "C'est fait. Votre présence d'aujourd'hui est confirmée.",
+  "Done. Your request is posted. Helpers nearby can see it now.":
+    "C'est fait. Votre demande est publiée. Les aidants à proximité la voient maintenant.",
   "Driver's licence or passport":
     "Permis de conduire ou passeport",
   "Each day, tap \"I'm here today\". The family you are linked with then see that you are alright, on their own page — you do not have to ring round or explain.":
@@ -1465,6 +1475,8 @@ export default {
     "Publiez une demande d'aide pour de la compagnie, un transport, des courses, du ménage, et plus encore.",
   "Post help and helpers near you will offer to assist. It only takes a minute.":
     "Publiez une demande d'aide et les aidants près de chez vous offriront leur aide. Ça ne prend qu'une minute.",
+  "Post this request?":
+    "Publier cette demande?",
   "Posted Help":
     "Demandes publiées",
   "Posted Help sections":
@@ -1907,6 +1919,10 @@ export default {
     "L'aîné examine tous les aidants et en choisit un.",
   "The five tiers":
     "Les cinq niveaux",
+  "The helper suggests marking you as here today. Your family will see it.":
+    "L'assistant propose d'indiquer que vous êtes là aujourd'hui. Votre famille le verra.",
+  "The helper wants to post this request for you:":
+    "L'assistant veut publier cette demande pour vous :",
   "The master and his turtles, growing up together":
     "Le maître et ses tortues, qui grandissent ensemble",
   "The page tells you by name who will see it before you tap.":
@@ -2349,10 +2365,14 @@ export default {
     "Oui, je vais le faire",
   "Yes, cancel":
     "Oui, annuler",
+  "Yes, check in":
+    "Oui, confirmer",
   "Yes, close it":
     "Oui, la fermer",
   "Yes, end":
     "Oui, y mettre fin",
+  "Yes, post it":
+    "Oui, publier",
   "Yes, remove":
     "Oui, retirer",
   "Yes, show it to anyone":
