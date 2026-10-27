@@ -36,6 +36,10 @@ import com.towinly.profile.entity.HelperProfile;
 import com.towinly.profile.repository.ElderProfileRepository;
 import com.towinly.profile.repository.HelperProfileRepository;
 import com.towinly.report.repository.ReportRepository;
+import com.towinly.reunion.entity.Reunion;
+import com.towinly.reunion.entity.ReunionGuest;
+import com.towinly.reunion.repository.ReunionGuestRepository;
+import com.towinly.reunion.repository.ReunionRepository;
 import com.towinly.review.entity.Review;
 import com.towinly.review.repository.ReviewRepository;
 import com.towinly.streak.entity.UserStreak;
@@ -55,9 +59,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -145,7 +153,8 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final EmergencyContactRepository emergencyContactRepository;
     private final FamilyLinkRepository familyLinkRepository;
     private final FamilyAlertRepository familyAlertRepository;
-    private final com.towinly.reunion.repository.ReunionRepository reunionRepository;
+    private final ReunionRepository reunionRepository;
+    private final ReunionGuestRepository reunionGuestRepository;
     private final FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     private final com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
     private final ReportRepository reportRepository;
@@ -719,6 +728,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         seedWhatMargaretPassesOn(margaret, sarah, davidSon, ruth);
         seedMontrealElderBoxes(david, grace, rose, helen, arthur, nina, priya, tom, claire);
         seedTamilNaduElderBoxes(lakshmi, meena, karthik, arjun);
+        seedReunions(margaret, sarah, grace, james);
 
         for (User u : demoUsers) {
             try {
@@ -886,6 +896,92 @@ public class DemoDataSeeder implements ApplicationRunner {
         if (Boolean.TRUE.equals(c.getSharedWithFamily())) return;
         c.setSharedWithFamily(true);
         connectionRepository.save(c);
+    }
+
+    // ── Reunion ──────────────────────────────────────────────────────────
+
+    /** Margaret's day is this far out, so the plan never reads as a day that has passed. */
+    private static final int REUNION_WEEKS_AHEAD = 3;
+    /** How long ago Grace's first guests were checked in. */
+    private static final int REUNION_ARRIVED_MINUTES_AGO = 40;
+    private static final DateTimeFormatter DAY_IN_WORDS =
+            DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.ENGLISH);
+
+    /** One guest on a seeded list. {@code arrived} is the check-in on the day. */
+    private record DemoGuest(String name, String phone, String note, ReunionGuestState state,
+                             boolean arrived) {}
+
+    /**
+     * Two reunions, so every public login opens the Reunion page on a real one
+     * (owner call 2026-10-26). Margaret's (the elder demo) stands at "The plan",
+     * organised by her daughter Sarah (the family demo), with the day and the
+     * place set so the approve button is live for Margaret and the list shows
+     * every guest state. Grace's stands at "The day", organised by Harsha (the
+     * helper demo), two guests checked in and one still to come, so the helper
+     * can check her in, end the day, see everyone home and close it before the
+     * reset puts it back. Rows only, like the rest of the seed: nothing goes
+     * through {@code ReunionService}, so no push and no SMS leaves here.
+     */
+    private void seedReunions(User margaret, User sarah, User grace, User james) {
+        ensureReunion(Reunion.builder()
+                .elder(margaret).organiser(sarah).organiserKind(ReunionOrganiserKind.FAMILY)
+                .institution("Teachers' college, class of 1976").years("1974 to 1976").city("Toronto")
+                .note("Joan, Peter, the two Marys, and Mr. Hadley, who taught us to keep a straight face.")
+                .plannedOn(sundayWeeksAhead(REUNION_WEEKS_AHEAD) + ", 11 in the morning")
+                .venue("The community centre, the upstairs room")
+                .rides("Sarah drives Mum and Joan. Peter's daughter brings him from Hamilton.")
+                .food("Sandwiches and a proper tea. Mary Costa is bringing her lemon cake.")
+                .budget("Around 120 dollars, from the family")
+                .step(ReunionStep.PLAN)
+                .build(), List.of(
+                new DemoGuest("Joan Whitfield", "+14165550121",
+                        "Hard of hearing on the left. Sit her by the window.", ReunionGuestState.COMING, false),
+                new DemoGuest("Mary Costa", "+14165550122", null, ReunionGuestState.COMING, false),
+                new DemoGuest("Peter Lam", "+19055550123",
+                        "Lives in Hamilton now. Said yes on the phone, checking the drive with his daughter.",
+                        ReunionGuestState.REACHED, false),
+                new DemoGuest("Mary O'Brien", null, "In Florida until March. Sends her love.",
+                        ReunionGuestState.CANNOT_COME, false),
+                new DemoGuest("Mr. Hadley", null, "Joan thinks his son still runs the shop on Dundas.",
+                        ReunionGuestState.REMEMBERED, false)));
+
+        ensureReunion(Reunion.builder()
+                .elder(grace).organiser(james).organiserKind(ReunionOrganiserKind.HELPER)
+                .institution("Pharmacy school, class of 1979").years("1975 to 1979").city("Montreal")
+                .note("Alice, Bernard and Yvonne. We shared one bench in the lab for four years.")
+                .plannedOn(LocalDate.now().format(DAY_IN_WORDS) + ", from 11 in the morning")
+                .venue("Grace's flat. She wants them to see the paintings.")
+                .rides("Harsha picks Alice up at half past ten. Bernard and Yvonne come together by metro.")
+                .food("Grace is making dumplings. Yvonne brings the wine.")
+                .budget("Nothing to spend. Everyone brings something.")
+                .step(ReunionStep.DAY)
+                .build(), List.of(
+                new DemoGuest("Alice Tremblay", "+15145550131",
+                        "Uses a cane. Harsha drives her both ways.", ReunionGuestState.COMING, true),
+                new DemoGuest("Bernard Roy", "+15145550132", null, ReunionGuestState.COMING, true),
+                new DemoGuest("Yvonne Lavoie", "+15145550133",
+                        "Running late. Texted from the metro.", ReunionGuestState.COMING, false)));
+    }
+
+    /** Guarded by elder + institution, so an additive re-boot never seeds the same wish twice. */
+    private void ensureReunion(Reunion draft, List<DemoGuest> guests) {
+        boolean exists = reunionRepository.findMine(draft.getElder().getId()).stream()
+                .anyMatch(r -> draft.getInstitution().equals(r.getInstitution()));
+        if (exists) return;
+        Reunion saved = reunionRepository.save(draft);
+        for (DemoGuest g : guests) {
+            reunionGuestRepository.save(ReunionGuest.builder()
+                    .reunion(saved).name(g.name()).phone(g.phone()).note(g.note()).state(g.state())
+                    .arrivedAt(g.arrived() ? LocalDateTime.now().minusMinutes(REUNION_ARRIVED_MINUTES_AGO) : null)
+                    .build());
+        }
+    }
+
+    /** "Sunday 22 November": the first Sunday at least this many weeks from today. */
+    private static String sundayWeeksAhead(int weeks) {
+        return LocalDate.now().plusWeeks(weeks)
+                .with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+                .format(DAY_IN_WORDS);
     }
 
     // ── What I pass on ───────────────────────────────────────────────────

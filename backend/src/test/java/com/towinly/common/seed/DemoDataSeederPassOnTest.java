@@ -117,6 +117,7 @@ class DemoDataSeederPassOnTest {
     @Mock FamilyLinkRepository familyLinkRepository;
     @Mock FamilyAlertRepository familyAlertRepository;
     @Mock com.towinly.reunion.repository.ReunionRepository reunionRepository;
+    @Mock com.towinly.reunion.repository.ReunionGuestRepository reunionGuestRepository;
     @Mock FamilyDelegatedPowerRepository familyDelegatedPowerRepository;
     @Mock com.towinly.family.repository.FamilyPowerRequestRepository familyPowerRequestRepository;
 
