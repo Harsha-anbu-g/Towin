@@ -33,7 +33,7 @@ import java.util.UUID;
  * "Ask AI" — the tortoise help assistant. Grounds every answer in a curated
  * product knowledge base (never a raw dump of repo notes) and, for signed-in
  * users, a small own-data-only summary so it can answer "what is my trust
- * score?". Talking to Groq is delegated to {@link LlmClient}; this class owns
+ * score?". Talking to the model is delegated to {@link LlmClient}; this class owns
  * the prompt assembly and the graceful fallbacks.
  */
 @Slf4j
@@ -189,7 +189,8 @@ public class AssistantService {
         question = PiiGuard.redact(question);
 
         // Appended last so it sits nearest the question, and the stable prefix above
-        // it stays cacheable at Groq. The retriever sees the cleaned question only.
+        // it stays cacheable at OpenAI (prompt caching wants an exact prefix). The
+        // retriever sees the cleaned question only.
         Optional<String> passages = retriever.passagesFor(question);
         if (passages.isPresent()) {
             systemPrompt += "\n\n=== FROM THE USER GUIDE ===\n"
@@ -237,10 +238,10 @@ public class AssistantService {
      * make it answer in words. Returns the final reply with both calls' tokens, or
      * null when the second call failed.
      *
-     * <p>The second call carries no tools at all, which is Groq's own documented
-     * pattern. Offering the tools again with {@code tool_choice: "none"} is not the
-     * same thing: Groq warns that some models still try a tool, and the request then
-     * fails with a 400. With nothing to call, the model can only answer in words,
+     * <p>The second call carries no tools at all, the documented pattern at OpenAI
+     * and Groq alike. Offering the tools again with {@code tool_choice: "none"} is not
+     * the same thing: Groq warned that some models still try a tool, and the request
+     * then failed with a 400. With nothing to call, the model can only answer in words,
      * which is the one-round rule stated plainly to the API.
      */
     private ToolRound answerWithTools(String systemPrompt, List<ChatMessage> conversation,
@@ -270,7 +271,7 @@ public class AssistantService {
      *
      * <p>History arrives from the browser on every request, so none of it is trusted.
      * Roles are re-checked here even though {@link ChatMessage} already constrains
-     * them — validation guards the HTTP edge, this guards the call to Groq, and the
+     * them — validation guards the HTTP edge, this guards the call to the model, and the
      * two are worth keeping independent. Turns are taken newest-first so that when
      * the budget runs out it is the oldest context that is lost, then flipped back
      * into chronological order for the model.

@@ -70,7 +70,7 @@ public class AssistantRateLimiter implements SweepableRateLimiter {
 
     /**
      * Whole-service tokens per day: the ceiling that tracks the bill. Calls are a
-     * proxy; tokens are what Groq charges, and a Tamil or French day costs two to
+     * proxy; tokens are what OpenAI charges, and a Tamil or French day costs two to
      * four times the tokens of the same day in English. See application.yml.
      */
     private final long maxTokensPerDay;

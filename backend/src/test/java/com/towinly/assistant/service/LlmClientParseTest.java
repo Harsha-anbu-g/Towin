@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * What LlmClient reads out of a chat-completions response: the words, and the
- * token usage Groq bills. Fed as maps so no HTTP call is needed.
+ * token usage the API bills. Fed as maps so no HTTP call is needed.
  */
 class LlmClientParseTest {
 
@@ -106,7 +106,7 @@ class LlmClientParseTest {
     }
 
     @Test
-    void aPlainAnswer_hasNoReasoning_whenGroqSentNone() {
+    void aPlainAnswer_hasNoReasoning_whenNoneWasSent() {
         assertThat(LlmClient.parse(choices("Hello.")).orElseThrow().reasoning()).isNull();
     }
 
@@ -133,7 +133,7 @@ class LlmClientParseTest {
     }
 
     @Test
-    void messageHelpers_buildTheShapesGroqExpects() {
+    void messageHelpers_buildTheShapesTheApiExpects() {
         List<Map<String, Object>> turns = LlmClient.toMessages(List.of(
                 new com.towinly.assistant.dto.ChatMessage("user", "Hi"),
                 new com.towinly.assistant.dto.ChatMessage("assistant", "Hello")));
@@ -145,8 +145,8 @@ class LlmClientParseTest {
         List<Map<String, Object>> echoed = List.of(Map.of("id", "call_1", "type", "function",
                 "function", Map.of("name", "get_my_family", "arguments", "{}")));
 
-        // Groq validates the echoed assistant turn: content is always a string, even when
-        // the model only called a tool, and a gpt-oss turn carries its reasoning back.
+        // The echoed assistant turn: content is always a string, even when the model only
+        // called a tool, and a vendor's reasoning field (Groq's gpt-oss) rides back with it.
         LlmReply withReasoning = new LlmReply("", 1, 1, 0, List.of(call), "Look up the family first.");
         assertThat(LlmClient.toolCallTurn(withReasoning)).isEqualTo(Map.of(
                 "role", "assistant",
@@ -160,7 +160,8 @@ class LlmClientParseTest {
                 "content", "One moment.",
                 "tool_calls", echoed));
 
+        // OpenAI's tool turn has no name field: the call id says which tool answered.
         assertThat(LlmClient.toolResultTurn(call, "No family linked.")).isEqualTo(Map.of(
-                "role", "tool", "tool_call_id", "call_1", "name", "get_my_family", "content", "No family linked."));
+                "role", "tool", "tool_call_id", "call_1", "content", "No family linked."));
     }
 }

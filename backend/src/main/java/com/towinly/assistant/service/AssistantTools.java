@@ -48,7 +48,7 @@ public class AssistantTools {
     private static final int MAX_FIELD_CHARS = 120;
     private static final int MAX_REQUESTS = 20;
 
-    /** Groq's function-tool shape. No parameters: each tool answers for the person asking. */
+    /** The Chat Completions function-tool shape. No parameters: each tool answers for the person asking. */
     public static final List<Map<String, Object>> DEFINITIONS = List.of(
             tool("get_my_connections",
                     "The person's own connections: who, at which Trust Journey step, whose turn the next "

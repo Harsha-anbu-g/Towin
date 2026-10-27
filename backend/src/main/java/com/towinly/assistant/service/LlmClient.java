@@ -19,7 +19,10 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Thin wrapper over Groq's OpenAI-compatible Chat Completions API. Built like
+ * Thin wrapper over an OpenAI-compatible Chat Completions API: OpenAI itself by
+ * default (gpt-6-luna), any vendor that copies the shape through llm.base-url;
+ * Groq's free tier served it until 2026-10-27, when its 8,000 tokens a minute
+ * could no longer carry a 6,500-token question. Built like
  * {@link com.towinly.geocoding.GeocodingService}: a RestClient with bounded
  * timeouts, and every failure is swallowed into an empty Optional and logged —
  * the help assistant must never surface a stack trace or hold up a reply.
@@ -40,16 +43,16 @@ public class LlmClient {
     private final String reasoningEffort;
 
     public LlmClient(
-            @Value("${groq.base-url:https://api.groq.com/openai/v1}") String baseUrl,
-            @Value("${groq.api-key:}") String apiKey,
-            @Value("${groq.model:openai/gpt-oss-120b}") String model,
-            @Value("${groq.enabled:true}") boolean enabled,
-            @Value("${groq.reasoning-effort:low}") String reasoningEffort) {
+            @Value("${llm.base-url:https://api.openai.com/v1}") String baseUrl,
+            @Value("${llm.api-key:}") String apiKey,
+            @Value("${llm.model:gpt-6-luna}") String model,
+            @Value("${llm.enabled:true}") boolean enabled,
+            @Value("${llm.reasoning-effort:none}") String reasoningEffort) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(5000);
         // A tool round is two calls, and only the first may retry: 9 + 0.7 + 9, then
-        // 9 more, stays under the iPhone app's 30 s request timeout. A low-effort
-        // answer from Groq normally takes a few seconds.
+        // 9 more, stays under the iPhone app's 30 s request timeout. An answer with
+        // reasoning off normally takes a few seconds.
         factory.setReadTimeout(9000);
         this.client = RestClient.builder().baseUrl(baseUrl).requestFactory(factory).build();
         this.apiKey = apiKey;
@@ -64,8 +67,8 @@ public class LlmClient {
     }
 
     /**
-     * Sends the system prompt + conversation to Groq and returns the assistant's
-     * text with the token usage Groq reports for the call. No tools. Returns empty
+     * Sends the system prompt + conversation to the model and returns the assistant's
+     * text with the token usage the API reports for the call. No tools. Returns empty
      * on any misconfiguration, timeout, or API error so the caller can fall back to
      * a friendly message.
      */
@@ -75,7 +78,7 @@ public class LlmClient {
 
     /**
      * The general call. {@code messages} are the turns after the system prompt, in
-     * Groq's own shape (see {@link #toMessages}, {@link #toolCallTurn} and
+     * the API's own shape (see {@link #toMessages}, {@link #toolCallTurn} and
      * {@link #toolResultTurn}). {@code tools} may be null; {@code toolChoice} is
      * "auto" or "none" when tools are given. {@code retryOnce} allows one quiet
      * retry on a busy moment; the second call of a tool round must not retry, or
@@ -84,7 +87,7 @@ public class LlmClient {
     public Optional<LlmReply> complete(String systemPrompt, List<Map<String, Object>> messages,
                                         List<Map<String, Object>> tools, String toolChoice, boolean retryOnce) {
         if (!isConfigured()) {
-            log.warn("Ask AI called but Groq is not configured (missing key or disabled).");
+            log.warn("Ask AI called but no model is configured (missing key or disabled).");
             return Optional.empty();
         }
         try {
@@ -96,10 +99,12 @@ public class LlmClient {
             body.put("model", model);
             body.put("messages", all);
             body.put("temperature", 0.3);
-            body.put("max_tokens", 1000);
-            // Reasoning models (gpt-oss) otherwise spend the whole token budget
-            // "thinking" and truncate the actual answer. "low" keeps replies direct.
-            // Blank omits it, for non-reasoning models that reject the field.
+            // The current name; reasoning models reject the old max_tokens.
+            body.put("max_completion_tokens", 1000);
+            // gpt-6-luna calls tools on Chat Completions only with reasoning off
+            // ("none"), which is also the quickest and cheapest answer. A higher
+            // setting spends tokens thinking first. Blank omits the field, for a
+            // model that rejects it.
             if (reasoningEffort != null && !reasoningEffort.isBlank()) {
                 body.put("reasoning_effort", reasoningEffort);
             }
@@ -113,7 +118,7 @@ public class LlmClient {
                 response = post(body);
             } catch (RestClientException first) {
                 if (!retryOnce || !isTransient(first)) throw first;
-                // A busy moment at Groq (rate limit, 5xx, a dropped connection) usually
+                // A busy moment at the vendor (rate limit, 5xx, a dropped connection) usually
                 // clears within a second. One quiet retry turns most of those into an
                 // answer instead of "Sorry, I can't answer just now".
                 log.info("Ask AI (model) transient failure, retrying once: {}", first.getMessage());
@@ -123,7 +128,7 @@ public class LlmClient {
 
             return parse(response);
         } catch (RestClientResponseException e) {
-            // Groq's body names the field it rejected; without it a 400 is a guess.
+            // The error body names the field it rejected; without it a 400 is a guess.
             log.warn("Ask AI (model) call failed: {} {}", e.getStatusCode().value(),
                     abbreviate(e.getResponseBodyAsString()));
             return Optional.empty();
@@ -133,7 +138,7 @@ public class LlmClient {
         }
     }
 
-    /** The conversation as Groq message maps: role and content, nothing else. */
+    /** The conversation as Chat Completions message maps: role and content, nothing else. */
     public static List<Map<String, Object>> toMessages(List<ChatMessage> conversation) {
         List<Map<String, Object>> messages = new ArrayList<>();
         for (ChatMessage m : conversation) {
@@ -144,11 +149,12 @@ public class LlmClient {
 
     /**
      * The assistant turn that carried the tool calls, echoed back before their
-     * results. Groq's documented follow-up appends the model's message whole, and
-     * it validates an assistant turn strictly: {@code content} must be a string
-     * (empty is fine, missing is a 400), and a gpt-oss turn keeps its
-     * {@code reasoning}. Sending only the tool calls was the live failure of
-     * 2026-10-25: every tool question ended in the fallback sentence.
+     * results, the way the Chat Completions API documents it: the model's message
+     * whole. {@code content} is always a string (the API returns null when the
+     * model only called a tool; an empty string is accepted everywhere, a missing
+     * one was a 400 at Groq), and a vendor that returns {@code reasoning} on the
+     * turn (Groq's gpt-oss did) gets it back. Sending only the tool calls was the
+     * live failure of 2026-10-25: every tool question ended in the fallback sentence.
      */
     public static Map<String, Object> toolCallTurn(LlmReply first) {
         List<Map<String, Object>> echoed = new ArrayList<>();
@@ -164,9 +170,9 @@ public class LlmClient {
         return turn;
     }
 
-    /** One tool's result, in the turn shape Groq expects. */
+    /** One tool's result, in the turn shape the API expects: the call it answers, and the text. */
     public static Map<String, Object> toolResultTurn(LlmReply.ToolCall call, String content) {
-        return Map.of("role", "tool", "tool_call_id", call.id(), "name", call.name(), "content", content);
+        return Map.of("role", "tool", "tool_call_id", call.id(), "content", content);
     }
 
     private Map<String, Object> post(Map<String, Object> body) {
@@ -228,7 +234,7 @@ public class LlmClient {
                 reasoning == null ? null : reasoning.toString()));
     }
 
-    /** Groq sends integers; anything else (missing, a string) counts as nothing. */
+    /** The API sends integers; anything else (missing, a string) counts as nothing. */
     private static int intOf(Object value) {
         return value instanceof Number n ? n.intValue() : 0;
     }

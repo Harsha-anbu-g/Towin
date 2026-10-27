@@ -81,7 +81,7 @@ class AssistantServiceSpendTest {
     }
 
     @Test
-    void anUnreadableQuestion_neverReachesGroq_soBooksNothing() {
+    void anUnreadableQuestion_neverReachesTheModel_soBooksNothing() {
         service.answer(ask("​​"), null, "en");
 
         verify(llm, never()).complete(anyString(), any());

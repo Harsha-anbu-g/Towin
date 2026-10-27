@@ -188,10 +188,10 @@ export function privacySections(email) {
         + 'documents are kept in Amazon S3, also in the United States. The Ask AI helper '
         + 'sends your question, the recent messages of that chat, and a short summary of '
         + 'your own activity (your first name, role, trust score, streak, and how many '
-        + 'connections and requests you have) to Groq to write its answer. If you ask about '
-        + 'your connections, family or requests, it also sends their first names, how you '
-        + 'are linked, and the request titles. Your question alone goes to OpenAI to find '
-        + 'the matching page of the guide. Neither gets your email address or phone number.' },
+        + 'connections and requests you have) to OpenAI to write its answer and to find '
+        + 'the matching page of the guide. If you ask about your connections, family or '
+        + 'requests, it also sends their first names, how you are linked, and the request '
+        + 'titles. OpenAI never gets your email address or phone number.' },
 
     { h: 'Location',
       p: 'If you share your location, we use it only to show you people who are nearby. You can '

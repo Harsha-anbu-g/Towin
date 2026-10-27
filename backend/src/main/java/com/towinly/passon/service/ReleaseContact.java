@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * read years later, by somebody in the week after a death, and it is the only route they have
  * into the release procedure. So it has to be a mailbox a person actually reads, which is an
  * operational fact about a deployment rather than a fact about the code — exactly like
- * {@code ADMIN_EMAIL} and {@code GROQ_API_KEY}, and it is set the same way.
+ * {@code ADMIN_EMAIL} and {@code OPENAI_API_KEY}, and it is set the same way.
  *
  * <h2>Why there is no default</h2>
  * A blank value means {@link #email()} is null and every screen says plainly that no address

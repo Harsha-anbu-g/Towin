@@ -178,7 +178,7 @@ class AssistantRateLimiterTest {
 
         assertThat(limiter.trackedKeys()).isEqualTo(MAX_TRACKED);
     }
-    // --- the daily token ceiling: spend in the unit Groq bills ---
+    // --- the daily token ceiling: spend in the unit OpenAI bills ---
 
     @Test
     void chargedTokens_addUp() {

@@ -115,20 +115,21 @@ nominatim:
 zippopotam:
   base-url: ${ZIPPOPOTAM_BASE_URL:https://api.zippopotam.us}
 
-# "Ask AI" tortoise help assistant. Uses Groq's free OpenAI-compatible API. The
-# key lives ONLY here (env var) — never in the browser or the repo. Blank key or
+# "Ask AI" tortoise help assistant. OpenAI's Chat Completions API by default, on
+# the same OPENAI_API_KEY as the embeddings below: one vendor, one key. Any
+# vendor that copies the shape works through LLM_BASE_URL + LLM_API_KEY. The key
+# lives ONLY here (env var) — never in the browser or the repo. Blank key or
 # enabled=false makes the assistant reply with a graceful "not available" message
-# instead of calling out. Model note: llama-3.1-8b / llama-3.3-70b are being
-# deprecated on Groq (2026) — default to the gpt-oss line.
-groq:
-  api-key: ${GROQ_API_KEY:}
-  base-url: ${GROQ_BASE_URL:https://api.groq.com/openai/v1}
-  model: ${GROQ_MODEL:openai/gpt-oss-120b}
-  enabled: ${GROQ_ENABLED:true}
-  # gpt-oss is a reasoning model; "low" stops it burning the token budget on
-  # thinking and truncating the reply. Set blank if you switch to a non-reasoning
-  # model (e.g. a Llama instruct model) that rejects this field.
-  reasoning-effort: ${GROQ_REASONING_EFFORT:low}
+# instead of calling out. Groq's free tier served this until 2026-10-27; its 8,000
+# tokens a minute could not carry one 6,500-token question after another.
+llm:
+  api-key: ${LLM_API_KEY:${OPENAI_API_KEY:}}
+  base-url: ${LLM_BASE_URL:https://api.openai.com/v1}
+  model: ${LLM_MODEL:gpt-6-luna}
+  enabled: ${LLM_ENABLED:true}
+  # gpt-6-luna calls tools on Chat Completions only with reasoning off, and off is
+  # also the quickest answer. Set blank for a model that rejects the field.
+  reasoning-effort: ${LLM_REASONING_EFFORT:none}
 
 # Ask AI is public and every answer costs money, so spending is capped as well as
 # throttled. Per-visitor limits live in AssistantRateLimiter; this is the
@@ -137,10 +138,10 @@ groq:
 # once it is spent, which is deliberate.
 assistant:
   max-calls-per-day: ${ASSISTANT_MAX_CALLS_PER_DAY:2000}
-  # Tokens are what Groq bills. A Tamil or French day costs two to four times the
+  # Tokens are what OpenAI bills. A Tamil or French day costs two to four times the
   # tokens of an English one for the same characters, so this is the ceiling that
-  # tracks the bill, and the one to set from the plan's daily token limit in the
-  # Groq console. Each answer's tokens are logged ("Ask AI: answered ...") and
+  # tracks the bill, and the one to set against the usage alert in the OpenAI
+  # billing page. Each answer's tokens are logged ("Ask AI: answered ...") and
   # sent to PostHog as ask_ai_answered.
   max-tokens-per-day: ${ASSISTANT_MAX_TOKENS_PER_DAY:2000000}
 
@@ -151,7 +152,7 @@ assistant:
 # whole thing off: the guide is not indexed, questions are not embedded, and Ask
 # AI answers from the knowledge base alone, exactly as before.
 embeddings:
-  api-key: ${EMBEDDINGS_API_KEY:}
+  api-key: ${EMBEDDINGS_API_KEY:${OPENAI_API_KEY:}}
   base-url: ${EMBEDDINGS_BASE_URL:https://api.openai.com/v1}
   model: ${EMBEDDINGS_MODEL:text-embedding-3-small}
   dimensions: ${EMBEDDINGS_DIMENSIONS:1536}

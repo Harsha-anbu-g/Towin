@@ -47,12 +47,13 @@ import static org.mockito.Mockito.when;
  * tokens, so it runs only on purpose:
  *
  * <pre>
- *   TOWINLY_AI_EVALS=true GROQ_API_KEY=... ./mvnw -q -Dtest=AssistantEvalsTest test
+ *   TOWINLY_AI_EVALS=true OPENAI_API_KEY=... ./mvnw -q -Dtest=AssistantEvalsTest test
  * </pre>
  *
- * <p>Optional: {@code GROQ_MODEL} (default openai/gpt-oss-120b) and
- * {@code TOWINLY_AI_EVALS_DELAY_MS} (default 2000, the pause between questions so
- * a free-tier rate limit is not tripped). The scorecard is printed to the test
+ * <p>Optional: {@code LLM_API_KEY} (wins over OPENAI_API_KEY), {@code LLM_BASE_URL},
+ * {@code LLM_MODEL} (default gpt-6-luna), {@code LLM_REASONING_EFFORT} (default none)
+ * and {@code TOWINLY_AI_EVALS_DELAY_MS} (default 500, the pause between questions,
+ * a courtesy to the rate limit). The scorecard is printed to the test
  * output with the SHA-256 of the prompt text it was scored against, so a result
  * can be tied to an exact prompt. Signed-in questions are asked as Mary, the
  * fixed persona below; the data services are mocks so nothing touches a database.
@@ -64,9 +65,9 @@ class AssistantEvalsTest {
 
     @Test
     void everyCasePasses() throws Exception {
-        String key = System.getenv("GROQ_API_KEY");
-        Assumptions.assumeTrue(key != null && !key.isBlank(), "GROQ_API_KEY is not set");
-        long delayMs = Long.parseLong(System.getenv().getOrDefault("TOWINLY_AI_EVALS_DELAY_MS", "2000"));
+        String key = System.getenv().getOrDefault("LLM_API_KEY", System.getenv("OPENAI_API_KEY"));
+        Assumptions.assumeTrue(key != null && !key.isBlank(), "OPENAI_API_KEY is not set");
+        long delayMs = Long.parseLong(System.getenv().getOrDefault("TOWINLY_AI_EVALS_DELAY_MS", "500"));
 
         AssistantService service = realService(key);
         List<EvalCase> cases = EvalCases.load();
@@ -97,11 +98,11 @@ class AssistantEvalsTest {
     /** The production wiring, minus Spring and minus the database. */
     private static AssistantService realService(String key) {
         LlmClient llm = new LlmClient(
-                System.getenv().getOrDefault("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+                System.getenv().getOrDefault("LLM_BASE_URL", "https://api.openai.com/v1"),
                 key,
-                System.getenv().getOrDefault("GROQ_MODEL", "openai/gpt-oss-120b"),
+                System.getenv().getOrDefault("LLM_MODEL", "gpt-6-luna"),
                 true,
-                System.getenv().getOrDefault("GROQ_REASONING_EFFORT", "low"));
+                System.getenv().getOrDefault("LLM_REASONING_EFFORT", "none"));
         AssistantSpend spend = new AssistantSpend(
                 new AssistantRateLimiter(Integer.MAX_VALUE, Long.MAX_VALUE),
                 new PostHogService("", "https://us.i.posthog.com"));

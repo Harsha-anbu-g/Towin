@@ -10,7 +10,7 @@ import java.util.UUID;
 
 /**
  * Books what one Ask AI answer cost: charges the daily token ceiling, writes one
- * log line, and sends one analytics event. Tokens are what Groq bills, so they
+ * log line, and sends one analytics event. Tokens are what OpenAI bills, so they
  * are the number to watch; a day of Tamil questions costs two to four times the
  * tokens of the same day in English, which no character budget can see.
  *
@@ -36,7 +36,7 @@ public class AssistantSpend {
     /**
      * Records one answered question.
      *
-     * @param reply     the answer Groq returned, with its token usage
+     * @param reply     the answer the model returned, with its token usage
      * @param language  "en", "fr" or "ta"
      * @param userId    the signed-in user, or null for a visitor
      * @param elapsedMs wall time of the model call

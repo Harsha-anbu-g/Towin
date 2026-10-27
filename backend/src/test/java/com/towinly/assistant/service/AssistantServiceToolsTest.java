@@ -93,11 +93,12 @@ class AssistantServiceToolsTest {
 
         assertThat(reply).isEqualTo("Rita is at Phone Ready.");
         ArgumentCaptor<List<Map<String, Object>>> second = ArgumentCaptor.forClass(List.class);
-        // Groq's documented follow-up: no tools offered again, the model can only answer in words.
+        // The documented follow-up: no tools offered again, the model can only answer in words.
         verify(llm).complete(anyString(), second.capture(),
                 org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), eq(false));
         List<Map<String, Object>> turns = second.getValue();
-        // The echoed assistant turn must carry a string content: Groq rejects a missing one with a 400.
+        // The echoed assistant turn carries a string content: OpenAI accepts an empty one, Groq
+        // rejected a missing one with a 400.
         assertThat(turns.get(turns.size() - 2)).containsEntry("role", "assistant")
                 .containsEntry("content", "")
                 .containsKey("tool_calls");

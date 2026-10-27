@@ -3,20 +3,21 @@ package com.towinly.assistant.service;
 import java.util.List;
 
 /**
- * One answered Groq call: the words, what they cost in the unit Groq bills, any
+ * One answered model call: the words, what they cost in the unit the API bills, any
  * tools the model asked to run instead of (or before) answering, and the model's
  * own reasoning when it sent one. Token counts come from the response's
- * {@code usage} object. A field Groq did not send reads as 0, so accounting can
+ * {@code usage} object. A field the API did not send reads as 0, so accounting can
  * never stop an answer.
  *
- * <p>{@code reasoning} is what the gpt-oss models return beside {@code content}.
- * It is kept only so a tool round can echo the model's turn back exactly as Groq
- * documents; it is never shown to anyone and never counted as the answer.
+ * <p>{@code reasoning} is what some vendors' reasoning models return beside
+ * {@code content}. It is kept only so a tool round can echo the model's turn back
+ * whole, as the API documents; it is never shown to anyone and never counted as
+ * the answer.
  */
 public record LlmReply(String text, int promptTokens, int completionTokens, int cachedTokens,
                         List<ToolCall> toolCalls, String reasoning) {
 
-    /** A tool the model wants run: Groq's call id, the function name, the JSON arguments. */
+    /** A tool the model wants run: the API's call id, the function name, the JSON arguments. */
     public record ToolCall(String id, String name, String arguments) {}
 
     public LlmReply {
