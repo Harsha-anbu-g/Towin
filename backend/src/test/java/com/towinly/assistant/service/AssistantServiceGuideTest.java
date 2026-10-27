@@ -24,17 +24,17 @@ import static org.mockito.Mockito.when;
 /** The guide passages ride in the system prompt when the retriever has some, and only then. */
 class AssistantServiceGuideTest {
 
-    private GroqClient groq;
+    private LlmClient llm;
     private GuideRetriever retriever;
     private AssistantService service;
 
     @BeforeEach
     void setUp() {
-        groq = mock(GroqClient.class);
-        when(groq.isConfigured()).thenReturn(true);
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("ok", 0, 0, 0)));
+        llm = mock(LlmClient.class);
+        when(llm.isConfigured()).thenReturn(true);
+        when(llm.complete(anyString(), any())).thenReturn(Optional.of(new LlmReply("ok", 0, 0, 0)));
         retriever = mock(GuideRetriever.class);
-        service = new AssistantService(groq,
+        service = new AssistantService(llm,
                 mock(ProfileService.class), mock(StreakService.class), mock(ConnectionRepository.class),
                 mock(NeedRepository.class), mock(TrustScoreService.class), mock(AssistantSpend.class),
                 mock(AssistantTools.class), retriever);
@@ -45,7 +45,7 @@ class AssistantServiceGuideTest {
         r.setMessage(question);
         service.answer(r, null, "en");
         ArgumentCaptor<String> prompt = ArgumentCaptor.forClass(String.class);
-        verify(groq).complete(prompt.capture(), any());
+        verify(llm).complete(prompt.capture(), any());
         return prompt.getValue();
     }
 

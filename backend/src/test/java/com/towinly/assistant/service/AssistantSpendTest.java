@@ -31,7 +31,7 @@ class AssistantSpendTest {
 
     @Test
     void chargesTheDailyTokenCeiling_withPromptPlusCompletion() {
-        spend.record(new GroqReply("x", 4000, 120, 0), "en", null, 900);
+        spend.record(new LlmReply("x", 4000, 120, 0), "en", null, 900);
 
         verify(limiter).charge(4120);
     }
@@ -41,7 +41,7 @@ class AssistantSpendTest {
     void sendsOneAnalyticsEvent_namingTheUserWhenSignedIn() {
         UUID user = UUID.randomUUID();
 
-        spend.record(new GroqReply("x", 4000, 120, 3800), "ta", user, 1200);
+        spend.record(new LlmReply("x", 4000, 120, 3800), "ta", user, 1200);
 
         ArgumentCaptor<Map<String, Object>> props = ArgumentCaptor.forClass(Map.class);
         verify(postHog).capture(eq(user.toString()), eq("ask_ai_answered"), props.capture());
@@ -56,7 +56,7 @@ class AssistantSpendTest {
 
     @Test
     void aVisitorIsBookedAsAnonymous_neverByAddress() {
-        spend.record(new GroqReply("x", 10, 5, 0), "fr", null, 10);
+        spend.record(new LlmReply("x", 10, 5, 0), "fr", null, 10);
 
         verify(postHog).capture(eq("anonymous"), eq("ask_ai_answered"), any());
     }

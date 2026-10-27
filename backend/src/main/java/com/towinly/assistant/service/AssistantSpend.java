@@ -41,7 +41,7 @@ public class AssistantSpend {
      * @param userId    the signed-in user, or null for a visitor
      * @param elapsedMs wall time of the model call
      */
-    public void record(GroqReply reply, String language, UUID userId, long elapsedMs) {
+    public void record(LlmReply reply, String language, UUID userId, long elapsedMs) {
         rateLimiter.charge(reply.totalTokens());
         boolean signedIn = userId != null;
         log.info("Ask AI: answered lang={} signedIn={} promptTokens={} completionTokens={} cachedTokens={} ms={}",

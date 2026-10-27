@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** A proposal call becomes one app action: the function's name, and only the arguments it allows, made safe. */
 class AssistantActionsTest {
 
-    private static GroqReply.ToolCall call(String tool, String json) {
-        return new GroqReply.ToolCall("c1", tool, json);
+    private static LlmReply.ToolCall call(String tool, String json) {
+        return new LlmReply.ToolCall("c1", tool, json);
     }
 
     @Test

@@ -25,14 +25,14 @@ import static org.mockito.Mockito.when;
 /** The two guards on the way in and the way out. */
 class AssistantServiceGuardTest {
 
-    private GroqClient groq;
+    private LlmClient llm;
     private AssistantService service;
 
     @BeforeEach
     void setUp() {
-        groq = mock(GroqClient.class);
-        when(groq.isConfigured()).thenReturn(true);
-        service = new AssistantService(groq,
+        llm = mock(LlmClient.class);
+        when(llm.isConfigured()).thenReturn(true);
+        service = new AssistantService(llm,
                 mock(ProfileService.class), mock(StreakService.class), mock(ConnectionRepository.class),
                 mock(NeedRepository.class), mock(TrustScoreService.class), mock(AssistantSpend.class),
                 mock(AssistantTools.class), mock(GuideRetriever.class));
@@ -48,26 +48,26 @@ class AssistantServiceGuardTest {
     @SuppressWarnings("unchecked")
     @Test
     void phoneNumbersAndEmails_neverLeaveForTheModel() {
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("ok", 0, 0, 0)));
+        when(llm.complete(anyString(), any())).thenReturn(Optional.of(new LlmReply("ok", 0, 0, 0)));
 
         service.answer(ask("My number is 514-555-0199", new ChatMessage("user", "write to mary@example.com")), null, "en");
 
         ArgumentCaptor<List<ChatMessage>> sent = ArgumentCaptor.forClass(List.class);
-        verify(groq).complete(anyString(), sent.capture());
+        verify(llm).complete(anyString(), sent.capture());
         assertThat(sent.getValue()).extracting(ChatMessage::getContent)
                 .containsExactly("write to [email]", "My number is [number]");
     }
 
     @Test
     void aReplyThatAsksForAPassword_isWithheld() {
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("Please type your password here.", 1, 1, 0)));
+        when(llm.complete(anyString(), any())).thenReturn(Optional.of(new LlmReply("Please type your password here.", 1, 1, 0)));
 
         assertThat(service.answer(ask("help"), null, "en")).startsWith("Sorry");
     }
 
     @Test
     void aKindReply_passes() {
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("There are 7 stages.", 1, 1, 0)));
+        when(llm.complete(anyString(), any())).thenReturn(Optional.of(new LlmReply("There are 7 stages.", 1, 1, 0)));
 
         assertThat(service.answer(ask("How many stages?"), null, "en")).isEqualTo("There are 7 stages.");
     }

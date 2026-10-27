@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class EmailService {
 
-    // Bounded timeouts, as in GroqClient and GeocodingService: a send happens
+    // Bounded timeouts, as in LlmClient and GeocodingService: a send happens
     // inside the signup request, so a hung Brevo call would park a Tomcat thread
     // indefinitely. Read is roomier than geocoding's 3s (mail is not latency
     // critical) but still far short of holding a thread open.

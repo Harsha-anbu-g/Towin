@@ -29,7 +29,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
-public class GroqClient {
+public class LlmClient {
 
     private static final long RETRY_DELAY_MS = 700;
 
@@ -39,7 +39,7 @@ public class GroqClient {
     private final boolean enabled;
     private final String reasoningEffort;
 
-    public GroqClient(
+    public LlmClient(
             @Value("${groq.base-url:https://api.groq.com/openai/v1}") String baseUrl,
             @Value("${groq.api-key:}") String apiKey,
             @Value("${groq.model:openai/gpt-oss-120b}") String model,
@@ -69,7 +69,7 @@ public class GroqClient {
      * on any misconfiguration, timeout, or API error so the caller can fall back to
      * a friendly message.
      */
-    public Optional<GroqReply> complete(String systemPrompt, List<ChatMessage> conversation) {
+    public Optional<LlmReply> complete(String systemPrompt, List<ChatMessage> conversation) {
         return complete(systemPrompt, toMessages(conversation), null, null, true);
     }
 
@@ -81,7 +81,7 @@ public class GroqClient {
      * retry on a busy moment; the second call of a tool round must not retry, or
      * the whole answer could outrun the app's 30 s timeout.
      */
-    public Optional<GroqReply> complete(String systemPrompt, List<Map<String, Object>> messages,
+    public Optional<LlmReply> complete(String systemPrompt, List<Map<String, Object>> messages,
                                         List<Map<String, Object>> tools, String toolChoice, boolean retryOnce) {
         if (!isConfigured()) {
             log.warn("Ask AI called but Groq is not configured (missing key or disabled).");
@@ -116,7 +116,7 @@ public class GroqClient {
                 // A busy moment at Groq (rate limit, 5xx, a dropped connection) usually
                 // clears within a second. One quiet retry turns most of those into an
                 // answer instead of "Sorry, I can't answer just now".
-                log.info("Ask AI (Groq) transient failure, retrying once: {}", first.getMessage());
+                log.info("Ask AI (model) transient failure, retrying once: {}", first.getMessage());
                 sleep(RETRY_DELAY_MS);
                 response = post(body);
             }
@@ -124,11 +124,11 @@ public class GroqClient {
             return parse(response);
         } catch (RestClientResponseException e) {
             // Groq's body names the field it rejected; without it a 400 is a guess.
-            log.warn("Ask AI (Groq) call failed: {} {}", e.getStatusCode().value(),
+            log.warn("Ask AI (model) call failed: {} {}", e.getStatusCode().value(),
                     abbreviate(e.getResponseBodyAsString()));
             return Optional.empty();
         } catch (Exception e) {
-            log.warn("Ask AI (Groq) call failed: {}", e.getMessage());
+            log.warn("Ask AI (model) call failed: {}", e.getMessage());
             return Optional.empty();
         }
     }
@@ -150,9 +150,9 @@ public class GroqClient {
      * {@code reasoning}. Sending only the tool calls was the live failure of
      * 2026-10-25: every tool question ended in the fallback sentence.
      */
-    public static Map<String, Object> toolCallTurn(GroqReply first) {
+    public static Map<String, Object> toolCallTurn(LlmReply first) {
         List<Map<String, Object>> echoed = new ArrayList<>();
-        for (GroqReply.ToolCall c : first.toolCalls()) {
+        for (LlmReply.ToolCall c : first.toolCalls()) {
             echoed.add(Map.of("id", c.id(), "type", "function",
                     "function", Map.of("name", c.name(), "arguments", c.arguments())));
         }
@@ -165,7 +165,7 @@ public class GroqClient {
     }
 
     /** One tool's result, in the turn shape Groq expects. */
-    public static Map<String, Object> toolResultTurn(GroqReply.ToolCall call, String content) {
+    public static Map<String, Object> toolResultTurn(LlmReply.ToolCall call, String content) {
         return Map.of("role", "tool", "tool_call_id", call.id(), "name", call.name(), "content", content);
     }
 
@@ -205,12 +205,12 @@ public class GroqClient {
      * response. Empty when there is neither text nor a tool call. Package-private so
      * a test can feed it a response map without an HTTP call.
      */
-    static Optional<GroqReply> parse(Map<String, Object> response) {
+    static Optional<LlmReply> parse(Map<String, Object> response) {
         Map<?, ?> message = messageOf(response);
         if (message == null) return Optional.empty();
         Object content = message.get("content");
         String text = content == null ? "" : content.toString().trim();
-        List<GroqReply.ToolCall> calls = toolCallsOf(message);
+        List<LlmReply.ToolCall> calls = toolCallsOf(message);
         if (text.isBlank() && calls.isEmpty()) return Optional.empty();
 
         int prompt = 0;
@@ -224,7 +224,7 @@ public class GroqClient {
             }
         }
         Object reasoning = message.get("reasoning");
-        return Optional.of(new GroqReply(text, prompt, completion, cached, calls,
+        return Optional.of(new LlmReply(text, prompt, completion, cached, calls,
                 reasoning == null ? null : reasoning.toString()));
     }
 
@@ -249,17 +249,17 @@ public class GroqClient {
         return null;
     }
 
-    private static List<GroqReply.ToolCall> toolCallsOf(Map<?, ?> message) {
+    private static List<LlmReply.ToolCall> toolCallsOf(Map<?, ?> message) {
         Object raw = message.get("tool_calls");
         if (!(raw instanceof List<?> list)) return List.of();
-        List<GroqReply.ToolCall> calls = new ArrayList<>();
+        List<LlmReply.ToolCall> calls = new ArrayList<>();
         for (Object o : list) {
             if (!(o instanceof Map<?, ?> call) || !(call.get("function") instanceof Map<?, ?> fn)) continue;
             Object id = call.get("id");
             Object name = fn.get("name");
             if (id == null || name == null) continue;
             Object args = fn.get("arguments");
-            calls.add(new GroqReply.ToolCall(id.toString(), name.toString(), args == null ? "{}" : args.toString()));
+            calls.add(new LlmReply.ToolCall(id.toString(), name.toString(), args == null ? "{}" : args.toString()));
         }
         return calls;
     }

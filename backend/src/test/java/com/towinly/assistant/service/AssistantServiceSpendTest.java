@@ -29,17 +29,17 @@ import static org.mockito.Mockito.when;
 /** Every answer that reaches a person is booked; a failed call books nothing. */
 class AssistantServiceSpendTest {
 
-    private GroqClient groq;
+    private LlmClient llm;
     private AssistantSpend spend;
     private AssistantService service;
 
     @BeforeEach
     void setUp() {
-        groq = mock(GroqClient.class);
-        when(groq.isConfigured()).thenReturn(true);
+        llm = mock(LlmClient.class);
+        when(llm.isConfigured()).thenReturn(true);
         spend = mock(AssistantSpend.class);
         service = new AssistantService(
-                groq,
+                llm,
                 mock(ProfileService.class),
                 mock(StreakService.class),
                 mock(ConnectionRepository.class),
@@ -59,21 +59,21 @@ class AssistantServiceSpendTest {
     @Test
     void anAnsweredQuestion_isBookedWithItsTokensLanguageAndUser() {
         // Signed in, so the tool-enabled call is the one that answers.
-        when(groq.complete(anyString(), anyList(), any(), any(), anyBoolean()))
-                .thenReturn(Optional.of(new GroqReply("Bonjour.", 4000, 120, 3800)));
+        when(llm.complete(anyString(), anyList(), any(), any(), anyBoolean()))
+                .thenReturn(Optional.of(new LlmReply("Bonjour.", 4000, 120, 3800)));
         UUID user = UUID.randomUUID();
 
         String reply = service.answer(ask("Quel est mon score?"), user, "fr");
 
         assertThat(reply).isEqualTo("Bonjour.");
-        ArgumentCaptor<GroqReply> booked = ArgumentCaptor.forClass(GroqReply.class);
+        ArgumentCaptor<LlmReply> booked = ArgumentCaptor.forClass(LlmReply.class);
         verify(spend).record(booked.capture(), eq("fr"), eq(user), anyLong());
         assertThat(booked.getValue().totalTokens()).isEqualTo(4120);
     }
 
     @Test
     void aFailedCall_booksNothing() {
-        when(groq.complete(anyString(), any())).thenReturn(Optional.empty());
+        when(llm.complete(anyString(), any())).thenReturn(Optional.empty());
 
         service.answer(ask("Hello"), null, "en");
 
@@ -84,7 +84,7 @@ class AssistantServiceSpendTest {
     void anUnreadableQuestion_neverReachesGroq_soBooksNothing() {
         service.answer(ask("​​"), null, "en");
 
-        verify(groq, never()).complete(anyString(), any());
+        verify(llm, never()).complete(anyString(), any());
         verify(spend, never()).record(any(), anyString(), any(), anyLong());
     }
 }

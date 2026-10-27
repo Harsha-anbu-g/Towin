@@ -33,20 +33,20 @@ import static org.mockito.Mockito.when;
 class AssistantServiceToolsTest {
 
     private static final UUID ME = UUID.randomUUID();
-    private static final GroqReply.ToolCall CALL = new GroqReply.ToolCall("call_1", "get_my_connections", "{}");
+    private static final LlmReply.ToolCall CALL = new LlmReply.ToolCall("call_1", "get_my_connections", "{}");
 
-    private GroqClient groq;
+    private LlmClient llm;
     private AssistantTools tools;
     private AssistantSpend spend;
     private AssistantService service;
 
     @BeforeEach
     void setUp() {
-        groq = mock(GroqClient.class);
-        when(groq.isConfigured()).thenReturn(true);
+        llm = mock(LlmClient.class);
+        when(llm.isConfigured()).thenReturn(true);
         tools = mock(AssistantTools.class);
         spend = mock(AssistantSpend.class);
-        service = new AssistantService(groq,
+        service = new AssistantService(llm,
                 mock(ProfileService.class), mock(StreakService.class), mock(ConnectionRepository.class),
                 mock(NeedRepository.class), mock(TrustScoreService.class), spend, tools,
                 mock(GuideRetriever.class));
@@ -60,22 +60,22 @@ class AssistantServiceToolsTest {
 
     @Test
     void aVisitor_getsNoTools_andTheOldCall() {
-        when(groq.complete(anyString(), anyList())).thenReturn(Optional.of(new GroqReply("Hi.", 1, 1, 0)));
+        when(llm.complete(anyString(), anyList())).thenReturn(Optional.of(new LlmReply("Hi.", 1, 1, 0)));
 
         assertThat(service.answer(ask("Hello"), null, "en")).isEqualTo("Hi.");
 
-        verify(groq).complete(anyString(), anyList());
-        verify(groq, never()).complete(anyString(), anyList(), any(), any(), anyBoolean());
+        verify(llm).complete(anyString(), anyList());
+        verify(llm, never()).complete(anyString(), anyList(), any(), any(), anyBoolean());
     }
 
     @Test
     void aSignedInPerson_isOfferedTheThreeTools_withAutoChoice() {
-        when(groq.complete(anyString(), anyList(), any(), any(), anyBoolean()))
-                .thenReturn(Optional.of(new GroqReply("Your score is 12.", 10, 5, 0)));
+        when(llm.complete(anyString(), anyList(), any(), any(), anyBoolean()))
+                .thenReturn(Optional.of(new LlmReply("Your score is 12.", 10, 5, 0)));
 
         assertThat(service.answer(ask("What is my score?"), ME, "en")).isEqualTo("Your score is 12.");
 
-        verify(groq).complete(anyString(), anyList(), eq(AssistantTools.DEFINITIONS), eq("auto"), eq(true));
+        verify(llm).complete(anyString(), anyList(), eq(AssistantTools.DEFINITIONS), eq("auto"), eq(true));
         verify(tools, never()).run(anyString(), any());
         verify(spend).record(any(), eq("en"), eq(ME), anyLong());
     }
@@ -83,18 +83,18 @@ class AssistantServiceToolsTest {
     @SuppressWarnings("unchecked")
     @Test
     void aToolCall_isRun_andTheSecondCallGetsTheResult_withNoMoreTools() {
-        when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
-                .thenReturn(Optional.of(new GroqReply("", 4000, 20, 3800, List.of(CALL))));
+        when(llm.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
+                .thenReturn(Optional.of(new LlmReply("", 4000, 20, 3800, List.of(CALL))));
         when(tools.run("get_my_connections", ME)).thenReturn("- Rita (Helper): active, at Phone Ready.");
-        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
-                .thenReturn(Optional.of(new GroqReply("Rita is at Phone Ready.", 4300, 90, 4000)));
+        when(llm.complete(anyString(), anyList(), any(), any(), eq(false)))
+                .thenReturn(Optional.of(new LlmReply("Rita is at Phone Ready.", 4300, 90, 4000)));
 
         String reply = service.answer(ask("Where is Rita?"), ME, "en");
 
         assertThat(reply).isEqualTo("Rita is at Phone Ready.");
         ArgumentCaptor<List<Map<String, Object>>> second = ArgumentCaptor.forClass(List.class);
         // Groq's documented follow-up: no tools offered again, the model can only answer in words.
-        verify(groq).complete(anyString(), second.capture(),
+        verify(llm).complete(anyString(), second.capture(),
                 org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), eq(false));
         List<Map<String, Object>> turns = second.getValue();
         // The echoed assistant turn must carry a string content: Groq rejects a missing one with a 400.
@@ -105,7 +105,7 @@ class AssistantServiceToolsTest {
                 .containsEntry("tool_call_id", "call_1")
                 .containsEntry("content", "- Rita (Helper): active, at Phone Ready.");
 
-        ArgumentCaptor<GroqReply> booked = ArgumentCaptor.forClass(GroqReply.class);
+        ArgumentCaptor<LlmReply> booked = ArgumentCaptor.forClass(LlmReply.class);
         verify(spend).record(booked.capture(), eq("en"), eq(ME), anyLong());
         assertThat(booked.getValue().promptTokens()).isEqualTo(8300);
         assertThat(booked.getValue().completionTokens()).isEqualTo(110);
@@ -113,41 +113,41 @@ class AssistantServiceToolsTest {
 
     @Test
     void ifTheSecondCallFails_theFirstIsStillBooked_andTheFallbackIsSaid() {
-        when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
-                .thenReturn(Optional.of(new GroqReply("", 4000, 20, 0, List.of(CALL))));
+        when(llm.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
+                .thenReturn(Optional.of(new LlmReply("", 4000, 20, 0, List.of(CALL))));
         when(tools.run(anyString(), any())).thenReturn("No connections yet.");
-        when(groq.complete(anyString(), anyList(), any(), any(), eq(false))).thenReturn(Optional.empty());
+        when(llm.complete(anyString(), anyList(), any(), any(), eq(false))).thenReturn(Optional.empty());
 
         assertThat(service.answer(ask("Who is waiting?"), ME, "en")).startsWith("Sorry");
 
-        ArgumentCaptor<GroqReply> booked = ArgumentCaptor.forClass(GroqReply.class);
+        ArgumentCaptor<LlmReply> booked = ArgumentCaptor.forClass(LlmReply.class);
         verify(spend).record(booked.capture(), eq("en"), eq(ME), anyLong());
         assertThat(booked.getValue().totalTokens()).isEqualTo(4020);
     }
 
     @Test
     void severalToolCalls_inOneReply_areAllRun() {
-        GroqReply.ToolCall fam = new GroqReply.ToolCall("call_2", "get_my_family", "{}");
-        when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
-                .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(CALL, fam))));
+        LlmReply.ToolCall fam = new LlmReply.ToolCall("call_2", "get_my_family", "{}");
+        when(llm.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
+                .thenReturn(Optional.of(new LlmReply("", 1, 1, 0, List.of(CALL, fam))));
         when(tools.run(anyString(), any())).thenReturn("nothing");
-        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
-                .thenReturn(Optional.of(new GroqReply("Done.", 1, 1, 0)));
+        when(llm.complete(anyString(), anyList(), any(), any(), eq(false)))
+                .thenReturn(Optional.of(new LlmReply("Done.", 1, 1, 0)));
 
         service.answer(ask("Everything?"), ME, "en");
 
         verify(tools).run("get_my_connections", ME);
         verify(tools).run("get_my_family", ME);
-        verify(groq, times(2)).complete(anyString(), anyList(), any(), any(), anyBoolean());
+        verify(llm, times(2)).complete(anyString(), anyList(), any(), any(), anyBoolean());
     }
     @Test
     void aProposeCall_marksTheAnswerWithTheAction_andTheReplyStillComesFromTheModel() {
-        GroqReply.ToolCall propose = new GroqReply.ToolCall("call_9", "propose_check_in", "{}");
-        when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
-                .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(propose))));
+        LlmReply.ToolCall propose = new LlmReply.ToolCall("call_9", "propose_check_in", "{}");
+        when(llm.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
+                .thenReturn(Optional.of(new LlmReply("", 1, 1, 0, List.of(propose))));
         when(tools.run("propose_check_in", ME)).thenReturn("Proposed.");
-        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
-                .thenReturn(Optional.of(new GroqReply("Tap Yes to check in.", 1, 1, 0)));
+        when(llm.complete(anyString(), anyList(), any(), any(), eq(false)))
+                .thenReturn(Optional.of(new LlmReply("Tap Yes to check in.", 1, 1, 0)));
 
         AssistantService.Answer answer = service.answerWithAction(ask("Check me in"), ME, "en");
 
@@ -157,11 +157,11 @@ class AssistantServiceToolsTest {
 
     @Test
     void aReadToolCall_hasNoAction() {
-        when(groq.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
-                .thenReturn(Optional.of(new GroqReply("", 1, 1, 0, List.of(CALL))));
+        when(llm.complete(anyString(), anyList(), any(), eq("auto"), eq(true)))
+                .thenReturn(Optional.of(new LlmReply("", 1, 1, 0, List.of(CALL))));
         when(tools.run(anyString(), any())).thenReturn("nothing");
-        when(groq.complete(anyString(), anyList(), any(), any(), eq(false)))
-                .thenReturn(Optional.of(new GroqReply("Nobody is waiting.", 1, 1, 0)));
+        when(llm.complete(anyString(), anyList(), any(), any(), eq(false)))
+                .thenReturn(Optional.of(new LlmReply("Nobody is waiting.", 1, 1, 0)));
 
         assertThat(service.answerWithAction(ask("Who is waiting?"), ME, "en").action()).isNull();
     }

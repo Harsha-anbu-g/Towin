@@ -9,10 +9,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * What GroqClient reads out of a chat-completions response: the words, and the
+ * What LlmClient reads out of a chat-completions response: the words, and the
  * token usage Groq bills. Fed as maps so no HTTP call is needed.
  */
-class GroqClientParseTest {
+class LlmClientParseTest {
 
     private static Map<String, Object> choices(String content) {
         return Map.of("choices", List.of(Map.of("message", Map.of("role", "assistant", "content", content))));
@@ -28,7 +28,7 @@ class GroqClientParseTest {
                         "total_tokens", 6458,
                         "prompt_tokens_details", Map.of("cached_tokens", 4608)));
 
-        Optional<GroqReply> reply = GroqClient.parse(response);
+        Optional<LlmReply> reply = LlmClient.parse(response);
 
         assertThat(reply).isPresent();
         assertThat(reply.get().text()).isEqualTo("Hello there.");
@@ -40,7 +40,7 @@ class GroqClientParseTest {
 
     @Test
     void missingUsage_readsAsZero_andStillAnswers() {
-        Optional<GroqReply> reply = GroqClient.parse(choices("Hello."));
+        Optional<LlmReply> reply = LlmClient.parse(choices("Hello."));
 
         assertThat(reply).isPresent();
         assertThat(reply.get().text()).isEqualTo("Hello.");
@@ -54,7 +54,7 @@ class GroqClientParseTest {
                 "choices", choices("Hello.").get("choices"),
                 "usage", Map.of("prompt_tokens", 10, "completion_tokens", 5));
 
-        GroqReply reply = GroqClient.parse(response).orElseThrow();
+        LlmReply reply = LlmClient.parse(response).orElseThrow();
 
         assertThat(reply.promptTokens()).isEqualTo(10);
         assertThat(reply.completionTokens()).isEqualTo(5);
@@ -67,7 +67,7 @@ class GroqClientParseTest {
                 "choices", choices("Hello.").get("choices"),
                 "usage", Map.of("prompt_tokens", "lots", "completion_tokens", 5));
 
-        GroqReply reply = GroqClient.parse(response).orElseThrow();
+        LlmReply reply = LlmClient.parse(response).orElseThrow();
 
         assertThat(reply.promptTokens()).isZero();
         assertThat(reply.completionTokens()).isEqualTo(5);
@@ -79,9 +79,9 @@ class GroqClientParseTest {
                 "choices", choices("   ").get("choices"),
                 "usage", Map.of("prompt_tokens", 10, "completion_tokens", 0));
 
-        assertThat(GroqClient.parse(response)).isEmpty();
-        assertThat(GroqClient.parse(null)).isEmpty();
-        assertThat(GroqClient.parse(Map.of())).isEmpty();
+        assertThat(LlmClient.parse(response)).isEmpty();
+        assertThat(LlmClient.parse(null)).isEmpty();
+        assertThat(LlmClient.parse(Map.of())).isEmpty();
     }
     @Test
     void readsToolCalls_whenTheModelAsksForOne() {
@@ -96,23 +96,23 @@ class GroqClientParseTest {
                 "choices", List.of(Map.of("message", message)),
                 "usage", Map.of("prompt_tokens", 100, "completion_tokens", 7));
 
-        GroqReply reply = GroqClient.parse(response).orElseThrow();
+        LlmReply reply = LlmClient.parse(response).orElseThrow();
 
         assertThat(reply.text()).isEmpty();
         assertThat(reply.hasToolCalls()).isTrue();
-        assertThat(reply.toolCalls()).containsExactly(new GroqReply.ToolCall("call_1", "get_my_connections", "{}"));
+        assertThat(reply.toolCalls()).containsExactly(new LlmReply.ToolCall("call_1", "get_my_connections", "{}"));
         assertThat(reply.reasoning()).isEqualTo("They ask about their helpers, so look up the connections.");
         assertThat(reply.promptTokens()).isEqualTo(100);
     }
 
     @Test
     void aPlainAnswer_hasNoReasoning_whenGroqSentNone() {
-        assertThat(GroqClient.parse(choices("Hello.")).orElseThrow().reasoning()).isNull();
+        assertThat(LlmClient.parse(choices("Hello.")).orElseThrow().reasoning()).isNull();
     }
 
     @Test
     void aPlainAnswer_hasNoToolCalls() {
-        GroqReply reply = GroqClient.parse(choices("Hello.")).orElseThrow();
+        LlmReply reply = LlmClient.parse(choices("Hello.")).orElseThrow();
 
         assertThat(reply.hasToolCalls()).isFalse();
         assertThat(reply.toolCalls()).isEmpty();
@@ -120,10 +120,10 @@ class GroqClientParseTest {
 
     @Test
     void addingTokensOf_sumsBothCalls_andKeepsThisText() {
-        GroqReply first = new GroqReply("", 4000, 20, 3800, List.of(new GroqReply.ToolCall("c", "t", "{}")));
-        GroqReply second = new GroqReply("Here you go.", 4300, 90, 4000);
+        LlmReply first = new LlmReply("", 4000, 20, 3800, List.of(new LlmReply.ToolCall("c", "t", "{}")));
+        LlmReply second = new LlmReply("Here you go.", 4300, 90, 4000);
 
-        GroqReply whole = second.addingTokensOf(first);
+        LlmReply whole = second.addingTokensOf(first);
 
         assertThat(whole.text()).isEqualTo("Here you go.");
         assertThat(whole.promptTokens()).isEqualTo(8300);
@@ -134,33 +134,33 @@ class GroqClientParseTest {
 
     @Test
     void messageHelpers_buildTheShapesGroqExpects() {
-        List<Map<String, Object>> turns = GroqClient.toMessages(List.of(
+        List<Map<String, Object>> turns = LlmClient.toMessages(List.of(
                 new com.towinly.assistant.dto.ChatMessage("user", "Hi"),
                 new com.towinly.assistant.dto.ChatMessage("assistant", "Hello")));
         assertThat(turns).containsExactly(
                 Map.of("role", "user", "content", "Hi"),
                 Map.of("role", "assistant", "content", "Hello"));
 
-        GroqReply.ToolCall call = new GroqReply.ToolCall("call_1", "get_my_family", "{}");
+        LlmReply.ToolCall call = new LlmReply.ToolCall("call_1", "get_my_family", "{}");
         List<Map<String, Object>> echoed = List.of(Map.of("id", "call_1", "type", "function",
                 "function", Map.of("name", "get_my_family", "arguments", "{}")));
 
         // Groq validates the echoed assistant turn: content is always a string, even when
         // the model only called a tool, and a gpt-oss turn carries its reasoning back.
-        GroqReply withReasoning = new GroqReply("", 1, 1, 0, List.of(call), "Look up the family first.");
-        assertThat(GroqClient.toolCallTurn(withReasoning)).isEqualTo(Map.of(
+        LlmReply withReasoning = new LlmReply("", 1, 1, 0, List.of(call), "Look up the family first.");
+        assertThat(LlmClient.toolCallTurn(withReasoning)).isEqualTo(Map.of(
                 "role", "assistant",
                 "content", "",
                 "reasoning", "Look up the family first.",
                 "tool_calls", echoed));
 
-        GroqReply withoutReasoning = new GroqReply("One moment.", 1, 1, 0, List.of(call));
-        assertThat(GroqClient.toolCallTurn(withoutReasoning)).isEqualTo(Map.of(
+        LlmReply withoutReasoning = new LlmReply("One moment.", 1, 1, 0, List.of(call));
+        assertThat(LlmClient.toolCallTurn(withoutReasoning)).isEqualTo(Map.of(
                 "role", "assistant",
                 "content", "One moment.",
                 "tool_calls", echoed));
 
-        assertThat(GroqClient.toolResultTurn(call, "No family linked.")).isEqualTo(Map.of(
+        assertThat(LlmClient.toolResultTurn(call, "No family linked.")).isEqualTo(Map.of(
                 "role", "tool", "tool_call_id", "call_1", "name", "get_my_family", "content", "No family linked."));
     }
 }

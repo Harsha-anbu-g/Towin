@@ -30,15 +30,15 @@ import static org.mockito.Mockito.when;
  */
 class AssistantLanguageTest {
 
-    private GroqClient groq;
+    private LlmClient llm;
     private AssistantService service;
 
     @BeforeEach
     void setUp() {
-        groq = mock(GroqClient.class);
-        when(groq.isConfigured()).thenReturn(true);
+        llm = mock(LlmClient.class);
+        when(llm.isConfigured()).thenReturn(true);
         service = new AssistantService(
-                groq,
+                llm,
                 mock(ProfileService.class),
                 mock(StreakService.class),
                 mock(ConnectionRepository.class),
@@ -56,10 +56,10 @@ class AssistantLanguageTest {
     }
 
     private String systemPromptFor(String language) {
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("ok", 0, 0, 0)));
+        when(llm.complete(anyString(), any())).thenReturn(Optional.of(new LlmReply("ok", 0, 0, 0)));
         service.answer(ask("How does the Trust Journey work?"), null, language);
         ArgumentCaptor<String> prompt = ArgumentCaptor.forClass(String.class);
-        verify(groq).complete(prompt.capture(), any());
+        verify(llm).complete(prompt.capture(), any());
         return prompt.getValue();
     }
 
@@ -90,7 +90,7 @@ class AssistantLanguageTest {
 
     @Test
     void theFailureReplyIsInTheReadersLanguage() {
-        when(groq.complete(anyString(), any())).thenReturn(Optional.empty());
+        when(llm.complete(anyString(), any())).thenReturn(Optional.empty());
         assertThat(service.answer(ask("Hello"), null, "fr")).startsWith("Désolée");
         assertThat(service.answer(ask("Hello"), null, "ta")).startsWith("மன்னிக்கவும்");
         assertThat(service.answer(ask("Hello"), null, "en")).startsWith("Sorry");
@@ -98,20 +98,20 @@ class AssistantLanguageTest {
 
     @Test
     void theSwitchedOffReplyIsInTheReadersLanguage() {
-        when(groq.isConfigured()).thenReturn(false);
+        when(llm.isConfigured()).thenReturn(false);
         assertThat(service.answer(ask("Hello"), null, "fr")).contains("Comment ça marche");
     }
 
     @Test
     void retriesOnlyFailuresThatMayClearOnTheirOwn() {
-        assertThat(GroqClient.isTransient(HttpClientErrorException.create(
+        assertThat(LlmClient.isTransient(HttpClientErrorException.create(
                 HttpStatus.TOO_MANY_REQUESTS, "", null, null, null))).isTrue();
-        assertThat(GroqClient.isTransient(HttpServerErrorException.create(
+        assertThat(LlmClient.isTransient(HttpServerErrorException.create(
                 HttpStatus.BAD_GATEWAY, "", null, null, null))).isTrue();
-        assertThat(GroqClient.isTransient(new ResourceAccessException("timed out"))).isTrue();
-        assertThat(GroqClient.isTransient(HttpClientErrorException.create(
+        assertThat(LlmClient.isTransient(new ResourceAccessException("timed out"))).isTrue();
+        assertThat(LlmClient.isTransient(HttpClientErrorException.create(
                 HttpStatus.UNAUTHORIZED, "", null, null, null))).isFalse();
-        assertThat(GroqClient.isTransient(HttpClientErrorException.create(
+        assertThat(LlmClient.isTransient(HttpClientErrorException.create(
                 HttpStatus.BAD_REQUEST, "", null, null, null))).isFalse();
     }
 }

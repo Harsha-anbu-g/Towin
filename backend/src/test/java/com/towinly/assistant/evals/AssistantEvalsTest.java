@@ -7,7 +7,7 @@ import com.towinly.assistant.security.AssistantRateLimiter;
 import com.towinly.assistant.service.AssistantService;
 import com.towinly.assistant.service.AssistantSpend;
 import com.towinly.assistant.service.AssistantTools;
-import com.towinly.assistant.service.GroqClient;
+import com.towinly.assistant.service.LlmClient;
 import com.towinly.common.enums.ConnectionStatus;
 import com.towinly.common.enums.NeedStatus;
 import com.towinly.common.service.PostHogService;
@@ -42,7 +42,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Asks the real tortoise (real GroqClient, real AssistantService, real prompt and
+ * Asks the real tortoise (real LlmClient, real AssistantService, real prompt and
  * knowledge base) every question in evals.json and scores the answers. Costs
  * tokens, so it runs only on purpose:
  *
@@ -96,7 +96,7 @@ class AssistantEvalsTest {
 
     /** The production wiring, minus Spring and minus the database. */
     private static AssistantService realService(String key) {
-        GroqClient groq = new GroqClient(
+        LlmClient llm = new LlmClient(
                 System.getenv().getOrDefault("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
                 key,
                 System.getenv().getOrDefault("GROQ_MODEL", "openai/gpt-oss-120b"),
@@ -105,7 +105,7 @@ class AssistantEvalsTest {
         AssistantSpend spend = new AssistantSpend(
                 new AssistantRateLimiter(Integer.MAX_VALUE, Long.MAX_VALUE),
                 new PostHogService("", "https://us.i.posthog.com"));
-        return new AssistantService(groq, profile(), streak(), connections(), needs(), trust(), spend,
+        return new AssistantService(llm, profile(), streak(), connections(), needs(), trust(), spend,
                 new AssistantTools(mock(ConnectionService.class), mock(NeedService.class), mock(FamilyService.class)),
                 new GuideRetriever(new EmbeddingClient("https://api.openai.com/v1", "", "text-embedding-3-small", 1536, true),
                         mock(GuideChunkStore.class)));

@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * Turns text into vectors through an OpenAI-compatible {@code /embeddings}
  * endpoint (OpenAI, Gemini and Mistral all expose this shape, so the provider is
- * a configuration change). Built like {@link com.towinly.assistant.service.GroqClient}:
+ * a configuration change). Built like {@link com.towinly.assistant.service.LlmClient}:
  * bounded timeouts, and every failure is logged and swallowed into an empty
  * Optional, because a missing vector must never stop an answer or a boot.
  *

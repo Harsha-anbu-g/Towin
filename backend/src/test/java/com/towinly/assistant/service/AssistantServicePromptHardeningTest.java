@@ -32,17 +32,17 @@ import static org.mockito.Mockito.when;
  */
 class AssistantServicePromptHardeningTest {
 
-    private GroqClient groq;
+    private LlmClient llm;
     private AssistantService service;
 
     @BeforeEach
     void setUp() {
-        groq = mock(GroqClient.class);
-        when(groq.isConfigured()).thenReturn(true);
-        when(groq.complete(anyString(), any())).thenReturn(Optional.of(new GroqReply("A kind tortoise answer.", 0, 0, 0)));
+        llm = mock(LlmClient.class);
+        when(llm.isConfigured()).thenReturn(true);
+        when(llm.complete(anyString(), any())).thenReturn(Optional.of(new LlmReply("A kind tortoise answer.", 0, 0, 0)));
 
         service = new AssistantService(
-                groq,
+                llm,
                 mock(ProfileService.class),
                 mock(StreakService.class),
                 mock(ConnectionRepository.class),
@@ -56,7 +56,7 @@ class AssistantServicePromptHardeningTest {
     @SuppressWarnings("unchecked")
     private List<ChatMessage> captureConversation() {
         ArgumentCaptor<List<ChatMessage>> captor = ArgumentCaptor.forClass(List.class);
-        verify(groq).complete(anyString(), captor.capture());
+        verify(llm).complete(anyString(), captor.capture());
         return captor.getValue();
     }
 
@@ -98,7 +98,7 @@ class AssistantServicePromptHardeningTest {
     void aQuestionOfOnlyHiddenCharacters_isRefusedWithoutSpendingAnything() {
         String reply = service.answer(request("​​" + new String(Character.toChars(0xE0041))), null);
 
-        verify(groq, never()).complete(anyString(), any());
+        verify(llm, never()).complete(anyString(), any());
         assertThat(reply).contains("couldn't read that question");
     }
 
@@ -164,11 +164,11 @@ class AssistantServicePromptHardeningTest {
 
     @Test
     void whenTheAssistantIsSwitchedOff_nothingIsSentAndTheReplyStaysKind() {
-        when(groq.isConfigured()).thenReturn(false);
+        when(llm.isConfigured()).thenReturn(false);
 
         String reply = service.answer(request("Hello"), UUID.randomUUID());
 
-        verify(groq, never()).complete(anyString(), any());
+        verify(llm, never()).complete(anyString(), any());
         assertThat(reply).contains("isn't switched on yet");
     }
 }

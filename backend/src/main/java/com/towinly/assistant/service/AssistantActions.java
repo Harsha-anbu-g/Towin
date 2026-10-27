@@ -38,7 +38,7 @@ final class AssistantActions {
     }
 
     /** The app action for a proposal call, or empty for a read tool or an unusable proposal. */
-    static Optional<AssistantService.Action> toAction(GroqReply.ToolCall call) {
+    static Optional<AssistantService.Action> toAction(LlmReply.ToolCall call) {
         return switch (call.name()) {
             case PROPOSE_CHECK_IN -> Optional.of(new AssistantService.Action("checkInToday", Map.of()));
             case PROPOSE_HELP_REQUEST -> helpRequest(call.arguments());

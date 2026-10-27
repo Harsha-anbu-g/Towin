@@ -33,7 +33,7 @@ import java.util.UUID;
  * "Ask AI" — the tortoise help assistant. Grounds every answer in a curated
  * product knowledge base (never a raw dump of repo notes) and, for signed-in
  * users, a small own-data-only summary so it can answer "what is my trust
- * score?". Talking to Groq is delegated to {@link GroqClient}; this class owns
+ * score?". Talking to Groq is delegated to {@link LlmClient}; this class owns
  * the prompt assembly and the graceful fallbacks.
  */
 @Slf4j
@@ -93,7 +93,7 @@ public class AssistantService {
                     + "keep \"SOS\" as it is, call the Feedback button \"கருத்து\", and the guide "
                     + "\"இது எப்படி வேலை செய்கிறது\". If they write in another language, answer in theirs.");
 
-    private final GroqClient groqClient;
+    private final LlmClient llmClient;
     private final ProfileService profileService;
     private final StreakService streakService;
     private final ConnectionRepository connectionRepository;
@@ -109,12 +109,12 @@ public class AssistantService {
     /** The words for the person, and the one action the app may offer to confirm (or null). */
     public record Answer(String reply, Action action) {}
 
-    private record ToolRound(GroqReply reply, Action action) {}
+    private record ToolRound(LlmReply reply, Action action) {}
 
     /** System prompt = tortoise persona/rules + the product knowledge base. Loaded once. */
     private final String basePrompt;
 
-    public AssistantService(GroqClient groqClient,
+    public AssistantService(LlmClient llmClient,
                             ProfileService profileService,
                             StreakService streakService,
                             ConnectionRepository connectionRepository,
@@ -123,7 +123,7 @@ public class AssistantService {
                             AssistantSpend spend,
                             AssistantTools tools,
                             GuideRetriever retriever) {
-        this.groqClient = groqClient;
+        this.llmClient = llmClient;
         this.profileService = profileService;
         this.streakService = streakService;
         this.connectionRepository = connectionRepository;
@@ -159,7 +159,7 @@ public class AssistantService {
      */
     public Answer answerWithAction(ChatRequest request, UUID userId, String language) {
         String lang = LANGUAGE_RULE.containsKey(language) ? language : "en";
-        if (!groqClient.isConfigured()) {
+        if (!llmClient.isConfigured()) {
             return new Answer(CANNED.get("off").get(lang), null);
         }
 
@@ -201,15 +201,15 @@ public class AssistantService {
         List<ChatMessage> conversation = buildConversation(request, question);
 
         long started = System.nanoTime();
-        Optional<GroqReply> first = userId == null
-                ? groqClient.complete(systemPrompt, conversation)
-                : groqClient.complete(systemPrompt, GroqClient.toMessages(conversation),
+        Optional<LlmReply> first = userId == null
+                ? llmClient.complete(systemPrompt, conversation)
+                : llmClient.complete(systemPrompt, LlmClient.toMessages(conversation),
                         AssistantTools.DEFINITIONS, "auto", true);
         if (first.isEmpty()) {
             return new Answer(CANNED.get("fallback").get(lang), null);
         }
 
-        GroqReply reply = first.get();
+        LlmReply reply = first.get();
         Action action = null;
         if (reply.hasToolCalls()) {
             ToolRound round = answerWithTools(systemPrompt, conversation, first.get(), userId);
@@ -244,17 +244,17 @@ public class AssistantService {
      * which is the one-round rule stated plainly to the API.
      */
     private ToolRound answerWithTools(String systemPrompt, List<ChatMessage> conversation,
-                                      GroqReply first, UUID userId) {
-        List<Map<String, Object>> messages = GroqClient.toMessages(conversation);
-        messages.add(GroqClient.toolCallTurn(first));
+                                      LlmReply first, UUID userId) {
+        List<Map<String, Object>> messages = LlmClient.toMessages(conversation);
+        messages.add(LlmClient.toolCallTurn(first));
         Action action = null;
-        for (GroqReply.ToolCall call : first.toolCalls()) {
-            messages.add(GroqClient.toolResultTurn(call, tools.run(call.name(), userId)));
+        for (LlmReply.ToolCall call : first.toolCalls()) {
+            messages.add(LlmClient.toolResultTurn(call, tools.run(call.name(), userId)));
             // A proposal never writes here; the app asks the person and acts on a Yes.
             // One action per answer: the first usable proposal wins.
             if (action == null) action = AssistantActions.toAction(call).orElse(null);
         }
-        GroqReply second = groqClient.complete(systemPrompt, messages, null, null, false)
+        LlmReply second = llmClient.complete(systemPrompt, messages, null, null, false)
                 .map(s -> s.addingTokensOf(first))
                 .orElse(null);
         return second == null ? null : new ToolRound(second, action);

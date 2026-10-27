@@ -13,25 +13,25 @@ import java.util.List;
  * It is kept only so a tool round can echo the model's turn back exactly as Groq
  * documents; it is never shown to anyone and never counted as the answer.
  */
-public record GroqReply(String text, int promptTokens, int completionTokens, int cachedTokens,
+public record LlmReply(String text, int promptTokens, int completionTokens, int cachedTokens,
                         List<ToolCall> toolCalls, String reasoning) {
 
     /** A tool the model wants run: Groq's call id, the function name, the JSON arguments. */
     public record ToolCall(String id, String name, String arguments) {}
 
-    public GroqReply {
+    public LlmReply {
         toolCalls = toolCalls == null ? List.of() : List.copyOf(toolCalls);
         reasoning = reasoning == null || reasoning.isBlank() ? null : reasoning;
     }
 
     /** A reply with tool calls and no reasoning text. */
-    public GroqReply(String text, int promptTokens, int completionTokens, int cachedTokens,
+    public LlmReply(String text, int promptTokens, int completionTokens, int cachedTokens,
                      List<ToolCall> toolCalls) {
         this(text, promptTokens, completionTokens, cachedTokens, toolCalls, null);
     }
 
     /** A plain answer with no tool calls. */
-    public GroqReply(String text, int promptTokens, int completionTokens, int cachedTokens) {
+    public LlmReply(String text, int promptTokens, int completionTokens, int cachedTokens) {
         this(text, promptTokens, completionTokens, cachedTokens, List.of(), null);
     }
 
@@ -45,8 +45,8 @@ public record GroqReply(String text, int promptTokens, int completionTokens, int
     }
 
     /** This reply's words, with an earlier call's tokens added, so one answer books both calls. */
-    public GroqReply addingTokensOf(GroqReply earlier) {
-        return new GroqReply(text,
+    public LlmReply addingTokensOf(LlmReply earlier) {
+        return new LlmReply(text,
                 promptTokens + earlier.promptTokens(),
                 completionTokens + earlier.completionTokens(),
                 cachedTokens + earlier.cachedTokens(),
