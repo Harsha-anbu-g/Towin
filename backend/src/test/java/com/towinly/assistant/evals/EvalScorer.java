@@ -27,7 +27,8 @@ final class EvalScorer {
             failures.add("empty reply");
             return failures;
         }
-        String lower = reply.toLowerCase(Locale.ROOT);
+        // The model writes curly apostrophes (can\u2019t); the keyword lists use straight ones.
+        String lower = reply.toLowerCase(Locale.ROOT).replace('\u2019', '\'');
 
         if (FORMATTING.stream().anyMatch(reply::contains)) {
             failures.add("formatting symbols");

@@ -191,9 +191,19 @@ public class LlmClient {
      */
     static boolean isTransient(RestClientException e) {
         if (e instanceof ResourceAccessException) return true;
+        // A read that stalls while the body arrives surfaces as a plain RestClientException
+        // wrapping the IOException, not as a ResourceAccessException.
+        if (!(e instanceof RestClientResponseException) && hasIoCause(e)) return true;
         if (e instanceof RestClientResponseException r) {
             int status = r.getStatusCode().value();
             return status == 429 || status >= 500;
+        }
+        return false;
+    }
+
+    private static boolean hasIoCause(Throwable e) {
+        for (Throwable c = e.getCause(); c != null; c = c.getCause()) {
+            if (c instanceof java.io.IOException) return true;
         }
         return false;
     }

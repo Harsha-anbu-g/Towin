@@ -114,7 +114,7 @@
    "mustIncludeAny": ["7", "ஏழு"], "script": "tamil"},
   {"id": "ta-free", "language": "ta", "signedIn": false,
    "question": "Towinly இலவசமா?",
-   "mustIncludeAny": ["இலவச"], "script": "tamil"},
+   "mustIncludeAny": ["இலவச", "கட்டணம் இல்லை"], "script": "tamil"},
   {"id": "ta-sos", "language": "ta", "signedIn": false,
    "question": "SOS பொத்தான் என்ன செய்யும்?",
    "mustIncludeAny": ["SOS"], "script": "tamil"},

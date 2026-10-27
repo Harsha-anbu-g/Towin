@@ -109,6 +109,9 @@ class AssistantLanguageTest {
         assertThat(LlmClient.isTransient(HttpServerErrorException.create(
                 HttpStatus.BAD_GATEWAY, "", null, null, null))).isTrue();
         assertThat(LlmClient.isTransient(new ResourceAccessException("timed out"))).isTrue();
+        assertThat(LlmClient.isTransient(new org.springframework.web.client.RestClientException(
+                "Error while extracting response", new java.net.SocketTimeoutException("Read timed out")))).isTrue();
+        assertThat(LlmClient.isTransient(new org.springframework.web.client.RestClientException("no cause"))).isFalse();
         assertThat(LlmClient.isTransient(HttpClientErrorException.create(
                 HttpStatus.UNAUTHORIZED, "", null, null, null))).isFalse();
         assertThat(LlmClient.isTransient(HttpClientErrorException.create(

@@ -44,6 +44,13 @@ class EvalScorerTest {
     }
 
     @Test
+    void curlyApostrophes_matchStraightKeywords() {
+        EvalCase c = cas(List.of("can't see"), null, null, null, null);
+
+        assertThat(EvalScorer.score(c, "I can\u2019t see your number.")).isEmpty();
+    }
+
+    @Test
     void mustIncludeAll_needsEveryOne() {
         EvalCase c = cas(null, List.of("elder", "helper"), null, null, null);
 
