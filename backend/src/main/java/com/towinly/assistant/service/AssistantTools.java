@@ -66,9 +66,10 @@ public class AssistantTools {
             Map.of("type", "function", "function", Map.of(
                     "name", AssistantActions.PROPOSE_HELP_REQUEST,
                     "description", "Propose posting a help request for the elder: a lift, groceries, company, "
-                            + "cleaning, an errand. Use when they ask you to post, ask for, or request help. Put "
-                            + "what they said into title and description and pick the closest category. The app "
-                            + "shows them the request and asks to confirm; only their Yes posts it.",
+                            + "cleaning, an errand. Use when they ask you to post, ask for, or request help AND "
+                            + "have said what they need; if they have not, ask them what and when instead of "
+                            + "calling this. Put what they said into title and description and pick the closest "
+                            + "category. The app shows them the request and asks to confirm; only their Yes posts it.",
                     "parameters", Map.of("type", "object",
                             "properties", Map.of(
                                     "title", Map.of("type", "string", "description", "Short title, their words, under 200 characters"),
