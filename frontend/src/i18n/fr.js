@@ -85,6 +85,8 @@ export default {
     "3 à 20 caractères. Visible par les autres sur votre profil.",
   "A few words (optional)":
     "Quelques mots (facultatif)",
+  "A friendship adds to your score once a help between you two is finished. If your score went down, this is why.":
+    "Une amitié s'ajoute à votre score dès qu'une aide entre vous deux est terminée. Si votre score a baissé, voilà pourquoi.",
   "A handshake between an elder and a younger person":
     "Une poignée de main entre une personne aînée et une personne plus jeune",
   "A letter for you":
@@ -381,10 +383,10 @@ export default {
     "Confirmation…",
   "Connect with someone on your dashboard to start chatting.":
     "Connectez-vous avec quelqu'un dans votre tableau de bord pour commencer à discuter.",
-  "Connect with your first elder. As your trust grows step by step, you earn points here.":
-    "Connectez-vous avec votre premier aîné. À mesure que la confiance grandit, étape par étape, vous gagnez des points ici.",
-  "Connect with your first helper. As your trust grows step by step, you earn points here.":
-    "Connectez-vous avec votre premier aidant. À mesure que la confiance grandit, étape par étape, vous gagnez des points ici.",
+  "Connect with your first elder. Once a help between you is finished, you earn points here.":
+    "Connectez-vous avec votre premier aîné. Dès qu'une aide entre vous est terminée, vous gagnez des points ici.",
+  "Connect with your first helper. Once a help between you is finished, you earn points here.":
+    "Connectez-vous avec votre premier aidant. Dès qu'une aide entre vous est terminée, vous gagnez des points ici.",
   "Connected":
     "Connectés",
   "Connecting generations,":
@@ -495,6 +497,8 @@ export default {
     "Impossible de charger les aidants pour le moment. Veuillez réessayer bientôt.",
   "Couldn't save that change. Please try again.":
     "Impossible d'enregistrer ce changement. Veuillez réessayer.",
+  "Counts after a help is finished":
+    "Compte une fois une aide terminée",
   "Create Account":
     "Créer un compte",
   "Create account":
@@ -551,8 +555,8 @@ export default {
     "Chaque personne vous rapporte jusqu'à 15 points",
   "Each person who helps you can earn you up to 15 points: 7 for growing trust together, 5 from their review, 2 for your profile, and 1 for family connected.":
     "Chaque personne qui vous aide peut vous rapporter jusqu'à 15 points : 7 pour la confiance bâtie ensemble, 5 pour son avis, 2 pour votre profil et 1 pour une famille connectée.",
-  "Each person you help can earn you a *maximum of 15 points*, so your score grows with every new connection.":
-    "Chaque personne que vous aidez peut vous rapporter *jusqu'à 15 points*; votre score grandit donc avec chaque nouvelle connexion.",
+  "Each person you help can earn you a *maximum of 15 points*, so your score grows with every help you finish.":
+    "Chaque personne que vous aidez peut vous rapporter *jusqu'à 15 points*; votre score grandit donc avec chaque aide terminée.",
   "Each person you help can earn you up to 15 points: 7 for growing trust together, 5 from their review, and 3 for your profile.":
     "Chaque personne que vous aidez peut vous rapporter jusqu'à 15 points : 7 pour la confiance bâtie ensemble, 5 pour son avis et 3 pour votre profil.",
   "Ease of Use":
@@ -1467,6 +1471,10 @@ export default {
     "Veuillez écrire ce pour quoi vous avez besoin d'aide.",
   "Please write what {parent} needs help with.":
     "Veuillez écrire pour quoi {parent} a besoin d'aide.",
+  "Points count after a help is finished":
+    "Les points comptent une fois une aide terminée",
+  "Points from a person count once a help between you two is finished. Before that, the friendship adds nothing to your score.":
+    "Les points venant d'une personne comptent dès qu'une aide entre vous deux est terminée. Avant cela, l'amitié n'ajoute rien à votre score.",
   "Portrait of Harshavardhan":
     "Portrait de Harshavardhan",
   "Post Help":

@@ -132,6 +132,10 @@ Trust is earned, not given. Each person you help can earn you up to **15 points*
   share more about you, verify yourself) to earn a point each; it counts for
   everyone you help.
 Your total Trust Score is these points added up across everyone you help.
+Points from a person count only once a help between the two of you is finished
+(the elder marks the help finished). Before that the friendship adds 0 points.
+The trust stage points are the stage the two of you had reached when that help
+was finished; stages reached later count at the next finished help.
 
 ### The five tiers
 - **New Member**: 0 points.

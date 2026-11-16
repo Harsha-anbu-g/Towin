@@ -85,6 +85,8 @@ export default {
     "3 முதல் 20 எழுத்துகள். உங்கள் சுயவிவரத்தில் மற்றவர்களுக்குத் தெரியும்.",
   "A few words (optional)":
     "சில வார்த்தைகள் (விருப்பம்)",
+  "A friendship adds to your score once a help between you two is finished. If your score went down, this is why.":
+    "உங்கள் இருவருக்கும் இடையே ஓர் உதவி முடிந்ததும், அந்த நட்பு உங்கள் மதிப்பெண்ணில் சேரும். உங்கள் மதிப்பெண் குறைந்திருந்தால், காரணம் இதுதான்.",
   "A handshake between an elder and a younger person":
     "ஒரு மூத்தவரும் ஒரு இளையவரும் கைகுலுக்குகிறார்கள்",
   "A letter for you":
@@ -381,10 +383,10 @@ export default {
     "உறுதிப்படுத்துகிறது…",
   "Connect with someone on your dashboard to start chatting.":
     "உரையாடத் தொடங்க, உங்கள் டாஷ்போர்டில் ஒருவருடன் இணையுங்கள்.",
-  "Connect with your first elder. As your trust grows step by step, you earn points here.":
-    "உங்கள் முதல் மூத்தவருடன் இணையுங்கள். நம்பிக்கை படிப்படியாக வளர வளர, இங்கே புள்ளிகள் பெறுவீர்கள்.",
-  "Connect with your first helper. As your trust grows step by step, you earn points here.":
-    "உங்கள் முதல் உதவியாளருடன் இணையுங்கள். நம்பிக்கை படிப்படியாக வளர வளர, இங்கே புள்ளிகள் பெறுவீர்கள்.",
+  "Connect with your first elder. Once a help between you is finished, you earn points here.":
+    "உங்கள் முதல் மூத்தவருடன் இணையுங்கள். உங்களுக்கிடையே ஓர் உதவி முடிந்ததும், இங்கே புள்ளிகள் பெறுவீர்கள்.",
+  "Connect with your first helper. Once a help between you is finished, you earn points here.":
+    "உங்கள் முதல் உதவியாளருடன் இணையுங்கள். உங்களுக்கிடையே ஓர் உதவி முடிந்ததும், இங்கே புள்ளிகள் பெறுவீர்கள்.",
   "Connected":
     "இணைந்தவர்கள்",
   "Connecting generations,":
@@ -495,6 +497,8 @@ export default {
     "இப்போது உதவியாளர்களை ஏற்ற முடியவில்லை. சிறிது நேரத்தில் மீண்டும் முயலுங்கள்.",
   "Couldn't save that change. Please try again.":
     "அந்த மாற்றத்தைச் சேமிக்க முடியவில்லை. மீண்டும் முயலவும்.",
+  "Counts after a help is finished":
+    "ஓர் உதவி முடிந்த பிறகு கணக்கில் சேரும்",
   "Create Account":
     "கணக்கை உருவாக்கு",
   "Create account":
@@ -551,8 +555,8 @@ export default {
     "ஒவ்வொரு நபரும் உங்களுக்கு 15 புள்ளிகள் வரை தருவார்",
   "Each person who helps you can earn you up to 15 points: 7 for growing trust together, 5 from their review, 2 for your profile, and 1 for family connected.":
     "உங்களுக்கு உதவும் ஒவ்வொரு நபரும் 15 புள்ளிகள் வரை தரலாம்: சேர்ந்து நம்பிக்கை வளர்த்ததற்கு 7, அவர்களின் மதிப்புரையிலிருந்து 5, உங்கள் சுயவிவரத்துக்கு 2, இணைந்த குடும்பத்துக்கு 1.",
-  "Each person you help can earn you a *maximum of 15 points*, so your score grows with every new connection.":
-    "நீங்கள் உதவும் ஒவ்வொரு நபரும் *அதிகபட்சம் 15 புள்ளிகள்* தரலாம்; எனவே ஒவ்வொரு புதிய இணைப்பிலும் உங்கள் மதிப்பெண் வளரும்.",
+  "Each person you help can earn you a *maximum of 15 points*, so your score grows with every help you finish.":
+    "நீங்கள் உதவும் ஒவ்வொரு நபரும் *அதிகபட்சம் 15 புள்ளிகள்* தரலாம்; எனவே நீங்கள் முடிக்கும் ஒவ்வொரு உதவியிலும் உங்கள் மதிப்பெண் வளரும்.",
   "Each person you help can earn you up to 15 points: 7 for growing trust together, 5 from their review, and 3 for your profile.":
     "நீங்கள் உதவும் ஒவ்வொருவரும் 15 புள்ளிகள் வரை தரலாம்: சேர்ந்து நம்பிக்கை வளர்த்ததற்கு 7, அவர்களின் மதிப்புரைக்கு 5, உங்கள் சுயவிவரத்திற்கு 3.",
   "Ease of Use":
@@ -1467,6 +1471,10 @@ export default {
     "உங்களுக்கு எதில் உதவி தேவை என்று எழுதுங்கள்.",
   "Please write what {parent} needs help with.":
     "{parent}-க்கு எதில் உதவி தேவை என்று எழுதவும்.",
+  "Points count after a help is finished":
+    "ஓர் உதவி முடிந்த பிறகே புள்ளிகள் கணக்கில் சேரும்",
+  "Points from a person count once a help between you two is finished. Before that, the friendship adds nothing to your score.":
+    "உங்கள் இருவருக்கும் இடையே ஓர் உதவி முடிந்த பிறகே அந்த நபரிடமிருந்து வரும் புள்ளிகள் கணக்கில் சேரும். அதற்கு முன், அந்த நட்பு உங்கள் மதிப்பெண்ணில் எதையும் சேர்க்காது.",
   "Portrait of Harshavardhan":
     "ஹர்ஷவர்தனின் உருவப்படம்",
   "Post Help":

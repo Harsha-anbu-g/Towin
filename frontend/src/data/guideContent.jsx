@@ -225,6 +225,9 @@ export const STEPS = [
             {tr('Your profile is split into 3 sets. Fill a whole set to earn its point: introduce yourself, share more about you, and verify yourself. It counts for every person you help.')}
           </MiniCard>
         </CardGrid>
+        <Lead>
+          {tr('Points from a person count once a help between you two is finished. Before that, the friendship adds nothing to your score.')}
+        </Lead>
         <SubHead>{tr('The five tiers')}</SubHead>
         <Bullets items={[
           <>{emphasize(tr('*New Member*: 0 points.'), (part) => <strong>{part}</strong>)}</>,

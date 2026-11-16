@@ -160,7 +160,8 @@ function ScoreSummary({ data }) {
   const idx = TIERS.findIndex(t => t.key === data.tier);
   const next = TIERS[idx + 1];
   const toNext = next ? next.min - score : 0;
-  const people = data.customers ?? [];
+  // Only friendships that add points "helped you reach this".
+  const people = (data.customers ?? []).filter((c) => !isWaiting(c));
   return (
     <div style={{ ...card, padding: '20px', marginBottom: '16px' }}>
       <div className="score-card-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -336,8 +337,62 @@ function Avatar({ name, photoUrl }) {
   );
 }
 
+/* A friendship adds points once the elder has ended a help between the two
+   (trust tiers step 1). Until then the server sends `counted: false` with every
+   point at 0. An older server sends no `counted`, and that card counts as it
+   always did. */
+const isWaiting = (c) => c.counted === false;
+const RULE_NOTE_KEY = 'towinly_trust_rule_explained';
+
+/* ── Shown once: why a score may be lower than it was ────────────────────── */
+function RuleNote() {
+  const [visible, setVisible] = useState(() => localStorage.getItem(RULE_NOTE_KEY) !== 'true');
+  if (!visible) return null;
+  const dismiss = () => {
+    localStorage.setItem(RULE_NOTE_KEY, 'true');
+    setVisible(false);
+  };
+  return (
+    <div style={{ ...card, padding: '18px 20px', marginBottom: '16px' }}>
+      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, color: INK, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+        {tr('Points count after a help is finished')}
+      </h2>
+      <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: '0 0 12px', lineHeight: 1.5 }}>
+        {tr('A friendship adds to your score once a help between you two is finished. If your score went down, this is why.')}
+      </p>
+      <button onClick={dismiss} style={{
+        background: 'transparent', color: INK, border: '1px solid var(--hairline-3)', borderRadius: '9999px',
+        padding: '10px 22px', minHeight: '44px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SF, cursor: 'pointer',
+      }}>
+        {tr('Got it')}
+      </button>
+    </div>
+  );
+}
+
 /* ── One card per customer, showing exactly what they earned you ─────────── */
 function CustomerCard({ c }) {
+  // One plain line stands in for a bar and meters that would all read zero.
+  if (isWaiting(c)) {
+    return (
+      <div style={{ ...card, padding: '18px 20px', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Avatar name={c.customerName} photoUrl={c.customerPhotoUrl} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontFamily: SFD, fontSize: '16px', fontWeight: 600, color: INK, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {c.customerName}
+            </p>
+            <p style={{ fontFamily: SF, fontSize: 'var(--text-xs)', color: FAINT, margin: '2px 0 0' }}>
+              {c.currentStageLabel}
+            </p>
+          </div>
+        </div>
+        <p style={{ fontFamily: SF, fontSize: '14px', color: GREY, margin: '10px 0 0', lineHeight: 1.4 }}>
+          {tr('Counts after a help is finished')}
+        </p>
+      </div>
+    );
+  }
   return (
     <div style={{ ...card, padding: '18px 20px', marginBottom: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
@@ -444,6 +499,8 @@ export default function Trust() {
 
         {data && (
           <>
+            {/* The server speaks the new rule once any card carries `counted`. */}
+            {customers.some((c) => typeof c.counted === 'boolean') && <RuleNote />}
             <ScoreSummary data={data} />
             <FamilyCard family={data.family} />
 
@@ -465,8 +522,8 @@ export default function Trust() {
                 </p>
                 <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: '0 0 18px', lineHeight: 1.5 }}>
                   {isHelper
-                    ? tr('Connect with your first elder. As your trust grows step by step, you earn points here.')
-                    : tr('Connect with your first helper. As your trust grows step by step, you earn points here.')}
+                    ? tr('Connect with your first elder. Once a help between you is finished, you earn points here.')
+                    : tr('Connect with your first helper. Once a help between you is finished, you earn points here.')}
                 </p>
                 <button onClick={() => navigate('/dashboard')} style={{
                   background: SKY, color: '#fff', border: 'none', borderRadius: '9999px',

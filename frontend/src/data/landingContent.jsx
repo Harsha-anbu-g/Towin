@@ -429,7 +429,7 @@ export const SLIDES = [
           </Lead>
           <div style={{ height: '18px' }} />
           <NoteBox align="left">
-            {emphasize(tr('Each person you help can earn you a *maximum of 15 points*, so your score grows with every new connection.'), (part) => <strong style={{ color: INK }}>{part}</strong>)}
+            {emphasize(tr('Each person you help can earn you a *maximum of 15 points*, so your score grows with every help you finish.'), (part) => <strong style={{ color: INK }}>{part}</strong>)}
           </NoteBox>
         </div>
 
