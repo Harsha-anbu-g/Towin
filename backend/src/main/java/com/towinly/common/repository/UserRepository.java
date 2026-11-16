@@ -31,6 +31,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u.id FROM User u WHERE u.email NOT IN :emails")
     List<UUID> findIdsByEmailNotIn(@Param("emails") java.util.Collection<String> emails);
 
+    /** Ids of accounts whose stored trust score was computed under an older scoring rule. */
+    @Query("SELECT u.id FROM User u WHERE u.trustScoreVersion < :version")
+    List<UUID> findIdsByTrustScoreVersionLessThan(@Param("version") int version,
+                                                  org.springframework.data.domain.Pageable page);
+
     List<User> findByVerificationStatus(VerificationStatus status);
 
     // Paged variant for the admin panel — the queue must not grow without a bound.

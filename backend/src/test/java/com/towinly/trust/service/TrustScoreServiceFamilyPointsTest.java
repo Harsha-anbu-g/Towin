@@ -121,7 +121,9 @@ class TrustScoreServiceFamilyPointsTest {
 
     private Connection connectionTo(TrustLevel level) {
         User other = User.builder().id(UUID.randomUUID()).build();
-        return Connection.builder().userA(user).userB(other).currentTrustLevel(level).build();
+        // Banked: a help between the two has been finished, so the friendship counts.
+        return Connection.builder().userA(user).userB(other)
+                .currentTrustLevel(level).bankedTrustLevel(level).build();
     }
 
     @Test

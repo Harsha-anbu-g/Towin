@@ -57,6 +57,11 @@ public class User {
     @Builder.Default
     private Double trustScore = 0.0;
 
+    /** Which scoring rule trustScore was last computed under (TrustScoreService.CURRENT_VERSION). */
+    @Column(name = "trust_score_version", nullable = false)
+    @Builder.Default
+    private Integer trustScoreVersion = 4;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "verification_status", columnDefinition = "verification_status")

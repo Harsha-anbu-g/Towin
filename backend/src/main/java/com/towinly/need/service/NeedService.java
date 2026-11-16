@@ -474,9 +474,33 @@ public class NeedService {
         applicationRepository.findByNeedId(needId).stream()
                 .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
                 .findFirst()
-                .ifPresent(a -> trustScoreService.recalculate(a.getHelper().getId()));
+                .ifPresent(a -> bankTrustStep(need.getElder().getId(), a.getHelper().getId()));
 
         return response;
+    }
+
+    /**
+     * A friendship starts counting toward both people's trust score when the elder
+     * ends a help between them, at the ladder step they have reached by then
+     * (TrustScoreService rule 4). A later help can raise the banked step, never
+     * lower it.
+     */
+    private void bankTrustStep(UUID elderId, UUID helperId) {
+        connectionRepository.findAllBetweenUsers(elderId, helperId).stream()
+                .filter(c -> ConnectionType.earnsTrust(c.getType()))
+                .filter(c -> c.getStatus() == ConnectionStatus.ACTIVE
+                        || c.getStatus() == ConnectionStatus.PAUSED)
+                .findFirst()
+                .ifPresent(c -> {
+                    TrustLevel banked = c.getBankedTrustLevel();
+                    TrustLevel live = c.getCurrentTrustLevel();
+                    if (banked == null || live.getValue() > banked.getValue()) {
+                        c.setBankedTrustLevel(live);
+                        connectionRepository.save(c);
+                    }
+                });
+        trustScoreService.recalculate(helperId);
+        trustScoreService.recalculate(elderId);
     }
 
     /**

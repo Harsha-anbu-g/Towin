@@ -39,6 +39,12 @@ import java.util.UUID;
  *     member is linked), both counted for every customer.
  *
  * Total trust score = the sum across all customers.
+ *
+ * Rule 4 (2026-11-15): a relationship counts only once the elder has ended a help
+ * between the two people. Its rooting points come from the step banked at that
+ * moment (Connection.bankedTrustLevel), not the live step; before the first
+ * finished help the relationship adds nothing, profile and family points included.
+ * A member's own profile and family points still count once.
  */
 @Service
 @RequiredArgsConstructor
@@ -53,6 +59,8 @@ public class TrustScoreService {
     /** Elders: one flat point once any family member is linked — never more. */
     public static final int FAMILY_POINT = 1;
     public static final int CUSTOMER_MAX = ROOTING_MAX + REVIEW_MAX + PROFILE_MAX; // 15 both ways
+    /** The scoring rule a stored score was computed under. 4 = a friendship counts once a help is finished. */
+    public static final int CURRENT_VERSION = 4;
 
     private final UserRepository userRepository;
     private final HelperProfileRepository helperProfileRepository;
@@ -76,13 +84,16 @@ public class TrustScoreService {
         for (Connection c : connectionRepository.findByUserAndStatus(userId, ConnectionStatus.ACTIVE)) {
             // Step 4: FAMILY-type connections are coordination-only — zero points, both sides.
             if (!com.towinly.common.enums.ConnectionType.earnsTrust(c.getType())) continue;
+            // No finished help between the two yet: the friendship adds nothing.
+            if (c.getBankedTrustLevel() == null) continue;
             UUID customerId = c.getOtherUser(userId).getId();
-            int rooting = rootingPoints(c.getCurrentTrustLevel());
+            int rooting = rootingPoints(c.getBankedTrustLevel());
             int review  = Math.min(reviewByCustomer.getOrDefault(customerId, 0), REVIEW_MAX);
             total += rooting + review + profilePoints + familyPoints;
         }
 
         user.setTrustScore((double) total);
+        user.setTrustScoreVersion(CURRENT_VERSION);
         userRepository.save(user);
     }
 
@@ -105,9 +116,13 @@ public class TrustScoreService {
             // Step 4: FAMILY-type connections earn nothing and show no card.
             if (!com.towinly.common.enums.ConnectionType.earnsTrust(c.getType())) continue;
             User customer = c.getOtherUser(userId);
-            int rooting = rootingPoints(c.getCurrentTrustLevel());
-            int review  = Math.min(reviewByCustomer.getOrDefault(customer.getId(), 0), REVIEW_MAX);
-            int cardTotal = rooting + review + profilePoints + familyPoints;
+            // No finished help between the two yet: the card shows the ladder but no points.
+            boolean counted = c.getBankedTrustLevel() != null;
+            int rooting = counted ? rootingPoints(c.getBankedTrustLevel()) : 0;
+            int review  = counted ? Math.min(reviewByCustomer.getOrDefault(customer.getId(), 0), REVIEW_MAX) : 0;
+            int profile = counted ? profilePoints : 0;
+            int family  = counted ? familyPoints : 0;
+            int cardTotal = rooting + review + profile + family;
             total += cardTotal;
 
             cards.add(CustomerCard.builder()
@@ -116,10 +131,11 @@ public class TrustScoreService {
                     .customerPhotoUrl(photoUrl(customer))
                     .currentStageLabel(stageLabel(c.getCurrentTrustLevel()))
                     .stageIndex(c.getCurrentTrustLevel().getValue())
+                    .counted(counted)
                     .rooting(rooting).rootingMax(ROOTING_MAX)
                     .review(review).reviewMax(REVIEW_MAX).hasReview(review > 0)
-                    .profile(profilePoints).profileMax(profileMax)
-                    .family(familyPoints).familyMax(isElder ? FAMILY_POINT : 0)
+                    .profile(profile).profileMax(profileMax)
+                    .family(family).familyMax(isElder ? FAMILY_POINT : 0)
                     .total(cardTotal).totalMax(CUSTOMER_MAX)
                     .build());
         }

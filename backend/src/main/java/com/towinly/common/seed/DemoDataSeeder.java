@@ -1653,25 +1653,46 @@ public class DemoDataSeeder implements ApplicationRunner {
             // below its seed baseline means the baseline itself was raised (e.g. the
             // review-gate rebalance promoted two pairs to TRUSTED). Lift it to match;
             // never lower a level a visitor has legitimately advanced.
+            boolean changed = false;
             if (c.getStatus() == ConnectionStatus.ACTIVE
                     && status == ConnectionStatus.ACTIVE
                     && c.getCurrentTrustLevel().getValue() < level.getValue()) {
                 c.setCurrentTrustLevel(level);
                 c.setConfirmedByA(confirmedByA);
                 c.setConfirmedByB(confirmedByB);
-                return connectionRepository.save(c);
+                changed = true;
             }
-            return c;
+            // Rows seeded before the banked step existed pick it up here.
+            TrustLevel banked = demoBankedStep(status, level);
+            if (banked != null && c.getBankedTrustLevel() == null
+                    && c.getStatus() == ConnectionStatus.ACTIVE) {
+                c.setBankedTrustLevel(banked);
+                changed = true;
+            }
+            return changed ? connectionRepository.save(c) : c;
         }
         return connectionRepository.save(Connection.builder()
                 .userA(a).userB(b)
                 .status(status)
                 .currentTrustLevel(level)
+                .bankedTrustLevel(demoBankedStep(status, level))
                 .initiatedBy(initiator)
                 .requestMessage(requestMessage)
                 .confirmedByA(confirmedByA)
                 .confirmedByB(confirmedByB)
                 .build());
+    }
+
+    /**
+     * A friendship counts toward the trust score only after a finished help
+     * (TrustScoreService rule 4). In the demo story, pairs who have met in person
+     * are long past their first one, so they are seeded with that step banked;
+     * pairs still early on the ladder stay unbanked and show the "not counted yet"
+     * state.
+     */
+    private static TrustLevel demoBankedStep(ConnectionStatus status, TrustLevel level) {
+        boolean metInPerson = level.getValue() >= TrustLevel.FIRST_MEET.getValue();
+        return status == ConnectionStatus.ACTIVE && metInPerson ? level : null;
     }
 
     /** An ACTIVE chat-only friendship between two elders or two helpers. A row

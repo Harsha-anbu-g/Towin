@@ -75,6 +75,9 @@ public class TrustScoreBreakdownResponse {
         private String currentStageLabel;  // e.g. "Phone Ready"
         private int stageIndex;            // 0–6 (TrustLevel value)
 
+        /** False until the elder has ended a help between the two: no points before that. */
+        private boolean counted;
+
         private int rooting;     // 0–7
         private int rootingMax;  // 7
 

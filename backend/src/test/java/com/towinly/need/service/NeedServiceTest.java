@@ -149,6 +149,61 @@ class NeedServiceTest {
         assertThat(response.getStatus()).isEqualTo(NeedStatus.COMPLETED);
     }
 
+    // ── Ending a help banks the ladder step (trust score rule 4) ─────────────
+
+    /** An assigned need with `helper` accepted on it, and the pair's friendship row. */
+    private Need assignedNeedBetween(Connection... friendship) {
+        Need need = buildNeed(elder, NeedStatus.ASSIGNED);
+        NeedApplication app = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(need).helper(helper).status(ApplicationStatus.ACCEPTED).build();
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
+        when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(app));
+        when(connectionRepository.findAllBetweenUsers(elder.getId(), helper.getId()))
+                .thenReturn(List.of(friendship));
+        return need;
+    }
+
+    private Connection friendshipAt(TrustLevel live, TrustLevel banked) {
+        return Connection.builder().userA(elder).userB(helper).status(ConnectionStatus.ACTIVE)
+                .currentTrustLevel(live).bankedTrustLevel(banked).build();
+    }
+
+    @Test
+    void completingAHelp_banksTheStepTheyHaveReached() {
+        Connection friendship = friendshipAt(TrustLevel.VIDEO_CALL, null);
+        Need need = assignedNeedBetween(friendship);
+
+        needService.complete(elder.getId(), need.getId());
+
+        assertThat(friendship.getBankedTrustLevel()).isEqualTo(TrustLevel.VIDEO_CALL);
+        verify(connectionRepository).save(friendship);
+        // Both people's scores move when a help ends, not only the helper's.
+        verify(trustScoreService).recalculate(helper.getId());
+        verify(trustScoreService).recalculate(elder.getId());
+    }
+
+    @Test
+    void completingALaterHelp_neverLowersTheBankedStep() {
+        Connection friendship = friendshipAt(TrustLevel.VIDEO_CALL, TrustLevel.FIRST_MEET);
+        Need need = assignedNeedBetween(friendship);
+
+        needService.complete(elder.getId(), need.getId());
+
+        assertThat(friendship.getBankedTrustLevel()).isEqualTo(TrustLevel.FIRST_MEET);
+        verify(connectionRepository, never()).save(any());
+    }
+
+    @Test
+    void completingAHelp_withNoFriendshipRow_stillCompletes() {
+        Need need = assignedNeedBetween();
+
+        NeedResponse response = needService.complete(elder.getId(), need.getId());
+
+        assertThat(response.getStatus()).isEqualTo(NeedStatus.COMPLETED);
+        verify(connectionRepository, never()).save(any());
+    }
+
     @Test
     void shouldGetMyNeedsPageable() {
         Need need = buildNeed(elder, NeedStatus.OPEN);

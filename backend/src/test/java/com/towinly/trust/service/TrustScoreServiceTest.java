@@ -72,7 +72,14 @@ class TrustScoreServiceTest {
         return User.builder().id(UUID.randomUUID()).build();
     }
 
+    /** A pair whose help was ended at this step: the step is banked, so it counts. */
     private Connection connection(User customer, TrustLevel level) {
+        return Connection.builder().userA(baseUser).userB(customer)
+                .currentTrustLevel(level).bankedTrustLevel(level).build();
+    }
+
+    /** A pair on the ladder with no finished help yet: nothing is banked. */
+    private Connection unfinished(User customer, TrustLevel level) {
         return Connection.builder().userA(baseUser).userB(customer).currentTrustLevel(level).build();
     }
 
@@ -241,6 +248,66 @@ class TrustScoreServiceTest {
         trustScoreService.recalculate(userId);
 
         assertThat(baseUser.getTrustScore()).isEqualTo(7.0);
+    }
+
+    // ── A friendship counts only once a help between the two is finished ─────
+
+    @Test
+    void friendshipWithNoFinishedHelp_addsNothing() {
+        makeFullyVerified();
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(fullProfile()));
+        User cust = customer();
+        Review fiveStar = Review.builder().reviewer(cust).reviewee(baseUser).rating(5).build();
+        connections(unfinished(cust, TrustLevel.TRUSTED));
+        reviews(fiveStar);
+
+        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+
+        // Own profile counts once (3); the friendship itself adds nothing yet.
+        assertThat(r.getTotalScore()).isEqualTo(3.0);
+        CustomerCard card = r.getCustomers().get(0);
+        assertThat(card.isCounted()).isFalse();
+        assertThat(card.getRooting()).isEqualTo(0);
+        assertThat(card.getReview()).isEqualTo(0);
+        assertThat(card.getProfile()).isEqualTo(0);
+        assertThat(card.getTotal()).isEqualTo(0);
+        // The ladder still shows where the pair really is.
+        assertThat(card.getStageIndex()).isEqualTo(6);
+    }
+
+    @Test
+    void ladderPoints_comeFromTheBankedStep_notTheLiveStep() {
+        Connection c = unfinished(customer(), TrustLevel.TRUSTED);
+        c.setBankedTrustLevel(TrustLevel.VIDEO_CALL);
+        connections(c);
+        reviews();
+
+        CustomerCard card = trustScoreService.getMyScoreBreakdown(userId).getCustomers().get(0);
+
+        assertThat(card.isCounted()).isTrue();
+        assertThat(card.getRooting()).isEqualTo(4);
+        assertThat(card.getStageIndex()).isEqualTo(6);
+    }
+
+    @Test
+    void recalculate_ignoresFriendshipsWithNoFinishedHelp() {
+        connections(unfinished(customer(), TrustLevel.TRUSTED));
+        reviews();
+
+        trustScoreService.recalculate(userId);
+
+        assertThat(baseUser.getTrustScore()).isEqualTo(0.0);
+    }
+
+    @Test
+    void recalculate_stampsTheCurrentScoringRule() {
+        baseUser.setTrustScoreVersion(3);
+        connections();
+        reviews();
+
+        trustScoreService.recalculate(userId);
+
+        assertThat(baseUser.getTrustScoreVersion()).isEqualTo(TrustScoreService.CURRENT_VERSION);
     }
 
     // ── Tiers (rebased) ──────────────────────────────────────────────────────

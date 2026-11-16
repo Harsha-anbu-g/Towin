@@ -44,6 +44,14 @@ public class Connection {
     @Builder.Default
     private TrustLevel currentTrustLevel = TrustLevel.DISCOVERED;
 
+    /**
+     * The ladder step this pair had reached when the elder last ended a help
+     * between them. Null until the first finished help: the friendship earns no
+     * trust score before that (TrustScoreService).
+     */
+    @Column(name = "banked_trust_level")
+    private TrustLevel bankedTrustLevel;
+
     @ManyToOne
     @JoinColumn(name = "initiated_by", nullable = false)
     private User initiatedBy;
