@@ -4,10 +4,14 @@
 ALTER TABLE connections ADD COLUMN banked_trust_level INTEGER;
 
 -- Going live: the step at the time was never stored, so a pair that already has a
--- finished help banks the step it is on today.
+-- finished help banks the step it is on today. Only live, trust-earning friendships:
+-- a declined or ended row must not carry points into a later fresh start, and
+-- family or chat-only rows never earn any (ConnectionType.earnsTrust).
 UPDATE connections c
 SET banked_trust_level = c.current_trust_level
-WHERE EXISTS (
+WHERE c.status IN ('ACTIVE', 'PAUSED')
+  AND (c.type IS NULL OR c.type IN ('SOCIAL', 'SERVICE'))
+  AND EXISTS (
     SELECT 1
     FROM needs n
     JOIN need_applications a ON a.need_id = n.id

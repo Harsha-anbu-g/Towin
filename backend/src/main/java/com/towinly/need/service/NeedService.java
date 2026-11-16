@@ -393,6 +393,11 @@ public class NeedService {
         if (!wasLive || connection.getCurrentTrustLevel() == null) {
             connection.setCurrentTrustLevel(TrustLevel.DISCOVERED);
         }
+        // The points banked before the row died go with the rung: otherwise an ended
+        // helper is handed the old trust score back the moment they are accepted again.
+        if (!wasLive) {
+            connection.setBankedTrustLevel(null);
+        }
         connection.resetConfirmations();
         Connection savedConn = connectionRepository.save(connection);
 
@@ -482,8 +487,9 @@ public class NeedService {
     /**
      * A friendship starts counting toward both people's trust score when the elder
      * ends a help between them, at the ladder step they have reached by then
-     * (TrustScoreService rule 4). A later help can raise the banked step, never
-     * lower it.
+     * (TrustScoreService rule 4). The banked step is always the live step at this
+     * moment: steps only move up, so a banked step above the live one can only be
+     * left over from a ladder that was restarted, and must not outlive the restart.
      */
     private void bankTrustStep(UUID elderId, UUID helperId) {
         connectionRepository.findAllBetweenUsers(elderId, helperId).stream()
@@ -492,9 +498,8 @@ public class NeedService {
                         || c.getStatus() == ConnectionStatus.PAUSED)
                 .findFirst()
                 .ifPresent(c -> {
-                    TrustLevel banked = c.getBankedTrustLevel();
                     TrustLevel live = c.getCurrentTrustLevel();
-                    if (banked == null || live.getValue() > banked.getValue()) {
+                    if (c.getBankedTrustLevel() != live) {
                         c.setBankedTrustLevel(live);
                         connectionRepository.save(c);
                     }

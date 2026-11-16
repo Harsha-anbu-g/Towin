@@ -85,7 +85,7 @@ public class TrustScoreService {
             // Step 4: FAMILY-type connections are coordination-only — zero points, both sides.
             if (!com.towinly.common.enums.ConnectionType.earnsTrust(c.getType())) continue;
             // No finished help between the two yet: the friendship adds nothing.
-            if (c.getBankedTrustLevel() == null) continue;
+            if (!counts(c)) continue;
             UUID customerId = c.getOtherUser(userId).getId();
             int rooting = rootingPoints(c.getBankedTrustLevel());
             int review  = Math.min(reviewByCustomer.getOrDefault(customerId, 0), REVIEW_MAX);
@@ -117,7 +117,7 @@ public class TrustScoreService {
             if (!com.towinly.common.enums.ConnectionType.earnsTrust(c.getType())) continue;
             User customer = c.getOtherUser(userId);
             // No finished help between the two yet: the card shows the ladder but no points.
-            boolean counted = c.getBankedTrustLevel() != null;
+            boolean counted = counts(c);
             int rooting = counted ? rootingPoints(c.getBankedTrustLevel()) : 0;
             int review  = counted ? Math.min(reviewByCustomer.getOrDefault(customer.getId(), 0), REVIEW_MAX) : 0;
             int profile = counted ? profilePoints : 0;
@@ -181,6 +181,18 @@ public class TrustScoreService {
     }
 
     /** One point per trust stage reached: DISCOVERED=1 … TRUSTED=7. */
+    /**
+     * Whether a friendship earns points yet: a help between the two has been
+     * finished and its step banked. Steps only move up, so a banked step above
+     * the live one means the ladder was restarted after banking (a friendship
+     * that ended and began again); the old points do not survive that, whichever
+     * code path did the restart.
+     */
+    private boolean counts(Connection c) {
+        TrustLevel banked = c.getBankedTrustLevel();
+        return banked != null && banked.getValue() <= c.getCurrentTrustLevel().getValue();
+    }
+
     private int rootingPoints(TrustLevel level) {
         return Math.min(level.getValue() + 1, ROOTING_MAX);
     }

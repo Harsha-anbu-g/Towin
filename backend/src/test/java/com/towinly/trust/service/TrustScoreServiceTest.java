@@ -290,6 +290,25 @@ class TrustScoreServiceTest {
     }
 
     @Test
+    void bankedStepAboveTheLiveStep_countsNothing() {
+        // Steps only move up, so this can only mean the ladder was restarted after
+        // the step was banked. A restart must not leave the old points standing.
+        makeFullyVerified();
+        when(helperProfileRepository.findByUserId(userId)).thenReturn(Optional.of(fullProfile()));
+        Connection restarted = unfinished(customer(), TrustLevel.DISCOVERED);
+        restarted.setBankedTrustLevel(TrustLevel.TRUSTED);
+        connections(restarted);
+        reviews();
+
+        TrustScoreBreakdownResponse r = trustScoreService.getMyScoreBreakdown(userId);
+        trustScoreService.recalculate(userId);
+
+        assertThat(r.getCustomers().get(0).isCounted()).isFalse();
+        assertThat(r.getTotalScore()).isEqualTo(3.0);       // own profile only
+        assertThat(baseUser.getTrustScore()).isEqualTo(3.0);
+    }
+
+    @Test
     void recalculate_ignoresFriendshipsWithNoFinishedHelp() {
         connections(unfinished(customer(), TrustLevel.TRUSTED));
         reviews();

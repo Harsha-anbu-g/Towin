@@ -184,14 +184,63 @@ class NeedServiceTest {
     }
 
     @Test
-    void completingALaterHelp_neverLowersTheBankedStep() {
-        Connection friendship = friendshipAt(TrustLevel.VIDEO_CALL, TrustLevel.FIRST_MEET);
+    void completingAHelp_afterTheLadderWasRestarted_banksTheNewStep_notTheOldOne() {
+        // Steps only move up, so a banked step above the live one means the ladder
+        // was restarted after it was banked. The old step must not survive that.
+        Connection friendship = friendshipAt(TrustLevel.VIDEO_CALL, TrustLevel.TRUSTED);
         Need need = assignedNeedBetween(friendship);
 
         needService.complete(elder.getId(), need.getId());
 
-        assertThat(friendship.getBankedTrustLevel()).isEqualTo(TrustLevel.FIRST_MEET);
-        verify(connectionRepository, never()).save(any());
+        assertThat(friendship.getBankedTrustLevel()).isEqualTo(TrustLevel.VIDEO_CALL);
+        verify(connectionRepository).save(friendship);
+    }
+
+    @Test
+    void acceptingAHelperOnAFriendshipThatHadEnded_forfeitsItsBankedStep() {
+        // SEC: coming back is a new beginning. The live rung restarts at the bottom
+        // (see acceptHelper), and the points banked before the ending go with it;
+        // otherwise an ended helper is handed the old score back on the next accept.
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        NeedApplication app = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(need).helper(helper).status(ApplicationStatus.PENDING).build();
+        Connection ended = Connection.builder().id(UUID.randomUUID()).userA(elder).userB(helper)
+                .status(ConnectionStatus.ENDED)
+                .currentTrustLevel(TrustLevel.TRUSTED).bankedTrustLevel(TrustLevel.TRUSTED).build();
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(applicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(Optional.of(app));
+        when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(app));
+        when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
+        when(connectionRepository.findAllBetweenUsers(elder.getId(), helper.getId())).thenReturn(List.of(ended));
+        when(connectionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        needService.acceptHelper(elder.getId(), need.getId(), helper.getId());
+
+        assertThat(ended.getStatus()).isEqualTo(ConnectionStatus.ACTIVE);
+        assertThat(ended.getCurrentTrustLevel()).isEqualTo(TrustLevel.DISCOVERED);
+        assertThat(ended.getBankedTrustLevel()).isNull();
+    }
+
+    @Test
+    void acceptingAHelperOnAPausedFriendship_keepsWhatTheyBanked() {
+        // A pause keeps its rung by design (resume hands it back), so it keeps its points.
+        Need need = buildNeed(elder, NeedStatus.OPEN);
+        NeedApplication app = NeedApplication.builder()
+                .id(UUID.randomUUID()).need(need).helper(helper).status(ApplicationStatus.PENDING).build();
+        Connection paused = Connection.builder().id(UUID.randomUUID()).userA(elder).userB(helper)
+                .status(ConnectionStatus.PAUSED)
+                .currentTrustLevel(TrustLevel.FIRST_MEET).bankedTrustLevel(TrustLevel.VIDEO_CALL).build();
+        when(needRepository.findById(need.getId())).thenReturn(Optional.of(need));
+        when(applicationRepository.findByNeedIdAndHelperId(need.getId(), helper.getId())).thenReturn(Optional.of(app));
+        when(applicationRepository.findByNeedId(need.getId())).thenReturn(List.of(app));
+        when(needRepository.save(any(Need.class))).thenAnswer(i -> i.getArgument(0));
+        when(connectionRepository.findAllBetweenUsers(elder.getId(), helper.getId())).thenReturn(List.of(paused));
+        when(connectionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        needService.acceptHelper(elder.getId(), need.getId(), helper.getId());
+
+        assertThat(paused.getCurrentTrustLevel()).isEqualTo(TrustLevel.FIRST_MEET);
+        assertThat(paused.getBankedTrustLevel()).isEqualTo(TrustLevel.VIDEO_CALL);
     }
 
     @Test
