@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import NavBar from '../components/NavBar';
+import TrustRuleNote from '../components/TrustRuleNote';
 import api from '../api/axios';
 import { tr } from '../i18n';
 import emphasize from '../i18n/emphasize';
@@ -342,33 +343,6 @@ function Avatar({ name, photoUrl }) {
    point at 0. An older server sends no `counted`, and that card counts as it
    always did. */
 const isWaiting = (c) => c.counted === false;
-const RULE_NOTE_KEY = 'towinly_trust_rule_explained';
-
-/* ── Shown once: why a score may be lower than it was ────────────────────── */
-function RuleNote() {
-  const [visible, setVisible] = useState(() => localStorage.getItem(RULE_NOTE_KEY) !== 'true');
-  if (!visible) return null;
-  const dismiss = () => {
-    localStorage.setItem(RULE_NOTE_KEY, 'true');
-    setVisible(false);
-  };
-  return (
-    <div style={{ ...card, padding: '18px 20px', marginBottom: '16px' }}>
-      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 400, color: INK, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-        {tr('Points count after a help is finished')}
-      </h2>
-      <p style={{ fontFamily: SF, fontSize: 'var(--text-sm)', color: GREY, margin: '0 0 12px', lineHeight: 1.5 }}>
-        {tr('A friendship adds to your score once a help between you two is finished. If your score went down, this is why.')}
-      </p>
-      <button onClick={dismiss} style={{
-        background: 'transparent', color: INK, border: '1px solid var(--hairline-3)', borderRadius: '9999px',
-        padding: '10px 22px', minHeight: '44px', fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: SF, cursor: 'pointer',
-      }}>
-        {tr('Got it')}
-      </button>
-    </div>
-  );
-}
 
 /* ── One card per customer, showing exactly what they earned you ─────────── */
 function CustomerCard({ c }) {
@@ -500,7 +474,7 @@ export default function Trust() {
         {data && (
           <>
             {/* The server speaks the new rule once any card carries `counted`. */}
-            {customers.some((c) => typeof c.counted === 'boolean') && <RuleNote />}
+            <TrustRuleNote customers={customers} />
             <ScoreSummary data={data} />
             <FamilyCard family={data.family} />
 

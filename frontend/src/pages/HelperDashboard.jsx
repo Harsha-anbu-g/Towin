@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import TrustRuleNote from '../components/TrustRuleNote';
 import TrustJourney from '../components/TrustJourney';
 import HelperFamilyUpdates from '../components/HelperFamilyUpdates';
 import SegmentedTabs, { SegmentEmpty } from '../components/SegmentedTabs';
@@ -738,6 +739,8 @@ export default function HelperDashboard() {
       </div>
 
       <div className="dash-content">
+        {/* Shown once: why the score may be lower than it was. */}
+        <TrustRuleNote onSeeScore={() => navigate('/trust')} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* My Elders tab (landing) */}
           {tab === 'connections' && (

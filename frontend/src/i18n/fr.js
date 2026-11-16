@@ -1681,6 +1681,8 @@ export default {
     "Voir ceci",
   "See why →":
     "Voir pourquoi →",
+  "See your score":
+    "Voir votre score",
   "Seen":
     "Vu",
   "Select…":
